@@ -1,0 +1,10 @@
+{
+	"baseURL": "http://2e.aonprd.com",
+	"categories": [
+		"Equipment",
+		"Armor",
+		"Weapons",
+		"Shields"
+	],
+	"delayTimer": 50
+}
