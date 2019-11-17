@@ -6,8 +6,7 @@ const Transformer = require('./transformer');
 const {
 	reporter,
 	createDirectories,
-	getCategoryIndex,
-	dispatchParser
+	getCategoryPages
 } = require('./tasks');
 
 //  Take an array of pages to rip
@@ -17,8 +16,7 @@ async function rip(config) {
 		transformer.addTasks([
 			reporter,
 			createDirectories,
-			getCategoryIndex,
-			dispatchParser
+			getCategoryPages
 		]);
 		const result = await transformer.execute({ category });
 		console.log(result);

@@ -1,6 +1,6 @@
 module.exports = {
 	createDirectories: require('./createDirectories'),
 	delayNext: require('./delayNext'),
-	getCategoryIndex: require('./getCategoryIndex'),
+	getCategoryPages: require('./getCategoryPages'),
 	reporter: require('./reporter'),
 };

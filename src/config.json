@@ -4,10 +4,11 @@
 	"dataDirectory": "data",
 	"delayTimer": 50,
 	"categories": [
-		"Equipment",
 		"Armor",
-		"Weapons",
+		"ClassKits",
+		"Equipment",
 		"Shields",
-		"AnimalSpecializations"
+		"Weapons",
+		"WeaponGroups"
 	]
 }
