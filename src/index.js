@@ -1,13 +1,13 @@
 const path = require('path');
 const config = require('./config');
+require('./utils/createDirectory')(path.resolve(config.reportDirectory));
+
 const Transformer = require('./transformer');
-const createDirectory = require('./utils/createDirectory');
 const {
 	reporter,
 	createDirectories,
 	getCategoryIndex,
-	fetchPageContents,
-	parseCategoryIndex
+	dispatchParser
 } = require('./tasks');
 
 //  Take an array of pages to rip
@@ -18,13 +18,11 @@ async function rip(config) {
 			reporter,
 			createDirectories,
 			getCategoryIndex,
-			fetchPageContents,
-			parseCategoryIndex
+			dispatchParser
 		]);
 		const result = await transformer.execute({ category });
 		console.log(result);
 	}
 }
 
-createDirectory(path.resolve('.reports'));
 rip(config);

@@ -1,8 +1,6 @@
 module.exports = {
-	delayNext: require('./delayNext'),
 	createDirectories: require('./createDirectories'),
-	fetchPageContents: require('./fetchPageContents'),
+	delayNext: require('./delayNext'),
 	getCategoryIndex: require('./getCategoryIndex'),
-	parseCategoryIndex: require('./parseCategoryIndex'),
 	reporter: require('./reporter'),
 };

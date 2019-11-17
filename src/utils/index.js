@@ -5,6 +5,6 @@ String.prototype.capitalize = function () {
 module.exports = {
 	exportContent: require('./exportContent'),
 	createDirectory: require('./createDirectory'),
-	fetchPageContents: require('./fetchPageContents'),
+	fetchPage: require('./fetchPage'),
 	viewState: require('./viewState'),
 };

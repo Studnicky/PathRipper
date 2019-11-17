@@ -1,10 +1,13 @@
 {
-	"baseURL": "http://2e.aonprd.com",
+	"domain": "http://2e.aonprd.com",
+	"reportDirectory": "reports",
+	"dataDirectory": "data",
+	"delayTimer": 50,
 	"categories": [
 		"Equipment",
 		"Armor",
 		"Weapons",
-		"Shields"
-	],
-	"delayTimer": 50
+		"Shields",
+		"AnimalSpecializations"
+	]
 }

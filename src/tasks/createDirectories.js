@@ -1,14 +1,15 @@
 const path = require('path');
-const allCategories = require('../const/categories');
+const { dataDirectory } = require('../config');
+const categoryLinks = require('../const/categoryLinks');
 const createDirectory = require('../utils/createDirectory');
 
 const createDirectories = async function (next, state) {
-	if (allCategories.includes(state.category)) {
-		await createDirectory(path.resolve('data', state.category));
+	if (Object.keys(categoryLinks).includes(state.category)) {
+		await createDirectory(path.resolve(dataDirectory, state.category));
+		return next();
 	} else {
 		throw new Error(`Unknown category: ${state.category}`);
 	}
-	return next();
 }
 
 module.exports = createDirectories;
