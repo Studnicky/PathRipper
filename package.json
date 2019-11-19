@@ -1,0 +1,33 @@
+{
+	"name": "ripperoni",
+	"config": {
+		"src": "./src/index.js"
+	},
+	"version": "1.0.0",
+	"description": "Steal data",
+	"main": "$npm_package_config_src",
+	"scripts": {
+		"debug": "node --inspect-brk=1337 $npm_package_config_src",
+		"start": "node $npm_package_config_src",
+		"test": "echo lol no"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/Studnicky/PathRipper.git"
+	},
+	"keywords": [
+		"pathfinder",
+		"scrape"
+	],
+	"author": "a.j.studnicky@gmail.com",
+	"license": "UNLICENSED",
+	"bugs": {
+		"url": "https://github.com/Studnicky/PathRipper/issues"
+	},
+	"homepage": "https://github.com/Studnicky/PathRipper#readme",
+	"devDependencies": {
+		"eslint": "^6.6.0",
+		"jsdom": "^15.2.1",
+		"striptags": "^3.1.1"
+	}
+}
