@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const { debug } = require('../config');
 
 const exporter = async function (filePath, contents) {
 	try {
@@ -6,7 +7,7 @@ const exporter = async function (filePath, contents) {
 	} catch (err) {
 		//	Don't terminate if the page fails to write
 		console.error(`Failed to write`, err);
-		console.info(contents);
+		if (debug) console.info(contents);
 		throw err;
 	}
 }

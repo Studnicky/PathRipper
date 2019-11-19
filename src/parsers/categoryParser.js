@@ -1,4 +1,5 @@
 const Transformer = require('../transformer');
+const writeRawHTML = require('../tasks/writeRawHTML');
 
 const categoryTasks = {
 	"Actions": [],
@@ -56,6 +57,7 @@ const categoryParser = async (link, category) => {
 
 	const categoryTransformer = new Transformer({ debug: false });
 	categoryTransformer.addTasks(categoryTasks[category]);
+	categoryTransformer.addTask(writeRawHTML);
 	const result = await categoryTransformer.execute(content);
 	return result[1];
 }

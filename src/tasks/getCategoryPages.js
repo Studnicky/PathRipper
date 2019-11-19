@@ -1,13 +1,18 @@
 const categoryParser = require('../parsers/categoryParser');
-const categoryLinks = require('../const/categoryLinks');
 const LinkLister = require('../linkLister');
+const { debug, domain, target } = require('../config');
 
 const getCategoryPages = async function (next, state) {
 
-	console.log(`Recursively Indexing Content: ${state.category}`);
-	const url = categoryLinks[state.category];
-	const linkList = await new LinkLister(state.category).build(url);
-	console.log(`Indexed ${linkList.length} pages from ${state.category}`);
+	const linkListerConfig = {
+		debug,
+		domain: new RegExp(domain),
+		target: new RegExp(target),
+		delimiter: new RegExp(`${state.category}.aspx`)
+	};
+
+	const link = `${domain}/${state.category}.aspx`;
+	const linkList = await new LinkLister(linkListerConfig).buildList(link);
 
 	state.data = {};
 	for (const link of linkList) {

@@ -1,11 +1,15 @@
 {
 	"name": "ripperoni",
+	"config": {
+		"src": "./src/index.js"
+	},
 	"version": "1.0.0",
 	"description": "Steal data",
-	"main": "/reipperoni/index.js",
+	"main": "$npm_package_config_src",
 	"scripts": {
-		"rip": "node --inspect-brk=1337 ./src/index.js",
-		"test": "no"
+		"debug": "node --inspect-brk=1337 $npm_package_config_src",
+		"start": "node $npm_package_config_src",
+		"test": "echo lol no"
 	},
 	"repository": {
 		"type": "git",
@@ -16,7 +20,7 @@
 		"scrape"
 	],
 	"author": "a.j.studnicky@gmail.com",
-	"license": "MIT",
+	"license": "UNLICENSED",
 	"bugs": {
 		"url": "https://github.com/Studnicky/PathRipper/issues"
 	},

@@ -9,25 +9,7 @@ const exclude = (excluder, outstanding) => {
 };
 
 const unique = (list) => {
-	const result = [];
-	const map = new Map();
-	for (const link of list) {
-		if (map.has(link) === false) {
-			map.set(link, true);
-			result.push(link);
-		}
-	}
-	return result;
-}
-
-const matches = (pattern, links) => {
-	return links.filter((link) => {
-		return pattern.test(link);
-	});
-}
-
-const uniqueMatches = (pattern, links) => {
-	return unique(matches(pattern, links));
+	return Array.from(new Set(list));
 }
 
 const getLinksInElement = (element) => {
@@ -37,52 +19,59 @@ const getLinksInElement = (element) => {
 		});
 }
 
+//	Recursively crawl through all pages in config.domain
+//	Build a list of links that match config.target
+//	Traverse all links that match config.delimiter (regex may include or exclude)
 class LinkLister {
-	constructor(category) {
-		this.category = category;
+	constructor(config = {}) {
+		this.debug = config.debug;
+		this.domain = new RegExp(config.domain);
+		this.target = new RegExp(config.target);
+		this.delimiter = new RegExp(config.delimiter);
 		this.history = [];
 	}
 
-	//	This might seem silly but it's a necessary wrapper for the dispatcher
-	async IDList(linkList) {
-		return linkList;
-	};
-
-	async Index(nextLinks) {
-		let linkList = [];
-		for (const link of nextLinks) {
-			const newLinks = await this.build(link);
-			linkList = linkList.concat(newLinks);
-		}
-		return linkList;
-	};
-
-	//	This is probably the jankiest dispatcher I have ever written but HEY IT WORKS
-	async accumulateLists(link, sortedLists) {
-		let links = [];
-		for (const linkList of sortedLists) {
-			const results = await this[linkList.name](linkList.list, this.category);
-			links = links.concat(results);
-		}
-		return links;
+	logTag() {
+		return `\x1b[44m${this.constructor.name}:\x1b[0m`;
 	}
 
-	async build(link) {
+	async traverseLists(lists) {
+		let list = lists["true"];
+		for (const link of lists["false"]) {
+			const linksList = await this.buildList(link);
+			list = list.concat(linksList);
+		}
+		return list;
+	}
+
+	async buildList(link) {
+		if (this.debug) console.info(`${this.logTag()} Recursively Indexing from: ${link}`);
 		const page = await fetchPage(link);
 		const { window: { document: { body } = {} } = {} } = page;
 		//	Since there's no way to tell what the page is from the page itself...
-		const linkList = uniqueMatches(new RegExp(`${this.category}.aspx`), getLinksInElement(body));
-		const sortedLinkLists = [
-			{ name: "IDList", list: exclude(this.history, matches(/\?ID=/, linkList)) },
-			{ name: "Index", list: exclude(this.history, matches(/(?:category)/gmi, linkList)) }
-		];
+		let list = getLinksInElement(body)
+			.filter((link) => { return this.domain.test(link); })
+			.filter((link) => { return this.delimiter.test(link); });
+		list = exclude(this.history, list);
+		list = unique(list);
+
+		const lists = list.reduce((lists, link) => {
+			if (this.history.includes(link)) {
+				if (this.debug) console.info(`${this.logTag()} Skipping previously traversed link: ${link}`);
+			} else {
+				lists[this.target.test(link)].push(link);
+				this.history.push(link);
+			}
+			return lists;
+		}, {
+			true: [],
+			false: []
+		});
 		//	Track visited pages to prevent recursion nightmares
-		this.history.push(link);
-		const builtList = await this.accumulateLists(link, sortedLinkLists);
+		const builtList = await this.traverseLists(lists);
+		if (this.debug) console.info(`${this.logTag()} Indexed ${builtList.length} pages from: ${link}`);
 		return builtList.sort(collator.compare);
 	}
-
 }
-
 
 module.exports = LinkLister;
