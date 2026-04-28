@@ -73,6 +73,11 @@ plugins/**/*.js
 plugins/**/*.js.map
 plugins/**/*.d.ts
 
+# Compiled artifacts must never land in src/ (only in dist/)
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+
 # User's local configs — never committed.
 # Only the canonical `ripperoni.config.example.json` is tracked.
 ripperoni.config*.json
