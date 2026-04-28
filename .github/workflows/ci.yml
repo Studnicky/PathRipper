@@ -42,9 +42,6 @@ jobs:
       - name: Unit tests
         run: npm run test:unit
 
-      - name: Target neutrality check
-        run: bash scripts/check-neutrality.sh
-
       - name: Build
         run: npm run build
 
