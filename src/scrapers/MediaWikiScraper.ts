@@ -23,6 +23,13 @@ interface CategoryMemberShapeInterface {
   readonly pageid: number;
 }
 
+interface AllPagesResponseInterface {
+  readonly query?: {
+    readonly allpages?: ReadonlyArray<{ readonly title: string; readonly pageid: number }>;
+  };
+  readonly continue?: Record<string, string>;
+}
+
 interface CategoryMembersResponseInterface {
   readonly query?: {
     readonly categorymembers?: ReadonlyArray<CategoryMemberShapeInterface>;
@@ -121,6 +128,34 @@ export class MediaWikiScraper {
     } while (Object.keys(continueParams).length > 0);
 
     this.#log.info('fetchCategory', `${members.length.toString()} members in ${categoryName}`);
+    return members;
+  }
+
+  public async fetchAllPages(batchSize = 500): Promise<CategoryMemberInterface[]> {
+    this.#log.info('fetchAllPages', 'Enumerating all pages in main namespace');
+    const members: CategoryMemberInterface[] = [];
+    let continueParams: Record<string, string> = {};
+
+    do {
+      const params = new URLSearchParams({
+        action: 'query', list: 'allpages', apnamespace: '0',
+        aplimit: batchSize.toString(), format: 'json',
+        ...continueParams,
+      });
+
+      const data = await this.#limiter.schedule(() =>
+        this.#get<AllPagesResponseInterface>(params),
+      );
+
+      for (const p of data.query?.allpages ?? []) {
+        members.push({ title: p.title, pageid: p.pageid });
+      }
+
+      continueParams = data.continue ?? {};
+      this.#log.debug('fetchAllPages', `${members.length.toString()} pages so far`);
+    } while (Object.keys(continueParams).length > 0);
+
+    this.#log.info('fetchAllPages', `Total: ${members.length.toString()} pages`);
     return members;
   }
 

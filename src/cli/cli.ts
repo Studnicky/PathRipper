@@ -43,8 +43,7 @@ program
       return;
     }
     if (wikiTarget !== undefined) {
-      if (!opts.category) { log.error('scrape', '--category required for mediawiki targets'); process.exit(1); }
-      await ScrapeOrchestrator.scrapeWiki({ target: opts.target, category: opts.category!, outDir, configDir, config });
+      await ScrapeOrchestrator.scrapeWiki({ target: opts.target, category: opts.category, outDir, configDir, config });
       return;
     }
     log.error('scrape', `Unknown target: ${opts.target}`);
@@ -76,10 +75,10 @@ program
   .command('scrape-wiki')
   .description('Scrape MediaWiki category pages')
   .requiredOption('--target <name>', 'MediaWiki target name from config')
-  .requiredOption('--category <name>', 'Category name to scrape')
+  .option('--category <name>', 'Category to scrape (omit to use config categories or scrape all pages)')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; category: string; config: string; out?: string }) => {
+  .action(async (opts: { target: string; category?: string; config: string; out?: string }) => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
