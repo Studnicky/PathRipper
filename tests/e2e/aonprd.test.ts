@@ -53,6 +53,10 @@ describe('PathRipper legacy AONPRD e2e (local only)', () => {
       maxPages:    20,
     });
     const links = await lister.buildList([c.startUrls[0]!]);
+    process.stdout.write(`\n  smoke: collected ${links.length.toString()} target URLs from ${c.startUrls[0] ?? '?'}\n`);
+    for (const link of links.slice(0, 5)) process.stdout.write(`    • ${link}\n`);
+    if (links.length > 5) process.stdout.write(`    … (${(links.length - 5).toString()} more)\n`);
+
     assert.ok(links.length >= 5, `expected ≥5 target URLs, got ${links.length.toString()}`);
     for (const link of links) {
       assert.match(link, new RegExp(c.target));
@@ -72,6 +76,10 @@ describe('PathRipper legacy AONPRD e2e (local only)', () => {
       maxPages:    c.maxPages,
     });
     const links = await lister.buildList(c.startUrls);
+    process.stdout.write(`\n  full: collected ${links.length.toString()} target URLs across ${c.startUrls.length.toString()} category seeds\n`);
+    for (const link of links.slice(0, 8)) process.stdout.write(`    • ${link}\n`);
+    if (links.length > 8) process.stdout.write(`    … (${(links.length - 8).toString()} more)\n`);
+
     assert.ok(links.length >= 10, `expected ≥10 target URLs across all categories, got ${links.length.toString()}`);
   });
 });
