@@ -9,6 +9,8 @@ export interface ParsedPageInterface {
   readonly categories: readonly string[];
 }
 
+type WtfSectionType = ReturnType<ReturnType<typeof wtf>['sections']> extends ReadonlyArray<infer S> ? S : ReturnType<ReturnType<typeof wtf>['sections']>;
+
 export class WikitextParser {
   static parse(title: string, wikitext: string): ParsedPageInterface {
     const doc = wtf(wikitext);
@@ -24,9 +26,9 @@ export class WikitextParser {
 
     const rawSections = doc.sections();
     const sectionArray = Array.isArray(rawSections) ? rawSections : (rawSections !== null ? [rawSections] : []);
-    const sections = sectionArray.map((s) => ({
-      title: s.title(),
-      text:  s.wikitext(),
+    const sections = sectionArray.map((s: WtfSectionType) => ({
+      title: (s as { title: () => string }).title(),
+      text:  (s as { wikitext: () => string }).wikitext(),
     }));
 
     const categories = doc.categories() as string[];

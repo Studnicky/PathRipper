@@ -6,10 +6,11 @@ import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface } from '../scrapers/MediaWikiScraper.js';
 import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
+import type { NextFnType } from '../pipeline/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface } from '../registry/PipelineState.js';
-import { Logger } from '../modules/logger/Logger.js';
+import { Logger } from '../modules/logger/logger.js';
 import type { RipperConfigInterface } from '../schemas/internal/RipperConfigSchema.js';
 
 export interface ScrapeHtmlOptionsInterface {
@@ -26,6 +27,14 @@ export interface ScrapeWikiOptionsInterface {
   readonly outDir:    string;
   readonly configDir: string;
   readonly config:    RipperConfigInterface;
+}
+
+interface RunPipelineOptionsInterface {
+  readonly targetId: string;
+  readonly outDir:   string;
+  readonly scraper:  MediaWikiScraper;
+  readonly members:  CategoryMemberInterface[];
+  readonly log:      ReturnType<typeof Logger.forComponent>;
 }
 
 export class ScrapeOrchestrator {
@@ -52,7 +61,7 @@ export class ScrapeOrchestrator {
       if (TaskRegistry.has(`${opts.target}:parse`)) {
         pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`)!);
       }
-      pipeline.addTask(async (next, state) => {
+      pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
         await next();
         const slug     = page.url.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase();
         const payload  = state.output ?? { url: page.url };
@@ -104,18 +113,13 @@ export class ScrapeOrchestrator {
       members = await scraper.fetchAllPages();
     }
 
-    await ScrapeOrchestrator.runPipeline(opts.target, opts.outDir, scraper, members, log);
+    await ScrapeOrchestrator.runPipeline({ targetId: opts.target, outDir: opts.outDir, scraper, members, log });
   }
 
-  private static async runPipeline(
-    targetId: string,
-    outDir:   string,
-    scraper:  MediaWikiScraper,
-    members:  CategoryMemberInterface[],
-    log:      ReturnType<typeof Logger.forComponent>,
-  ): Promise<void> {
+  private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
+    const { targetId, outDir, scraper, members, log } = opts;
     const BATCH = 50;
-    const titles = members.map((m) => m.title);
+    const titles = members.map((m: CategoryMemberInterface) => m.title);
     let written = 0;
 
     for (let i = 0; i < titles.length; i += BATCH) {
@@ -127,7 +131,7 @@ export class ScrapeOrchestrator {
         if (TaskRegistry.has(`${targetId}:parse`)) {
           pipeline.addTask(TaskRegistry.get(`${targetId}:parse`)!);
         }
-        pipeline.addTask(async (next, state) => {
+        pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
           await next();
           const slug    = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
           const payload = state.output !== null

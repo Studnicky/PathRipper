@@ -1,6 +1,14 @@
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 } as const;
 type LevelType = keyof typeof LEVELS;
 
+interface WriteOptsInterface {
+  readonly level:     LevelType;
+  readonly component: string;
+  readonly operation: string;
+  readonly message:   string;
+  readonly context?:  Readonly<Record<string, unknown>> | undefined;
+}
+
 export class Logger {
   readonly #component: string;
 
@@ -13,19 +21,19 @@ export class Logger {
   }
 
   public debug(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
-    Logger.write('debug', this.#component, operation, message, context);
+    Logger.write({ level: 'debug', component: this.#component, operation, message, context });
   }
 
   public info(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
-    Logger.write('info', this.#component, operation, message, context);
+    Logger.write({ level: 'info', component: this.#component, operation, message, context });
   }
 
   public warn(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
-    Logger.write('warn', this.#component, operation, message, context);
+    Logger.write({ level: 'warn', component: this.#component, operation, message, context });
   }
 
   public error(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
-    Logger.write('error', this.#component, operation, message, context);
+    Logger.write({ level: 'error', component: this.#component, operation, message, context });
   }
 
   private static currentLevel(): LevelType {
@@ -34,25 +42,19 @@ export class Logger {
     return 'info';
   }
 
-  private static write(
-    level: LevelType,
-    component: string,
-    operation: string,
-    message: string,
-    context?: Readonly<Record<string, unknown>>,
-  ): void {
-    if (LEVELS[level] < LEVELS[Logger.currentLevel()]) return;
+  private static write(opts: WriteOptsInterface): void {
+    if (LEVELS[opts.level] < LEVELS[Logger.currentLevel()]) return;
 
     const entry: Record<string, unknown> = {
-      time: new Date().toISOString(),
-      level,
-      component,
-      operation,
-      message,
+      time:      new Date().toISOString(),
+      level:     opts.level,
+      component: opts.component,
+      operation: opts.operation,
+      message:   opts.message,
     };
-    if (context !== undefined) entry['context'] = context;
+    if (opts.context !== undefined) entry['context'] = opts.context;
 
-    const stream = level === 'error' || level === 'warn' ? process.stderr : process.stdout;
+    const stream = opts.level === 'error' || opts.level === 'warn' ? process.stderr : process.stdout;
     stream.write(JSON.stringify(entry) + '\n');
   }
 }

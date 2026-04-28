@@ -1,6 +1,6 @@
 import { HttpError } from '../errors/HttpError.js';
-import { RateLimiter } from '../modules/http/RateLimiter.js';
-import { Logger } from '../modules/logger/Logger.js';
+import { RateLimiter } from '../modules/http/rateLimiter.js';
+import { Logger } from '../modules/logger/logger.js';
 
 export interface MediaWikiConfigInterface {
   readonly apiUrl: string;
@@ -53,7 +53,10 @@ interface RevisionsResponseInterface {
   };
 }
 
-const BATCH_SIZE = 50;
+const BATCH_SIZE               = 50;
+const API_CATEGORY_LIMIT       = 500;
+const API_ALL_PAGES_LIMIT      = 500;
+const DEFAULT_RATE_LIMIT_MS    = 1_000;
 
 export class MediaWikiScraper {
   readonly #apiUrl:   string;
@@ -64,7 +67,7 @@ export class MediaWikiScraper {
   private constructor(config: MediaWikiConfigInterface) {
     this.#apiUrl  = config.apiUrl;
     this.#headers = { 'Accept': 'application/json, */*' };
-    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 1_000, jitterMs: config.jitterMs ?? 0 });
+    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
     this.#log     = Logger.forComponent('MediaWikiScraper');
   }
 
@@ -96,7 +99,7 @@ export class MediaWikiScraper {
         rvprop: 'content', format: 'json',
       });
       const data = await this.#get<RevisionsResponseInterface>(params);
-      return Object.values(data.query?.pages ?? {}).map((p) => ({
+      return Object.values(data.query?.pages ?? {}).map((p: RevisionsPageInterface) => ({
         title:    p.title,
         wikitext: MediaWikiScraper.wikitextOf(p),
       }));
@@ -112,7 +115,7 @@ export class MediaWikiScraper {
       const params = new URLSearchParams({
         action:  'query', list: 'categorymembers',
         cmtitle: `Category:${categoryName}`,
-        cmlimit: '500', cmtype: 'page', format: 'json',
+        cmlimit: API_CATEGORY_LIMIT.toString(), cmtype: 'page', format: 'json',
         ...continueParams,
       });
 
@@ -131,7 +134,7 @@ export class MediaWikiScraper {
     return members;
   }
 
-  public async fetchAllPages(batchSize = 500): Promise<CategoryMemberInterface[]> {
+  public async fetchAllPages(batchSize: number = API_ALL_PAGES_LIMIT): Promise<CategoryMemberInterface[]> {
     this.#log.info('fetchAllPages', 'Enumerating all pages in main namespace');
     const members: CategoryMemberInterface[] = [];
     let continueParams: Record<string, string> = {};
@@ -161,7 +164,7 @@ export class MediaWikiScraper {
 
   public async scrapeCategory(categoryName: string): Promise<WikiPageInterface[]> {
     const members = await this.fetchCategory(categoryName);
-    const titles  = members.map((m) => m.title);
+    const titles  = members.map((m: CategoryMemberInterface) => m.title);
     const pages: WikiPageInterface[] = [];
 
     for (let i = 0; i < titles.length; i += BATCH_SIZE) {
@@ -179,7 +182,7 @@ export class MediaWikiScraper {
     return rev?.['*'] ?? rev?.content ?? '';
   }
 
-  async #get<T>(params: URLSearchParams): Promise<T> {
+  async #get<T extends object>(params: URLSearchParams): Promise<T> {
     const url = `${this.#apiUrl}?${params.toString()}`;
     const res  = await fetch(url, { headers: this.#headers });
     if (!res.ok) throw new HttpError(`MediaWiki API ${res.status.toString()}: ${url}`, { status: res.status, url });

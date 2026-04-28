@@ -1,8 +1,9 @@
-import { load as cheerioLoad } from 'cheerio';
-import { Logger } from '../modules/logger/Logger.js';
-import { RateLimiter } from '../modules/http/RateLimiter.js';
-import { RetryExecutor } from '../modules/http/RetryExecutor.js';
-import type { RetryConfigInterface } from '../modules/http/RetryExecutor.js';
+import { load } from 'cheerio';
+import type { Element } from 'domhandler';
+import { Logger } from '../modules/logger/logger.js';
+import { RateLimiter } from '../modules/http/rateLimiter.js';
+import { RetryExecutor } from '../modules/http/retryExecutor.js';
+import type { RetryConfigInterface } from '../modules/http/retryExecutor.js';
 
 export interface LinkListerConfigInterface {
   readonly domain: RegExp;
@@ -15,6 +16,7 @@ export interface LinkListerConfigInterface {
 }
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+const DEFAULT_RATE_LIMIT_MS = 100;
 
 export class LinkLister {
   readonly #domain: RegExp;
@@ -33,7 +35,7 @@ export class LinkLister {
     this.#delimiter = config.delimiter;
     this.#maxPages  = config.maxPages ?? Number.POSITIVE_INFINITY;
     this.#log       = Logger.forComponent('LinkLister');
-    this.#limiter   = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 100, jitterMs: config.jitterMs ?? 0 });
+    this.#limiter   = new RateLimiter({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
     this.#retry     = new RetryExecutor(config.retry);
   }
 
@@ -66,12 +68,12 @@ export class LinkLister {
     this.#visited.add(url);
 
     const html = await this.#limiter.schedule(() =>
-      this.#retry.execute(() => fetch(url).then((r) => r.text())),
+      this.#retry.execute(() => fetch(url).then((r: Response) => r.text())),
     );
 
     const allLinks = LinkLister.extractLinks(html, url)
-      .filter((l) => this.#domain.test(l))
-      .filter((l) => this.#delimiter.test(l));
+      .filter((l: string) => this.#domain.test(l))
+      .filter((l: string) => this.#delimiter.test(l));
 
     const targets:    string[] = [];
     const traversals: string[] = [];
@@ -98,9 +100,9 @@ export class LinkLister {
   }
 
   private static extractLinks(html: string, baseUrl: string): string[] {
-    const $ = cheerioLoad(html);
+    const $ = load(html);
     const links: string[] = [];
-    $('a[href]').each((_i, el) => {
+    $('a[href]').each((_i: number, el: Element) => {
       const href = $(el).attr('href');
       if (href === undefined) return;
       try {

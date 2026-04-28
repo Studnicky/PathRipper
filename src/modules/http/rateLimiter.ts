@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck';
-import { Time } from '../time/Time.js';
+import { Time } from '../../utils/time.js';
 
 export interface RateLimiterConfigInterface {
   readonly minTimeMs: number;
@@ -38,11 +38,11 @@ export class RateLimiter {
     await this.#limiter.stop({ dropWaitingJobs: false });
   }
 
-  public static perSecond(requestsPerSecond: number, jitterMs = 0): RateLimiter {
+  public static perSecond(requestsPerSecond: number, jitterMs: number = 0): RateLimiter {
     return new RateLimiter({ minTimeMs: Math.ceil(1_000 / requestsPerSecond), jitterMs });
   }
 
-  public static withDelay(minDelayMs: number, jitterMs = 0): RateLimiter {
+  public static withDelay(minDelayMs: number, jitterMs: number = 0): RateLimiter {
     return new RateLimiter({ minTimeMs: minDelayMs, jitterMs });
   }
 }

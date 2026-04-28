@@ -1,5 +1,5 @@
 import type { WikiPageInterface } from '../scrapers/MediaWikiScraper.js';
-import type { ScrapedPageInterface as HtmlPageInterface } from '../scrapers/HtmlScraper.js';
+import type { ScrapedPageInterface } from '../scrapers/HtmlScraper.js';
 
 export interface PipelinePageInterface {
   readonly targetId:  string;
@@ -26,7 +26,7 @@ export class PipelineState {
     };
   }
 
-  public static fromHtmlPage(targetId: string, page: HtmlPageInterface): PipelineStateInterface {
+  public static fromHtmlPage(targetId: string, page: ScrapedPageInterface): PipelineStateInterface {
     return {
       targetId,
       page: { targetId, title: page.url, url: page.url, html: page.html },

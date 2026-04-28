@@ -1,8 +1,8 @@
-import { resolve as resolvePath } from 'node:path';
+import { resolve } from 'node:path';
 
 import type { TaskFnType } from '../pipeline/Pipeline.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
-import { Logger } from '../modules/logger/Logger.js';
+import { Logger } from '../modules/logger/logger.js';
 import type { PipelineStateInterface } from './PipelineState.js';
 
 const logger = Logger.forComponent('TaskRegistry');
@@ -28,7 +28,7 @@ export class TaskRegistry {
   }
 
   public static async load(pluginPath: string, baseDir: string = process.cwd()): Promise<void> {
-    const absPath = resolvePath(baseDir, pluginPath);
+    const absPath = resolve(baseDir, pluginPath);
     try {
       await import(absPath);
     } catch (err) {
@@ -50,6 +50,8 @@ export class TaskRegistry {
   }
 
   public static reset(): void {
+    const count = TaskRegistry.#tasks.size;
     TaskRegistry.#tasks.clear();
+    logger.debug('reset', `Cleared ${count.toString()} registered tasks`, { count });
   }
 }

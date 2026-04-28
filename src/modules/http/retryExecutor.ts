@@ -1,6 +1,6 @@
-import type { ExtendedErrorInterface } from './ErrorClassifier.js';
-import { ErrorClassifier } from './ErrorClassifier.js';
-import { Time } from '../time/Time.js';
+import type { ExtendedErrorInterface } from './errorClassifier.js';
+import { ErrorClassifier } from './errorClassifier.js';
+import { Time } from '../../utils/time.js';
 
 export interface RetryConfigInterface {
   readonly maxAttempts?: number | undefined;
@@ -9,11 +9,22 @@ export interface RetryConfigInterface {
   readonly maxDelayMs?:  number | undefined;
 }
 
+interface DelayOptsInterface {
+  readonly base: number;
+  readonly mult: number;
+  readonly max:  number;
+}
+
+const MAX_ATTEMPTS_DEFAULT  = 3;
+const BASE_DELAY_MS_DEFAULT = 500;
+const MULTIPLIER_DEFAULT    = 2;
+const MAX_DELAY_MS_DEFAULT  = 30_000;
+
 const DEFAULTS = {
-  maxAttempts: 3,
-  baseDelayMs: 500,
-  multiplier:  2,
-  maxDelayMs:  30_000,
+  maxAttempts: MAX_ATTEMPTS_DEFAULT,
+  baseDelayMs: BASE_DELAY_MS_DEFAULT,
+  multiplier:  MULTIPLIER_DEFAULT,
+  maxDelayMs:  MAX_DELAY_MS_DEFAULT,
 } as const;
 
 export class RetryExecutor {
@@ -45,16 +56,16 @@ export class RetryExecutor {
 
         const wait = result.backoffHint !== undefined
           ? result.backoffHint
-          : RetryExecutor.computeDelay(attempt, this.#base, this.#mult, this.#maxDelay);
+          : RetryExecutor.computeDelay(attempt, { base: this.#base, mult: this.#mult, max: this.#maxDelay });
 
         await Time.sleep(wait);
       }
     }
   }
 
-  private static computeDelay(attempt: number, base: number, mult: number, max: number): number {
+  private static computeDelay(attempt: number, opts: DelayOptsInterface): number {
     const jitter = Math.random() * 0.2 - 0.1; // ±10% decorrelated jitter
-    const raw = base * mult ** (attempt - 1) * (1 + jitter);
-    return Math.min(Math.round(raw), max);
+    const raw = opts.base * opts.mult ** (attempt - 1) * (1 + jitter);
+    return Math.min(Math.round(raw), opts.max);
   }
 }
