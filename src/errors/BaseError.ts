@@ -10,7 +10,7 @@ export interface BaseErrorOptionsInterface {
   readonly retryable?: boolean | undefined;
 }
 
-export type BaseErrorJsonType = Readonly<{
+type BaseErrorJsonType = Readonly<{
   readonly code:      string;
   readonly message:   string;
   readonly name:      string;
@@ -63,8 +63,8 @@ export class BaseError extends Error {
     return json as unknown as BaseErrorJsonType;
   }
 
-  public serialize(): string {
-    return JSON.stringify(this.toJson(), null, 2);
+  public serialize(space = 2): string {
+    return JSON.stringify(this.toJson(), null, space);
   }
 
   public flatten(): Error[] {

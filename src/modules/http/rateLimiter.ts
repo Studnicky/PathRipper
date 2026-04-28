@@ -1,5 +1,5 @@
 import Bottleneck from 'bottleneck';
-import { Time } from '../../utils/time.js';
+import { Time } from '../time/time.js';
 
 export interface RateLimiterConfigInterface {
   readonly minTimeMs: number;

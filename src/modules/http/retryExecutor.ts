@@ -1,6 +1,6 @@
 import type { ExtendedErrorInterface } from './errorClassifier.js';
 import { ErrorClassifier } from './errorClassifier.js';
-import { Time } from '../../utils/time.js';
+import { Time } from '../time/time.js';
 
 export interface RetryConfigInterface {
   readonly maxAttempts?: number | undefined;

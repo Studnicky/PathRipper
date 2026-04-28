@@ -9,8 +9,10 @@ type AddFormatsFnType = (ajv: AjvType) => AjvType;
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
 const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType }).default ?? (addFormatsModule as unknown as AddFormatsFnType);
 
+const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
+
 export const RIPPER_CONFIG_SCHEMA = {
-  $schema: 'http://json-schema.org/draft-07/schema#',
+  $schema: JSON_SCHEMA_DRAFT_07_URI,
   $id: 'https://ripperoni.dev/schemas/internal/ripper-config.schema.json',
   title: 'RipperConfig',
   type: 'object',
@@ -106,12 +108,14 @@ export const RIPPER_CONFIG_SCHEMA = {
   },
 } as const;
 
-export type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
+// RipperConfigInterface is the public type — exported from src/types/config.ts.
+// Defined here for use by the validator; consumers should import from types/config.js.
+type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
 
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);
 
-export class RipperConfigValidator {
+class RipperConfigValidator {
   private constructor() { /* static-only */ }
 
   private static readonly _validate: ValidateFunction<RipperConfigInterface> =
@@ -126,5 +130,6 @@ export class RipperConfigValidator {
   }
 }
 
-export const validateRipperConfig = RipperConfigValidator.validate.bind(RipperConfigValidator);
+export const validateRipperConfig = (data: unknown): data is RipperConfigInterface =>
+  RipperConfigValidator.validate(data);
 export function formatRipperConfigErrors(): string { return RipperConfigValidator.formatErrors(); }

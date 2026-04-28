@@ -26,8 +26,11 @@ describe('TaskRegistry', () => {
     assert.equal(TaskRegistry.get('dupTask'), taskB);
   });
 
-  it('get() unknown name returns undefined', () => {
-    assert.equal(TaskRegistry.get('unknownTask'), undefined);
+  it('get() unknown name throws ExternalSchemaError', () => {
+    assert.throws(
+      () => TaskRegistry.get('unknownTask'),
+      (err: unknown) => err instanceof ExternalSchemaError,
+    );
   });
 
   it('reset() clears all registrations', () => {

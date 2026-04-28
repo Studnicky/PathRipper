@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import type { TaskFnType } from '../pipeline/Pipeline.js';
+import type { TaskFnType } from '../types/pipeline.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger } from '../modules/logger/logger.js';
 import type { PipelineStateInterface } from './PipelineState.js';
@@ -19,8 +19,12 @@ export class TaskRegistry {
     TaskRegistry.#tasks.set(name, task);
   }
 
-  public static get(name: string): TaskFnType<PipelineStateInterface> | undefined {
-    return TaskRegistry.#tasks.get(name);
+  public static get(name: string): TaskFnType<PipelineStateInterface> {
+    const task = TaskRegistry.#tasks.get(name);
+    if (task === undefined) {
+      throw new ExternalSchemaError(`Task not found: ${name}`, { metadata: { name } });
+    }
+    return task;
   }
 
   public static has(name: string): boolean {

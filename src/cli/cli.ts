@@ -1,17 +1,18 @@
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import { RipperConfig } from '../config/RipperConfig.js';
 import { LinkLister } from '../crawlers/LinkLister.js';
-import { Logger } from '../modules/logger/Logger.js';
+import { Logger } from '../modules/logger/logger.js';
 import { ScrapeOrchestrator } from '../orchestrators/ScrapeOrchestrator.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')) as { version: string };
+const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as { version: string };
 
-const DEFAULT_CONFIG_PATH = './ripperoni.config.json';
+const DEFAULT_CONFIG_PATH   = './ripperoni.config.json';
+const DEFAULT_RATE_LIMIT_MS = '200';
+const DEFAULT_JITTER_MS     = '0';
+const DECIMAL_RADIX         = 10;
 
 const program = new Command();
 
@@ -99,18 +100,18 @@ program
   .requiredOption('--domain <regex>', 'Domain regex to stay within')
   .requiredOption('--target <regex>', 'Target URL pattern to collect')
   .requiredOption('--delimiter <regex>', 'Traversal pattern (pages to follow)')
-  .option('--rate <ms>',   'Rate limit in ms between requests', '200')
-  .option('--jitter <ms>', 'Random jitter (0..N ms) added to each request',  '0')
+  .option('--rate <ms>',   'Rate limit in ms between requests', DEFAULT_RATE_LIMIT_MS)
+  .option('--jitter <ms>', 'Random jitter (0..N ms) added to each request', DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
   .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }) => {
     const log  = Logger.forComponent('cli');
-    const max  = opts.max !== undefined ? parseInt(opts.max, 10) : undefined;
+    const max  = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
     const list = await new LinkLister({
       domain:      new RegExp(opts.domain),
       target:      new RegExp(opts.target),
       delimiter:   new RegExp(opts.delimiter),
-      rateLimitMs: parseInt(opts.rate, 10),
-      jitterMs:    parseInt(opts.jitter, 10),
+      rateLimitMs: parseInt(opts.rate, DECIMAL_RADIX),
+      jitterMs:    parseInt(opts.jitter, DECIMAL_RADIX),
       ...(max !== undefined ? { maxPages: max } : {}),
     }).buildList(opts.starts);
 

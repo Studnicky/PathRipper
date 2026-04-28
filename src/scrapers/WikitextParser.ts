@@ -1,6 +1,6 @@
 import wtf from 'wtf_wikipedia';
 
-export type WikitextSectionType = Record<string, string | string[] | number | boolean | null>;
+import type { WikitextSectionType } from '../types/scrapers.js';
 
 export interface ParsedPageInterface {
   readonly title: string;

@@ -6,12 +6,12 @@ import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface } from '../scrapers/MediaWikiScraper.js';
 import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
-import type { NextFnType } from '../pipeline/Pipeline.js';
+import type { NextFnType } from '../types/pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface } from '../registry/PipelineState.js';
 import { Logger } from '../modules/logger/logger.js';
-import type { RipperConfigInterface } from '../schemas/internal/RipperConfigSchema.js';
+import type { RipperConfigInterface } from '../types/config.js';
 
 export interface ScrapeHtmlOptionsInterface {
   readonly target:    string;
@@ -59,7 +59,7 @@ export class ScrapeOrchestrator {
       const page     = await scraper.fetchPage(path);
       const pipeline = new Pipeline<PipelineStateInterface>({ name: opts.target });
       if (TaskRegistry.has(`${opts.target}:parse`)) {
-        pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`)!);
+        pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`));
       }
       pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
         await next();
@@ -99,14 +99,7 @@ export class ScrapeOrchestrator {
       members = await scraper.fetchCategory(opts.category);
       log.info('scrapeWiki', `Mode: single category "${opts.category}" — ${members.length.toString()} pages`);
     } else if (configCategories !== undefined && configCategories.length > 0) {
-      const seen = new Set<string>();
-      members = [];
-      for (const cat of configCategories) {
-        const batch = await scraper.fetchCategory(cat);
-        for (const m of batch) {
-          if (!seen.has(m.title)) { seen.add(m.title); members.push(m); }
-        }
-      }
+      members = await ScrapeOrchestrator.fetchDeduplicatedCategories(scraper, configCategories);
       log.info('scrapeWiki', `Mode: ${configCategories.length.toString()} categories — ${members.length.toString()} unique pages`);
     } else {
       log.info('scrapeWiki', 'Mode: all pages in main namespace (this may take a while)');
@@ -114,6 +107,21 @@ export class ScrapeOrchestrator {
     }
 
     await ScrapeOrchestrator.runPipeline({ targetId: opts.target, outDir: opts.outDir, scraper, members, log });
+  }
+
+  private static async fetchDeduplicatedCategories(
+    scraper: MediaWikiScraper,
+    categories: string[],
+  ): Promise<CategoryMemberInterface[]> {
+    const seen    = new Set<string>();
+    const members: CategoryMemberInterface[] = [];
+    for (const cat of categories) {
+      const batch = await scraper.fetchCategory(cat);
+      for (const m of batch) {
+        if (!seen.has(m.title)) { seen.add(m.title); members.push(m); }
+      }
+    }
+    return members;
   }
 
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
@@ -129,7 +137,7 @@ export class ScrapeOrchestrator {
       for (const page of pages) {
         const pipeline = new Pipeline<PipelineStateInterface>({ name: targetId });
         if (TaskRegistry.has(`${targetId}:parse`)) {
-          pipeline.addTask(TaskRegistry.get(`${targetId}:parse`)!);
+          pipeline.addTask(TaskRegistry.get(`${targetId}:parse`));
         }
         pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
           await next();

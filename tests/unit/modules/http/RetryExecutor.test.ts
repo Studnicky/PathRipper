@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { RetryExecutor } from '../../../../src/modules/http/RetryExecutor.js';
+import { RetryExecutor } from '../../../../src/modules/http/retryExecutor.js';
 
 function makeError(props: Record<string, unknown>): Error {
   return Object.assign(new Error('boom'), props);

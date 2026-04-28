@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { RateLimiter } from '../../../../src/modules/http/RateLimiter.js';
+import { RateLimiter } from '../../../../src/modules/http/rateLimiter.js';
 
 describe('RateLimiter', () => {
   it('schedule() returns the resolved value of the wrapped fn', async () => {

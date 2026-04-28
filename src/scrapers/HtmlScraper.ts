@@ -3,10 +3,10 @@
 
 import { load as cheerioLoad } from 'cheerio';
 import type { CheerioAPI } from 'cheerio';
-import { RateLimiter } from '../modules/http/RateLimiter.js';
-import { RetryExecutor } from '../modules/http/RetryExecutor.js';
-import type { RetryConfigInterface } from '../modules/http/RetryExecutor.js';
-import { Logger } from '../modules/logger/Logger.js';
+import { RateLimiter } from '../modules/http/rateLimiter.js';
+import { RetryExecutor } from '../modules/http/retryExecutor.js';
+import type { RetryConfigInterface } from '../modules/http/retryExecutor.js';
+import { Logger } from '../modules/logger/logger.js';
 import { HttpError } from '../errors/HttpError.js';
 
 export interface HtmlScraperConfigInterface {
@@ -23,6 +23,8 @@ export interface ScrapedPageInterface {
   readonly html: string;
 }
 
+const DEFAULT_RATE_LIMIT_MS = 250;
+
 export class HtmlScraper {
   readonly #base: string;
   readonly #headers: Readonly<Record<string, string>>;
@@ -33,7 +35,7 @@ export class HtmlScraper {
   constructor(config: HtmlScraperConfigInterface) {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
-    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 250, jitterMs: config.jitterMs ?? 0 });
+    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
     this.#retry   = new RetryExecutor(config.retry);
     this.#log     = Logger.forComponent('HtmlScraper');
   }

@@ -2,8 +2,6 @@
 
 import type { ErrorCategoryType } from '../../types/http.js';
 
-export { ErrorCategory } from './errorClassifier.js';
-
 export const ErrorCategory = Object.freeze({
   NETWORK:    'network',
   PERMANENT:  'permanent',
@@ -35,11 +33,11 @@ interface ClassificationRuleInterface {
   readonly backoffHint?: number | ((error: ExtendedErrorInterface) => number) | undefined;
 }
 
-const HTTP_STATUS_THROTTLED   = 429;
-const HTTP_STATUS_SERVER_MIN  = 500;
-const HTTP_STATUS_CLIENT_MIN  = 400;
-const HTTP_STATUS_CLIENT_MAX  = 500;
-const RETRY_AFTER_DEFAULT_MS  = 5_000;
+const HTTP_STATUS_THROTTLED          = 429;
+const HTTP_STATUS_SERVER_MIN         = 500;
+const HTTP_STATUS_CLIENT_MIN         = 400;
+const HTTP_STATUS_CLIENT_MAX         = 500;
+const RETRY_AFTER_DEFAULT_MS         = 5_000;
 const RETRY_AFTER_SECONDS_MULTIPLIER = 1_000;
 
 export class ErrorClassifier {

@@ -1,10 +1,10 @@
 // Modernized from PathRipper/src/transformer/index.js
 // Transforms the callback-based task queue into typed async middleware.
 
-import { Logger } from '../modules/logger/Logger.js';
+import type { NextFnType, TaskFnType } from '../types/pipeline.js';
+import { Logger } from '../modules/logger/logger.js';
 
-export type NextFnType = () => Promise<void>;
-export type TaskFnType<TState> = (next: NextFnType, state: TState) => Promise<void>;
+export { type NextFnType, type TaskFnType };
 
 export interface PipelineConfigInterface {
   readonly name?: string | undefined;
