@@ -76,10 +76,24 @@ describe('PathRipper legacy AONPRD e2e (local only)', () => {
       maxPages:    c.maxPages,
     });
     const links = await lister.buildList(c.startUrls);
-    process.stdout.write(`\n  full: collected ${links.length.toString()} target URLs across ${c.startUrls.length.toString()} category seeds\n`);
-    for (const link of links.slice(0, 8)) process.stdout.write(`    • ${link}\n`);
-    if (links.length > 8) process.stdout.write(`    … (${(links.length - 8).toString()} more)\n`);
 
-    assert.ok(links.length >= 10, `expected ≥10 target URLs across all categories, got ${links.length.toString()}`);
+    // Distribution by category prefix (e.g., Actions.aspx vs. Spells.aspx).
+    const prefixes = new Map<string, number>();
+    for (const link of links) {
+      const m = /\/([A-Za-z]+)\.aspx/.exec(link);
+      if (m === null) continue;
+      const key = m[1]!;
+      prefixes.set(key, (prefixes.get(key) ?? 0) + 1);
+    }
+
+    process.stdout.write(`\n  full: collected ${links.length.toString()} target URLs across ${prefixes.size.toString()} category prefixes\n`);
+    const sorted = [...prefixes.entries()].sort(([, a], [, b]) => b - a);
+    for (const [name, count] of sorted.slice(0, 10)) {
+      process.stdout.write(`    ${name}: ${count.toString()}\n`);
+    }
+    if (sorted.length > 10) process.stdout.write(`    … (${(sorted.length - 10).toString()} more categories)\n`);
+
+    assert.ok(links.length >= 100, `expected ≥100 target URLs across all categories, got ${links.length.toString()}`);
+    assert.ok(prefixes.size >= 5, `expected URLs from ≥5 category prefixes (multi-seed traversal), got ${prefixes.size.toString()}`);
   });
 });

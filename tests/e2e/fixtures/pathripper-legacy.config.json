@@ -50,7 +50,7 @@
       "delimiter":   "\\.aspx",
       "rateLimitMs": 1000,
       "jitterMs":    250,
-      "maxPages":    50
+      "maxPages":    5000
     }
   }
 }
