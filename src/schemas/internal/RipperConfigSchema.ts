@@ -56,10 +56,9 @@ export const RIPPER_CONFIG_SCHEMA = {
       additionalProperties: {
         type: 'object',
         additionalProperties: false,
-        required: ['apiUrl', 'userAgent'],
+        required: ['apiUrl'],
         properties: {
           apiUrl:      { type: 'string', format: 'uri', minLength: 1 },
-          userAgent:   { type: 'string', minLength: 1 },
           rateLimitMs: { type: 'integer', minimum: 0 },
           jitterMs:    { type: 'integer', minimum: 0 },
           categories: {

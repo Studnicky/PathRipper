@@ -1,10 +1,8 @@
-import { Mwn, type ApiPage } from 'mwn';
 import { RateLimiter } from '../modules/http/RateLimiter.js';
 import { Logger } from '../modules/logger/Logger.js';
 
 export interface MediaWikiConfigInterface {
   readonly apiUrl: string;
-  readonly userAgent: string;
   readonly rateLimitMs?: number | undefined;
   readonly jitterMs?:    number | undefined;
 }
@@ -28,76 +26,102 @@ interface CategoryMembersResponseInterface {
   readonly query?: {
     readonly categorymembers?: ReadonlyArray<CategoryMemberShapeInterface>;
   };
+  readonly continue?: Record<string, string>;
+}
+
+interface RevisionsPageInterface {
+  readonly title:     string;
+  readonly pageid?:   number;
+  readonly missing?:  true;
+  readonly revisions?: ReadonlyArray<{ readonly content?: string }>;
+}
+
+interface RevisionsResponseInterface {
+  readonly query?: {
+    readonly pages?: Record<string, RevisionsPageInterface>;
+  };
 }
 
 const BATCH_SIZE = 50;
 
 export class MediaWikiScraper {
-  readonly #bot: Mwn;
-  readonly #limiter: RateLimiter;
-  readonly #log: Logger;
+  readonly #apiUrl:   string;
+  readonly #headers:  Readonly<Record<string, string>>;
+  readonly #limiter:  RateLimiter;
+  readonly #log:      Logger;
 
-  private constructor(bot: Mwn, limiter: RateLimiter) {
-    this.#bot     = bot;
-    this.#limiter = limiter;
+  private constructor(config: MediaWikiConfigInterface) {
+    this.#apiUrl  = config.apiUrl;
+    this.#headers = { 'Accept': 'application/json, */*' };
+    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 1_000, jitterMs: config.jitterMs ?? 0 });
     this.#log     = Logger.forComponent('MediaWikiScraper');
   }
 
-  static async create(config: MediaWikiConfigInterface): Promise<MediaWikiScraper> {
-    const bot = new Mwn({
-      apiUrl:    config.apiUrl,
-      userAgent: config.userAgent,
-      silent:    true,
-    });
-    const limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 1_000, jitterMs: config.jitterMs ?? 0 });
-    return new MediaWikiScraper(bot, limiter);
+  public static async create(config: MediaWikiConfigInterface): Promise<MediaWikiScraper> {
+    return new MediaWikiScraper(config);
   }
 
-  async fetchPage(title: string): Promise<WikiPageInterface> {
+  public async fetchPage(title: string): Promise<WikiPageInterface> {
     this.#log.debug('fetchPage', title);
     return this.#limiter.schedule(async () => {
-      const page = await this.#bot.read(title);
-      return { title, wikitext: MediaWikiScraper.wikitextOf(page) };
+      const params = new URLSearchParams({
+        action: 'query', titles: title, prop: 'revisions',
+        rvprop: 'content', rvslots: 'main', format: 'json', formatversion: '2',
+      });
+      const data = await this.#get<RevisionsResponseInterface>(params);
+      const pages = Object.values(data.query?.pages ?? {});
+      const page  = pages[0];
+      const wikitext = page?.revisions?.[0]?.content ?? '';
+      return { title, wikitext };
     });
   }
 
-  async fetchPagesBatch(titles: string[]): Promise<WikiPageInterface[]> {
+  public async fetchPagesBatch(titles: string[]): Promise<WikiPageInterface[]> {
     this.#log.debug('fetchPagesBatch', `${titles.length.toString()} pages`);
     if (titles.length === 0) return [];
 
     return this.#limiter.schedule(async () => {
-      const pages = await this.#bot.read(titles);
-      return pages.map((p): WikiPageInterface => ({
+      const params = new URLSearchParams({
+        action: 'query', titles: titles.join('|'), prop: 'revisions',
+        rvprop: 'content', rvslots: 'main', format: 'json', formatversion: '2',
+      });
+      const data = await this.#get<RevisionsResponseInterface>(params);
+      return Object.values(data.query?.pages ?? {}).map((p) => ({
         title:    p.title,
-        wikitext: MediaWikiScraper.wikitextOf(p),
+        wikitext: p.revisions?.[0]?.content ?? '',
       }));
     });
   }
 
-  async fetchCategory(categoryName: string): Promise<CategoryMemberInterface[]> {
+  public async fetchCategory(categoryName: string): Promise<CategoryMemberInterface[]> {
     this.#log.info('fetchCategory', categoryName);
     const members: CategoryMemberInterface[] = [];
+    let continueParams: Record<string, string> = {};
 
-    const gen = this.#bot.continuedQueryGen({
-      action:  'query',
-      list:    'categorymembers',
-      cmtitle: `Category:${categoryName}`,
-      cmlimit: 500,
-      cmtype:  'page',
-    }) as AsyncGenerator<CategoryMembersResponseInterface>;
+    do {
+      const params = new URLSearchParams({
+        action:  'query', list: 'categorymembers',
+        cmtitle: `Category:${categoryName}`,
+        cmlimit: '500', cmtype: 'page', format: 'json',
+        ...continueParams,
+      });
 
-    for await (const batch of gen) {
-      const list = batch.query?.categorymembers ?? [];
-      for (const m of list) {
+      const data = await this.#limiter.schedule(() =>
+        this.#get<CategoryMembersResponseInterface>(params),
+      );
+
+      for (const m of data.query?.categorymembers ?? []) {
         members.push({ title: m.title, pageid: m.pageid });
       }
-    }
+
+      continueParams = data.continue ?? {};
+    } while (Object.keys(continueParams).length > 0);
 
     this.#log.info('fetchCategory', `${members.length.toString()} members in ${categoryName}`);
     return members;
   }
 
-  async scrapeCategory(categoryName: string): Promise<WikiPageInterface[]> {
+  public async scrapeCategory(categoryName: string): Promise<WikiPageInterface[]> {
     const members = await this.fetchCategory(categoryName);
     const titles  = members.map((m) => m.title);
     const pages: WikiPageInterface[] = [];
@@ -112,7 +136,10 @@ export class MediaWikiScraper {
     return pages;
   }
 
-  private static wikitextOf(page: ApiPage): string {
-    return page.revisions?.[0]?.content ?? '';
+  async #get<T>(params: URLSearchParams): Promise<T> {
+    const url = `${this.#apiUrl}?${params.toString()}`;
+    const res  = await fetch(url, { headers: this.#headers });
+    if (!res.ok) throw new Error(`MediaWiki API ${res.status.toString()}: ${url}`);
+    return res.json() as Promise<T>;
   }
 }

@@ -7,7 +7,6 @@
   "mediawiki": {
     "your-wiki-target": {
       "apiUrl":      "https://wiki.example/w/api.php",
-      "userAgent":   "MyApp/1.0 (you@example.com)",
       "rateLimitMs": 1000,
       "categories": {
         "alias-1": "Example Category Name"

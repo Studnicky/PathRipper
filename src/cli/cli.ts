@@ -24,6 +24,50 @@ program
   .version(pkg.version);
 
 program
+  .command('scrape')
+  .description('Scrape a configured target — detects html or mediawiki mode from config')
+  .requiredOption('--target <name>', 'Target name from config (checked in targets then mediawiki)')
+  .option('--paths <paths...>', 'Paths to scrape (html mode)')
+  .option('--category <name>', 'Category to scrape (mediawiki mode)')
+  .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
+  .option('--out <dir>', 'Output directory override')
+  .action(async (opts: { target: string; paths?: string[]; category?: string; config: string; out?: string }) => {
+    const log    = Logger.forComponent('cli');
+    const config = await RipperConfig.load(opts.config);
+
+    const htmlTarget = config.targets?.[opts.target];
+    const wikiTarget = config.mediawiki?.[opts.target];
+
+    if (htmlTarget !== undefined) {
+      if (!opts.paths?.length) { log.error('scrape', '--paths required for html targets'); process.exit(1); }
+      const scraper = new HtmlScraper(htmlTarget);
+      for (const path of opts.paths!) {
+        const page = await scraper.fetchPage(path);
+        log.info('scrape', `Fetched ${page.url}`);
+      }
+      return;
+    }
+
+    if (wikiTarget !== undefined) {
+      if (!opts.category) { log.error('scrape', '--category required for mediawiki targets'); process.exit(1); }
+      const scraper = await MediaWikiScraper.create(wikiTarget);
+      const pages   = await scraper.scrapeCategory(opts.category!);
+      const outDir  = opts.out ?? config.output.basePath;
+      await mkdir(resolve(outDir, opts.target), { recursive: true });
+      for (const page of pages) {
+        const parsed   = WikitextParser.parse(page.title, page.wikitext);
+        const slug     = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        await writeFile(resolve(outDir, opts.target, `${slug}.json`), JSON.stringify(parsed, null, 2));
+      }
+      log.info('scrape', `Wrote ${pages.length.toString()} pages to ${resolve(outDir, opts.target)}`);
+      return;
+    }
+
+    log.error('scrape', `Unknown target: ${opts.target} (not in targets or mediawiki)`);
+    process.exit(1);
+  });
+
+program
   .command('scrape-html')
   .description('Scrape HTML pages from a configured target')
   .requiredOption('--target <name>', 'Target name from config')
