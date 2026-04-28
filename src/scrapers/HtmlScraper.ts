@@ -7,6 +7,7 @@ import { RateLimiter } from '../modules/http/RateLimiter.js';
 import { RetryExecutor } from '../modules/http/RetryExecutor.js';
 import type { RetryConfigInterface } from '../modules/http/RetryExecutor.js';
 import { Logger } from '../modules/logger/Logger.js';
+import { HttpError } from '../errors/HttpError.js';
 
 export interface HtmlScraperConfigInterface {
   readonly baseUrl: string;
@@ -45,8 +46,7 @@ export class HtmlScraper {
       this.#retry.execute(async () => {
         const res = await fetch(url, { headers: this.#headers });
         if (!res.ok) {
-          const err = Object.assign(new Error(`HTTP ${res.status.toString()} ${url}`), { status: res.status });
-          throw err;
+          throw new HttpError(`HTTP ${res.status.toString()} ${url}`, { status: res.status, url });
         }
         return res.text();
       }),

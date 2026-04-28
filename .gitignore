@@ -79,3 +79,4 @@ ripperoni.config*.json
 
 # OS
 .DS_Store
+.orchestration/

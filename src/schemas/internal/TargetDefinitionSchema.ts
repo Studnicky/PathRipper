@@ -2,11 +2,11 @@ import AjvModule, { type Ajv as AjvType, type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
 import type { FromSchema } from 'json-schema-to-ts';
 
-type AjvCtor = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
-type AddFormatsFn = (ajv: AjvType) => AjvType;
+type AjvCtorType = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
+type AddFormatsFnType = (ajv: AjvType) => AjvType;
 
-const Ajv        = (AjvModule        as unknown as { default?: AjvCtor }).default        ?? (AjvModule        as unknown as AjvCtor);
-const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFn }).default ?? (addFormatsModule as unknown as AddFormatsFn);
+const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
+const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType }).default ?? (addFormatsModule as unknown as AddFormatsFnType);
 
 export const TARGET_DEFINITION_SCHEMA = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -29,9 +29,20 @@ export type TargetDefinitionInterface = FromSchema<typeof TARGET_DEFINITION_SCHE
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
 
-export const validateTargetDefinition: ValidateFunction<TargetDefinitionInterface> =
-  ajv.compile<TargetDefinitionInterface>(TARGET_DEFINITION_SCHEMA);
+export class TargetDefinitionValidator {
+  private constructor() { /* static-only */ }
 
-export function formatTargetDefinitionErrors(): string {
-  return ajv.errorsText(validateTargetDefinition.errors, { separator: '\n  ' });
+  private static readonly _validate: ValidateFunction<TargetDefinitionInterface> =
+    ajv.compile<TargetDefinitionInterface>(TARGET_DEFINITION_SCHEMA);
+
+  public static validate(data: unknown): data is TargetDefinitionInterface {
+    return TargetDefinitionValidator._validate(data);
+  }
+
+  public static formatErrors(): string {
+    return ajv.errorsText(TargetDefinitionValidator._validate.errors, { separator: '\n  ' });
+  }
 }
+
+export const validateTargetDefinition = TargetDefinitionValidator.validate.bind(TargetDefinitionValidator);
+export function formatTargetDefinitionErrors(): string { return TargetDefinitionValidator.formatErrors(); }

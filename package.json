@@ -7,13 +7,25 @@
     "ripperoni": "./dist/cli/cli.js"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./pipeline": "./dist/pipeline/index.js",
-    "./scrapers": "./dist/scrapers/index.js",
-    "./crawlers": "./dist/crawlers/index.js",
-    "./tasks": "./dist/tasks/index.js",
-    "./modules/http": "./dist/modules/http/index.js",
-    "./modules/logger": "./dist/modules/logger/index.js"
+    "./errors":            "./dist/errors/index.js",
+    "./schemas":           "./dist/schemas/index.js",
+    "./Pipeline":          "./dist/pipeline/Pipeline.js",
+    "./LinkLister":        "./dist/crawlers/LinkLister.js",
+    "./HtmlScraper":       "./dist/scrapers/HtmlScraper.js",
+    "./MediaWikiScraper":  "./dist/scrapers/MediaWikiScraper.js",
+    "./WikitextParser":    "./dist/scrapers/WikitextParser.js",
+    "./reporter":          "./dist/tasks/reporter.js",
+    "./exportJson":        "./dist/tasks/exportJson.js",
+    "./ErrorClassifier":   "./dist/modules/http/ErrorClassifier.js",
+    "./RetryExecutor":     "./dist/modules/http/RetryExecutor.js",
+    "./RateLimiter":       "./dist/modules/http/RateLimiter.js",
+    "./Logger":            "./dist/modules/logger/Logger.js",
+    "./Time":              "./dist/modules/time/Time.js",
+    "./RipperConfig":      "./dist/config/RipperConfig.js",
+    "./MappingEngine":     "./dist/mapping/MappingEngine.js",
+    "./FilterRegistry":    "./dist/mapping/FilterRegistry.js",
+    "./TemplateParser":    "./dist/mapping/TemplateParser.js",
+    "./ExternalSchemaLoader": "./dist/loaders/ExternalSchemaLoader.js"
   },
   "scripts": {
     "build": "tsc --noEmit false",

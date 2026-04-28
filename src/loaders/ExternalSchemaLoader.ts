@@ -4,11 +4,13 @@ import { resolve as resolvePath } from 'node:path';
 import AjvModule, { type Ajv as AjvType, type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
 
-type AjvCtor = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
-type AddFormatsFn = (ajv: AjvType) => AjvType;
+import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 
-const Ajv        = (AjvModule        as unknown as { default?: AjvCtor }).default        ?? (AjvModule        as unknown as AjvCtor);
-const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFn }).default ?? (addFormatsModule as unknown as AddFormatsFn);
+type AjvCtorType = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
+type AddFormatsFnType = (ajv: AjvType) => AjvType;
+
+const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
+const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType }).default ?? (addFormatsModule as unknown as AddFormatsFnType);
 
 export interface CompiledExternalSchemaInterface {
   readonly key: string;
@@ -59,7 +61,7 @@ export class ExternalSchemaLoader {
     }
     const res = await fetch(key);
     if (!res.ok) {
-      throw new Error(`Failed to fetch external schema (${res.status.toString()}): ${key}`);
+      throw new ExternalSchemaError(`Failed to fetch external schema (${res.status.toString()}): ${key}`, { metadata: { key, status: res.status } });
     }
     return res.text();
   }

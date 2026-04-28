@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Error handling — structured, named errors throughout
+
+All errors thrown from ripperoni are now typed and carry structured metadata.
+The project ports `BaseError` from `@noocodec/cogitator`: every error has a
+`code` (derived from the class name), a `retryable` flag, an optional `cause`
+chain, and a `metadata` bag. `BaseError.format(unknown)` serialises any error
+consistently. Named error classes: `RipperConfigError` for bad config files,
+`HttpError` (marks 5xx/429 as retryable, 4xx as not), `MappingError` for
+template/filter problems, and `ExternalSchemaError` for schema load failures.
+
+### Clean module boundaries — everything owned by a class
+
+Free-floating helper functions removed from the codebase. All logic now
+lives on the class that owns it: `Logger.write` and `Logger.currentLevel`
+are private statics on `Logger`; `ErrorClassifier.retryAfterMs` is a
+private static on `ErrorClassifier`; `RetryExecutor.computeDelay` on
+`RetryExecutor`; `LinkLister.extractLinks` on `LinkLister`;
+`MediaWikiScraper.wikitextOf` on `MediaWikiScraper`; the cheerio/string
+helpers on `FilterRegistry`; `MappingEngine.lookupField` on `MappingEngine`.
+A new `Time.sleep(ms)` static absorbs the duplicated `sleep` helper that was
+scattered across `RateLimiter` and `RetryExecutor`.
+
+### Schema validators are first-class domain objects
+
+Each JSON Schema now exposes a companion `*Validator` class (`RipperConfigValidator`,
+`ScrapedPageValidator`, `RunManifestValidator`, `TargetDefinitionValidator`)
+with `validate(data)` and `formatErrors()` statics. The AJV instance and compiled
+validator are encapsulated; callers can never access AJV internals directly.
+
+### Simplified public API — no barrel indirection
+
+Flat barrel re-export files replaced. The package exports map now points directly
+at class source files for all standalone classes, and at two logical groups:
+`ripperoni/errors` for all error types, `ripperoni/schemas` for all schema
+validators and derived types. This removes a layer of indirection that made it
+hard to trace what a symbol actually was.
+
+### enginseer CLI available locally without a dependency
+
+`scripts/enginseer.sh` provides access to `@noocodec/enginseer` (dep-graph,
+symbols, compact, etc.) via `npx` against the local monorepo — no entry in
+`package.json`, no lock-file noise. `.orchestration/` outputs are gitignored.
+
 ### Lane 09 — Native git hooks (replaces husky)
 - Removed `husky` devDependency entirely. Source-of-truth hooks now live at
   `hooks/pre-commit` and `hooks/pre-push` (committed). The `prepare` npm

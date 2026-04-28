@@ -19,22 +19,18 @@ export interface CategoryMemberInterface {
   readonly pageid: number;
 }
 
-interface CategoryMemberShape {
+interface CategoryMemberShapeInterface {
   readonly title: string;
   readonly pageid: number;
 }
 
-interface CategoryMembersResponse {
+interface CategoryMembersResponseInterface {
   readonly query?: {
-    readonly categorymembers?: ReadonlyArray<CategoryMemberShape>;
+    readonly categorymembers?: ReadonlyArray<CategoryMemberShapeInterface>;
   };
 }
 
 const BATCH_SIZE = 50;
-
-function wikitextOf(page: ApiPage): string {
-  return page.revisions?.[0]?.content ?? '';
-}
 
 export class MediaWikiScraper {
   readonly #bot: Mwn;
@@ -61,7 +57,7 @@ export class MediaWikiScraper {
     this.#log.debug('fetchPage', title);
     return this.#limiter.schedule(async () => {
       const page = await this.#bot.read(title);
-      return { title, wikitext: wikitextOf(page) };
+      return { title, wikitext: MediaWikiScraper.wikitextOf(page) };
     });
   }
 
@@ -73,7 +69,7 @@ export class MediaWikiScraper {
       const pages = await this.#bot.read(titles);
       return pages.map((p): WikiPageInterface => ({
         title:    p.title,
-        wikitext: wikitextOf(p),
+        wikitext: MediaWikiScraper.wikitextOf(p),
       }));
     });
   }
@@ -88,7 +84,7 @@ export class MediaWikiScraper {
       cmtitle: `Category:${categoryName}`,
       cmlimit: 500,
       cmtype:  'page',
-    }) as AsyncGenerator<CategoryMembersResponse>;
+    }) as AsyncGenerator<CategoryMembersResponseInterface>;
 
     for await (const batch of gen) {
       const list = batch.query?.categorymembers ?? [];
@@ -114,5 +110,9 @@ export class MediaWikiScraper {
     }
 
     return pages;
+  }
+
+  private static wikitextOf(page: ApiPage): string {
+    return page.revisions?.[0]?.content ?? '';
   }
 }

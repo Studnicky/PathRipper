@@ -1,3 +1,5 @@
+import { MappingError } from '../errors/MappingError.js';
+
 export interface TemplateFilterStepInterface {
   readonly name: string;
   readonly args: ReadonlyArray<string>;
@@ -17,13 +19,13 @@ export class TemplateParser {
   static parse(template: string): TemplateInterface {
     const match = TEMPLATE_RE.exec(template);
     if (match === null) {
-      throw new Error(`Template must match {{ field | filter | filter:arg }}: "${template}"`);
+      throw new MappingError(`Template must match {{ field | filter | filter:arg }}: "${template}"`, { metadata: { template } });
     }
     const inner = match[1] ?? '';
     const parts = inner.split('|').map((p) => p.trim()).filter((p) => p.length > 0);
 
     if (parts.length === 0) {
-      throw new Error(`Template has no field: "${template}"`);
+      throw new MappingError(`Template has no field: "${template}"`, { metadata: { template } });
     }
 
     const field   = parts[0]!;

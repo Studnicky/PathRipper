@@ -1,14 +1,12 @@
-// Adapted from torus/src/nodes/defaults/errors/retryPolicy.ts
-// Simplified to a standalone async executor — no node/channel machinery.
-
 import type { ExtendedErrorInterface } from './ErrorClassifier.js';
 import { ErrorClassifier } from './ErrorClassifier.js';
+import { Time } from '../time/Time.js';
 
 export interface RetryConfigInterface {
   readonly maxAttempts?: number | undefined;
   readonly baseDelayMs?: number | undefined;
-  readonly multiplier?: number | undefined;
-  readonly maxDelayMs?: number | undefined;
+  readonly multiplier?:  number | undefined;
+  readonly maxDelayMs?:  number | undefined;
 }
 
 const DEFAULTS = {
@@ -18,16 +16,6 @@ const DEFAULTS = {
   maxDelayMs:  30_000,
 } as const;
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function computeDelay(attempt: number, base: number, mult: number, max: number): number {
-  const jitter = Math.random() * 0.2 - 0.1; // ±10% decorrelated jitter
-  const raw = base * mult ** (attempt - 1) * (1 + jitter);
-  return Math.min(Math.round(raw), max);
-}
-
 export class RetryExecutor {
   readonly #classifier: ErrorClassifier;
   readonly #max: number;
@@ -35,7 +23,7 @@ export class RetryExecutor {
   readonly #mult: number;
   readonly #maxDelay: number;
 
-  constructor(config: RetryConfigInterface = {}) {
+  public constructor(config: RetryConfigInterface = {}) {
     this.#classifier = ErrorClassifier.default();
     this.#max        = config.maxAttempts ?? DEFAULTS.maxAttempts;
     this.#base       = config.baseDelayMs ?? DEFAULTS.baseDelayMs;
@@ -43,10 +31,9 @@ export class RetryExecutor {
     this.#maxDelay   = config.maxDelayMs  ?? DEFAULTS.maxDelayMs;
   }
 
-  async execute<T>(fn: () => Promise<T>): Promise<T> {
+  public async execute<T>(fn: () => Promise<T>): Promise<T> {
     let attempt = 0;
 
-    // eslint intentionally disabled: genuine retry loop, not infinite loop
     for (;;) {
       attempt++;
       try {
@@ -58,10 +45,16 @@ export class RetryExecutor {
 
         const wait = result.backoffHint !== undefined
           ? result.backoffHint
-          : computeDelay(attempt, this.#base, this.#mult, this.#maxDelay);
+          : RetryExecutor.computeDelay(attempt, this.#base, this.#mult, this.#maxDelay);
 
-        await sleep(wait);
+        await Time.sleep(wait);
       }
     }
+  }
+
+  private static computeDelay(attempt: number, base: number, mult: number, max: number): number {
+    const jitter = Math.random() * 0.2 - 0.1; // ±10% decorrelated jitter
+    const raw = base * mult ** (attempt - 1) * (1 + jitter);
+    return Math.min(Math.round(raw), max);
   }
 }

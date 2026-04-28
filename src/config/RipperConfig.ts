@@ -6,6 +6,7 @@ import {
   formatRipperConfigErrors,
 } from '../schemas/internal/RipperConfigSchema.js';
 import type { RipperConfigInterface } from '../schemas/internal/RipperConfigSchema.js';
+import { RipperConfigError } from '../errors/RipperConfigError.js';
 
 export type {
   RipperConfigInterface,
@@ -23,8 +24,9 @@ export class RipperConfig {
     const raw  = JSON.parse(text) as unknown;
 
     if (!validateRipperConfig(raw)) {
-      throw new Error(
+      throw new RipperConfigError(
         `Invalid config at ${abs}:\n  ${formatRipperConfigErrors()}`,
+        { metadata: { configPath: abs } },
       );
     }
 

@@ -33,16 +33,6 @@ interface ClassificationRuleInterface {
   readonly backoffHint?: number | ((error: ExtendedErrorInterface) => number) | undefined;
 }
 
-function retryAfterMs(error: ExtendedErrorInterface): number {
-  const h = error.headers?.['retry-after'];
-  if (typeof h === 'string') {
-    const n = parseInt(h, 10);
-    if (Number.isFinite(n)) return n * 1_000;
-  }
-  if (typeof h === 'number' && Number.isFinite(h)) return h * 1_000;
-  return 5_000;
-}
-
 export class ErrorClassifier {
   readonly #rules: ClassificationRuleInterface[] = [];
 
@@ -81,6 +71,16 @@ export class ErrorClassifier {
         || category === ErrorCategory.TRANSIENT;
   }
 
+  private static retryAfterMs(error: ExtendedErrorInterface): number {
+    const h = error.headers?.['retry-after'];
+    if (typeof h === 'string') {
+      const n = parseInt(h, 10);
+      if (Number.isFinite(n)) return n * 1_000;
+    }
+    if (typeof h === 'number' && Number.isFinite(h)) return h * 1_000;
+    return 5_000;
+  }
+
   static default(): ErrorClassifier {
     return new ErrorClassifier()
       .addRule(
@@ -93,7 +93,7 @@ export class ErrorClassifier {
       )
       .addRule(
         (e) => e.status === 429 || e.statusCode === 429,
-        ErrorCategory.THROTTLED, { retryable: true, backoffHint: retryAfterMs },
+        ErrorCategory.THROTTLED, { retryable: true, backoffHint: ErrorClassifier.retryAfterMs },
       )
       .addRule(
         (e) => (e.status !== undefined && e.status >= 500)

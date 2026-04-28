@@ -3,11 +3,11 @@ import addFormatsModule from 'ajv-formats';
 import type { FromSchema } from 'json-schema-to-ts';
 
 // AJV 8.x ships dual CJS/ESM; under NodeNext the runtime default lives on `.default`.
-type AjvCtor = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
-type AddFormatsFn = (ajv: AjvType) => AjvType;
+type AjvCtorType = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
+type AddFormatsFnType = (ajv: AjvType) => AjvType;
 
-const Ajv        = (AjvModule        as unknown as { default?: AjvCtor }).default        ?? (AjvModule        as unknown as AjvCtor);
-const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFn }).default ?? (addFormatsModule as unknown as AddFormatsFn);
+const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
+const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType }).default ?? (addFormatsModule as unknown as AddFormatsFnType);
 
 export const RIPPER_CONFIG_SCHEMA = {
   $schema: 'http://json-schema.org/draft-07/schema#',
@@ -104,9 +104,20 @@ export type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);
 
-export const validateRipperConfig: ValidateFunction<RipperConfigInterface> =
-  ajv.compile<RipperConfigInterface>(RIPPER_CONFIG_SCHEMA);
+export class RipperConfigValidator {
+  private constructor() { /* static-only */ }
 
-export function formatRipperConfigErrors(): string {
-  return ajv.errorsText(validateRipperConfig.errors, { separator: '\n  ' });
+  private static readonly _validate: ValidateFunction<RipperConfigInterface> =
+    ajv.compile<RipperConfigInterface>(RIPPER_CONFIG_SCHEMA);
+
+  public static validate(data: unknown): data is RipperConfigInterface {
+    return RipperConfigValidator._validate(data);
+  }
+
+  public static formatErrors(): string {
+    return ajv.errorsText(RipperConfigValidator._validate.errors, { separator: '\n  ' });
+  }
 }
+
+export const validateRipperConfig = RipperConfigValidator.validate.bind(RipperConfigValidator);
+export function formatRipperConfigErrors(): string { return RipperConfigValidator.formatErrors(); }

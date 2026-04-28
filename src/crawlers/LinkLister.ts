@@ -16,23 +16,6 @@ export interface LinkListerConfigInterface {
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 
-function extractLinks(html: string, baseUrl: string): string[] {
-  const $ = cheerioLoad(html);
-  const links: string[] = [];
-
-  $('a[href]').each((_i, el) => {
-    const href = $(el).attr('href');
-    if (href === undefined) return;
-    try {
-      links.push(new URL(href, baseUrl).href);
-    } catch {
-      // relative or invalid — skip
-    }
-  });
-
-  return links;
-}
-
 export class LinkLister {
   readonly #domain: RegExp;
   readonly #target: RegExp;
@@ -86,7 +69,7 @@ export class LinkLister {
       this.#retry.execute(() => fetch(url).then((r) => r.text())),
     );
 
-    const allLinks = extractLinks(html, url)
+    const allLinks = LinkLister.extractLinks(html, url)
       .filter((l) => this.#domain.test(l))
       .filter((l) => this.#delimiter.test(l));
 
@@ -112,5 +95,20 @@ export class LinkLister {
       nested.push(await this.#crawl(l));
     }
     return [...targets, ...nested.flat()];
+  }
+
+  private static extractLinks(html: string, baseUrl: string): string[] {
+    const $ = cheerioLoad(html);
+    const links: string[] = [];
+    $('a[href]').each((_i, el) => {
+      const href = $(el).attr('href');
+      if (href === undefined) return;
+      try {
+        links.push(new URL(href, baseUrl).href);
+      } catch {
+        // relative or invalid — skip
+      }
+    });
+    return links;
   }
 }
