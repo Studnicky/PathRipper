@@ -84,19 +84,24 @@ program
 program
   .command('crawl')
   .description('Crawl links matching a pattern and collect target URLs')
-  .requiredOption('--start <url>', 'Starting URL')
+  .requiredOption('--starts <urls...>', 'Starting URLs (one or more)')
   .requiredOption('--domain <regex>', 'Domain regex to stay within')
   .requiredOption('--target <regex>', 'Target URL pattern to collect')
   .requiredOption('--delimiter <regex>', 'Traversal pattern (pages to follow)')
-  .option('--rate <ms>', 'Rate limit in ms between requests', '200')
-  .action(async (opts: { start: string; domain: string; target: string; delimiter: string; rate: string }) => {
+  .option('--rate <ms>',   'Rate limit in ms between requests', '200')
+  .option('--jitter <ms>', 'Random jitter (0..N ms) added to each request',  '0')
+  .option('--max <n>',     'Maximum target URLs to collect (cap)')
+  .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }) => {
     const log  = Logger.forComponent('cli');
+    const max  = opts.max !== undefined ? parseInt(opts.max, 10) : undefined;
     const list = await new LinkLister({
       domain:      new RegExp(opts.domain),
       target:      new RegExp(opts.target),
       delimiter:   new RegExp(opts.delimiter),
       rateLimitMs: parseInt(opts.rate, 10),
-    }).buildList(opts.start);
+      jitterMs:    parseInt(opts.jitter, 10),
+      ...(max !== undefined ? { maxPages: max } : {}),
+    }).buildList(opts.starts);
 
     for (const link of list) log.info('crawl', link);
   });

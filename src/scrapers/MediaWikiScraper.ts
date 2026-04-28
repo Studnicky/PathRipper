@@ -6,6 +6,7 @@ export interface MediaWikiConfigInterface {
   readonly apiUrl: string;
   readonly userAgent: string;
   readonly rateLimitMs?: number | undefined;
+  readonly jitterMs?:    number | undefined;
 }
 
 export interface WikiPageInterface {
@@ -52,7 +53,7 @@ export class MediaWikiScraper {
       userAgent: config.userAgent,
       silent:    true,
     });
-    const limiter = RateLimiter.withDelay(config.rateLimitMs ?? 1_000);
+    const limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 1_000, jitterMs: config.jitterMs ?? 0 });
     return new MediaWikiScraper(bot, limiter);
   }
 

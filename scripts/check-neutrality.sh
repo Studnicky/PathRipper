@@ -7,11 +7,15 @@ set -euo pipefail
 # Banned tokens (case-insensitive). Keep this list synced with docs/plans/07-target-neutrality.md.
 BANNED='bulbapedia|aonprd|serebii|piazo|pathfinder|pok[ée]mon|charmander|bulbasaur|pkNX|APKMirror|IL2CPP|UnityPy|Perfare|kwsch|SWSH|BDSP'
 
-# Search src/, docs/ (excluding plans/), README.md, and the committed example config.
+# Search src/, docs/ (excluding plans/), tests/ (excluding e2e/fixtures/), README.md,
+# and the committed example config. Plans and e2e fixtures are exempt: plans
+# enumerate banned tokens by design, and e2e fixtures resurrect the legacy
+# PathRipper config as a test asset proving this project is the new PathRipper.
 HITS=$(
   {
     grep -rniE "${BANNED}" src/ 2>/dev/null || true
-    grep -rniE "${BANNED}" docs/ --exclude-dir=plans 2>/dev/null || true
+    grep -rniE "${BANNED}" docs/  --exclude-dir=plans 2>/dev/null || true
+    grep -rniE "${BANNED}" tests/ --exclude-dir=fixtures --exclude-dir=e2e 2>/dev/null || true
     grep -niE  "${BANNED}" README.md 2>/dev/null || true
     grep -niE  "${BANNED}" ripperoni.config.example.json 2>/dev/null || true
   } | grep -v '^$' || true

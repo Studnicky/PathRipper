@@ -25,11 +25,13 @@
   },
   "crawlers": {
     "your-crawler-target": {
-      "startUrl":    "https://example.com/index",
+      "startUrls":   ["https://example.com/index"],
       "domain":      "example\\.com",
       "target":      "\\?id=",
       "delimiter":   "category",
-      "rateLimitMs": 100
+      "rateLimitMs": 100,
+      "jitterMs":    25,
+      "maxPages":    1000
     }
   }
 }

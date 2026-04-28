@@ -29,12 +29,14 @@ describe('RipperConfig.load()', () => {
       output: { basePath: './out', format: 'json', pretty: true },
       targets: { foo: { baseUrl: 'https://example.com', rateLimitMs: 100 } },
       mediawiki: { bar: { apiUrl: 'https://wiki.example/w/api.php', userAgent: 'X/1.0' } },
-      crawlers: { baz: { startUrl: 'https://example.com/x', domain: 'example', target: 'id', delimiter: 'cat' } },
+      crawlers: { baz: { startUrls: ['https://example.com/x', 'https://example.com/y'], domain: 'example', target: 'id', delimiter: 'cat', jitterMs: 25, maxPages: 100 } },
     });
     const cfg = await RipperConfig.load(path);
     assert.equal(cfg.targets?.foo?.baseUrl, 'https://example.com');
     assert.equal(cfg.mediawiki?.bar?.userAgent, 'X/1.0');
     assert.equal(cfg.crawlers?.baz?.delimiter, 'cat');
+    assert.equal(cfg.crawlers?.baz?.startUrls.length, 2);
+    assert.equal(cfg.crawlers?.baz?.maxPages, 100);
   });
 
   it('throws on missing required field with the field path in the message', async () => {

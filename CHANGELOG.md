@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Lane 11 — Legacy PathRipper E2E (local only)
+- Resurrected the original 2019 PathRipper Pathfinder/AONPRD scrape
+  configuration as `tests/e2e/fixtures/pathripper-legacy.config.json`. The
+  fixture is the canonical proof that this project replaces PathRipper —
+  what PathRipper ripped, ripperoni rips.
+- Added `tests/e2e/aonprd.test.ts` with two cases (smoke = one category,
+  full = all 41 category seeds).
+- Added `npm run test:e2e` script. Not invoked by `npm run check`.
+  Not referenced by any `.github/workflows/*.yml` — CI never runs e2e.
+- Narrowed `npm run test` and `npm run check` to `tests/unit/**` so the
+  default test run never picks up e2e by accident.
+- `scripts/check-neutrality.sh` exempts `tests/e2e/` so the legacy AONPRD
+  config can live in the repo without violating the gate (unit fixtures
+  under `tests/unit/**` remain subject to the gate).
+
+### Configuration shape changes (BREAKING within Unreleased)
+- `crawlers.<id>.startUrl` removed; replaced by `crawlers.<id>.startUrls`
+  (`string[]`, `minItems: 1`). Single-seed users pass a one-element array.
+  Users who want category-style expansion build the URL list themselves
+  before passing it in. The legacy 41-category PathRipper config maps
+  natively into this shape.
+- `LinkLister.buildList(startUrl)` is now `buildList(startUrls)`.
+- `crawlers.<id>` gains `jitterMs` and `maxPages`. `maxPages` bounds the
+  total target URLs collected per `buildList()` call (useful for capped
+  e2e runs and runaway-prevention).
+- `targets.<id>` and `mediawiki.<id>` gain `jitterMs`.
+
+### Timing / jitter — universal across HTTP-bearing components
+- `RateLimiter` accepts `jitterMs?: number` in its config. When > 0 the
+  scheduled fn waits a random `[0, jitterMs)` ms inside the rate-limited
+  slot, producing variance on every normal request (not just retries).
+  Default 0 — backwards-compatible behavior preserved.
+- `HtmlScraper`, `MediaWikiScraper`, and `LinkLister` all read `jitterMs`
+  from their target config and pass it through to their internal
+  `RateLimiter` — universal coverage, single mechanism.
+- `RetryExecutor` continues to apply ±10% jitter on retry backoff (was
+  already there) and to honor `Retry-After` headers via `ErrorClassifier`.
+
+### CLI
+- `ripperoni crawl` now takes `--starts <urls...>` (was `--start <url>`).
+- `ripperoni crawl` gains `--jitter <ms>` and `--max <n>` flags.
+
 ### Added
 - TypeScript rewrite of the PathRipper pipeline: `Pipeline`, `LinkLister`,
   `HtmlScraper`, `MediaWikiScraper`, `WikitextParser`, `RetryExecutor`,

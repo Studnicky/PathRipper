@@ -36,6 +36,7 @@ export const RIPPER_CONFIG_SCHEMA = {
         properties: {
           baseUrl:     { type: 'string', format: 'uri', minLength: 1 },
           rateLimitMs: { type: 'integer', minimum: 0 },
+          jitterMs:    { type: 'integer', minimum: 0 },
           maxRetries:  { type: 'integer', minimum: 0 },
           headers: {
             type: 'object',
@@ -60,6 +61,7 @@ export const RIPPER_CONFIG_SCHEMA = {
           apiUrl:      { type: 'string', format: 'uri', minLength: 1 },
           userAgent:   { type: 'string', minLength: 1 },
           rateLimitMs: { type: 'integer', minimum: 0 },
+          jitterMs:    { type: 'integer', minimum: 0 },
           categories: {
             type: 'object',
             additionalProperties: { type: 'string' },
@@ -78,13 +80,19 @@ export const RIPPER_CONFIG_SCHEMA = {
       additionalProperties: {
         type: 'object',
         additionalProperties: false,
-        required: ['startUrl', 'domain', 'target', 'delimiter'],
+        required: ['startUrls', 'domain', 'target', 'delimiter'],
         properties: {
-          startUrl:    { type: 'string', format: 'uri', minLength: 1 },
+          startUrls: {
+            type: 'array',
+            minItems: 1,
+            items: { type: 'string', format: 'uri', minLength: 1 },
+          },
           domain:      { type: 'string', minLength: 1 },
           target:      { type: 'string', minLength: 1 },
           delimiter:   { type: 'string', minLength: 1 },
           rateLimitMs: { type: 'integer', minimum: 0 },
+          jitterMs:    { type: 'integer', minimum: 0 },
+          maxPages:    { type: 'integer', minimum: 1 },
         },
       },
     },

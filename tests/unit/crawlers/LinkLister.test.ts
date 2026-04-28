@@ -50,7 +50,7 @@ describe('LinkLister', () => {
       rateLimitMs: 0,
     });
 
-    const links = await lister.buildList('https://example.com/index');
+    const links = await lister.buildList(['https://example.com/index']);
 
     assert.deepEqual(links, [
       'https://example.com/category/item?id=1',
@@ -66,7 +66,7 @@ describe('LinkLister', () => {
       delimiter:   /category/,
       rateLimitMs: 0,
     });
-    const links = await lister.buildList('https://example.com/index');
+    const links = await lister.buildList(['https://example.com/index']);
     for (const link of links) {
       assert.match(link, /\?id=/);
       assert.doesNotMatch(link, /\/category\/[ab]$/);
@@ -80,10 +80,36 @@ describe('LinkLister', () => {
       delimiter:   /category/,
       rateLimitMs: 0,
     });
-    const links = await lister.buildList('https://example.com/index');
+    const links = await lister.buildList(['https://example.com/index']);
     for (const link of links) {
       assert.match(link, /example\.com/);
       assert.doesNotMatch(link, /other\.test/);
     }
+  });
+
+  it('honors maxPages cap (Lane 11 redesign)', async () => {
+    const lister = new LinkLister({
+      domain:      /example\.com/,
+      target:      /\?id=/,
+      delimiter:   /category/,
+      rateLimitMs: 0,
+      maxPages:    2,
+    });
+    const links = await lister.buildList(['https://example.com/index']);
+    assert.equal(links.length, 2);
+  });
+
+  it('accepts multiple startUrls and de-duplicates results', async () => {
+    const lister = new LinkLister({
+      domain:      /example\.com/,
+      target:      /\?id=/,
+      delimiter:   /category/,
+      rateLimitMs: 0,
+    });
+    const links = await lister.buildList([
+      'https://example.com/index',
+      'https://example.com/index',  // identical seed → must not double-count
+    ]);
+    assert.equal(links.length, 3);
   });
 });

@@ -21,13 +21,13 @@ Current state: [`00-current-state.md`](00-current-state.md)
 | 03 | [tests](03-tests.md) | Lanes 01 + 02 (test correct code) |
 | 08 | [external-schemas-and-mapping](08-external-schemas-and-mapping.md) | Lanes 04, 07 (AJV wiring + neutrality) |
 | 10 | [matrix-ci](10-matrix-ci.md) | Lanes 03, 09 (tests + branch flow) |
-| 11 | [gh-pages-e2e](11-gh-pages-e2e.md) | Lanes 03, 08, 10 — **also gated on first publish to GitHub Pages** |
+| 11 | [pathripper-e2e](11-pathripper-e2e.md) | Lanes 03, 04, 08 — **local only, never CI** |
 
 ## Completion gate
 
 The project is **trustworthy** when lanes 01–10 are done and `npm run check` exits 0
-in CI on a matrix of supported environments. Lane 11 lights up after the first
-`develop → master` release publishes the gh-pages site.
+in CI on a matrix of supported environments. Lane 11 (PathRipper e2e) is local-only
+and runs intentionally with `npm run test:e2e` — no CI workflow invokes it.
 
 ## Order of execution (this branch: `feature/ripper-foundation`)
 
@@ -45,5 +45,5 @@ Sequential after batch A:
 - 08 — schemas + mapping engine (depends on 04, 07)
 - 10 — matrix CI (depends on 03, 09)
 
-Deferred:
-- 11 — gh-pages e2e (after first publish)
+Local-only (not CI):
+- 11 — PathRipper AONPRD e2e (`npm run test:e2e`; no CI workflow invokes it)

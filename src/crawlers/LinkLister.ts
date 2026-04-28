@@ -1,6 +1,3 @@
-// Modernized from PathRipper/src/linkLister/index.js
-// Recursive page crawler — domain/target/delimiter fully configurable.
-
 import { load as cheerioLoad } from 'cheerio';
 import { Logger } from '../modules/logger/Logger.js';
 import { RateLimiter } from '../modules/http/RateLimiter.js';
@@ -12,6 +9,8 @@ export interface LinkListerConfigInterface {
   readonly target: RegExp;
   readonly delimiter: RegExp;
   readonly rateLimitMs?: number | undefined;
+  readonly jitterMs?:    number | undefined;
+  readonly maxPages?:    number | undefined;
   readonly retry?: RetryConfigInterface | undefined;
 }
 
@@ -38,6 +37,7 @@ export class LinkLister {
   readonly #domain: RegExp;
   readonly #target: RegExp;
   readonly #delimiter: RegExp;
+  readonly #maxPages: number;
   readonly #visited   = new Set<string>();
   readonly #collected = new Set<string>();
   readonly #log: Logger;
@@ -48,21 +48,38 @@ export class LinkLister {
     this.#domain    = config.domain;
     this.#target    = config.target;
     this.#delimiter = config.delimiter;
+    this.#maxPages  = config.maxPages ?? Number.POSITIVE_INFINITY;
     this.#log       = Logger.forComponent('LinkLister');
-    this.#limiter   = RateLimiter.withDelay(config.rateLimitMs ?? 100);
+    this.#limiter   = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 100, jitterMs: config.jitterMs ?? 0 });
     this.#retry     = new RetryExecutor(config.retry);
   }
 
-  async buildList(startUrl: string): Promise<string[]> {
-    this.#log.debug('buildList', `Starting crawl from ${startUrl}`);
-    const results = await this.#crawl(startUrl);
-    const sorted  = results.sort(collator.compare);
+  async buildList(startUrls: ReadonlyArray<string>): Promise<string[]> {
+    if (startUrls.length === 0) {
+      this.#log.warn('buildList', 'Called with empty startUrls list');
+      return [];
+    }
+    this.#log.debug('buildList', `Starting crawl from ${startUrls.length.toString()} seed(s)`);
+
+    const all: string[] = [];
+    for (const url of startUrls) {
+      if (this.#capReached()) break;
+      const found = await this.#crawl(url);
+      all.push(...found);
+    }
+
+    const sorted = Array.from(new Set(all)).sort(collator.compare);
     this.#log.info('buildList', `Found ${sorted.length.toString()} matching links`);
     return sorted;
   }
 
+  #capReached(): boolean {
+    return this.#collected.size >= this.#maxPages;
+  }
+
   async #crawl(url: string): Promise<string[]> {
     if (this.#visited.has(url)) return [];
+    if (this.#capReached())     return [];
     this.#visited.add(url);
 
     const html = await this.#limiter.schedule(() =>
@@ -77,6 +94,7 @@ export class LinkLister {
     const traversals: string[] = [];
 
     for (const link of allLinks) {
+      if (this.#capReached()) break;
       if (this.#target.test(link)) {
         if (this.#collected.has(link)) continue;
         this.#collected.add(link);
@@ -88,7 +106,11 @@ export class LinkLister {
 
     this.#log.debug('buildList', `${url} → ${targets.length.toString()} targets, ${traversals.length.toString()} to traverse`);
 
-    const nested = await Promise.all(traversals.map((l) => this.#crawl(l)));
+    const nested: string[][] = [];
+    for (const l of traversals) {
+      if (this.#capReached()) break;
+      nested.push(await this.#crawl(l));
+    }
     return [...targets, ...nested.flat()];
   }
 }

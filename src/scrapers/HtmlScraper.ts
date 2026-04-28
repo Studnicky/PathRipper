@@ -11,6 +11,7 @@ import { Logger } from '../modules/logger/Logger.js';
 export interface HtmlScraperConfigInterface {
   readonly baseUrl: string;
   readonly rateLimitMs?: number | undefined;
+  readonly jitterMs?:    number | undefined;
   readonly retry?: RetryConfigInterface | undefined;
   readonly headers?: Readonly<Record<string, string>> | undefined;
 }
@@ -31,7 +32,7 @@ export class HtmlScraper {
   constructor(config: HtmlScraperConfigInterface) {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
-    this.#limiter = RateLimiter.withDelay(config.rateLimitMs ?? 250);
+    this.#limiter = new RateLimiter({ minTimeMs: config.rateLimitMs ?? 250, jitterMs: config.jitterMs ?? 0 });
     this.#retry   = new RetryExecutor(config.retry);
     this.#log     = Logger.forComponent('HtmlScraper');
   }
