@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Lane 09 — Native git hooks (replaces husky)
+- Removed `husky` devDependency entirely. Source-of-truth hooks now live at
+  `hooks/pre-commit` and `hooks/pre-push` (committed). The `prepare` npm
+  script runs `scripts/install-hooks.sh`, which copies them into git's
+  default `.git/hooks/` directory on every clone's first `npm install`.
+- `git config core.hooksPath` is unset — hooks live where git natively
+  looks for them. No vendored runtime, no symlinks, no third-party hook
+  manager. The install script is idempotent and silently no-ops outside
+  a git working tree.
+
 ### Lane 11 — Legacy PathRipper E2E (local only)
 - Resurrected the original 2019 PathRipper Pathfinder/AONPRD scrape
   configuration as `tests/e2e/fixtures/pathripper-legacy.config.json`. The

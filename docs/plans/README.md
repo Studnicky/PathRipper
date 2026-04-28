@@ -12,7 +12,7 @@ Current state: [`00-current-state.md`](00-current-state.md)
 | 05 | [mediawiki-batch](05-mediawiki-batch.md) | Fix unverified mwn API usage in batch fetch (~1.5h) |
 | 06 | [example-config-cleanup](06-example-config-cleanup.md) | Target-neutral example config + repo hygiene (~20 min) |
 | 07 | [target-neutrality](07-target-neutrality.md) | Scrub all real target names from src/docs/README (~45 min) |
-| 09 | [changelog-husky-flow](09-changelog-husky-flow.md) | CHANGELOG, husky, develop branch, PR template (~1h) |
+| 09 | [changelog-githooks-flow](09-changelog-githooks-flow.md) | CHANGELOG, native git hooks, develop branch, PR template (~1h) |
 
 ## Blocked by earlier lanes
 

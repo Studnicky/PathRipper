@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Native git pre-push hook (no husky).
+# Runs full check (typecheck + lint + unit tests) and the target-neutrality
+# grep gate before any push reaches origin.
+set -euo pipefail
+
+npm run check
+./scripts/check-neutrality.sh
