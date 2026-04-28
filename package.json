@@ -25,7 +25,9 @@
     "./MappingEngine":     "./dist/mapping/MappingEngine.js",
     "./FilterRegistry":    "./dist/mapping/FilterRegistry.js",
     "./TemplateParser":    "./dist/mapping/TemplateParser.js",
-    "./ExternalSchemaLoader": "./dist/loaders/ExternalSchemaLoader.js"
+    "./ExternalSchemaLoader": "./dist/loaders/ExternalSchemaLoader.js",
+    "./registry/TaskRegistry":  "./dist/registry/TaskRegistry.js",
+    "./registry/PipelineState": "./dist/registry/PipelineState.js"
   },
   "scripts": {
     "build": "tsc --noEmit false",
