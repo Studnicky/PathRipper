@@ -3,29 +3,30 @@
 // carry redaction schemas. Same shape, same protected constructor, same
 // code-derivation rule, same flatten()/serialize()/toJson() surface.
 
-export interface BaseErrorOptionsInterface {
-  readonly code?:      string | undefined;
-  readonly cause?:     Error | undefined;
-  readonly metadata?:  Readonly<Record<string, unknown>> | undefined;
-  readonly retryable?: boolean | undefined;
-}
+import type { BaseErrorOptionsInterface, BaseErrorJsonType } from '../types/BaseError.js';
 
-type BaseErrorJsonType = Readonly<{
-  readonly code:      string;
-  readonly message:   string;
-  readonly name:      string;
-  readonly retryable: boolean;
-  readonly stack?:    string;
-  readonly metadata?: Readonly<Record<string, unknown>>;
-  readonly cause?:    BaseErrorJsonType | { readonly message: string; readonly name: string; readonly stack?: string };
-}>;
+export type { BaseErrorOptionsInterface, BaseErrorJsonType };
 
+/**
+ * Base class for all ripperoni domain errors.
+ *
+ * Provides a structured `code`, optional `cause`, `metadata`, and `retryable` flag,
+ * as well as JSON serialization via `toJson()` and `serialize()`.
+ */
 export class BaseError extends Error {
+  /** SCREAMING_SNAKE_CASE error code, auto-derived from the class name unless overridden. */
   public readonly code:      string;
+  /** Underlying error that caused this one, if any. */
   public override readonly cause: Readonly<Error> | undefined;
+  /** Arbitrary structured metadata attached to the error. */
   public readonly metadata:  Readonly<Record<string, unknown>> | undefined;
+  /** Whether the operation that produced this error can be retried. */
   public readonly retryable: boolean;
 
+  /**
+   * @param message - Human-readable error description.
+   * @param options - Optional code, cause, metadata, and retryable flag.
+   */
   protected constructor(message: string, options: BaseErrorOptionsInterface = {}) {
     super(message);
     this.name      = this.constructor.name;
@@ -35,12 +36,24 @@ export class BaseError extends Error {
     this.code      = options.code ?? BaseError.toCode(this.constructor.name);
   }
 
+  /**
+   * Returns a human-readable string for any thrown value.
+   *
+   * @param error - Any caught value.
+   * @returns Serialized BaseError JSON, plain Error message, or `String(error)`.
+   */
   public static format(error: unknown): string {
     if (error instanceof BaseError) return error.serialize();
     if (error instanceof Error)     return error.message;
     return String(error);
   }
 
+  /**
+   * Serializes this error to a plain JSON-safe object.
+   *
+   * @param options - Pass `{ stack: false }` to omit stack traces.
+   * @returns A structured representation of the error including cause chain.
+   */
   public toJson(options: Readonly<{ stack?: boolean }> = {}): BaseErrorJsonType {
     const includeStack = options.stack !== false;
     const json: Record<string, unknown> = {
@@ -63,10 +76,21 @@ export class BaseError extends Error {
     return json as unknown as BaseErrorJsonType;
   }
 
-  public serialize(space = 2): string {
+  /**
+   * Returns a pretty-printed JSON string of this error.
+   *
+   * @param space - JSON indentation spaces (default 2).
+   * @returns JSON string representation of `toJson()`.
+   */
+  public serialize(space: number = 2): string {
     return JSON.stringify(this.toJson(), null, space);
   }
 
+  /**
+   * Returns the full error cause chain as a flat array, starting with `this`.
+   *
+   * @returns Array of errors from outermost to root cause.
+   */
   public flatten(): Error[] {
     const chain: Error[] = [this];
     let current: Error | undefined = this.cause;

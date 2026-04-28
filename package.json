@@ -43,6 +43,7 @@
     "bottleneck": "^2.19.5",
     "cheerio": "^1.0.0",
     "commander": "^12.0.0",
+    "domhandler": "^6.0.1",
     "json-schema-to-ts": "^3.1.1",
     "wtf_wikipedia": "^10.3.0"
   },

@@ -3,21 +3,14 @@ import type { Element } from 'domhandler';
 import { Logger } from '../modules/logger/logger.js';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { RetryExecutor } from '../modules/http/retryExecutor.js';
-import type { RetryConfigInterface } from '../modules/http/retryExecutor.js';
+import type { LinkListerConfigInterface } from '../types/LinkListerConfig.js';
 
-export interface LinkListerConfigInterface {
-  readonly domain: RegExp;
-  readonly target: RegExp;
-  readonly delimiter: RegExp;
-  readonly rateLimitMs?: number | undefined;
-  readonly jitterMs?:    number | undefined;
-  readonly maxPages?:    number | undefined;
-  readonly retry?: RetryConfigInterface | undefined;
-}
+export type { LinkListerConfigInterface };
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 const DEFAULT_RATE_LIMIT_MS = 100;
 
+/** Crawls a site from seed URLs and returns all matching target links, deduplicated and sorted. */
 export class LinkLister {
   readonly #domain: RegExp;
   readonly #target: RegExp;
@@ -29,16 +22,35 @@ export class LinkLister {
   readonly #limiter: RateLimiter;
   readonly #retry: RetryExecutor;
 
-  constructor(config: LinkListerConfigInterface) {
+  /**
+   * @param config - Crawl configuration including domain, target, and rate-limit settings.
+   */
+  private constructor(config: LinkListerConfigInterface) {
     this.#domain    = config.domain;
     this.#target    = config.target;
     this.#delimiter = config.delimiter;
     this.#maxPages  = config.maxPages ?? Number.POSITIVE_INFINITY;
     this.#log       = Logger.forComponent('LinkLister');
-    this.#limiter   = new RateLimiter({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#retry     = new RetryExecutor(config.retry);
+    this.#limiter   = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
+    this.#retry     = RetryExecutor.create(config.retry);
   }
 
+  /**
+   * Creates a LinkLister instance.
+   *
+   * @param config - Crawl configuration.
+   * @returns A new LinkLister.
+   */
+  public static create(config: LinkListerConfigInterface): LinkLister {
+    return new LinkLister(config);
+  }
+
+  /**
+   * Crawls from the given seed URLs and returns all collected target links.
+   *
+   * @param startUrls - Seed URLs to begin crawling from.
+   * @returns Deduplicated, numerically sorted array of matching target URLs.
+   */
   async buildList(startUrls: ReadonlyArray<string>): Promise<string[]> {
     if (startUrls.length === 0) {
       this.#log.warn('buildList', 'Called with empty startUrls list');
@@ -67,13 +79,13 @@ export class LinkLister {
     if (this.#capReached())     return [];
     this.#visited.add(url);
 
-    const html = await this.#limiter.schedule(() =>
-      this.#retry.execute(() => fetch(url).then((r: Response) => r.text())),
+    const html = await this.#limiter.schedule((): Promise<string> =>
+      this.#retry.execute((): Promise<string> => fetch(url).then((r: Response): Promise<string> => r.text())),
     );
 
     const allLinks = LinkLister.extractLinks(html, url)
-      .filter((l: string) => this.#domain.test(l))
-      .filter((l: string) => this.#delimiter.test(l));
+      .filter((l: string): boolean => this.#domain.test(l))
+      .filter((l: string): boolean => this.#delimiter.test(l));
 
     const targets:    string[] = [];
     const traversals: string[] = [];
@@ -102,7 +114,7 @@ export class LinkLister {
   private static extractLinks(html: string, baseUrl: string): string[] {
     const $ = load(html);
     const links: string[] = [];
-    $('a[href]').each((_i: number, el: Element) => {
+    $('a[href]').each((_i: number, el: Element): void => {
       const href = $(el).attr('href');
       if (href === undefined) return;
       try {

@@ -29,7 +29,7 @@ program
   .option('--category <name>', 'Category to scrape (mediawiki mode)')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; paths?: string[]; category?: string; config: string; out?: string }) => {
+  .action(async (opts: { target: string; paths?: string[]; category?: string; config: string; out?: string }): Promise<void> => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
@@ -58,7 +58,7 @@ program
   .requiredOption('--paths <paths...>', 'Paths to scrape (relative to baseUrl)')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; paths: string[]; config: string; out?: string }) => {
+  .action(async (opts: { target: string; paths: string[]; config: string; out?: string }): Promise<void> => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
@@ -79,7 +79,7 @@ program
   .option('--category <name>', 'Category to scrape (omit to use config categories or scrape all pages)')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; category?: string; config: string; out?: string }) => {
+  .action(async (opts: { target: string; category?: string; config: string; out?: string }): Promise<void> => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
@@ -103,10 +103,10 @@ program
   .option('--rate <ms>',   'Rate limit in ms between requests', DEFAULT_RATE_LIMIT_MS)
   .option('--jitter <ms>', 'Random jitter (0..N ms) added to each request', DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
-  .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }) => {
+  .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }): Promise<void> => {
     const log  = Logger.forComponent('cli');
     const max  = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
-    const list = await new LinkLister({
+    const list = await LinkLister.create({
       domain:      new RegExp(opts.domain),
       target:      new RegExp(opts.target),
       delimiter:   new RegExp(opts.delimiter),
@@ -118,7 +118,7 @@ program
     for (const link of list) log.info('crawl', link);
   });
 
-program.parseAsync(process.argv).catch((err: unknown) => {
+program.parseAsync(process.argv).catch((err: unknown): never => {
   process.stderr.write(String(err) + '\n');
   process.exit(1);
 });

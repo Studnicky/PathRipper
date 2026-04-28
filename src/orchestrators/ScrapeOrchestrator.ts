@@ -3,31 +3,17 @@ import { resolve } from 'node:path';
 
 import { HtmlScraper } from '../scrapers/HtmlScraper.js';
 import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
-import type { CategoryMemberInterface } from '../scrapers/MediaWikiScraper.js';
+import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
 import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
-import type { NextFnType } from '../types/pipeline.js';
+import type { NextFnType } from '../types/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
-import type { PipelineStateInterface } from '../registry/PipelineState.js';
+import type { PipelineStateInterface } from '../types/PipelineState.js';
 import { Logger } from '../modules/logger/logger.js';
-import type { RipperConfigInterface } from '../types/config.js';
+import type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface } from '../types/ScrapeOrchestrator.js';
 
-export interface ScrapeHtmlOptionsInterface {
-  readonly target:    string;
-  readonly paths:     ReadonlyArray<string>;
-  readonly outDir:    string;
-  readonly configDir: string;
-  readonly config:    RipperConfigInterface;
-}
-
-export interface ScrapeWikiOptionsInterface {
-  readonly target:    string;
-  readonly category?: string | undefined;
-  readonly outDir:    string;
-  readonly configDir: string;
-  readonly config:    RipperConfigInterface;
-}
+export type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface };
 
 interface RunPipelineOptionsInterface {
   readonly targetId: string;
@@ -37,9 +23,16 @@ interface RunPipelineOptionsInterface {
   readonly log:      ReturnType<typeof Logger.forComponent>;
 }
 
+/** Coordinates scraping pipelines for both HTML and MediaWiki targets. */
 export class ScrapeOrchestrator {
   private constructor() { /* static-only */ }
 
+  /**
+   * Runs a scrape pipeline for a configured HTML target across the given paths.
+   *
+   * @param opts - HTML scrape options including target key, paths, output dir, and config.
+   * @throws Exits process with code 1 if the target is not found in config.
+   */
   public static async scrapeHtml(opts: ScrapeHtmlOptionsInterface): Promise<void> {
     const log        = Logger.forComponent('ScrapeOrchestrator');
     const htmlTarget = opts.config.targets?.[opts.target];
@@ -52,16 +45,16 @@ export class ScrapeOrchestrator {
     const tasks = (htmlTarget as { tasks?: string[] }).tasks ?? [];
     await TaskRegistry.loadAll(tasks, opts.configDir);
 
-    const scraper = new HtmlScraper(htmlTarget);
+    const scraper = HtmlScraper.create(htmlTarget);
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
     for (const path of opts.paths) {
       const page     = await scraper.fetchPage(path);
-      const pipeline = new Pipeline<PipelineStateInterface>({ name: opts.target });
+      const pipeline = Pipeline.create<PipelineStateInterface>({ name: opts.target });
       if (TaskRegistry.has(`${opts.target}:parse`)) {
         pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`));
       }
-      pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
+      pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface): Promise<void> => {
         await next();
         const slug     = page.url.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase();
         const payload  = state.output ?? { url: page.url };
@@ -73,6 +66,12 @@ export class ScrapeOrchestrator {
     }
   }
 
+  /**
+   * Runs a scrape pipeline for a configured MediaWiki target.
+   *
+   * @param opts - Wiki scrape options including target key, optional category, output dir, and config.
+   * @throws Exits process with code 1 if the target is not found in config.
+   */
   public static async scrapeWiki(opts: ScrapeWikiOptionsInterface): Promise<void> {
     const log        = Logger.forComponent('ScrapeOrchestrator');
     const wikiTarget = opts.config.mediawiki?.[opts.target];
@@ -127,7 +126,7 @@ export class ScrapeOrchestrator {
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
     const { targetId, outDir, scraper, members, log } = opts;
     const BATCH = 50;
-    const titles = members.map((m: CategoryMemberInterface) => m.title);
+    const titles = members.map((m: CategoryMemberInterface): string => m.title);
     let written = 0;
 
     for (let i = 0; i < titles.length; i += BATCH) {
@@ -135,11 +134,11 @@ export class ScrapeOrchestrator {
       const pages = await scraper.fetchPagesBatch(slice);
 
       for (const page of pages) {
-        const pipeline = new Pipeline<PipelineStateInterface>({ name: targetId });
+        const pipeline = Pipeline.create<PipelineStateInterface>({ name: targetId });
         if (TaskRegistry.has(`${targetId}:parse`)) {
           pipeline.addTask(TaskRegistry.get(`${targetId}:parse`));
         }
-        pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface) => {
+        pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface): Promise<void> => {
           await next();
           const slug    = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
           const payload = state.output !== null

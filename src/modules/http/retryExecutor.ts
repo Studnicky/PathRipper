@@ -1,19 +1,9 @@
 import type { ExtendedErrorInterface } from './errorClassifier.js';
 import { ErrorClassifier } from './errorClassifier.js';
 import { Time } from '../time/time.js';
+import type { RetryConfigInterface, DelayOptsInterface } from '../../types/RetryExecutor.js';
 
-export interface RetryConfigInterface {
-  readonly maxAttempts?: number | undefined;
-  readonly baseDelayMs?: number | undefined;
-  readonly multiplier?:  number | undefined;
-  readonly maxDelayMs?:  number | undefined;
-}
-
-interface DelayOptsInterface {
-  readonly base: number;
-  readonly mult: number;
-  readonly max:  number;
-}
+export type { RetryConfigInterface, DelayOptsInterface };
 
 const MAX_ATTEMPTS_DEFAULT  = 3;
 const BASE_DELAY_MS_DEFAULT = 500;
@@ -27,6 +17,7 @@ const DEFAULTS = {
   maxDelayMs:  MAX_DELAY_MS_DEFAULT,
 } as const;
 
+/** Retries async operations with exponential backoff based on ErrorClassifier decisions. */
 export class RetryExecutor {
   readonly #classifier: ErrorClassifier;
   readonly #max: number;
@@ -34,7 +25,10 @@ export class RetryExecutor {
   readonly #mult: number;
   readonly #maxDelay: number;
 
-  public constructor(config: RetryConfigInterface = {}) {
+  /**
+   * @param config - Retry configuration including max attempts, base delay, and multiplier.
+   */
+  private constructor(config: RetryConfigInterface = {}) {
     this.#classifier = ErrorClassifier.default();
     this.#max        = config.maxAttempts ?? DEFAULTS.maxAttempts;
     this.#base       = config.baseDelayMs ?? DEFAULTS.baseDelayMs;
@@ -42,6 +36,23 @@ export class RetryExecutor {
     this.#maxDelay   = config.maxDelayMs  ?? DEFAULTS.maxDelayMs;
   }
 
+  /**
+   * Creates a RetryExecutor instance.
+   *
+   * @param config - Retry configuration.
+   * @returns A new RetryExecutor.
+   */
+  public static create(config: RetryConfigInterface = {}): RetryExecutor {
+    return new RetryExecutor(config);
+  }
+
+  /**
+   * Executes `fn`, retrying on retryable errors with exponential backoff.
+   *
+   * @param fn - Async function to execute and potentially retry.
+   * @returns Promise resolving with the function's return value on success.
+   * @throws The last error if the maximum attempt count is reached or the error is not retryable.
+   */
   public async execute<T>(fn: () => Promise<T>): Promise<T> {
     let attempt = 0;
 

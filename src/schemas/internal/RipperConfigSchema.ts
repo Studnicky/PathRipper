@@ -11,6 +11,7 @@ const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType 
 
 const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
 
+/** JSON Schema Draft-07 definition for the ripperoni configuration file. */
 export const RIPPER_CONFIG_SCHEMA = {
   $schema: JSON_SCHEMA_DRAFT_07_URI,
   $id: 'https://ripperoni.dev/schemas/internal/ripper-config.schema.json',
@@ -121,7 +122,7 @@ class RipperConfigValidator {
   private static readonly _validate: ValidateFunction<RipperConfigInterface> =
     ajv.compile<RipperConfigInterface>(RIPPER_CONFIG_SCHEMA);
 
-  public static validate(data: unknown): data is RipperConfigInterface {
+  public static validate(data: unknown): boolean {
     return RipperConfigValidator._validate(data);
   }
 
@@ -130,6 +131,18 @@ class RipperConfigValidator {
   }
 }
 
-export const validateRipperConfig = (data: unknown): data is RipperConfigInterface =>
+/**
+ * AJV type-guard for RipperConfigInterface.
+ *
+ * @param data - Unknown value to validate.
+ * @returns `true` when `data` satisfies the RipperConfig schema.
+ */
+export const validateRipperConfig = (data: unknown): boolean =>
   RipperConfigValidator.validate(data);
+
+/**
+ * Formats the last AJV validation errors as a newline-separated string.
+ *
+ * @returns Human-readable description of all schema violations.
+ */
 export function formatRipperConfigErrors(): string { return RipperConfigValidator.formatErrors(); }

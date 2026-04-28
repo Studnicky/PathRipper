@@ -1,23 +1,20 @@
-import type { WikiPageInterface } from '../scrapers/MediaWikiScraper.js';
-import type { ScrapedPageInterface } from '../scrapers/HtmlScraper.js';
+import type { WikiPageInterface } from '../types/MediaWikiScraper.js';
+import type { ScrapedPageInterface } from '../types/HtmlScraper.js';
+import type { PipelinePageInterface, PipelineStateInterface } from '../types/PipelineState.js';
 
-export interface PipelinePageInterface {
-  readonly targetId:  string;
-  readonly title:     string;
-  readonly url:       string;
-  readonly wikitext?: string | undefined;
-  readonly html?:     string | undefined;
-}
+export type { PipelinePageInterface, PipelineStateInterface };
 
-export interface PipelineStateInterface extends Record<string, unknown> {
-  readonly targetId: string;
-  readonly page:     PipelinePageInterface;
-  output: Record<string, unknown> | null;
-}
-
+/** Factory for creating initial PipelineStateInterface objects from scraped pages. */
 export class PipelineState {
   private constructor() { /* static-only */ }
 
+  /**
+   * Creates a pipeline state from a MediaWiki wiki page.
+   *
+   * @param targetId - Config target key identifying the wiki target.
+   * @param page - Wiki page with title and wikitext content.
+   * @returns Initial pipeline state with `output` set to `null`.
+   */
   public static fromWikiPage(targetId: string, page: WikiPageInterface): PipelineStateInterface {
     return {
       targetId,
@@ -26,6 +23,13 @@ export class PipelineState {
     };
   }
 
+  /**
+   * Creates a pipeline state from a scraped HTML page.
+   *
+   * @param targetId - Config target key identifying the HTML target.
+   * @param page - Scraped HTML page with resolved URL and content.
+   * @returns Initial pipeline state with `output` set to `null`.
+   */
   public static fromHtmlPage(targetId: string, page: ScrapedPageInterface): PipelineStateInterface {
     return {
       targetId,

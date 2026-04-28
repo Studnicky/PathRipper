@@ -220,3 +220,6 @@ symbols, compact, etc.) via `npx` against the local monorepo — no entry in
   (`ubuntu-latest`/`macos-latest` × Node 20/22).
 - Added `.github/workflows/changelog.yml` that fails any PR to `develop` or
   `master` whose diff does not modify `CHANGELOG.md`.
+
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Studnicky/PathRipper/releases/tag/v2.0.0
