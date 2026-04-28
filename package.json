@@ -1,33 +1,55 @@
 {
-	"name": "ripperoni",
-	"config": {
-		"src": "./src/index.js"
-	},
-	"version": "1.0.0",
-	"description": "Steal data",
-	"main": "$npm_package_config_src",
-	"scripts": {
-		"debug": "node --inspect-brk=1337 $npm_package_config_src",
-		"start": "node $npm_package_config_src",
-		"test": "echo lol no"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+ssh://git@github.com/Studnicky/PathRipper.git"
-	},
-	"keywords": [
-		"pathfinder",
-		"scrape"
-	],
-	"author": "a.j.studnicky@gmail.com",
-	"license": "UNLICENSED",
-	"bugs": {
-		"url": "https://github.com/Studnicky/PathRipper/issues"
-	},
-	"homepage": "https://github.com/Studnicky/PathRipper#readme",
-	"devDependencies": {
-		"eslint": "^6.6.0",
-		"jsdom": "^15.2.1",
-		"striptags": "^3.1.1"
-	}
+  "name": "ripperoni",
+  "version": "2.0.0",
+  "description": "Configurable web scraper — pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
+  "type": "module",
+  "bin": {
+    "ripperoni": "./dist/cli/cli.js"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./pipeline": "./dist/pipeline/index.js",
+    "./scrapers": "./dist/scrapers/index.js",
+    "./crawlers": "./dist/crawlers/index.js",
+    "./tasks": "./dist/tasks/index.js",
+    "./modules/http": "./dist/modules/http/index.js",
+    "./modules/logger": "./dist/modules/logger/index.js"
+  },
+  "scripts": {
+    "build": "tsc --noEmit false",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' --fix",
+    "test": "node --import tsx --test 'tests/**/*.test.ts'",
+    "test:unit": "node --import tsx --test 'tests/unit/**/*.test.ts'",
+    "check": "npm run typecheck && npm run lint && npm run test",
+    "dev": "node --watch dist/cli/cli.js",
+    "prepare": "husky",
+    "test:integration": "node --test tests/integration/**/*.test.ts"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "bottleneck": "^2.19.5",
+    "cheerio": "^1.0.0",
+    "commander": "^12.0.0",
+    "json-schema-to-ts": "^3.1.1",
+    "mwn": "^3.0.2",
+    "wtf_wikipedia": "^10.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.0.0",
+    "husky": "^9.1.7",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "8.59.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "author": "a.j.studnicky@gmail.com",
+  "license": "UNLICENSED"
 }

@@ -1,0 +1,35 @@
+{
+  "output": {
+    "basePath": "./output",
+    "format": "json",
+    "pretty": true
+  },
+  "mediawiki": {
+    "your-wiki-target": {
+      "apiUrl":      "https://wiki.example/w/api.php",
+      "userAgent":   "MyApp/1.0 (you@example.com)",
+      "rateLimitMs": 1000,
+      "categories": {
+        "alias-1": "Example Category Name"
+      }
+    }
+  },
+  "targets": {
+    "your-html-target": {
+      "baseUrl":     "https://example.com",
+      "rateLimitMs": 500,
+      "headers": {
+        "User-Agent": "MyApp/1.0"
+      }
+    }
+  },
+  "crawlers": {
+    "your-crawler-target": {
+      "startUrl":    "https://example.com/index",
+      "domain":      "example\\.com",
+      "target":      "\\?id=",
+      "delimiter":   "category",
+      "rateLimitMs": 100
+    }
+  }
+}

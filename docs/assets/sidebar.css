@@ -1,0 +1,15 @@
+/* Shared sidebar styles — Ripperoni docs */
+.sidebar { width: var(--sidebar-w); flex-shrink: 0; padding: 3rem 0; }
+.sidebar-inner { position: sticky; top: 2rem; }
+.sidebar h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
+.sidebar .tagline { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.4; }
+.badge { display: inline-block; background: #1f1f1f; color: var(--muted); font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #333; margin-bottom: 1.75rem; }
+.toc-label, .pages-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; display: block; }
+.toc { list-style: none; margin-bottom: 1.75rem; }
+.toc li { padding: 0.15rem 0; }
+.toc a { font-size: 0.82rem; color: #aaa; }
+.toc a:hover { color: var(--accent); text-decoration: none; }
+.page-links { list-style: none; }
+.page-links li { padding: 0.15rem 0; }
+.page-links a { font-size: 0.82rem; color: #aaa; }
+.page-links a:hover { color: var(--accent); text-decoration: none; }

@@ -1,0 +1,61 @@
+// Replaces PathRipper's JSDOM fetchPage with cheerio — lighter, no JS execution.
+// For JS-rendered pages, swap the fetch() call for a headless browser driver.
+
+import { load as cheerioLoad } from 'cheerio';
+import type { CheerioAPI } from 'cheerio';
+import { RateLimiter } from '../modules/http/RateLimiter.js';
+import { RetryExecutor } from '../modules/http/RetryExecutor.js';
+import type { RetryConfigInterface } from '../modules/http/RetryExecutor.js';
+import { Logger } from '../modules/logger/Logger.js';
+
+export interface HtmlScraperConfigInterface {
+  readonly baseUrl: string;
+  readonly rateLimitMs?: number | undefined;
+  readonly retry?: RetryConfigInterface | undefined;
+  readonly headers?: Readonly<Record<string, string>> | undefined;
+}
+
+export interface ScrapedPageInterface {
+  readonly url: string;
+  readonly $: CheerioAPI;
+  readonly html: string;
+}
+
+export class HtmlScraper {
+  readonly #base: string;
+  readonly #headers: Readonly<Record<string, string>>;
+  readonly #limiter: RateLimiter;
+  readonly #retry: RetryExecutor;
+  readonly #log: Logger;
+
+  constructor(config: HtmlScraperConfigInterface) {
+    this.#base    = config.baseUrl;
+    this.#headers = config.headers ?? {};
+    this.#limiter = RateLimiter.withDelay(config.rateLimitMs ?? 250);
+    this.#retry   = new RetryExecutor(config.retry);
+    this.#log     = Logger.forComponent('HtmlScraper');
+  }
+
+  async fetchPage(path: string): Promise<ScrapedPageInterface> {
+    const url = path.startsWith('http') ? path : `${this.#base}${path}`;
+    this.#log.debug('fetchPage', url);
+
+    const html = await this.#limiter.schedule(() =>
+      this.#retry.execute(async () => {
+        const res = await fetch(url, { headers: this.#headers });
+        if (!res.ok) {
+          const err = Object.assign(new Error(`HTTP ${res.status.toString()} ${url}`), { status: res.status });
+          throw err;
+        }
+        return res.text();
+      }),
+    );
+
+    return { url, $: cheerioLoad(html), html };
+  }
+
+  async fetchText(path: string): Promise<string> {
+    const { html } = await this.fetchPage(path);
+    return html;
+  }
+}

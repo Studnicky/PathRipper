@@ -63,3 +63,19 @@ typings/
 # output and reports
 reports
 data
+
+# Build / scrape output
+dist/
+output/
+
+# User's local configs — never committed.
+# Only the canonical `ripperoni.config.example.json` is tracked.
+ripperoni.config*.json
+!ripperoni.config.example.json
+
+# Harness / tooling state
+.claude/
+.enginseer/
+
+# OS
+.DS_Store
