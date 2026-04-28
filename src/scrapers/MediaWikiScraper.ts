@@ -33,7 +33,10 @@ interface RevisionsPageInterface {
   readonly title:     string;
   readonly pageid?:   number;
   readonly missing?:  true;
-  readonly revisions?: ReadonlyArray<{ readonly content?: string }>;
+  readonly revisions?: ReadonlyArray<{
+    readonly '*'?:     string;  // formatversion 1 — content here
+    readonly content?: string;  // formatversion 2 fallback
+  }>;
 }
 
 interface RevisionsResponseInterface {
@@ -66,13 +69,12 @@ export class MediaWikiScraper {
     return this.#limiter.schedule(async () => {
       const params = new URLSearchParams({
         action: 'query', titles: title, prop: 'revisions',
-        rvprop: 'content', rvslots: 'main', format: 'json', formatversion: '2',
+        rvprop: 'content', format: 'json',
       });
       const data = await this.#get<RevisionsResponseInterface>(params);
       const pages = Object.values(data.query?.pages ?? {});
       const page  = pages[0];
-      const wikitext = page?.revisions?.[0]?.content ?? '';
-      return { title, wikitext };
+      return { title, wikitext: MediaWikiScraper.wikitextOf(page) };
     });
   }
 
@@ -83,12 +85,12 @@ export class MediaWikiScraper {
     return this.#limiter.schedule(async () => {
       const params = new URLSearchParams({
         action: 'query', titles: titles.join('|'), prop: 'revisions',
-        rvprop: 'content', rvslots: 'main', format: 'json', formatversion: '2',
+        rvprop: 'content', format: 'json',
       });
       const data = await this.#get<RevisionsResponseInterface>(params);
       return Object.values(data.query?.pages ?? {}).map((p) => ({
         title:    p.title,
-        wikitext: p.revisions?.[0]?.content ?? '',
+        wikitext: MediaWikiScraper.wikitextOf(p),
       }));
     });
   }
@@ -134,6 +136,11 @@ export class MediaWikiScraper {
     }
 
     return pages;
+  }
+
+  private static wikitextOf(page: RevisionsPageInterface | undefined): string {
+    const rev = page?.revisions?.[0];
+    return rev?.['*'] ?? rev?.content ?? '';
   }
 
   async #get<T>(params: URLSearchParams): Promise<T> {
