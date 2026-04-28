@@ -48,6 +48,10 @@ export const RIPPER_CONFIG_SCHEMA = {
             type: 'object',
             additionalProperties: { type: 'string', minLength: 1 },
           },
+          tasks: {
+            type: 'array',
+            items: { type: 'string', minLength: 1 },
+          },
         },
       },
     },
@@ -70,6 +74,10 @@ export const RIPPER_CONFIG_SCHEMA = {
           mapping: {
             type: 'object',
             additionalProperties: { type: 'string', minLength: 1 },
+          },
+          tasks: {
+            type: 'array',
+            items: { type: 'string', minLength: 1 },
           },
         },
       },

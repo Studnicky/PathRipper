@@ -10,7 +10,8 @@
       "rateLimitMs": 1000,
       "categories": {
         "alias-1": "Example Category Name"
-      }
+      },
+      "tasks": ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
@@ -19,7 +20,8 @@
       "rateLimitMs": 500,
       "headers": {
         "User-Agent": "MyApp/1.0"
-      }
+      },
+      "tasks": ["./plugins/your-target/parse.task.js"]
     }
   },
   "crawlers": {

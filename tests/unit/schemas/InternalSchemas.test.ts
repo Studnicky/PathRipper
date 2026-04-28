@@ -94,4 +94,9 @@ describe('TargetDefinition meta-schema', () => {
     const ok = validateTargetDefinition({ onSchemaError: 'oops' });
     assert.equal(ok, false);
   });
+
+  it('accepts a target definition with a tasks array', () => {
+    const ok = validateTargetDefinition({ tasks: ['./plugin.js'] });
+    assert.equal(ok, true);
+  });
 });
