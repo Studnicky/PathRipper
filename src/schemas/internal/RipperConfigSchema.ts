@@ -65,10 +65,6 @@ export const RIPPER_CONFIG_SCHEMA = {
           apiUrl:      { type: 'string', format: 'uri', minLength: 1 },
           rateLimitMs: { type: 'integer', minimum: 0 },
           jitterMs:    { type: 'integer', minimum: 0 },
-          categories: {
-            type: 'object',
-            additionalProperties: { type: 'string' },
-          },
           outputSchema:  { type: 'string', minLength: 1 },
           onSchemaError: { type: 'string', enum: ['halt', 'skip', 'warn'] },
           mapping: {

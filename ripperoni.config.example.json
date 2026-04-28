@@ -8,9 +8,6 @@
     "your-wiki-target": {
       "apiUrl":      "https://wiki.example/w/api.php",
       "rateLimitMs": 1000,
-      "categories": {
-        "alias-1": "Example Category Name"
-      },
       "tasks": ["./plugins/your-target/parse.task.js"]
     }
   },

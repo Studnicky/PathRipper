@@ -1,3 +1,4 @@
+import { HttpError } from '../errors/HttpError.js';
 import { RateLimiter } from '../modules/http/RateLimiter.js';
 import { Logger } from '../modules/logger/Logger.js';
 
@@ -146,7 +147,7 @@ export class MediaWikiScraper {
   async #get<T>(params: URLSearchParams): Promise<T> {
     const url = `${this.#apiUrl}?${params.toString()}`;
     const res  = await fetch(url, { headers: this.#headers });
-    if (!res.ok) throw new Error(`MediaWiki API ${res.status.toString()}: ${url}`);
+    if (!res.ok) throw new HttpError(`MediaWiki API ${res.status.toString()}: ${url}`, { status: res.status, url });
     return res.json() as Promise<T>;
   }
 }
