@@ -1,7 +1,7 @@
 import wtf from 'wtf_wikipedia';
-import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/registry/PipelineState.js';
-import type { TaskFnType } from '../../src/pipeline/Pipeline.js';
+import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
+import type { PipelineStateInterface } from '../../dist/registry/PipelineState.js';
+import type { TaskFnType } from '../../dist/pipeline/Pipeline.js';
 
 const MASTERS_INFOBOX_TEMPLATE = 'mastersinfobox';
 

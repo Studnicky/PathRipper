@@ -68,6 +68,11 @@ data
 dist/
 output/
 
+# Compiled plugin outputs (built from plugins/**/*.ts via tsconfig.plugins.json)
+plugins/**/*.js
+plugins/**/*.js.map
+plugins/**/*.d.ts
+
 # User's local configs — never committed.
 # Only the canonical `ripperoni.config.example.json` is tracked.
 ripperoni.config*.json

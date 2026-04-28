@@ -1,9 +1,11 @@
 import { resolve as resolvePath } from 'node:path';
 
 import type { TaskFnType } from '../pipeline/Pipeline.js';
-import { MappingError } from '../errors/MappingError.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
+import { Logger } from '../modules/logger/Logger.js';
 import type { PipelineStateInterface } from './PipelineState.js';
+
+const logger = Logger.forComponent('TaskRegistry');
 
 export class TaskRegistry {
   static readonly #tasks = new Map<string, TaskFnType<PipelineStateInterface>>();
@@ -12,7 +14,7 @@ export class TaskRegistry {
 
   public static register(name: string, task: TaskFnType<PipelineStateInterface>): void {
     if (TaskRegistry.#tasks.has(name)) {
-      throw new MappingError(`Task already registered: ${name}`, { metadata: { name } });
+      logger.warn('register', `Overwriting existing task: ${name}`, { name });
     }
     TaskRegistry.#tasks.set(name, task);
   }

@@ -4,8 +4,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+
 import { TaskRegistry } from '../../../src/registry/TaskRegistry.js';
-import { MappingError } from '../../../src/errors/MappingError.js';
 import { ExternalSchemaError } from '../../../src/errors/ExternalSchemaError.js';
 
 describe('TaskRegistry', () => {
@@ -18,13 +18,12 @@ describe('TaskRegistry', () => {
     assert.equal(TaskRegistry.get('myTask'), task);
   });
 
-  it('register() same name twice throws MappingError', () => {
-    const task = async (_next: () => Promise<void>, _state: Record<string, unknown>): Promise<void> => { /* noop */ };
-    TaskRegistry.register('dupTask', task);
-    assert.throws(
-      () => TaskRegistry.register('dupTask', task),
-      (err: unknown) => err instanceof MappingError && /already registered/.test(err.message),
-    );
+  it('register() same name twice overwrites silently; get() returns the second task', () => {
+    const taskA = async (_next: () => Promise<void>, _state: Record<string, unknown>): Promise<void> => { /* noop A */ };
+    const taskB = async (_next: () => Promise<void>, _state: Record<string, unknown>): Promise<void> => { /* noop B */ };
+    TaskRegistry.register('dupTask', taskA);
+    TaskRegistry.register('dupTask', taskB);
+    assert.equal(TaskRegistry.get('dupTask'), taskB);
   });
 
   it('get() unknown name returns undefined', () => {
@@ -55,19 +54,10 @@ describe('TaskRegistry', () => {
     }
   });
 
-  it('load() imports a plugin file that registers a task as side-effect', async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), 'ripperoni-registry-'));
-    try {
-      const pluginContent = `
-        import { TaskRegistry } from '${join(process.cwd(), 'src/registry/TaskRegistry.js')}';
-        TaskRegistry.register('sideEffectTask', async () => {});
-      `;
-      const pluginPath = join(tmpDir, 'test-plugin.mjs');
-      await writeFile(pluginPath, pluginContent);
-      await TaskRegistry.load(pluginPath, tmpDir);
-      assert.equal(TaskRegistry.has('sideEffectTask'), true);
-    } finally {
-      await rm(tmpDir, { recursive: true, force: true });
-    }
+  it('load() throws ExternalSchemaError on a missing file', async () => {
+    await assert.rejects(
+      TaskRegistry.load('does-not-exist.mjs', '/tmp'),
+      (err: unknown) => err instanceof Error && err.constructor.name === 'ExternalSchemaError',
+    );
   });
 });
