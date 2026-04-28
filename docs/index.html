@@ -111,37 +111,38 @@ npm run build</code></pre>
   "mediawiki": {
     "&lt;your-wiki-target&gt;": {
       "apiUrl":      "https://wiki.example/w/api.php",
-      "userAgent":   "MyApp/1.0 (you@example.com)",
-      "rateLimitMs": 1000
+      "rateLimitMs": 1000,
+      "categories":  ["Category A", "Category B"],
+      "tasks":       ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
     "&lt;your-html-target&gt;": {
       "baseUrl":     "https://example.com",
-      "rateLimitMs": 500
+      "rateLimitMs": 500,
+      "tasks":       ["./plugins/your-target/parse.task.js"]
     }
   }
 }</code></pre>
         <p>Copy <code>ripperoni.config.example.json</code> to <code>ripperoni.config.json</code> and edit. The unprefixed file is gitignored.</p>
 
-        <h3>Scrape a MediaWiki category</h3>
-<pre><code>ripperoni scrape-wiki \
+        <h3>Scrape a MediaWiki target</h3>
+<pre><code>ripperoni scrape \
   --target &lt;your-wiki-target&gt; \
   --category "Example Category Name" \
-  --config ripperoni.config.json \
-  --out ./output</code></pre>
-        <p>Writes one <code>.json</code> per page under <code>./output/&lt;your-wiki-target&gt;/</code>. Each file contains parsed infobox fields, sections, and categories.</p>
+  --config ripperoni.config.json</code></pre>
+        <p>Omit <code>--category</code> to use the <code>categories</code> array from config, or to enumerate every article in the wiki via the allpages API. Writes one <code>.json</code> per page under <code>./output/&lt;your-wiki-target&gt;/</code>. Output shape is controlled by the parse plugin registered as <code>&lt;targetId&gt;:parse</code>.</p>
 
         <h3>Crawl a site for links</h3>
 <pre><code>ripperoni crawl \
-  --start "https://example.com/index" \
+  --starts "https://example.com/index" \
   --domain "example\.com" \
   --target "\?id=" \
   --delimiter "category" \
   --rate 100</code></pre>
 
         <h3>Scrape HTML pages</h3>
-<pre><code>ripperoni scrape-html \
+<pre><code>ripperoni scrape \
   --target &lt;your-html-target&gt; \
   --paths "/page/1" "/page/2" \
   --config ripperoni.config.json</code></pre>
@@ -177,9 +178,21 @@ npm run build</code></pre>
           <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>apiUrl</code></td><td>required</td><td>MediaWiki API endpoint URL.</td></tr>
-            <tr><td><code>userAgent</code></td><td>required</td><td>User-Agent string sent to the wiki. Required by most wiki policies.</td></tr>
             <tr><td><code>rateLimitMs</code></td><td><code>1000</code></td><td>Minimum ms between API requests. Most wiki policies require ≥1 req/s — check yours.</td></tr>
-            <tr><td><code>categories</code></td><td>–</td><td>Named category map: <code>{ "alias": "Full Category Name" }</code>. Optional convenience shorthand.</td></tr>
+            <tr><td><code>jitterMs</code></td><td><code>0</code></td><td>Random per-request jitter added on top of <code>rateLimitMs</code>. Makes request spacing less robotic.</td></tr>
+            <tr><td><code>categories</code></td><td>–</td><td>Optional list of category names to scrape. Omit to enumerate all articles via the allpages API.</td></tr>
+            <tr><td><code>tasks</code></td><td>–</td><td>Paths to parse plugin <code>.js</code> files. Each plugin registers a task as <code>&lt;targetId&gt;:parse</code>.</td></tr>
+          </tbody>
+        </table>
+        <h3>targets (HTML scraper)</h3>
+        <table>
+          <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>baseUrl</code></td><td>required</td><td>Base URL prepended to relative paths.</td></tr>
+            <tr><td><code>rateLimitMs</code></td><td><code>250</code></td><td>Minimum ms between requests.</td></tr>
+            <tr><td><code>jitterMs</code></td><td><code>0</code></td><td>Random per-request jitter.</td></tr>
+            <tr><td><code>headers</code></td><td><code>{}</code></td><td>HTTP headers sent with every request.</td></tr>
+            <tr><td><code>tasks</code></td><td>–</td><td>Paths to parse plugin <code>.js</code> files.</td></tr>
           </tbody>
         </table>
         <div class="callout">Set <code>LOG_LEVEL=debug</code> to see every request, retry, and file write. Default level is <code>info</code>.</div>
@@ -187,12 +200,15 @@ npm run build</code></pre>
 
       <section id="programmatic">
         <h2>Programmatic use</h2>
-        <p>All classes are exported from the root package. Use them without the CLI:</p>
-<pre><code>import { Pipeline, MediaWikiScraper, WikitextParser, exportJson } from 'ripperoni';
+        <p>Classes are exported via subpath imports. Use them directly without the CLI:</p>
+<pre><code>import { Pipeline } from 'ripperoni/Pipeline';
+import { MediaWikiScraper } from 'ripperoni/MediaWikiScraper';
+import { WikitextParser } from 'ripperoni/WikitextParser';
+import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
+import { PipelineState } from 'ripperoni/registry/PipelineState';
 
 const scraper = await MediaWikiScraper.create({
   apiUrl:      'https://wiki.example/w/api.php',
-  userAgent:   'MyApp/1.0 (you@example.com)',
   rateLimitMs: 1000,
 });
 
@@ -200,12 +216,28 @@ const pages = await scraper.scrapeCategory('Example Category Name');
 
 const pipeline = new Pipeline({ name: 'my-job' });
 pipeline.addTask(async (next, state) => {
-  state.data = pages.map((p) => WikitextParser.parse(p.title, p.wikitext));
+  state.output = WikitextParser.parse(state.page.title, state.page.wikitext ?? '');
   await next();
 });
-pipeline.addTask(exportJson);
 
-await pipeline.execute({ outputPath: './output/result.json', data: null });</code></pre>
+for (const page of pages) {
+  await pipeline.execute(PipelineState.fromWikiPage('my-target', page));
+}</code></pre>
+
+        <h2>Write a parse plugin</h2>
+        <p>Plugins are plain <code>.js</code> files loaded at runtime via <code>tasks</code> in the config. Each plugin registers itself under <code>&lt;targetId&gt;:parse</code>:</p>
+<pre><code>// plugins/my-target/parse.task.js
+import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
+
+TaskRegistry.register('my-target:parse', async (next, state) => {
+  // state.page.wikitext or state.page.html is available here
+  state.output = {
+    title: state.page.title,
+    // ... your structured fields
+  };
+  await next();
+});</code></pre>
+        <p>Build TypeScript plugins with <code>npm run build:plugins</code>. The pipeline runs <code>&lt;targetId&gt;:parse</code> for each page before writing the output file.</p>
       </section>
 
       <footer>

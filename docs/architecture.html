@@ -92,25 +92,28 @@ graph TD
 sequenceDiagram
     participant Caller
     participant Pipeline
-    participant Task1 as reporter (error boundary)
-    participant Task2 as your task
-    participant Task3 as exportJson
+    participant ParseTask as &lt;targetId&gt;:parse (plugin)
+    participant WriteTask as write-to-disk (orchestrator)
 
-    Caller->>Pipeline: execute(state)
-    Pipeline->>Task1: (next, state)
-    Task1->>Task2: next() → (next, state)
-    Task2->>Task3: next() → (next, state)
-    Task3-->>Task2: returns
-    Task2-->>Task1: returns
-    Task1-->>Pipeline: returns (writes report on error)
+    Caller->>Pipeline: execute(PipelineState)
+    Pipeline->>ParseTask: (next, state)
+    ParseTask-->>Pipeline: state.output set
+    Pipeline->>WriteTask: (next, state)
+    WriteTask-->>Pipeline: file written
     Pipeline-->>Caller: state
         </div>
 
-        <p>The <code>reporter</code> task is the canonical error boundary. Place it first; it catches any throw from downstream tasks and writes a JSON report before re-surfacing. <code>exportJson</code> is a write-to-disk terminal — add it last when you want data persisted.</p>
+        <p>The <code>ScrapeOrchestrator</code> builds the pipeline per page. A user-registered <code>&lt;targetId&gt;:parse</code> task (from a plugin file declared in config) runs first and sets <code>state.output</code>. If no parse task is registered the orchestrator falls back to raw <code>WikitextParser</code> output. A write-to-disk task is always added last by the orchestrator.</p>
 
-<pre><code>const pipeline = new Pipeline&lt;MyState&gt;({ name: 'my-job' });
-pipeline.addTasks([reporter, myFetchTask, myParseTask, exportJson]);
-await pipeline.execute({ outputPath: './out/result.json', data: null });</code></pre>
+<pre><code>const pipeline = new Pipeline&lt;PipelineStateInterface&gt;({ name: 'my-target' });
+if (TaskRegistry.has('my-target:parse')) {
+  pipeline.addTask(TaskRegistry.get('my-target:parse'));
+}
+pipeline.addTask(async (next, state) => {
+  await next();
+  await writeFile(outputPath, JSON.stringify(state.output ?? fallback));
+});
+await pipeline.execute(PipelineState.fromWikiPage('my-target', page));</code></pre>
 
         <h3>Task signature</h3>
 <pre><code>type TaskFnType&lt;TState&gt; = (next: NextFnType, state: TState) =&gt; Promise&lt;void&gt;</code></pre>
@@ -170,13 +173,14 @@ graph LR
         <p>Native <code>fetch</code> + <code>cheerio</code>. Returns <code>ScrapedPageInterface { url, $, html }</code>. The <code>$</code> field is a live <code>CheerioAPI</code> handle — use it exactly as you'd use jQuery on a DOM. No browser engine, no JavaScript execution. For JS-rendered pages, swap the fetch call for a headless driver (Playwright, Puppeteer) and feed the HTML to <code>cheerio.load()</code>.</p>
 
         <h3>MediaWikiScraper</h3>
-        <p>Built on <code>mwn</code>. Three operations:</p>
+        <p>Direct <code>fetch()</code> calls to the MediaWiki JSON API — no mwn or axios layer. Four operations:</p>
         <ul>
           <li><code>fetchPage(title)</code> — single page wikitext</li>
           <li><code>fetchPagesBatch(titles)</code> — up to 50 pages per API request</li>
-          <li><code>scrapeCategory(name)</code> — full category: lists members, batches wikitext fetch, returns all pages</li>
+          <li><code>fetchCategory(name)</code> — paginated category members list</li>
+          <li><code>fetchAllPages()</code> — enumerates every article in main namespace via <code>action=query&amp;list=allpages</code></li>
         </ul>
-        <p>Rate limiting is applied per-request via <code>RateLimiter</code>. Most public wiki policies require ≥1 second between API calls — set <code>rateLimitMs: 1000</code> (or the value your target's terms specify) per target.</p>
+        <p>The <code>ScrapeOrchestrator</code> selects from three modes: explicit <code>--category</code> flag → single category; <code>categories[]</code> in config → iterate and deduplicate; no categories → <code>fetchAllPages()</code>. Rate limiting and jitter applied per-request.</p>
 
         <h3>WikitextParser</h3>
         <p>Wraps <code>wtf_wikipedia</code>. <code>WikitextParser.parse(title, wikitext)</code> returns a <code>ParsedPageInterface</code> with <code>infobox</code> (flat key→value record), <code>sections</code> (title + raw wikitext), and <code>categories</code>. Helper methods <code>infoboxField</code> and <code>infoboxNumber</code> pull typed values without null-checks at call site.</p>
@@ -207,11 +211,12 @@ graph LR
             <tr><td><code>src/modules/http/RateLimiter.ts</code></td><td><code>RateLimiter</code></td><td>New — wraps <code>bottleneck</code></td></tr>
             <tr><td><code>src/modules/logger/Logger.ts</code></td><td><code>Logger</code></td><td>Torreya <code>@torreya/logger</code></td></tr>
             <tr><td><code>src/scrapers/HtmlScraper.ts</code></td><td><code>HtmlScraper</code></td><td>PathRipper <code>fetchPage</code>, cheerio replaces JSDOM</td></tr>
-            <tr><td><code>src/scrapers/MediaWikiScraper.ts</code></td><td><code>MediaWikiScraper</code></td><td>New — <code>mwn</code></td></tr>
+            <tr><td><code>src/scrapers/MediaWikiScraper.ts</code></td><td><code>MediaWikiScraper</code></td><td>New — native <code>fetch()</code> to MediaWiki JSON API</td></tr>
             <tr><td><code>src/scrapers/WikitextParser.ts</code></td><td><code>WikitextParser</code></td><td>New — <code>wtf_wikipedia</code></td></tr>
             <tr><td><code>src/crawlers/LinkLister.ts</code></td><td><code>LinkLister</code></td><td>PathRipper <code>linkLister/index.js</code></td></tr>
-            <tr><td><code>src/tasks/reporter.ts</code></td><td><code>reporter</code></td><td>PathRipper <code>tasks/reporter.js</code></td></tr>
-            <tr><td><code>src/tasks/exportJson.ts</code></td><td><code>exportJson</code></td><td>PathRipper <code>utils/exportContent.js</code></td></tr>
+            <tr><td><code>src/orchestrators/ScrapeOrchestrator.ts</code></td><td><code>ScrapeOrchestrator</code></td><td>New — pipeline orchestration, three-mode wiki scrape</td></tr>
+            <tr><td><code>src/registry/TaskRegistry.ts</code></td><td><code>TaskRegistry</code></td><td>New — plugin registration and dynamic loading</td></tr>
+            <tr><td><code>src/registry/PipelineState.ts</code></td><td><code>PipelineState</code></td><td>New — typed state bridge between scrapers and plugins</td></tr>
             <tr><td><code>src/config/RipperConfig.ts</code></td><td><code>RipperConfig</code></td><td>New — replaces hardcoded <code>config.js</code></td></tr>
             <tr><td><code>src/cli/cli.ts</code></td><td><code>ripperoni</code> CLI</td><td>New — <code>commander</code></td></tr>
           </tbody>
