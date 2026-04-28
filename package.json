@@ -27,10 +27,12 @@
     "./TemplateParser":    "./dist/mapping/TemplateParser.js",
     "./ExternalSchemaLoader": "./dist/loaders/ExternalSchemaLoader.js",
     "./registry/TaskRegistry":  "./dist/registry/TaskRegistry.js",
-    "./registry/PipelineState": "./dist/registry/PipelineState.js"
+    "./registry/PipelineState": "./dist/registry/PipelineState.js",
+    "./orchestrators/ScrapeOrchestrator": "./dist/orchestrators/ScrapeOrchestrator.js"
   },
   "scripts": {
-    "build": "tsc --noEmit false",
+    "build": "tsc --noEmit false && npm run build:plugins",
+    "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
     "typecheck": "tsc --noEmit",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
