@@ -10,6 +10,10 @@ import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { LinkLister } from '../crawlers/LinkLister.js';
 import { Logger } from '../modules/logger/Logger.js';
+import { Pipeline } from '../pipeline/Pipeline.js';
+import { TaskRegistry } from '../registry/TaskRegistry.js';
+import { PipelineState } from '../registry/PipelineState.js';
+import type { PipelineStateInterface } from '../registry/PipelineState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')) as { version: string };
@@ -32,32 +36,62 @@ program
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
   .action(async (opts: { target: string; paths?: string[]; category?: string; config: string; out?: string }) => {
-    const log    = Logger.forComponent('cli');
-    const config = await RipperConfig.load(opts.config);
+    const log       = Logger.forComponent('cli');
+    const config    = await RipperConfig.load(opts.config);
+    const configDir = dirname(resolve(opts.config));
 
     const htmlTarget = config.targets?.[opts.target];
     const wikiTarget = config.mediawiki?.[opts.target];
 
     if (htmlTarget !== undefined) {
       if (!opts.paths?.length) { log.error('scrape', '--paths required for html targets'); process.exit(1); }
+      const tasks = ((htmlTarget as Record<string, unknown>)['tasks'] as string[] | undefined) ?? [];
+      await TaskRegistry.loadAll(tasks, configDir);
       const scraper = new HtmlScraper(htmlTarget);
+      const outDir  = opts.out ?? config.output.basePath;
+      await mkdir(resolve(outDir, opts.target), { recursive: true });
       for (const path of opts.paths!) {
-        const page = await scraper.fetchPage(path);
-        log.info('scrape', `Fetched ${page.url}`);
+        const page     = await scraper.fetchPage(path);
+        const pipeline = new Pipeline<PipelineStateInterface>({ name: opts.target });
+        if (TaskRegistry.has(`${opts.target}:parse`)) {
+          pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`)!);
+        }
+        pipeline.addTask(async (next, state) => {
+          await next();
+          const slug     = page.url.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase();
+          const payload  = state.output ?? { url: page.url };
+          const filePath = resolve(outDir, opts.target, `${slug}.json`);
+          await writeFile(filePath, JSON.stringify(payload, null, 2));
+        });
+        await pipeline.execute(PipelineState.fromHtmlPage(opts.target, page));
+        log.info('scrape', `Wrote ${page.url}`);
       }
       return;
     }
 
     if (wikiTarget !== undefined) {
       if (!opts.category) { log.error('scrape', '--category required for mediawiki targets'); process.exit(1); }
+      const tasks = ((wikiTarget as Record<string, unknown>)['tasks'] as string[] | undefined) ?? [];
+      await TaskRegistry.loadAll(tasks, configDir);
       const scraper = await MediaWikiScraper.create(wikiTarget);
       const pages   = await scraper.scrapeCategory(opts.category!);
       const outDir  = opts.out ?? config.output.basePath;
       await mkdir(resolve(outDir, opts.target), { recursive: true });
       for (const page of pages) {
-        const parsed   = WikitextParser.parse(page.title, page.wikitext);
-        const slug     = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        await writeFile(resolve(outDir, opts.target, `${slug}.json`), JSON.stringify(parsed, null, 2));
+        const pipeline = new Pipeline<PipelineStateInterface>({ name: opts.target });
+        if (TaskRegistry.has(`${opts.target}:parse`)) {
+          pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`)!);
+        }
+        pipeline.addTask(async (next, state) => {
+          await next();
+          const slug     = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          const payload  = state.output !== null
+            ? state.output
+            : WikitextParser.parse(page.title, page.wikitext);
+          const filePath = resolve(outDir, opts.target, `${slug}.json`);
+          await writeFile(filePath, JSON.stringify(payload, null, 2));
+        });
+        await pipeline.execute(PipelineState.fromWikiPage(opts.target, page));
       }
       log.info('scrape', `Wrote ${pages.length.toString()} pages to ${resolve(outDir, opts.target)}`);
       return;

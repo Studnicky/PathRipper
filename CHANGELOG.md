@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Plugin system — user-space parse tasks via TaskRegistry
+
+ripperoni now has a plugin task registry. Instead of writing output from raw
+wikitext in the CLI, you can register a named parse task that runs in the
+pipeline before the file is written.
+
+**How to write a plugin:**
+
+1. Create a `.js` file anywhere outside `src/` (convention: `plugins/<target>/`).
+2. Import `TaskRegistry` from `dist/registry/TaskRegistry.js` and `WikitextParser`
+   from `dist/scrapers/WikitextParser.js`.
+3. Register your task under the name `<targetId>:parse`:
+   ```js
+   import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
+   const task = async (next, state) => {
+     // read state.page.wikitext, write to state.output
+     await next();
+   };
+   TaskRegistry.register('mytarget:parse', task);
+   ```
+4. Point the config at your file:
+   ```json
+   { "mediawiki": { "mytarget": { "tasks": ["./plugins/mytarget/parse.task.js"] } } }
+   ```
+
+The CLI loads each `tasks` entry at startup (side-effect import), then for
+each page it runs `<targetId>:parse` through the pipeline before writing.
+If the task sets `state.output`, that object is written to the JSON file.
+If it doesn't, the CLI falls back to raw `WikitextParser.parse` output.
+
+**Note on `wtf_wikipedia` and non-standard infoboxes:** `wtf_wikipedia`
+only recognizes standard Wikipedia infobox templates. Non-standard infoboxes
+(e.g. `{{MastersInfobox`) are parsed as generic templates, accessible via
+`doc.templates()`. Find your template by checking the normalized
+`template` field on `.json()` (lowercased template name, no spaces).
+
 ### Error handling — structured, named errors throughout
 
 All errors thrown from ripperoni are now typed and carry structured metadata.
