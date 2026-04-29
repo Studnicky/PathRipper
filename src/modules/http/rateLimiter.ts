@@ -4,7 +4,24 @@ import type { RateLimiterConfigInterface } from '../../types/RateLimiter.js';
 
 export type { RateLimiterConfigInterface };
 
-/** Throttles concurrent and sequential async calls using Bottleneck with optional jitter. */
+/**
+ * Throttles concurrent and sequential async calls using Bottleneck with optional jitter.
+ *
+ * @remarks
+ * Wraps Bottleneck to enforce minimum time between calls and optional random jitter.
+ * Use {@link RateLimiter.perSecond} or {@link RateLimiter.withDelay} for common configurations.
+ *
+ * @example
+ * ```ts
+ * const limiter = RateLimiter.perSecond(5, 50);
+ * const result = await limiter.schedule(() => fetch(url).then(r => r.json()));
+ * ```
+ *
+ * @category HTTP
+ * @since 2.0.0
+ * @see {@link RetryExecutor}
+ * @group Core
+ */
 export class RateLimiter {
   readonly #limiter: Bottleneck;
   readonly #jitterMs: number;

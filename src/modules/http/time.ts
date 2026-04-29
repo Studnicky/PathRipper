@@ -1,5 +1,20 @@
-/** Static utility for time-related async operations within the http module. */
-
+/**
+ * Static utility for time-related async operations within the http module.
+ *
+ * @remarks
+ * All methods are static; the class cannot be instantiated.
+ * Negative or non-finite `ms` values are clamped to zero rather than throwing.
+ *
+ * @example
+ * ```ts
+ * await Time.sleep(250); // pause for 250 ms
+ * ```
+ *
+ * @category HTTP
+ * @since 2.0.0
+ * @see {@link RateLimiter}
+ * @group Core
+ */
 export class Time {
   private constructor() { /* static-only */ }
 

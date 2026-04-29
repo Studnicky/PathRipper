@@ -1,4 +1,28 @@
-/** Configuration for RateLimiter instances backed by Bottleneck. */
+/**
+ * Configuration for `RateLimiter` instances backed by Bottleneck.
+ *
+ * @remarks
+ * `minTimeMs` is the only required field.  `jitterMs` adds random variance to
+ * avoid thundering-herd effects.  The reservoir fields enable token-bucket
+ * burst control on top of the base rate limit.
+ *
+ * @example
+ * ```ts
+ * const config: RateLimiterConfigInterface = {
+ *   minTimeMs: 500,
+ *   jitterMs: 100,
+ *   maxConcurrent: 2,
+ *   reservoir: 10,
+ *   reservoirRefreshAmount: 10,
+ *   reservoirRefreshIntervalMs: 60_000,
+ * };
+ * ```
+ *
+ * @category Http
+ * @since 2.0.0
+ * @see {@link RateLimiterConfigInterface}
+ * @group Types
+ */
 export interface RateLimiterConfigInterface {
   /** Minimum milliseconds between scheduled calls. */
   readonly minTimeMs: number;

@@ -3,7 +3,25 @@ import type { LevelType, WriteOptsInterface } from '../../types/Logger.js';
 
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 } as const;
 
-/** Structured JSON logger scoped to a named component. */
+/**
+ * Structured JSON logger scoped to a named component.
+ *
+ * @remarks
+ * Writes newline-delimited JSON to `stdout` (debug/info) and `stderr` (warn/error).
+ * Active log level is controlled via the `LOG_LEVEL` environment variable (`debug|info|warn|error`).
+ * Defaults to `info` when the variable is absent or unrecognised.
+ *
+ * @example
+ * ```ts
+ * const log = Logger.forComponent('HtmlScraper');
+ * log.info('fetchPage', 'Fetching page', { url });
+ * ```
+ *
+ * @category Logging
+ * @since 2.0.0
+ * @see {@link LevelType}
+ * @group Core
+ */
 export class Logger {
   readonly #component: string;
 

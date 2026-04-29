@@ -3,7 +3,23 @@ import type { HttpErrorOptionsInterface } from '../types/HttpError.js';
 
 export type { HttpErrorOptionsInterface };
 
-/** Thrown on non-OK HTTP responses; automatically sets `retryable` for 5xx and 429 status codes. */
+/**
+ * Thrown on non-OK HTTP responses; automatically sets `retryable` for 5xx and 429 status codes.
+ *
+ * @remarks
+ * `retryable` is `true` when `status` is undefined, >= 500, or exactly 429.
+ * Carries the HTTP `status` code and request `url` for diagnostics.
+ *
+ * @example
+ * ```ts
+ * throw HttpError.create(`HTTP 503 ${url}`, { status: 503, url });
+ * ```
+ *
+ * @category Errors
+ * @since 2.0.0
+ * @see {@link BaseError}
+ * @group Core
+ */
 export class HttpError extends BaseError {
   /** HTTP response status code, if available. */
   public readonly status: number | undefined;

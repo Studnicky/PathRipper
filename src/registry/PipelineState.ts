@@ -4,7 +4,24 @@ import type { PipelinePageInterface, PipelineStateInterface } from '../types/Pip
 
 export type { PipelinePageInterface, PipelineStateInterface };
 
-/** Factory for creating initial PipelineStateInterface objects from scraped pages. */
+/**
+ * Factory for creating initial PipelineStateInterface objects from scraped pages.
+ *
+ * @remarks
+ * All methods are static; the class cannot be instantiated.
+ * Produced state objects have `output` initialised to `null` and are ready to pass into a {@link Pipeline}.
+ *
+ * @example
+ * ```ts
+ * const state = PipelineState.fromWikiPage('monsters', wikiPage);
+ * await pipeline.execute(state);
+ * ```
+ *
+ * @category Registry
+ * @since 2.0.0
+ * @see {@link PipelineStateInterface}
+ * @group Core
+ */
 export class PipelineState {
   private constructor() { /* static-only */ }
 

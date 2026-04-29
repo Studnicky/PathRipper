@@ -1,7 +1,23 @@
 import { BaseError } from './BaseError.js';
 import type { BaseErrorOptionsInterface } from './BaseError.js';
 
-/** Thrown when the ripperoni config file fails validation or cannot be loaded. */
+/**
+ * Thrown when the ripperoni config file fails validation or cannot be loaded.
+ *
+ * @remarks
+ * Uses error code `RIPPER_CONFIG`. Always non-retryable because config failures are structural.
+ * Thrown by {@link RipperConfig} when the config JSON is missing, unparseable, or fails AJV validation.
+ *
+ * @example
+ * ```ts
+ * throw RipperConfigError.create('Invalid config at ./ripperoni.config.json', { metadata: { configPath } });
+ * ```
+ *
+ * @category Configuration
+ * @since 2.0.0
+ * @see {@link RipperConfig}
+ * @group Core
+ */
 export class RipperConfigError extends BaseError {
   /**
    * @param message - Human-readable description of the config failure.

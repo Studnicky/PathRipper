@@ -13,7 +13,24 @@ export type { HtmlScraperConfigInterface, ScrapedPageInterface };
 
 const DEFAULT_RATE_LIMIT_MS = 250;
 
-/** Fetches and parses HTML pages using cheerio with rate limiting and retry support. */
+/**
+ * Fetches and parses HTML pages using cheerio with rate limiting and retry support.
+ *
+ * @remarks
+ * Uses {@link RateLimiter} and {@link RetryExecutor} for resilient HTTP fetching.
+ * Parses responses with cheerio; no JavaScript execution — swap `fetch` for a headless driver if needed.
+ *
+ * @example
+ * ```ts
+ * const scraper = HtmlScraper.create({ baseUrl: 'https://example.com', rateLimitMs: 250 });
+ * const { $, html } = await scraper.fetchPage('/wiki/Goblin');
+ * ```
+ *
+ * @category Scraping
+ * @since 2.0.0
+ * @see {@link RateLimiter}
+ * @group Core
+ */
 export class HtmlScraper {
   readonly #base: string;
   readonly #headers: Readonly<Record<string, string>>;

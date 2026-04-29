@@ -7,7 +7,25 @@ import type { PipelineStateInterface } from '../types/PipelineState.js';
 
 const logger = Logger.forComponent('TaskRegistry');
 
-/** Global registry mapping task names to pipeline task functions. */
+/**
+ * Global registry mapping task names to pipeline task functions.
+ *
+ * @remarks
+ * All methods are static; the class cannot be instantiated.
+ * Tasks are registered by name and looked up by the pipeline runner at execution time.
+ * Plugins self-register by calling {@link TaskRegistry.register} on import.
+ *
+ * @example
+ * ```ts
+ * TaskRegistry.register('monsters:transform', async (next, state) => { /* ... *\/ await next(); });
+ * await TaskRegistry.load('./plugins/monsters.js');
+ * ```
+ *
+ * @category Registry
+ * @since 2.0.0
+ * @see {@link Pipeline}
+ * @group Core
+ */
 export class TaskRegistry {
   /** Registered task name to TaskFnInterface map. */
   static readonly #tasks = new Map<string, TaskFnInterface<PipelineStateInterface>>();

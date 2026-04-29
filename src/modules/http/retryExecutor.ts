@@ -17,7 +17,24 @@ const DEFAULTS = {
   maxDelayMs:  MAX_DELAY_MS_DEFAULT,
 } as const;
 
-/** Retries async operations with exponential backoff based on ErrorClassifier decisions. */
+/**
+ * Retries async operations with exponential backoff based on ErrorClassifier decisions.
+ *
+ * @remarks
+ * Uses {@link ErrorClassifier} to determine whether a caught error is retryable and to source
+ * any `Retry-After` backoff hints. Exponential delay is capped at `maxDelayMs` with ±10% jitter.
+ *
+ * @example
+ * ```ts
+ * const executor = RetryExecutor.create({ maxAttempts: 5, baseDelayMs: 200 });
+ * const data = await executor.execute(() => fetch(url).then(r => r.json()));
+ * ```
+ *
+ * @category HTTP
+ * @since 2.0.0
+ * @see {@link RateLimiter}
+ * @group Core
+ */
 export class RetryExecutor {
   readonly #classifier: ErrorClassifier;
   readonly #max: number;

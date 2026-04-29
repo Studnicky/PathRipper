@@ -11,8 +11,21 @@ export type { BaseErrorOptionsInterface, BaseErrorJsonType };
 /**
  * Base class for all ripperoni domain errors.
  *
+ * @remarks
  * Provides a structured `code`, optional `cause`, `metadata`, and `retryable` flag,
  * as well as JSON serialization via `toJson()` and `serialize()`.
+ * Error codes are auto-derived from the class name as SCREAMING_SNAKE_CASE unless overridden.
+ *
+ * @example
+ * ```ts
+ * throw new RipperConfigError('Invalid config', { metadata: { path: './ripperoni.config.json' } });
+ * const flat = error.flatten(); // [RipperConfigError, cause, ...]
+ * ```
+ *
+ * @category Errors
+ * @since 2.0.0
+ * @see {@link RipperConfigError}
+ * @group Core
  */
 export class BaseError extends Error {
   /** SCREAMING_SNAKE_CASE error code, auto-derived from the class name unless overridden. */

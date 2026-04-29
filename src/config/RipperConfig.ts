@@ -3,10 +3,25 @@ import { resolve } from 'node:path';
 
 import { RipperConfigSchema } from '../schemas/internal/RipperConfigSchema.js';
 import type { RipperConfigInterface } from '../types/Config.js';
-import type { ConfigLoadResult } from '../types/Results.js';
 import { RipperConfigError } from '../errors/RipperConfigError.js';
 
-/** Loads and validates ripperoni configuration files. */
+/**
+ * Loads and AJV-validates a ripperoni JSON config file.
+ *
+ * @remarks
+ * Throws {@link RipperConfigError} on parse failure or schema violation.
+ * The config path is resolved relative to the current working directory.
+ *
+ * @example
+ * ```ts
+ * const config = await RipperConfig.load('./ripperoni.config.json');
+ * ```
+ *
+ * @category Configuration
+ * @since 2.0.0
+ * @see {@link RipperConfigInterface}
+ * @group Core
+ */
 export class RipperConfig {
   /**
    * Reads and AJV-validates a JSON config file.
@@ -15,7 +30,7 @@ export class RipperConfig {
    * @returns Validated `RipperConfigInterface` object.
    * @throws {RipperConfigError} When the file is missing, unparseable, or fails schema validation.
    */
-  static async load(configPath: string): ConfigLoadResult {
+  static async load(configPath: string): Promise<RipperConfigInterface> {
     const abs  = resolve(configPath);
     const text = await readFile(abs, 'utf-8');
     const raw  = JSON.parse(text) as unknown;

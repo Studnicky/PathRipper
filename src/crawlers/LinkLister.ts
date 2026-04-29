@@ -11,7 +11,24 @@ export type { LinkListerConfigInterface };
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 const DEFAULT_RATE_LIMIT_MS = 100;
 
-/** Crawls a site from seed URLs and returns all matching target links, deduplicated and sorted. */
+/**
+ * Crawls a site from seed URLs and returns all matching target links, deduplicated and sorted.
+ *
+ * @remarks
+ * Respects domain, target, and delimiter filters configured at construction time.
+ * Rate limiting and retry behaviour are delegated to {@link RateLimiter} and {@link RetryExecutor}.
+ *
+ * @example
+ * ```ts
+ * const lister = LinkLister.create({ domain: /example\.com/, target: /\/item\//, delimiter: /\//, startUrls: [] });
+ * const links = await lister.buildList(['https://example.com/items/']);
+ * ```
+ *
+ * @category Crawlers
+ * @since 2.0.0
+ * @see {@link LinkListerConfigInterface}
+ * @group Core
+ */
 export class LinkLister {
   readonly #domain: RegExp;
   readonly #target: RegExp;

@@ -11,55 +11,49 @@
  * async fetchPage(title: string): FetchPageResult { ... }
  */
 
-import type { RipperConfigInterface } from './Config.js';
 import type { WikiPageInterface, CategoryMemberInterface } from './MediaWikiScraper.js';
-
-// ─── Config ───────────────────────────────────────────────────────────────────
-
-/** @remarks Return type of RipperConfig.load(). */
-export type ConfigLoadResult = Promise<RipperConfigInterface>;
 
 // ─── Crawlers ─────────────────────────────────────────────────────────────────
 
-/** @remarks Return type of LinkLister.buildList(). */
+/** Return type of {@link LinkLister.buildList}. @category Results @since 2.0.0 @example `const r: BuildListResult = lister.buildList('https://example.com/index');` */
 export type BuildListResult = Promise<string[]>;
 
 // ─── Scrapers ─────────────────────────────────────────────────────────────────
 
-/** @remarks Return type of MediaWikiScraper.fetchPage(). */
+/** Return type of {@link MediaWikiScraper.fetchPage}. @category Results @since 2.0.0 @example `const r: FetchPageResult = scraper.fetchPage('Goblin');` */
 export type FetchPageResult = Promise<WikiPageInterface>;
-/** @remarks Return type of MediaWikiScraper.fetchPagesBatch(). */
+/** Return type of {@link MediaWikiScraper.fetchPagesBatch}. @category Results @since 2.0.0 @example `const r: FetchPagesBatchResult = scraper.fetchPagesBatch(['Goblin', 'Orc']);` */
 export type FetchPagesBatchResult = Promise<WikiPageInterface[]>;
-/** @remarks Return type of MediaWikiScraper.fetchCategory(). */
+/** Return type of {@link MediaWikiScraper.fetchCategory}. @category Results @since 2.0.0 @example `const r: FetchCategoryResult = scraper.fetchCategory('Category:Monsters');` */
 export type FetchCategoryResult = Promise<CategoryMemberInterface[]>;
-/** @remarks Return type of MediaWikiScraper.fetchAllPages(). */
+/** Return type of {@link MediaWikiScraper.fetchAllPages}. @category Results @since 2.0.0 @example `const r: FetchAllPagesResult = scraper.fetchAllPages('Category:Monsters');` */
 export type FetchAllPagesResult = Promise<CategoryMemberInterface[]>;
-/** @remarks Return type of MediaWikiScraper.scrapeCategory(). */
+/** Return type of {@link MediaWikiScraper.scrapeCategory}. @category Results @since 2.0.0 @example `const r: ScrapeCategoryResult = scraper.scrapeCategory('Category:Monsters');` */
 export type ScrapeCategoryResult = Promise<WikiPageInterface[]>;
-/** @remarks Return type of HtmlScraper.fetchText(). */
+/** Return type of {@link HtmlScraper.fetchText}. @category Results @since 2.0.0 @example `const r: FetchTextResult = scraper.fetchText('/wiki/Goblin');` */
 export type FetchTextResult = Promise<string>;
 
 // ─── BaseError ────────────────────────────────────────────────────────────────
 
-/** @remarks Return type of BaseError.flatten(). */
+/** Return type of {@link BaseError.flatten}. @category Results @since 2.0.0 @example `const r: FlattenResult = error.flatten();` */
 export type FlattenResult = Error[];
 
 // ─── Pipeline / Orchestrator ─────────────────────────────────────────────────
 
-/** @remarks Return type of ScrapeOrchestrator.scrapeHtml(). */
+/** Return type of {@link ScrapeOrchestrator.scrapeHtml}. @category Results @since 2.0.0 @example `const r: ScrapeHtmlResult = orchestrator.scrapeHtml(target);` */
 export type ScrapeHtmlResult = Promise<void>;
-/** @remarks Return type of ScrapeOrchestrator.scrapeWiki(). */
+/** Return type of {@link ScrapeOrchestrator.scrapeWiki}. @category Results @since 2.0.0 @example `const r: ScrapeWikiResult = orchestrator.scrapeWiki(target);` */
 export type ScrapeWikiResult = Promise<void>;
 
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
-/** @remarks Return type of RipperConfigSchema.validate(). `null` = valid; string = error message. */
+/** Return type of {@link RipperConfigSchema.validate}. `null` = valid; string = error message. @category Results @since 2.0.0 @example `const r: ValidateResult = schema.validate(config);` */
 export type ValidateResult = string | null;
 
 // ─── WikitextParser ──────────────────────────────────────────────────────────
 
-/** @remarks Return type of WikitextParser.infoboxField(). */
+/** Return type of {@link WikitextParser.infoboxField}. @category Results @since 2.0.0 @example `const r: InfoboxFieldResult = parser.infoboxField(wikitext, 'name');` */
 export type InfoboxFieldResult = string | null;
-/** @remarks Return type of WikitextParser.infoboxNumber(). */
+/** Return type of {@link WikitextParser.infoboxNumber}. @category Results @since 2.0.0 @example `const r: InfoboxNumberResult = parser.infoboxNumber(wikitext, 'cr');` */
 export type InfoboxNumberResult = number | null;

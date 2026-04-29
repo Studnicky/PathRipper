@@ -6,7 +6,25 @@ import { Logger } from '../modules/logger/logger.js';
 
 export { type NextFnInterface, type TaskFnInterface, type PipelineConfigInterface };
 
-/** Ordered async middleware queue that passes shared state through each task in sequence. */
+/**
+ * Ordered async middleware queue that passes shared state through each task in sequence.
+ *
+ * @remarks
+ * Tasks are called in insertion order; each task receives a `next` function it must call
+ * to advance the queue. Shared `state` is mutable across tasks.
+ *
+ * @example
+ * ```ts
+ * const pipeline = Pipeline.create<MyState>({ name: 'scrape' });
+ * pipeline.addTasks([taskA, taskB]);
+ * const result = await pipeline.execute({ url: 'https://example.com' });
+ * ```
+ *
+ * @category Pipeline
+ * @since 2.0.0
+ * @see {@link TaskFnInterface}
+ * @group Core
+ */
 export class Pipeline<TState extends Record<string, unknown>> {
   readonly #name: string;
   readonly #queue: TaskFnInterface<TState>[] = [];
