@@ -7,7 +7,8 @@
   "mediawiki": {
     "your-wiki-target": {
       "apiUrl":      "https://wiki.example/w/api.php",
-      "rateLimitMs": 1000,
+      "rateLimitMs": 2000,
+      "jitterMs":    500,
       "categories":  ["Example Category A", "Example Category B"],
       "tasks":       ["./plugins/your-target/parse.task.js"]
     }
