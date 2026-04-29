@@ -3,6 +3,8 @@ import type { HttpErrorOptionsInterface } from '../types/HttpError.js';
 
 export type { HttpErrorOptionsInterface };
 
+type CreateResult = HttpError;
+
 /** Thrown on non-OK HTTP responses; automatically sets `retryable` for 5xx and 429 status codes. */
 export class HttpError extends BaseError {
   /** HTTP response status code, if available. */
@@ -29,7 +31,7 @@ export class HttpError extends BaseError {
    * @param options - Optional status, url, cause, and metadata.
    * @returns A new HttpError.
    */
-  public static create(message: string, options: HttpErrorOptionsInterface = {}): HttpError {
+  public static create(message: string, options: HttpErrorOptionsInterface = {}): CreateResult {
     return new HttpError(message, options);
   }
 }

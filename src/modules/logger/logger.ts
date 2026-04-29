@@ -24,6 +24,12 @@ export class Logger {
     return new Logger(component);
   }
 
+  private static currentLevel(): LevelType {
+    const env = process.env['LOG_LEVEL']?.toLowerCase();
+    if (env === 'debug' || env === 'info' || env === 'warn' || env === 'error') return env;
+    return 'info';
+  }
+
   /**
    * Logs a debug-level message.
    *
@@ -32,6 +38,7 @@ export class Logger {
    * @param context - Optional structured context data.
    */
   public debug(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
+    if (LEVELS['debug'] < LEVELS[Logger.currentLevel()]) return;
     Logger.write({ level: 'debug', component: this.#component, operation, message, context });
   }
 
@@ -43,6 +50,7 @@ export class Logger {
    * @param context - Optional structured context data.
    */
   public info(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
+    if (LEVELS['info'] < LEVELS[Logger.currentLevel()]) return;
     Logger.write({ level: 'info', component: this.#component, operation, message, context });
   }
 
@@ -54,6 +62,7 @@ export class Logger {
    * @param context - Optional structured context data.
    */
   public warn(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
+    if (LEVELS['warn'] < LEVELS[Logger.currentLevel()]) return;
     Logger.write({ level: 'warn', component: this.#component, operation, message, context });
   }
 
@@ -65,17 +74,11 @@ export class Logger {
    * @param context - Optional structured context data.
    */
   public error(operation: string, message: string, context?: Readonly<Record<string, unknown>>): void {
+    if (LEVELS['error'] < LEVELS[Logger.currentLevel()]) return;
     Logger.write({ level: 'error', component: this.#component, operation, message, context });
   }
 
-  private static currentLevel(): LevelType {
-    const env = process.env['LOG_LEVEL']?.toLowerCase();
-    if (env === 'debug' || env === 'info' || env === 'warn' || env === 'error') return env;
-    return 'info';
-  }
-
   private static write(opts: WriteOptsInterface): void {
-    if (LEVELS[opts.level] < LEVELS[Logger.currentLevel()]) return;
 
     const entry: Record<string, unknown> = {
       time:      new Date().toISOString(),

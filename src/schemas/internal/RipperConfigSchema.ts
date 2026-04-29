@@ -1,18 +1,17 @@
-import AjvModule, { type Ajv as AjvType, type ValidateFunction } from 'ajv';
+import AjvModule, { type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
 import type { FromSchema } from 'json-schema-to-ts';
 
-// AJV 8.x ships dual CJS/ESM; under NodeNext the runtime default lives on `.default`.
-type AjvCtorType = new (opts?: ConstructorParameters<typeof AjvType>[0]) => AjvType;
-type AddFormatsFnType = (ajv: AjvType) => AjvType;
+import type { AjvCtorType, AddFormatsFnInterface } from '../../types/AjvInterop.js';
 
+// AJV 8.x ships dual CJS/ESM; under NodeNext the runtime default lives on `.default`.
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
-const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnType }).default ?? (addFormatsModule as unknown as AddFormatsFnType);
+const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInterface }).default ?? (addFormatsModule as unknown as AddFormatsFnInterface);
 
 const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
 
 /** JSON Schema Draft-07 definition for the ripperoni configuration file. */
-export const RIPPER_CONFIG_SCHEMA = {
+const RIPPER_CONFIG_SCHEMA = {
   $schema: JSON_SCHEMA_DRAFT_07_URI,
   $id: 'https://ripperoni.dev/schemas/internal/ripper-config.schema.json',
   title: 'RipperConfig',
@@ -109,9 +108,8 @@ export const RIPPER_CONFIG_SCHEMA = {
   },
 } as const;
 
-// RipperConfigInterface is the public type — exported from src/types/config.ts.
-// Defined here for use by the validator; consumers should import from types/config.js.
-type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
+/** Validated ripperoni configuration derived from the JSON schema. */
+export type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
 
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);

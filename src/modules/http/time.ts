@@ -1,5 +1,4 @@
-/** Static utility for time-related async operations. */
-
+/** Static utility for time-related async operations within the http module. */
 
 export class Time {
   private constructor() { /* static-only */ }

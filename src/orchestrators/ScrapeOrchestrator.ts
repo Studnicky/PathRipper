@@ -6,7 +6,7 @@ import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
 import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
-import type { NextFnType } from '../types/Pipeline.js';
+import type { NextFnInterface } from '../types/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface } from '../types/PipelineState.js';
@@ -55,7 +55,7 @@ export class ScrapeOrchestrator {
       if (TaskRegistry.has(`${opts.target}:parse`)) {
         pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`));
       }
-      pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface): Promise<void> => {
+      pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
         await next();
         const slug     = page.url.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase();
         const payload  = state.output ?? { url: page.url };
@@ -139,7 +139,7 @@ export class ScrapeOrchestrator {
         if (TaskRegistry.has(`${targetId}:parse`)) {
           pipeline.addTask(TaskRegistry.get(`${targetId}:parse`));
         }
-        pipeline.addTask(async (next: NextFnType, state: PipelineStateInterface): Promise<void> => {
+        pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
           await next();
           const slug    = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
           const payload = state.output !== null

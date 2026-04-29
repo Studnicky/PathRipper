@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import type { TaskFnType } from '../types/Pipeline.js';
+import type { TaskFnInterface } from '../types/Pipeline.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger } from '../modules/logger/logger.js';
 import type { PipelineStateInterface } from '../types/PipelineState.js';
@@ -9,8 +9,8 @@ const logger = Logger.forComponent('TaskRegistry');
 
 /** Global registry mapping task names to pipeline task functions. */
 export class TaskRegistry {
-  /** Registered task name to TaskFnType map. */
-  static readonly #tasks = new Map<string, TaskFnType<PipelineStateInterface>>();
+  /** Registered task name to TaskFnInterface map. */
+  static readonly #tasks = new Map<string, TaskFnInterface<PipelineStateInterface>>();
 
   private constructor() { /* static-only */ }
 
@@ -20,7 +20,7 @@ export class TaskRegistry {
    * @param name - Unique task name (conventionally `"target:operation"`).
    * @param task - Task function to register.
    */
-  public static register(name: string, task: TaskFnType<PipelineStateInterface>): void {
+  public static register(name: string, task: TaskFnInterface<PipelineStateInterface>): void {
     if (TaskRegistry.#tasks.has(name)) {
       logger.warn('register', `Overwriting existing task: ${name}`, { name });
     }
@@ -34,7 +34,7 @@ export class TaskRegistry {
    * @returns The registered task function.
    * @throws {ExternalSchemaError} When no task is registered under `name`.
    */
-  public static get(name: string): TaskFnType<PipelineStateInterface> {
+  public static get(name: string): TaskFnInterface<PipelineStateInterface> {
     const task = TaskRegistry.#tasks.get(name);
     if (task === undefined) {
       throw ExternalSchemaError.create(`Task not found: ${name}`, { metadata: { name } });
@@ -49,7 +49,9 @@ export class TaskRegistry {
    * @returns Whether a task is registered under `name`.
    */
   public static has(name: string): boolean {
-    return TaskRegistry.#tasks.has(name);
+    const found = TaskRegistry.#tasks.has(name);
+    logger.debug('has', `Task lookup: ${name}`, { name, found });
+    return found;
   }
 
   /**

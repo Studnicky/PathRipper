@@ -1,7 +1,7 @@
 import wtf from 'wtf_wikipedia';
 import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
 import type { PipelineStateInterface } from '../../dist/registry/PipelineState.js';
-import type { TaskFnType } from '../../dist/pipeline/Pipeline.js';
+import type { TaskFnInterface } from '../../dist/pipeline/Pipeline.js';
 
 const MASTERS_INFOBOX_TEMPLATE = 'mastersinfobox';
 
@@ -10,7 +10,7 @@ const INFOBOX_FIELDS = [
   'enva', 'java', 'caption',
 ] as const;
 
-const task: TaskFnType<PipelineStateInterface> = async (next, state) => {
+const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   const { title, wikitext } = state.page;
   if (!wikitext) { await next(); return; }
 

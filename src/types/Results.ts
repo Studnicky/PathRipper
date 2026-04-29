@@ -51,9 +51,3 @@ export type ScrapeHtmlResult = Promise<void>;
 /** @remarks Return type of ScrapeOrchestrator.scrapeWiki(). */
 export type ScrapeWikiResult = Promise<void>;
 
-// ─── Generics ─────────────────────────────────────────────────────────────────
-
-/** @remarks Return type of RateLimiter.schedule<T>(). */
-export type ScheduleResult<T> = Promise<T>;
-/** @remarks Return type of RetryExecutor.execute<T>(). */
-export type ExecuteResult<T> = Promise<T>;

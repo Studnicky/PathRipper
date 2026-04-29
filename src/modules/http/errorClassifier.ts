@@ -5,6 +5,11 @@ import type { ClassificationResultInterface, ExtendedErrorInterface } from '../.
 
 export type { ClassificationResultInterface, ExtendedErrorInterface };
 
+type AddRuleResult = ErrorClassifier;
+type ClassifyResult = ClassificationResultInterface;
+type IsRetryableResult = boolean;
+type DefaultResult = ErrorClassifier;
+
 /** Frozen map of error category string literals for use as classification keys. */
 export const ErrorCategory = Object.freeze({
   NETWORK:    'network',
@@ -47,7 +52,7 @@ export class ErrorClassifier {
     predicate: (error: ExtendedErrorInterface) => boolean,
     category: ErrorCategoryType,
     options: Partial<Pick<ClassificationRuleInterface, 'backoffHint' | 'retryable'>> = {},
-  ): this {
+  ): AddRuleResult {
     this.#rules.push({ category, predicate, ...options });
     return this;
   }
@@ -63,7 +68,7 @@ export class ErrorClassifier {
    * @param error - Error to classify.
    * @returns Classification result with category, retryable flag, and optional backoff hint.
    */
-  classify(error: ExtendedErrorInterface): ClassificationResultInterface {
+  classify(error: ExtendedErrorInterface): ClassifyResult {
     for (const rule of this.#rules) {
       if (rule.predicate(error)) {
         const retryable = rule.retryable ?? this.#defaultRetryable(rule.category);
@@ -84,7 +89,7 @@ export class ErrorClassifier {
    * @param error - Error to evaluate.
    * @returns Whether a retry is appropriate for this error.
    */
-  isRetryable(error: ExtendedErrorInterface): boolean {
+  isRetryable(error: ExtendedErrorInterface): IsRetryableResult {
     const result = this.classify(error);
     return result.retryable;
   }
@@ -177,7 +182,7 @@ export class ErrorClassifier {
    *
    * @returns A fully configured ErrorClassifier instance.
    */
-  static default(): ErrorClassifier {
+  static default(): DefaultResult {
     return new ErrorClassifier()
       .addRules(ErrorClassifier.networkRules())
       .addRules(ErrorClassifier.timeoutRules())

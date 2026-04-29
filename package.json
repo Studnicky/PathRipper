@@ -16,7 +16,7 @@
     "./RetryExecutor": "./dist/modules/http/retryExecutor.js",
     "./RateLimiter": "./dist/modules/http/rateLimiter.js",
     "./Logger": "./dist/modules/logger/logger.js",
-    "./Time": "./dist/modules/time/time.js",
+    "./Time": "./dist/modules/http/time.js",
     "./RipperConfig": "./dist/config/RipperConfig.js",
     "./errors": "./dist/errors/index.js",
     "./registry/TaskRegistry": "./dist/registry/TaskRegistry.js",
@@ -24,6 +24,7 @@
     "./orchestrators/ScrapeOrchestrator": "./dist/orchestrators/ScrapeOrchestrator.js"
   },
   "scripts": {
+    "prebuild": "rm -rf dist",
     "build": "tsc --noEmit false && npm run build:plugins",
     "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
     "typecheck": "tsc --noEmit",
@@ -33,6 +34,7 @@
     "test:unit": "node --import tsx --test 'tests/unit/**/*.test.ts'",
     "check": "npm run typecheck && npm run lint && npm run test:unit",
     "dev": "node --watch dist/cli/cli.js",
+    "postinstall": "bash scripts/install-hooks.sh",
     "prepare": "bash scripts/install-hooks.sh",
     "test:integration": "node --test tests/integration/**/*.test.ts",
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'"

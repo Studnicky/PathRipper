@@ -6,6 +6,10 @@ import type { FlattenResult } from '../types/Results.js';
 
 import type { BaseErrorOptionsInterface, BaseErrorJsonType } from '../types/BaseError.js';
 
+type FormatResult = string;
+type ToJsonResult = BaseErrorJsonType;
+type SerializeResult = string;
+
 export type { BaseErrorOptionsInterface, BaseErrorJsonType };
 
 /**
@@ -43,7 +47,7 @@ export class BaseError extends Error {
    * @param error - Any caught value.
    * @returns Serialized BaseError JSON, plain Error message, or `String(error)`.
    */
-  public static format(error: unknown): string {
+  public static format(error: unknown): FormatResult {
     if (error instanceof BaseError) return error.serialize();
     if (error instanceof Error)     return error.message;
     return String(error);
@@ -55,7 +59,7 @@ export class BaseError extends Error {
    * @param options - Pass `{ stack: false }` to omit stack traces.
    * @returns A structured representation of the error including cause chain.
    */
-  public toJson(options: Readonly<{ stack?: boolean }> = {}): BaseErrorJsonType {
+  public toJson(options: Readonly<{ stack?: boolean }> = {}): ToJsonResult {
     const includeStack = options.stack !== false;
     const json: Record<string, unknown> = {
       code:      this.code,
@@ -83,7 +87,7 @@ export class BaseError extends Error {
    * @param space - JSON indentation spaces (default 2).
    * @returns JSON string representation of `toJson()`.
    */
-  public serialize(space: number = 2): string {
+  public serialize(space: number = 2): SerializeResult {
     return JSON.stringify(this.toJson(), null, space);
   }
 

@@ -1,15 +1,15 @@
 // Modernized from PathRipper/src/transformer/index.js
 // Transforms the callback-based task queue into typed async middleware.
 
-import type { NextFnType, TaskFnType, PipelineConfigInterface } from '../types/Pipeline.js';
+import type { NextFnInterface, TaskFnInterface, PipelineConfigInterface } from '../types/Pipeline.js';
 import { Logger } from '../modules/logger/logger.js';
 
-export { type NextFnType, type TaskFnType, type PipelineConfigInterface };
+export { type NextFnInterface, type TaskFnInterface, type PipelineConfigInterface };
 
 /** Ordered async middleware queue that passes shared state through each task in sequence. */
 export class Pipeline<TState extends Record<string, unknown>> {
   readonly #name: string;
-  readonly #queue: TaskFnType<TState>[] = [];
+  readonly #queue: TaskFnInterface<TState>[] = [];
   readonly #log: Logger;
 
   /**
@@ -36,7 +36,7 @@ export class Pipeline<TState extends Record<string, unknown>> {
    * @param task - Task function to add.
    * @returns `this` for fluent chaining.
    */
-  addTask(task: TaskFnType<TState>): this {
+  addTask(task: TaskFnInterface<TState>): this {
     this.#queue.push(task);
     return this;
   }
@@ -47,7 +47,7 @@ export class Pipeline<TState extends Record<string, unknown>> {
    * @param tasks - Array of task functions to add.
    * @returns `this` for fluent chaining.
    */
-  addTasks(tasks: ReadonlyArray<TaskFnType<TState>>): this {
+  addTasks(tasks: ReadonlyArray<TaskFnInterface<TState>>): this {
     for (const task of tasks) this.addTask(task);
     return this;
   }
