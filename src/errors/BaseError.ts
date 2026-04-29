@@ -1,3 +1,4 @@
+import type { FlattenResult } from '../types/Results.js';
 // Ported from @noocodec/cogitator/src/errors/BaseError.ts.
 // Stripped of redact/JsonObject machinery — ripperoni's errors don't (yet)
 // carry redaction schemas. Same shape, same protected constructor, same
@@ -91,7 +92,7 @@ export class BaseError extends Error {
    *
    * @returns Array of errors from outermost to root cause.
    */
-  public flatten(): Error[] {
+  public flatten(): FlattenResult {
     const chain: Error[] = [this];
     let current: Error | undefined = this.cause;
     while (current instanceof Error) {

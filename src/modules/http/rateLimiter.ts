@@ -1,3 +1,4 @@
+import type { ScheduleResult } from '../../types/Results.js';
 import Bottleneck from 'bottleneck';
 import { Time } from '../time/time.js';
 import type { RateLimiterConfigInterface } from '../../types/RateLimiter.js';
@@ -39,7 +40,7 @@ export class RateLimiter {
    * @param fn - Async function to schedule.
    * @returns Promise that resolves with the function's return value.
    */
-  public schedule<T>(fn: () => Promise<T>): Promise<T> {
+  public schedule<T>(fn: () => Promise<T>): ScheduleResult<T> {
     if (this.#jitterMs === 0) return this.#limiter.schedule(fn);
     const jitter = this.#jitterMs;
     return this.#limiter.schedule(async (): Promise<T> => {

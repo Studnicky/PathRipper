@@ -6,6 +6,7 @@ import {
   formatRipperConfigErrors,
 } from '../schemas/internal/RipperConfigSchema.js';
 import type { RipperConfigInterface } from '../types/Config.js';
+import type { ConfigLoadResult } from '../types/Results.js';
 import { RipperConfigError } from '../errors/RipperConfigError.js';
 
 /** Loads and validates ripperoni configuration files. */
@@ -17,7 +18,7 @@ export class RipperConfig {
    * @returns Validated `RipperConfigInterface` object.
    * @throws {RipperConfigError} When the file is missing, unparseable, or fails schema validation.
    */
-  static async load(configPath: string): Promise<RipperConfigInterface> {
+  static async load(configPath: string): ConfigLoadResult {
     const abs  = resolve(configPath);
     const text = await readFile(abs, 'utf-8');
     const raw  = JSON.parse(text) as unknown;

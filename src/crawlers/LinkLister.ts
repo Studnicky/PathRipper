@@ -1,3 +1,4 @@
+import type { BuildListResult } from '../types/Results.js';
 import { load } from 'cheerio';
 import type { Element } from 'domhandler';
 import { Logger } from '../modules/logger/logger.js';
@@ -51,7 +52,7 @@ export class LinkLister {
    * @param startUrls - Seed URLs to begin crawling from.
    * @returns Deduplicated, numerically sorted array of matching target URLs.
    */
-  async buildList(startUrls: ReadonlyArray<string>): Promise<string[]> {
+  async buildList(startUrls: ReadonlyArray<string>): BuildListResult {
     if (startUrls.length === 0) {
       this.#log.warn('buildList', 'Called with empty startUrls list');
       return [];

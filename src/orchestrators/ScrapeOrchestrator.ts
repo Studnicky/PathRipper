@@ -12,6 +12,7 @@ import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface } from '../types/PipelineState.js';
 import { Logger } from '../modules/logger/logger.js';
 import type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface } from '../types/ScrapeOrchestrator.js';
+import type { ScrapeHtmlResult, ScrapeWikiResult } from '../types/Results.js';
 
 export type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface };
 
@@ -33,7 +34,7 @@ export class ScrapeOrchestrator {
    * @param opts - HTML scrape options including target key, paths, output dir, and config.
    * @throws Exits process with code 1 if the target is not found in config.
    */
-  public static async scrapeHtml(opts: ScrapeHtmlOptionsInterface): Promise<void> {
+  public static async scrapeHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResult {
     const log        = Logger.forComponent('ScrapeOrchestrator');
     const htmlTarget = opts.config.targets?.[opts.target];
 
@@ -72,7 +73,7 @@ export class ScrapeOrchestrator {
    * @param opts - Wiki scrape options including target key, optional category, output dir, and config.
    * @throws Exits process with code 1 if the target is not found in config.
    */
-  public static async scrapeWiki(opts: ScrapeWikiOptionsInterface): Promise<void> {
+  public static async scrapeWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResult {
     const log        = Logger.forComponent('ScrapeOrchestrator');
     const wikiTarget = opts.config.mediawiki?.[opts.target];
 

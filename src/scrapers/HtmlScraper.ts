@@ -5,6 +5,7 @@ import { load } from 'cheerio';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { RetryExecutor } from '../modules/http/retryExecutor.js';
 import { Logger } from '../modules/logger/logger.js';
+import type { FetchTextResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
 import type { HtmlScraperConfigInterface, ScrapedPageInterface } from '../types/HtmlScraper.js';
 
@@ -72,7 +73,7 @@ export class HtmlScraper {
    * @returns Raw HTML string of the fetched page.
    * @throws {HttpError} When the server returns a non-OK response.
    */
-  async fetchText(path: string): Promise<string> {
+  async fetchText(path: string): FetchTextResult {
     const { html } = await this.fetchPage(path);
     return html;
   }

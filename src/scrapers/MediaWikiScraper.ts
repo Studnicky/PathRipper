@@ -1,3 +1,4 @@
+import type { FetchPageResult, FetchPagesBatchResult, FetchCategoryResult, FetchAllPagesResult, ScrapeCategoryResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { Logger } from '../modules/logger/logger.js';
@@ -83,7 +84,7 @@ export class MediaWikiScraper {
    * @returns Wiki page with title and wikitext content.
    * @throws {HttpError} When the API returns a non-OK response.
    */
-  public async fetchPage(title: string): Promise<WikiPageInterface> {
+  public async fetchPage(title: string): FetchPageResult {
     this.#log.debug('fetchPage', title);
     return this.#limiter.schedule(async (): Promise<WikiPageInterface> => {
       const params = new URLSearchParams({
@@ -104,7 +105,7 @@ export class MediaWikiScraper {
    * @returns Array of wiki pages with title and wikitext content.
    * @throws {HttpError} When the API returns a non-OK response.
    */
-  public async fetchPagesBatch(titles: string[]): Promise<WikiPageInterface[]> {
+  public async fetchPagesBatch(titles: string[]): FetchPagesBatchResult {
     this.#log.debug('fetchPagesBatch', `${titles.length.toString()} pages`);
     if (titles.length === 0) return [];
 
@@ -128,7 +129,7 @@ export class MediaWikiScraper {
    * @returns All page titles and IDs belonging to the category.
    * @throws {HttpError} When the API returns a non-OK response.
    */
-  public async fetchCategory(categoryName: string): Promise<CategoryMemberInterface[]> {
+  public async fetchCategory(categoryName: string): FetchCategoryResult {
     this.#log.info('fetchCategory', categoryName);
     const members: CategoryMemberInterface[] = [];
     let continueParams: Record<string, string> = {};
@@ -163,7 +164,7 @@ export class MediaWikiScraper {
    * @returns All page titles and IDs in the main namespace.
    * @throws {HttpError} When the API returns a non-OK response.
    */
-  public async fetchAllPages(batchSize: number = API_ALL_PAGES_LIMIT): Promise<CategoryMemberInterface[]> {
+  public async fetchAllPages(batchSize: number = API_ALL_PAGES_LIMIT): FetchAllPagesResult {
     this.#log.info('fetchAllPages', 'Enumerating all pages in main namespace');
     const members: CategoryMemberInterface[] = [];
     let continueParams: Record<string, string> = {};
@@ -198,7 +199,7 @@ export class MediaWikiScraper {
    * @returns All wiki pages in the category with their wikitext content.
    * @throws {HttpError} When the API returns a non-OK response.
    */
-  public async scrapeCategory(categoryName: string): Promise<WikiPageInterface[]> {
+  public async scrapeCategory(categoryName: string): ScrapeCategoryResult {
     const members = await this.fetchCategory(categoryName);
     const titles  = members.map((m: CategoryMemberInterface): string => m.title);
     const pages: WikiPageInterface[] = [];

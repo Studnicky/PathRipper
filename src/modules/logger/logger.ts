@@ -1,5 +1,6 @@
 import type { LevelType, WriteOptsInterface } from '../../types/Logger.js';
 
+
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 } as const;
 
 /** Structured JSON logger scoped to a named component. */

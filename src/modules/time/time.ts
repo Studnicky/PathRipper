@@ -1,4 +1,6 @@
 /** Static utility for time-related async operations. */
+
+
 export class Time {
   private constructor() { /* static-only */ }
 
@@ -9,6 +11,6 @@ export class Time {
    * @returns Promise that resolves after `ms` milliseconds.
    */
   public static sleep(ms: number): Promise<void> {
-    return new Promise((resolve: () => void): void => { setTimeout(resolve, ms); });
+    return new Promise<void>((resolve): void => { setTimeout(resolve, ms); });
   }
 }
