@@ -1,4 +1,4 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, readFile, unlink, mkdir, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { HtmlScraper } from '../scrapers/HtmlScraper.js';
@@ -15,6 +15,7 @@ import type {
   ScrapeHtmlOptionsInterface,
   ScrapeWikiOptionsInterface,
   RunPipelineOptionsInterface,
+  FailuresManifestInterface,
 } from '../types/ScrapeOrchestrator.js';
 import type { ScrapeHtmlResult, ScrapeWikiResult } from '../types/Results.js';
 
@@ -99,14 +100,21 @@ export class ScrapeOrchestrator {
     const scraper = await MediaWikiScraper.create(wikiTarget);
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
-    // Resolve page list — three modes:
+    // Resolve page list — four modes:
+    // 0. --resume-failures → read titles from failures.json and retry only those
     // 1. --category flag → single category
     // 2. categories[] in config, no flag → iterate all listed categories, deduplicate
     // 3. No categories anywhere → enumerate every article in the main article space
     let members: CategoryMemberInterface[];
     const configCategories = (wikiTarget as { categories?: string[] }).categories;
 
-    if (opts.category !== undefined) {
+    if (opts.resumeFailures === true) {
+      const failuresPath = resolve(opts.outDir, opts.target, 'failures.json');
+      const raw          = await readFile(failuresPath, 'utf-8');
+      const manifest     = JSON.parse(raw) as FailuresManifestInterface;
+      members            = manifest.titles.map((title: string): CategoryMemberInterface => ({ title, pageid: 0 }));
+      log.info('scrapeWiki', `Mode: resume-failures — ${members.length.toString()} pages from failures.json`);
+    } else if (opts.category !== undefined) {
       members = await scraper.fetchCategory(opts.category);
       log.info('scrapeWiki', `Mode: single category "${opts.category}" — ${members.length.toString()} pages`);
     } else if (configCategories !== undefined && configCategories.length > 0) {
@@ -117,7 +125,14 @@ export class ScrapeOrchestrator {
       members = await scraper.fetchAllPages();
     }
 
-    await ScrapeOrchestrator.runPipeline({ targetId: opts.target, outDir: opts.outDir, scraper, members, log });
+    await ScrapeOrchestrator.runPipeline({
+      targetId:       opts.target,
+      outDir:         opts.outDir,
+      scraper,
+      members,
+      log,
+      resumeFailures: opts.resumeFailures === true,
+    });
   }
 
   private static async fetchDeduplicatedCategories(
@@ -135,14 +150,45 @@ export class ScrapeOrchestrator {
     return members;
   }
 
+  /** Compute the output filename slug for a wiki page title. */
+  private static toSlug(title: string): string {
+    return title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  }
+
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
-    const { targetId, outDir, scraper, members, log } = opts;
+    const { targetId, outDir, scraper, members, log, resumeFailures } = opts;
     const BATCH = 50;
-    const titles = members.map((m: CategoryMemberInterface): string => m.title);
+
+    // ── Resume: build set of already-written slugs ──────────────────────────
+    const targetDir     = resolve(outDir, targetId);
+    const existingFiles = await readdir(targetDir).catch((): string[] => []);
+    const alreadyWritten = new Set<string>(
+      existingFiles
+        .filter((f: string): boolean => f.endsWith('.json') && f !== 'failures.json')
+        .map((f: string): string => f.slice(0, -'.json'.length)),
+    );
+
+    const allTitles = members.map((m: CategoryMemberInterface): string => m.title);
+    let skipped = 0;
+    const pending: string[] = [];
+    for (const title of allTitles) {
+      if (alreadyWritten.has(ScrapeOrchestrator.toSlug(title))) {
+        skipped++;
+      } else {
+        pending.push(title);
+      }
+    }
+
+    if (skipped > 0) {
+      log.info('scrapeWiki', `Resuming: ${skipped.toString()} pages already written, ${pending.length.toString()} remaining`);
+    }
+
+    // ── Batch loop ────────────────────────────────────────────────────────────
+    const failures: string[] = [];
     let written = 0;
 
-    for (let i = 0; i < titles.length; i += BATCH) {
-      const slice = titles.slice(i, i + BATCH);
+    for (let i = 0; i < pending.length; i += BATCH) {
+      const slice = pending.slice(i, i + BATCH);
       const pages = await scraper.fetchPagesBatch(slice);
 
       for (const page of pages) {
@@ -152,19 +198,39 @@ export class ScrapeOrchestrator {
         }
         pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
           await next();
-          const slug    = page.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          const slug    = ScrapeOrchestrator.toSlug(page.title);
           const payload = state.output !== null
             ? state.output
             : WikitextParser.parse(page.title, page.wikitext);
           await writeFile(resolve(outDir, targetId, `${slug}.json`), JSON.stringify(payload, null, 2));
           written++;
         });
-        await pipeline.execute(PipelineState.fromWikiPage(targetId, page));
+        try {
+          await pipeline.execute(PipelineState.fromWikiPage(targetId, page));
+        } catch {
+          failures.push(page.title);
+        }
       }
 
-      log.debug('scrapeWiki', `Progress: ${written.toString()}/${titles.length.toString()}`);
+      log.debug('scrapeWiki', `Progress: ${written.toString()}/${pending.length.toString()}`);
     }
 
-    log.info('scrapeWiki', `Wrote ${written.toString()} pages to ${resolve(outDir, targetId)}`);
+    log.info('scrapeWiki', `Wrote ${written.toString()} pages to ${targetDir}`);
+
+    // ── Failures manifest ─────────────────────────────────────────────────────
+    const failuresPath = resolve(targetDir, 'failures.json');
+
+    if (failures.length > 0) {
+      const manifest: FailuresManifestInterface = {
+        timestamp: new Date().toISOString(),
+        count:     failures.length,
+        titles:    failures,
+      };
+      await writeFile(failuresPath, JSON.stringify(manifest, null, 2));
+      log.warn('scrapeWiki', `${failures.length.toString()} pages failed — written to failures.json`);
+    } else if (resumeFailures) {
+      // Clean up the failures manifest on a successful retry run
+      await unlink(failuresPath).catch((): void => { /* already gone */ });
+    }
   }
 }

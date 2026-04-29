@@ -28,9 +28,10 @@ program
   .requiredOption('--target <name>', 'Target name from config (checked in targets then mediawiki)')
   .option('--paths <paths...>', 'Paths to scrape (html mode)')
   .option('--category <name>', 'Category to scrape (mediawiki mode)')
+  .option('--resume-failures', 'Re-scrape pages listed in the failures.json from the last run')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; paths?: string[]; category?: string; config: string; out?: string }): Promise<void> => {
+  .action(async (opts: { target: string; paths?: string[]; category?: string; resumeFailures?: boolean; config: string; out?: string }): Promise<void> => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
@@ -45,7 +46,14 @@ program
       return;
     }
     if (wikiTarget !== undefined) {
-      await ScrapeOrchestrator.scrapeWiki({ target: opts.target, category: opts.category, outDir, configDir, config });
+      await ScrapeOrchestrator.scrapeWiki({
+        target:         opts.target,
+        category:       opts.category,
+        outDir,
+        configDir,
+        config,
+        resumeFailures: opts.resumeFailures,
+      });
       return;
     }
     log.error('scrape', `Unknown target: ${opts.target}`);
@@ -78,9 +86,10 @@ program
   .description('Scrape MediaWiki category pages')
   .requiredOption('--target <name>', 'MediaWiki target name from config')
   .option('--category <name>', 'Category to scrape (omit to use config categories or scrape all pages)')
+  .option('--resume-failures', 'Re-scrape pages listed in the failures.json from the last run')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
-  .action(async (opts: { target: string; category?: string; config: string; out?: string }): Promise<void> => {
+  .action(async (opts: { target: string; category?: string; resumeFailures?: boolean; config: string; out?: string }): Promise<void> => {
     const config    = await RipperConfig.load(opts.config);
     const configDir = dirname(resolve(opts.config));
     const outDir    = opts.out ?? config.output.basePath;
@@ -91,7 +100,14 @@ program
       process.exit(1);
     }
 
-    await ScrapeOrchestrator.scrapeWiki({ target: opts.target, category: opts.category, outDir, configDir, config });
+    await ScrapeOrchestrator.scrapeWiki({
+      target:         opts.target,
+      category:       opts.category,
+      outDir,
+      configDir,
+      config,
+      resumeFailures: opts.resumeFailures,
+    });
   });
 
 program

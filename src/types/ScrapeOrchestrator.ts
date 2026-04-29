@@ -17,11 +17,13 @@ import type { Logger } from '../modules/logger/logger.js';
  * @see ScrapeOrchestrator
  */
 export interface RunPipelineOptionsInterface {
-  readonly targetId: string;
-  readonly outDir:   string;
-  readonly scraper:  MediaWikiScraper;
-  readonly members:  CategoryMemberInterface[];
-  readonly log:      ReturnType<typeof Logger.forComponent>;
+  readonly targetId:       string;
+  readonly outDir:         string;
+  readonly scraper:        MediaWikiScraper;
+  readonly members:        CategoryMemberInterface[];
+  readonly log:            ReturnType<typeof Logger.forComponent>;
+  /** When true, delete failures.json after a successful retry run. */
+  readonly resumeFailures: boolean;
 }
 
 /**
@@ -65,13 +67,38 @@ export interface ScrapeHtmlOptionsInterface {
  */
 export interface ScrapeWikiOptionsInterface {
   /** Config mediawiki key identifying which wiki target to scrape. */
-  readonly target:    string;
+  readonly target:          string;
   /** Optional single category name to restrict scraping scope. */
-  readonly category?: string | undefined;
+  readonly category?:       string | undefined;
   /** Output directory root for scraped JSON files. */
-  readonly outDir:    string;
+  readonly outDir:          string;
   /** Directory used to resolve relative plugin paths. */
-  readonly configDir: string;
+  readonly configDir:       string;
   /** Validated ripperoni configuration. */
-  readonly config:    RipperConfigInterface;
+  readonly config:          RipperConfigInterface;
+  /** When true, read titles from failures.json and re-scrape only those pages. */
+  readonly resumeFailures?: boolean | undefined;
+}
+
+/**
+ * Shape of the `failures.json` manifest written after a run with errors.
+ *
+ * @remarks Written to `<outDir>/<targetId>/failures.json` when one or more pages
+ * could not be scraped. Pass `--resume-failures` on the next run to retry them.
+ * @example
+ * ```ts
+ * const manifest: FailuresManifestInterface = JSON.parse(await readFile(failuresPath, 'utf-8'));
+ * ```
+ * @category Orchestrators
+ * @since 2.0.0
+ * @group Orchestrators
+ * @see ScrapeOrchestrator
+ */
+export interface FailuresManifestInterface {
+  /** ISO-8601 timestamp of when the failures manifest was written. */
+  readonly timestamp: string;
+  /** Number of pages that failed. */
+  readonly count:     number;
+  /** Page titles that could not be scraped. */
+  readonly titles:    string[];
 }
