@@ -1,10 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import {
-  validateRipperConfig,
-  formatRipperConfigErrors,
-} from '../schemas/internal/RipperConfigSchema.js';
+import { validateRipperConfig } from '../schemas/internal/RipperConfigSchema.js';
 import type { RipperConfigInterface } from '../types/Config.js';
 import type { ConfigLoadResult } from '../types/Results.js';
 import { RipperConfigError } from '../errors/RipperConfigError.js';
@@ -23,9 +20,10 @@ export class RipperConfig {
     const text = await readFile(abs, 'utf-8');
     const raw  = JSON.parse(text) as unknown;
 
-    if (!validateRipperConfig(raw)) {
+    const errors = validateRipperConfig(raw);
+    if (errors !== null) {
       throw RipperConfigError.create(
-        `Invalid config at ${abs}:\n  ${formatRipperConfigErrors()}`,
+        `Invalid config at ${abs}:\n  ${errors}`,
         { metadata: { configPath: abs } },
       );
     }

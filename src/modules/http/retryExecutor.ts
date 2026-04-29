@@ -53,7 +53,7 @@ export class RetryExecutor {
    * @returns Promise resolving with the function's return value on success.
    * @throws The last error if the maximum attempt count is reached or the error is not retryable.
    */
-  public async execute<T>(fn: () => Promise<T>): Promise<T> {
+  public async execute<T extends Awaited<unknown>>(fn: () => Promise<T>): Promise<T> {
     let attempt = 0;
 
     for (;;) {

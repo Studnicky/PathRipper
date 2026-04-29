@@ -11,7 +11,9 @@ export class Time {
    * @throws {RangeError} When `ms` is negative.
    */
   public static sleep(ms: number): Promise<void> {
-    if (ms < 0) throw new RangeError('sleep ms must be >= 0');
-    return new Promise<void>((resolve: () => void): void => { setTimeout(resolve, ms); });
+    return new Promise<void>((resolve: () => void): void => {
+      const clamped = Number.isFinite(ms) && ms > 0 ? Math.floor(ms) : 0;
+      setTimeout(resolve, clamped);
+    });
   }
 }

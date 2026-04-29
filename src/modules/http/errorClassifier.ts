@@ -5,11 +5,6 @@ import type { ClassificationResultInterface, ExtendedErrorInterface } from '../.
 
 export type { ClassificationResultInterface, ExtendedErrorInterface };
 
-type AddRuleResult = ErrorClassifier;
-type ClassifyResult = ClassificationResultInterface;
-type IsRetryableResult = boolean;
-type DefaultResult = ErrorClassifier;
-
 /** Frozen map of error category string literals for use as classification keys. */
 export const ErrorCategory = Object.freeze({
   NETWORK:    'network',
@@ -22,7 +17,7 @@ export const ErrorCategory = Object.freeze({
   VALIDATION: 'validation',
 } as const);
 
-interface ClassificationRuleInterface {
+export interface ClassificationRuleInterface {
   readonly predicate: (error: ExtendedErrorInterface) => boolean;
   readonly category: ErrorCategoryType;
   readonly retryable?: boolean | undefined;
@@ -52,7 +47,7 @@ export class ErrorClassifier {
     predicate: (error: ExtendedErrorInterface) => boolean,
     category: ErrorCategoryType,
     options: Partial<Pick<ClassificationRuleInterface, 'backoffHint' | 'retryable'>> = {},
-  ): AddRuleResult {
+  ): ErrorClassifier {
     this.#rules.push({ category, predicate, ...options });
     return this;
   }
@@ -68,7 +63,7 @@ export class ErrorClassifier {
    * @param error - Error to classify.
    * @returns Classification result with category, retryable flag, and optional backoff hint.
    */
-  classify(error: ExtendedErrorInterface): ClassifyResult {
+  classify(error: ExtendedErrorInterface): ClassificationResultInterface {
     for (const rule of this.#rules) {
       if (rule.predicate(error)) {
         const retryable = rule.retryable ?? this.#defaultRetryable(rule.category);
@@ -89,7 +84,7 @@ export class ErrorClassifier {
    * @param error - Error to evaluate.
    * @returns Whether a retry is appropriate for this error.
    */
-  isRetryable(error: ExtendedErrorInterface): IsRetryableResult {
+  isRetryable(error: ExtendedErrorInterface): boolean {
     const result = this.classify(error);
     return result.retryable;
   }
@@ -179,11 +174,14 @@ export class ErrorClassifier {
 
   /**
    * Creates an ErrorClassifier pre-configured with all standard HTTP and network rules.
+   * Extra rules are appended after the built-in rule set so they can override or extend
+   * the defaults without requiring a full custom configuration.
    *
+   * @param extraRules - Optional additional classification rules applied after the defaults.
    * @returns A fully configured ErrorClassifier instance.
    */
-  static default(): DefaultResult {
-    return new ErrorClassifier()
+  static default(extraRules: ClassificationRuleInterface[] = []): ErrorClassifier {
+    const classifier = new ErrorClassifier()
       .addRules(ErrorClassifier.networkRules())
       .addRules(ErrorClassifier.timeoutRules())
       .addRules(ErrorClassifier.throttledRules())
@@ -191,5 +189,7 @@ export class ErrorClassifier {
       .addRules(ErrorClassifier.permanentRules())
       .addRules(ErrorClassifier.validationRules())
       .addRules(ErrorClassifier.resourceRules());
+    if (extraRules.length > 0) classifier.addRules(extraRules);
+    return classifier;
   }
 }

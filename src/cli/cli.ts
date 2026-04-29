@@ -13,6 +13,7 @@ const DEFAULT_CONFIG_PATH   = './ripperoni.config.json';
 const DEFAULT_RATE_LIMIT_MS = '200';
 const DEFAULT_JITTER_MS     = '0';
 const DECIMAL_RADIX         = 10;
+const RATE_OPTION_PATTERN   = '0..';
 
 const program = new Command();
 
@@ -101,7 +102,7 @@ program
   .requiredOption('--target <regex>', 'Target URL pattern to collect')
   .requiredOption('--delimiter <regex>', 'Traversal pattern (pages to follow)')
   .option('--rate <ms>',   'Rate limit in ms between requests', DEFAULT_RATE_LIMIT_MS)
-  .option('--jitter <ms>', 'Random jitter (0..N ms) added to each request', DEFAULT_JITTER_MS)
+  .option('--jitter <ms>', `Random jitter (${RATE_OPTION_PATTERN}N ms) added to each request`, DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
   .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }): Promise<void> => {
     const log  = Logger.forComponent('cli');

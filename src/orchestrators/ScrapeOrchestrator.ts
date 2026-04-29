@@ -91,7 +91,7 @@ export class ScrapeOrchestrator {
     // Resolve page list — three modes:
     // 1. --category flag → single category
     // 2. categories[] in config, no flag → iterate all listed categories, deduplicate
-    // 3. No categories anywhere → enumerate every article in main namespace
+    // 3. No categories anywhere → enumerate every article in the main article space
     let members: CategoryMemberInterface[];
     const configCategories = (wikiTarget as { categories?: string[] }).categories;
 

@@ -11,7 +11,7 @@ const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInter
 const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
 
 /** JSON Schema Draft-07 definition for the ripperoni configuration file. */
-const RIPPER_CONFIG_SCHEMA = {
+export const RIPPER_CONFIG_SCHEMA = {
   $schema: JSON_SCHEMA_DRAFT_07_URI,
   $id: 'https://ripperoni.dev/schemas/internal/ripper-config.schema.json',
   title: 'RipperConfig',
@@ -109,7 +109,7 @@ const RIPPER_CONFIG_SCHEMA = {
 } as const;
 
 /** Validated ripperoni configuration derived from the JSON schema. */
-export type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
+type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
 
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);
@@ -120,27 +120,17 @@ class RipperConfigValidator {
   private static readonly _validate: ValidateFunction<RipperConfigInterface> =
     ajv.compile<RipperConfigInterface>(RIPPER_CONFIG_SCHEMA);
 
-  public static validate(data: unknown): boolean {
-    return RipperConfigValidator._validate(data);
-  }
-
-  public static formatErrors(): string {
+  public static validate(data: unknown): string | null {
+    if (RipperConfigValidator._validate(data)) return null;
     return ajv.errorsText(RipperConfigValidator._validate.errors, { separator: '\n  ' });
   }
 }
 
 /**
- * AJV type-guard for RipperConfigInterface.
+ * Validates data against the RipperConfig schema.
  *
  * @param data - Unknown value to validate.
- * @returns `true` when `data` satisfies the RipperConfig schema.
+ * @returns `null` when `data` is valid; a human-readable error string otherwise.
  */
-export const validateRipperConfig = (data: unknown): boolean =>
+export const validateRipperConfig = (data: unknown): string | null =>
   RipperConfigValidator.validate(data);
-
-/**
- * Formats the last AJV validation errors as a newline-separated string.
- *
- * @returns Human-readable description of all schema violations.
- */
-export function formatRipperConfigErrors(): string { return RipperConfigValidator.formatErrors(); }

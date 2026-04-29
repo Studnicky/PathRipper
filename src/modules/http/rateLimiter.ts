@@ -39,7 +39,7 @@ export class RateLimiter {
    * @param fn - Async function to schedule.
    * @returns Promise that resolves with the function's return value.
    */
-  public schedule<T>(fn: () => Promise<T>): Promise<T> {
+  public schedule<T extends Awaited<unknown>>(fn: () => Promise<T>): Promise<T> {
     if (this.#jitterMs === 0) return this.#limiter.schedule(fn);
     const jitter = this.#jitterMs;
     return this.#limiter.schedule(async (): Promise<T> => {

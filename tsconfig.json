@@ -12,9 +12,6 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    // Required: wtf_wikipedia/types/index.d.ts(212) references undefined 'Documents' type.
-    // Cannot remove until upstream wtf_wikipedia fixes its type declarations.
-    "skipLibCheck": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

@@ -6,10 +6,6 @@ import type { FlattenResult } from '../types/Results.js';
 
 import type { BaseErrorOptionsInterface, BaseErrorJsonType } from '../types/BaseError.js';
 
-type FormatResult = string;
-type ToJsonResult = BaseErrorJsonType;
-type SerializeResult = string;
-
 export type { BaseErrorOptionsInterface, BaseErrorJsonType };
 
 /**
@@ -47,7 +43,7 @@ export class BaseError extends Error {
    * @param error - Any caught value.
    * @returns Serialized BaseError JSON, plain Error message, or `String(error)`.
    */
-  public static format(error: unknown): FormatResult {
+  public static format(error: unknown): string {
     if (error instanceof BaseError) return error.serialize();
     if (error instanceof Error)     return error.message;
     return String(error);
@@ -59,7 +55,7 @@ export class BaseError extends Error {
    * @param options - Pass `{ stack: false }` to omit stack traces.
    * @returns A structured representation of the error including cause chain.
    */
-  public toJson(options: Readonly<{ stack?: boolean }> = {}): ToJsonResult {
+  public toJson(options: Readonly<{ stack?: boolean }> = {}): BaseErrorJsonType {
     const includeStack = options.stack !== false;
     const json: Record<string, unknown> = {
       code:      this.code,
@@ -84,11 +80,13 @@ export class BaseError extends Error {
   /**
    * Returns a pretty-printed JSON string of this error.
    *
-   * @param space - JSON indentation spaces (default 2).
+   * @param space - JSON indentation spaces (default 2). Clamped to 0–10.
+   * @param options - Pass `{ stack: false }` to omit stack traces from the output.
    * @returns JSON string representation of `toJson()`.
    */
-  public serialize(space: number = 2): SerializeResult {
-    return JSON.stringify(this.toJson(), null, space);
+  public serialize(space: number = 2, options: Readonly<{ stack?: boolean }> = {}): string {
+    const indent = Math.min(Math.max(Math.floor(space), 0), 10);
+    return JSON.stringify(this.toJson(options), null, indent);
   }
 
   /**

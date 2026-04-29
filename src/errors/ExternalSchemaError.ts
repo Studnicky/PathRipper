@@ -1,8 +1,6 @@
 import { BaseError } from './BaseError.js';
 import type { BaseErrorOptionsInterface } from './BaseError.js';
 
-type CreateResult = ExternalSchemaError;
-
 /** Thrown when an external plugin or task file cannot be loaded or its schema is invalid. */
 export class ExternalSchemaError extends BaseError {
   /**
@@ -20,7 +18,7 @@ export class ExternalSchemaError extends BaseError {
    * @param options - Optional cause and metadata.
    * @returns A new ExternalSchemaError.
    */
-  public static create(message: string, options: BaseErrorOptionsInterface = {}): CreateResult {
+  public static create(message: string, options: BaseErrorOptionsInterface = {}): ExternalSchemaError {
     return new ExternalSchemaError(message, options);
   }
 }
