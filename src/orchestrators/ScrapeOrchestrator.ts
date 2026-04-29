@@ -11,20 +11,31 @@ import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface } from '../types/PipelineState.js';
 import { Logger } from '../modules/logger/logger.js';
-import type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface } from '../types/ScrapeOrchestrator.js';
+import type {
+  ScrapeHtmlOptionsInterface,
+  ScrapeWikiOptionsInterface,
+  RunPipelineOptionsInterface,
+} from '../types/ScrapeOrchestrator.js';
 import type { ScrapeHtmlResult, ScrapeWikiResult } from '../types/Results.js';
 
 export type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface };
 
-interface RunPipelineOptionsInterface {
-  readonly targetId: string;
-  readonly outDir:   string;
-  readonly scraper:  MediaWikiScraper;
-  readonly members:  CategoryMemberInterface[];
-  readonly log:      ReturnType<typeof Logger.forComponent>;
-}
-
-/** Coordinates scraping pipelines for both HTML and MediaWiki targets. */
+/**
+ * Coordinates scraping pipelines for both HTML and MediaWiki targets.
+ *
+ * @remarks
+ * All methods are static. Instantiation is forbidden. Call `scrapeHtml` or `scrapeWiki`
+ * with validated options to execute a full scrape pipeline.
+ *
+ * @example
+ * ```ts
+ * await ScrapeOrchestrator.scrapeWiki({ target: 'aonprd', outDir: './out', configDir: '.', config });
+ * ```
+ * @category Orchestrators
+ * @since 2.0.0
+ * @group Orchestrators
+ * @see ScrapeWikiOptionsInterface
+ */
 export class ScrapeOrchestrator {
   private constructor() { /* static-only */ }
 

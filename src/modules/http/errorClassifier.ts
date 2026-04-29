@@ -1,28 +1,15 @@
 // Ported from torus/src/core/errorClassifier.ts — stripped of torus node/channel machinery.
 
 import type { ErrorCategoryType } from '../../types/Http.js';
-import type { ClassificationResultInterface, ExtendedErrorInterface } from '../../types/ErrorClassifier.js';
+import { ErrorCategory } from '../../types/ErrorClassifier.js';
+import type {
+  ClassificationResultInterface,
+  ExtendedErrorInterface,
+  ClassificationRuleInterface,
+  ClassificationRuleOptionsType,
+} from '../../types/ErrorClassifier.js';
 
-export type { ClassificationResultInterface, ExtendedErrorInterface };
-
-/** Frozen map of error category string literals for use as classification keys. */
-export const ErrorCategory = Object.freeze({
-  NETWORK:    'network',
-  PERMANENT:  'permanent',
-  RESOURCE:   'resource',
-  THROTTLED:  'throttled',
-  TIMEOUT:    'timeout',
-  TRANSIENT:  'transient',
-  UNKNOWN:    'unknown',
-  VALIDATION: 'validation',
-} as const);
-
-export interface ClassificationRuleInterface {
-  readonly predicate: (error: ExtendedErrorInterface) => boolean;
-  readonly category: ErrorCategoryType;
-  readonly retryable?: boolean | undefined;
-  readonly backoffHint?: number | ((error: ExtendedErrorInterface) => number) | undefined;
-}
+export type { ClassificationResultInterface, ExtendedErrorInterface, ClassificationRuleInterface };
 
 const HTTP_STATUS_THROTTLED          = 429;
 const HTTP_STATUS_SERVER_MIN         = 500;
@@ -31,7 +18,24 @@ const HTTP_STATUS_CLIENT_MAX         = 500;
 const RETRY_AFTER_DEFAULT_MS         = 5_000;
 const RETRY_AFTER_SECONDS_MULTIPLIER = 1_000;
 
-/** Classifies errors into retry categories based on configurable predicate rules. */
+/**
+ * Classifies errors into retry categories based on configurable predicate rules.
+ *
+ * @remarks
+ * Register rules via `addRule` for custom logic, or call `ErrorClassifier.default()`
+ * to get a pre-configured instance covering common HTTP and network error patterns.
+ *
+ * @example
+ * ```ts
+ * const classifier = ErrorClassifier.default();
+ * const result = classifier.classify(error);
+ * if (result.retryable) retry(result.backoffHint);
+ * ```
+ * @category Http
+ * @since 2.0.0
+ * @group Http
+ * @see ErrorCategory
+ */
 export class ErrorClassifier {
   readonly #rules: ClassificationRuleInterface[] = [];
 
@@ -46,7 +50,7 @@ export class ErrorClassifier {
   addRule(
     predicate: (error: ExtendedErrorInterface) => boolean,
     category: ErrorCategoryType,
-    options: Partial<Pick<ClassificationRuleInterface, 'backoffHint' | 'retryable'>> = {},
+    options: ClassificationRuleOptionsType = {},
   ): ErrorClassifier {
     this.#rules.push({ category, predicate, ...options });
     return this;

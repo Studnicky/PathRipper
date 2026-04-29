@@ -1,8 +1,9 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ErrorClassifier, ErrorCategory } from '../../../../src/modules/http/errorClassifier.js';
+import { ErrorClassifier } from '../../../../src/modules/http/errorClassifier.js';
 import type { ExtendedErrorInterface } from '../../../../src/modules/http/errorClassifier.js';
+import { ErrorCategory } from '../../../../src/types/ErrorClassifier.js';
 
 function err(props: Partial<ExtendedErrorInterface>): ExtendedErrorInterface {
   return Object.assign(new Error('test'), props);

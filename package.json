@@ -18,7 +18,10 @@
     "./Logger": "./dist/modules/logger/logger.js",
     "./Time": "./dist/modules/http/time.js",
     "./RipperConfig": "./dist/config/RipperConfig.js",
-    "./errors": "./dist/errors/index.js",
+    "./errors/BaseError": "./dist/errors/BaseError.js",
+    "./errors/HttpError": "./dist/errors/HttpError.js",
+    "./errors/RipperConfigError": "./dist/errors/RipperConfigError.js",
+    "./errors/ExternalSchemaError": "./dist/errors/ExternalSchemaError.js",
     "./registry/TaskRegistry": "./dist/registry/TaskRegistry.js",
     "./registry/PipelineState": "./dist/registry/PipelineState.js",
     "./orchestrators/ScrapeOrchestrator": "./dist/orchestrators/ScrapeOrchestrator.js"

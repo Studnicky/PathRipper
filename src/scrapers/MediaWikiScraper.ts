@@ -6,51 +6,36 @@ import type {
   MediaWikiConfigInterface,
   WikiPageInterface,
   CategoryMemberInterface,
+  AllPagesResponseInterface,
+  CategoryMembersResponseInterface,
+  RevisionsPageInterface,
+  RevisionsResponseInterface,
 } from '../types/MediaWikiScraper.js';
 
 export type { MediaWikiConfigInterface, WikiPageInterface, CategoryMemberInterface };
-
-interface CategoryMemberShapeInterface {
-  readonly title: string;
-  readonly pageid: number;
-}
-
-interface AllPagesResponseInterface {
-  readonly query?: {
-    readonly allpages?: ReadonlyArray<{ readonly title: string; readonly pageid: number }>;
-  };
-  readonly continue?: Record<string, string>;
-}
-
-interface CategoryMembersResponseInterface {
-  readonly query?: {
-    readonly categorymembers?: ReadonlyArray<CategoryMemberShapeInterface>;
-  };
-  readonly continue?: Record<string, string>;
-}
-
-interface RevisionsPageInterface {
-  readonly title:     string;
-  readonly pageid?:   number;
-  readonly missing?:  true;
-  readonly revisions?: ReadonlyArray<{
-    readonly '*'?:     string;  // formatversion 1 — content here
-    readonly content?: string;  // formatversion 2 fallback
-  }>;
-}
-
-interface RevisionsResponseInterface {
-  readonly query?: {
-    readonly pages?: Record<string, RevisionsPageInterface>;
-  };
-}
 
 const BATCH_SIZE               = 50;
 const API_CATEGORY_LIMIT       = 500;
 const API_ALL_PAGES_LIMIT      = 500;
 const DEFAULT_RATE_LIMIT_MS    = 1_000;
 
-/** Fetches wikitext content and category membership from a MediaWiki action API. */
+/**
+ * Fetches wikitext content and category membership from a MediaWiki action API.
+ *
+ * @remarks
+ * Create instances via `MediaWikiScraper.create`. Supports rate limiting and automatic
+ * pagination for category and all-pages enumeration.
+ *
+ * @example
+ * ```ts
+ * const scraper = await MediaWikiScraper.create({ apiUrl: 'https://wiki.example.com/api.php' });
+ * const members = await scraper.fetchCategory('Ships');
+ * ```
+ * @category Scrapers
+ * @since 2.0.0
+ * @group Scrapers
+ * @see MediaWikiConfigInterface
+ */
 export class MediaWikiScraper {
   readonly #apiUrl:   string;
   readonly #headers:  Readonly<Record<string, string>>;

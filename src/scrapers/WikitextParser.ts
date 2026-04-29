@@ -1,12 +1,26 @@
 import wtf from 'wtf_wikipedia';
 
-import type { WikitextSectionType, ParsedPageInterface } from '../types/Scrapers.js';
+import type { WikitextSectionType, ParsedPageInterface, WtfSectionType } from '../types/Scrapers.js';
+import type { InfoboxFieldResult, InfoboxNumberResult } from '../types/Results.js';
 
 export type { ParsedPageInterface };
 
-type WtfSectionType = ReturnType<ReturnType<typeof wtf>['sections']> extends ReadonlyArray<infer S> ? S : ReturnType<ReturnType<typeof wtf>['sections']>;
-
-/** Parses raw wikitext into structured infobox, section, and category data. */
+/**
+ * Parses raw wikitext into structured infobox, section, and category data.
+ *
+ * @remarks
+ * Uses `wtf_wikipedia` under the hood. All methods are static.
+ *
+ * @example
+ * ```ts
+ * const parsed = WikitextParser.parse('Tarrasque', rawWikitext);
+ * const cr = WikitextParser.infoboxNumber(parsed, 'cr');
+ * ```
+ * @category Scrapers
+ * @since 2.0.0
+ * @group Scrapers
+ * @see ParsedPageInterface
+ */
 export class WikitextParser {
   /**
    * Parses a raw wikitext string into a structured `ParsedPageInterface`.
@@ -46,7 +60,7 @@ export class WikitextParser {
    * @param field - Infobox field key to look up.
    * @returns String value if the field exists, otherwise `null`.
    */
-  static infoboxField(parsed: ParsedPageInterface, field: string): string | null {
+  static infoboxField(parsed: ParsedPageInterface, field: string): InfoboxFieldResult {
     const val = parsed.infobox[field];
     return val !== undefined && val !== null ? String(val) : null;
   }
@@ -58,7 +72,7 @@ export class WikitextParser {
    * @param field - Infobox field key to look up.
    * @returns Parsed finite number if the field exists and is numeric, otherwise `null`.
    */
-  static infoboxNumber(parsed: ParsedPageInterface, field: string): number | null {
+  static infoboxNumber(parsed: ParsedPageInterface, field: string): InfoboxNumberResult {
     const val = WikitextParser.infoboxField(parsed, field);
     if (val === null) return null;
     const n = parseFloat(val);

@@ -1,8 +1,8 @@
 import AjvModule, { type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
-import type { FromSchema } from 'json-schema-to-ts';
 
 import type { AjvCtorType, AddFormatsFnInterface } from '../../types/AjvInterop.js';
+import type { ValidateResult } from '../../types/Results.js';
 
 // AJV 8.x ships dual CJS/ESM; under NodeNext the runtime default lives on `.default`.
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
@@ -10,8 +10,7 @@ const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInter
 
 const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
 
-/** JSON Schema Draft-07 definition for the ripperoni configuration file. */
-export const RIPPER_CONFIG_SCHEMA = {
+const SCHEMA = {
   $schema: JSON_SCHEMA_DRAFT_07_URI,
   $id: 'https://ripperoni.dev/schemas/internal/ripper-config.schema.json',
   title: 'RipperConfig',
@@ -108,29 +107,43 @@ export const RIPPER_CONFIG_SCHEMA = {
   },
 } as const;
 
-/** Validated ripperoni configuration derived from the JSON schema. */
-type RipperConfigInterface = FromSchema<typeof RIPPER_CONFIG_SCHEMA>;
-
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);
 
-class RipperConfigValidator {
+/**
+ * Provides AJV-based validation for the ripperoni configuration file.
+ *
+ * @remarks
+ * All methods and properties are static. The `SCHEMA` property exposes the raw
+ * JSON Schema Draft-07 object for use in type derivation.
+ *
+ * @example
+ * ```ts
+ * const errors = RipperConfigSchema.validate(rawJson);
+ * if (errors !== null) throw new Error(errors);
+ * ```
+ * @category Schema
+ * @since 2.0.0
+ * @group Schema
+ * @see RipperConfigInterface
+ */
+export class RipperConfigSchema {
   private constructor() { /* static-only */ }
 
-  private static readonly _validate: ValidateFunction<RipperConfigInterface> =
-    ajv.compile<RipperConfigInterface>(RIPPER_CONFIG_SCHEMA);
+  /** JSON Schema Draft-07 definition for the ripperoni configuration file. */
+  public static readonly SCHEMA: typeof SCHEMA = SCHEMA;
 
-  public static validate(data: unknown): string | null {
-    if (RipperConfigValidator._validate(data)) return null;
-    return ajv.errorsText(RipperConfigValidator._validate.errors, { separator: '\n  ' });
+  private static readonly _validate: ValidateFunction<object> =
+    ajv.compile(SCHEMA);
+
+  /**
+   * Validates data against the RipperConfig schema.
+   *
+   * @param data - Unknown value to validate.
+   * @returns `null` when `data` is valid; a human-readable error string otherwise.
+   */
+  public static validate(data: unknown): ValidateResult {
+    if (RipperConfigSchema._validate(data as object)) return null;
+    return ajv.errorsText(RipperConfigSchema._validate.errors, { separator: '\n  ' });
   }
 }
-
-/**
- * Validates data against the RipperConfig schema.
- *
- * @param data - Unknown value to validate.
- * @returns `null` when `data` is valid; a human-readable error string otherwise.
- */
-export const validateRipperConfig = (data: unknown): string | null =>
-  RipperConfigValidator.validate(data);

@@ -51,3 +51,15 @@ export type ScrapeHtmlResult = Promise<void>;
 /** @remarks Return type of ScrapeOrchestrator.scrapeWiki(). */
 export type ScrapeWikiResult = Promise<void>;
 
+
+// ─── Schema ───────────────────────────────────────────────────────────────────
+
+/** @remarks Return type of RipperConfigSchema.validate(). `null` = valid; string = error message. */
+export type ValidateResult = string | null;
+
+// ─── WikitextParser ──────────────────────────────────────────────────────────
+
+/** @remarks Return type of WikitextParser.infoboxField(). */
+export type InfoboxFieldResult = string | null;
+/** @remarks Return type of WikitextParser.infoboxNumber(). */
+export type InfoboxNumberResult = number | null;
