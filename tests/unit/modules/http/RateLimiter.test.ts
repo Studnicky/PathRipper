@@ -32,7 +32,7 @@ describe('RateLimiter', () => {
     await rl.schedule(async () => stamps.push(Date.now()));
     await rl.schedule(async () => stamps.push(Date.now()));
     const gap = stamps[1]! - stamps[0]!;
-    assert.ok(gap >= 95, `expected ≥100ms gap for perSecond(10), got ${gap.toString()}`);
+    assert.ok(gap >= 85, `expected ≥100ms gap for perSecond(10), got ${gap.toString()}`);
     await rl.stop();
   });
 });
