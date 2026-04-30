@@ -84,8 +84,9 @@ graph TD
         </div>
       </section>
 
-      <section id="pipeline">
+      <section id="pipeline" data-component="pipeline">
         <h2>Pipeline pattern</h2>
+        <p class="summary">Typed async middleware chain where every task receives (next, state) and advances the queue by calling next().</p>
         <p>The core architecture is a typed middleware chain inherited from PathRipper's <code>Transformer</code> class, rewritten in TypeScript. Every task receives <code>(next, state)</code>. Calling <code>next()</code> advances to the next task; not calling it terminates the chain.</p>
 
         <div class="mermaid">
@@ -120,8 +121,9 @@ await pipeline.execute(PipelineState.fromWikiPage('my-target', page));</code></p
         <p><code>TState</code> must extend <code>Record&lt;string, unknown&gt;</code>. Tasks mutate state directly — the pipeline passes the same reference through the chain.</p>
       </section>
 
-      <section id="http-layer">
+      <section id="http-layer" data-component="http">
         <h2>HTTP machinery</h2>
+        <p class="summary">Three composable classes — RateLimiter, RetryExecutor, and ErrorClassifier — form the HTTP stack, each injected independently.</p>
         <p>Three classes form the HTTP stack, ported from <a href="https://github.com/Studnicky/torus">Torus</a>. They're independent of each other and compose by injection.</p>
 
         <div class="mermaid">
@@ -166,8 +168,9 @@ graph LR
         <p>Token-bucket backed by <code>bottleneck</code>. Factory methods: <code>RateLimiter.perSecond(n)</code> for throughput-based limits, <code>RateLimiter.withDelay(ms)</code> for fixed-gap limits. Used by every scraper and crawler.</p>
       </section>
 
-      <section id="scrapers">
+      <section id="scrapers" data-component="scrapers">
         <h2>Scrapers</h2>
+        <p class="summary">Pure data accessors for HTML (via cheerio) and MediaWiki (via native fetch) that return typed results without coupling to the pipeline.</p>
 
         <h3>HtmlScraper</h3>
         <p>Native <code>fetch</code> + <code>cheerio</code>. Returns <code>ScrapedPageInterface { url, $, html }</code>. The <code>$</code> field is a live <code>CheerioAPI</code> handle — use it exactly as you'd use jQuery on a DOM. No browser engine, no JavaScript execution. For JS-rendered pages, swap the fetch call for a headless driver (Playwright, Puppeteer) and feed the HTML to <code>cheerio.load()</code>.</p>
@@ -186,8 +189,9 @@ graph LR
         <p>Wraps <code>wtf_wikipedia</code>. <code>WikitextParser.parse(title, wikitext)</code> returns a <code>ParsedPageInterface</code> with <code>infobox</code> (flat key→value record), <code>sections</code> (title + raw wikitext), and <code>categories</code>. Helper methods <code>infoboxField</code> and <code>infoboxNumber</code> pull typed values without null-checks at call site.</p>
       </section>
 
-      <section id="crawler">
+      <section id="crawler" data-component="crawler">
         <h2>Link crawler</h2>
+        <p class="summary">Recursive link crawler controlled by three regexes (domain, delimiter, target) that bound traversal and collect matching URLs.</p>
         <p>Modernized from PathRipper's <code>LinkLister</code>. Three regexes control behavior:</p>
         <table>
           <thead><tr><th>Regex</th><th>Purpose</th></tr></thead>
@@ -200,8 +204,9 @@ graph LR
         <p>Visited URLs are tracked in a <code>Set</code>. All traversals run concurrently via <code>Promise.all</code> at each level. Results are deduplicated and sorted with a numeric-aware collator — so <code>Item-10</code> sorts after <code>Item-9</code>, not between <code>Item-1</code> and <code>Item-2</code>.</p>
       </section>
 
-      <section id="source-map">
+      <section id="source-map" data-component="source-map">
         <h2>Source map</h2>
+        <p class="summary">Complete index of every source file, its exported symbols, and the PathRipper or Torus module it was ported from.</p>
         <table>
           <thead><tr><th>File</th><th>Exports</th><th>Ported from</th></tr></thead>
           <tbody>

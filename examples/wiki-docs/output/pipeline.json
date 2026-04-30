@@ -1,0 +1,8 @@
+{
+  "_type": "ripperoni_component",
+  "name": "Pipeline",
+  "kind": "Core",
+  "since": "2.0.0",
+  "description": "Typed async middleware chain. Tasks receive (next, state) and advance via next.",
+  "source": "src/pipeline/Pipeline.ts"
+}
