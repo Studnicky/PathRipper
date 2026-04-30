@@ -53,7 +53,7 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 - Native git hooks (`hooks/pre-commit`, `hooks/pre-push`); installed via `scripts/install-hooks.sh`
 - Matrix CI: Node 22/24 × ubuntu/macos; typecheck, lint, unit tests, build, audit
 - CHANGELOG gate on every PR
-- 232 unit tests; `node:test` native runner, `tsx`, no jest/vitest
+- 90 unit tests (framework core); `node:test` native runner, `tsx`, no jest/vitest; target-specific plugin tests live in `tests/e2e/` alongside their plugin source
 - Legacy PathRipper AONPRD e2e preserved at `tests/e2e/` (`npm run test:e2e`; never runs in CI)
 - `scripts/enginseer.sh` — local wrapper for `@noocodec/enginseer` analytical tools
 
