@@ -5,7 +5,7 @@
 //
 // Run locally:                npm run test:e2e
 // Plugin smoke only:          npm run test:e2e -- --test-name-pattern='aonprd plugin smoke'
-// Full pipeline traversal:    RIPPER_E2E_FULL=1 npm run test:e2e -- --test-name-pattern='full pipeline'
+// Full pipeline traversal:    npm run test:e2e -- --test-name-pattern='full pipeline'
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, readdir, rm } from 'node:fs/promises';
@@ -149,7 +149,7 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     assert.ok(r.category !== null, 'category must parse');
   });
 
-  it('full pipeline — LinkLister + ScrapeOrchestrator + plugin → typed JSON outputs', { skip: process.env['RIPPER_E2E_FULL'] !== '1' }, async () => {
+  it('full pipeline — LinkLister + ScrapeOrchestrator + plugin → typed JSON outputs', async () => {
     const fx = await RipperConfig.load(FIXTURE);
     const c  = fx.crawlers!['aonprd']!;
     const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
