@@ -114,6 +114,16 @@ export interface MediaWikiConfigInterface {
   readonly rateLimitMs?: number | undefined;
   /** Maximum random jitter added to each delay, in milliseconds. */
   readonly jitterMs?:    number | undefined;
+  /** Number of page titles to fetch per batch API call (max 50, default 50). */
+  readonly batchSize?: number | undefined;
+  /** Number of pages to enumerate per allpages API call (max 500, default 500). */
+  readonly allPagesLimit?: number | undefined;
+  /** Maximum number of retry attempts for failed requests (default 3). */
+  readonly maxRetries?: number | undefined;
+  /** Base delay in milliseconds for retry backoff (default 500). */
+  readonly retryBaseDelayMs?: number | undefined;
+  /** Maximum delay cap in milliseconds for retry backoff (default 30000). */
+  readonly retryMaxDelayMs?: number | undefined;
 }
 
 /**

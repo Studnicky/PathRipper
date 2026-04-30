@@ -70,6 +70,7 @@ describe('ScrapeOrchestrator', () => {
         scraper:        stub as unknown as Parameters<typeof invokeRunPipeline>[0]['scraper'],
         members,
         log,
+        batchSize:      50,
         resumeFailures: false,
       });
 

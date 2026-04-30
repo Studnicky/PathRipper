@@ -22,6 +22,8 @@ export interface RunPipelineOptionsInterface {
   readonly scraper:        MediaWikiScraper;
   readonly members:        CategoryMemberInterface[];
   readonly log:            ReturnType<typeof Logger.forComponent>;
+  /** Number of page titles to fetch per batch API call (default 50). */
+  readonly batchSize:      number;
   /** When true, delete failures.json after a successful retry run. */
   readonly resumeFailures: boolean;
 }

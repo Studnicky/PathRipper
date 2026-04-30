@@ -6,17 +6,25 @@
   },
   "mediawiki": {
     "your-wiki-target": {
-      "apiUrl":      "https://wiki.example/w/api.php",
-      "rateLimitMs": 2000,
-      "jitterMs":    500,
-      "categories":  ["Example Category A", "Example Category B"],
-      "tasks":       ["./plugins/your-target/parse.task.js"]
+      "apiUrl":           "https://wiki.example/w/api.php",
+      "rateLimitMs":      2000,
+      "jitterMs":         500,
+      "batchSize":        50,
+      "allPagesLimit":    500,
+      "maxRetries":       3,
+      "retryBaseDelayMs": 500,
+      "retryMaxDelayMs":  30000,
+      "categories":       ["Example Category A", "Example Category B"],
+      "tasks":            ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
     "your-html-target": {
-      "baseUrl":     "https://example.com",
-      "rateLimitMs": 500,
+      "baseUrl":          "https://example.com",
+      "rateLimitMs":      500,
+      "maxRetries":       3,
+      "retryBaseDelayMs": 500,
+      "retryMaxDelayMs":  30000,
       "headers": {
         "User-Agent": "MyApp/1.0"
       },

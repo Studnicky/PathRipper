@@ -18,6 +18,7 @@ import type {
   FailuresManifestInterface,
 } from '../types/ScrapeOrchestrator.js';
 import type { ScrapeHtmlResult, ScrapeWikiResult } from '../types/Results.js';
+import { ConfigClamp } from '../config/ConfigClamp.js';
 
 export type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface };
 
@@ -58,7 +59,7 @@ export class ScrapeOrchestrator {
     const tasks = (htmlTarget as { tasks?: string[] }).tasks ?? [];
     await TaskRegistry.loadAll(tasks, opts.configDir);
 
-    const scraper = HtmlScraper.create(htmlTarget);
+    const scraper = HtmlScraper.create(ConfigClamp.html(htmlTarget as Record<string, unknown>, opts.target) as typeof htmlTarget);
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
     for (const path of opts.paths) {
@@ -97,7 +98,7 @@ export class ScrapeOrchestrator {
     const tasks = (wikiTarget as { tasks?: string[] }).tasks ?? [];
     await TaskRegistry.loadAll(tasks, opts.configDir);
 
-    const scraper = await MediaWikiScraper.create(wikiTarget);
+    const scraper = await MediaWikiScraper.create(ConfigClamp.mediawiki(wikiTarget as Record<string, unknown>, opts.target) as typeof wikiTarget);
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
     // Resolve page list — four modes:
@@ -122,8 +123,11 @@ export class ScrapeOrchestrator {
       log.info('scrapeWiki', `Mode: ${configCategories.length.toString()} categories — ${members.length.toString()} unique pages`);
     } else {
       log.info('scrapeWiki', 'Mode: all pages in main namespace (this may take a while)');
-      members = await scraper.fetchAllPages();
+      const allPagesLimit = (wikiTarget as { allPagesLimit?: number }).allPagesLimit ?? 500;
+      members = await scraper.fetchAllPages(allPagesLimit);
     }
+
+    const batchSize = (wikiTarget as { batchSize?: number }).batchSize ?? 50;
 
     await ScrapeOrchestrator.runPipeline({
       targetId:       opts.target,
@@ -131,6 +135,7 @@ export class ScrapeOrchestrator {
       scraper,
       members,
       log,
+      batchSize,
       resumeFailures: opts.resumeFailures === true,
     });
   }
@@ -156,8 +161,7 @@ export class ScrapeOrchestrator {
   }
 
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
-    const { targetId, outDir, scraper, members, log, resumeFailures } = opts;
-    const BATCH = 50;
+    const { targetId, outDir, scraper, members, log, batchSize, resumeFailures } = opts;
 
     // ── Resume: build set of already-written slugs ──────────────────────────
     const targetDir     = resolve(outDir, targetId);
@@ -187,8 +191,8 @@ export class ScrapeOrchestrator {
     const failures: string[] = [];
     let written = 0;
 
-    for (let i = 0; i < pending.length; i += BATCH) {
-      const slice = pending.slice(i, i + BATCH);
+    for (let i = 0; i < pending.length; i += batchSize) {
+      const slice = pending.slice(i, i + batchSize);
       const pages = await scraper.fetchPagesBatch(slice);
 
       for (const page of pages) {

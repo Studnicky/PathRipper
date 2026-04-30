@@ -33,6 +33,12 @@ export interface HtmlScraperConfigInterface {
   readonly jitterMs?:    number | undefined;
   /** Retry configuration for failed requests. */
   readonly retry?: RetryConfigInterface | undefined;
+  /** Maximum number of retry attempts for failed requests (default 3). */
+  readonly maxRetries?: number | undefined;
+  /** Base delay in milliseconds for retry backoff (default 500). */
+  readonly retryBaseDelayMs?: number | undefined;
+  /** Maximum delay cap in milliseconds for retry backoff (default 30000). */
+  readonly retryMaxDelayMs?: number | undefined;
   /** HTTP headers sent with every request. */
   readonly headers?: Readonly<Record<string, string>> | undefined;
 }

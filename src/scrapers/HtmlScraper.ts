@@ -45,7 +45,12 @@ export class HtmlScraper {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
     this.#limiter = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#retry   = RetryExecutor.create(config.retry);
+    this.#retry   = RetryExecutor.create({
+      maxAttempts: config.maxRetries       ?? config.retry?.maxAttempts,
+      baseDelayMs: config.retryBaseDelayMs ?? config.retry?.baseDelayMs,
+      maxDelayMs:  config.retryMaxDelayMs  ?? config.retry?.maxDelayMs,
+      multiplier:  config.retry?.multiplier,
+    });
     this.#log     = Logger.forComponent('HtmlScraper');
   }
 
