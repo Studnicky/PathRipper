@@ -3,8 +3,7 @@
 //
 // Requires network access to https://studnicky.github.io/PathRipper/
 //
-// Run locally:
-//   RIPPER_E2E=1 npm run test:e2e -- --test-name-pattern='docs-html'
+// Run: npm run test:e2e
 
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
@@ -30,7 +29,7 @@ interface DocsSectionOutput {
   url: string;
 }
 
-describe('docs-html e2e — HTML scraper against live PathRipper docs', { skip: process.env['RIPPER_E2E'] !== '1' }, () => {
+describe('docs-html e2e — HTML scraper against live PathRipper docs', () => {
   before(async () => {
     // Load the example plugin — it self-registers `docs:parse`
     await import('../../examples/docs-scraper/plugin.js');
