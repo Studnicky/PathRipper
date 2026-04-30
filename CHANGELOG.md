@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-beta.5] - 2026-04-30
+
+### Fixed
+- GitHub Pages deployment: enable the Pages site via API and add `workflow_dispatch` trigger so deployments can be manually re-run
+
 ## [2.0.0-beta.4] - 2026-04-30
 
 ### Changed
@@ -78,7 +83,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.4...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.5...HEAD
+[2.0.0-beta.5]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.4...v2.0.0-beta.5
 [2.0.0-beta.4]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.3...v2.0.0-beta.4
 [2.0.0-beta.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.2...v2.0.0-beta.3
 [2.0.0-beta.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.1...v2.0.0-beta.2
