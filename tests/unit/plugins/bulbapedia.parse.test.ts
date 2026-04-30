@@ -13,6 +13,11 @@ import {
   extractTcgPokemonCard,
   extractTcgTrainerCard,
   extractTcgSet,
+  extractTcgDeck,
+  extractTcgPromo,
+  extractLocation,
+  extractCharacter,
+  extractTrainerClass,
 } from '../../../plugins/bulbapedia/parse.task.js';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -409,5 +414,288 @@ describe('extractTcgSet', () => {
     const wikitext = `{{TCGExpansionInfobox\n| setname = Test Set\n}}`;
     const result = extractTcgSet('Test Set', wikitext, []);
     assert.equal(result.en_set_number, null);
+  });
+});
+
+// ─── Fixtures: new types ──────────────────────────────────────────────────────
+
+const PALLET_TOWN = `
+{{Town infobox
+| name       = Pallet Town
+| jpname     = マサラタウン
+| jptrans    = Masara Town
+| image      = PalletTown.png
+| slogan     = Shades of your journey await!
+| region     = Kanto
+| generation = I
+}}
+[[Category:Kanto locations]]
+`;
+
+const ROUTE_1 = `
+{{Route infobox
+| name       = Route 1
+| jpname     = 1番道路
+| region     = Kanto
+| generation = I
+}}
+[[Category:Routes]]
+`;
+
+const VIRIDIAN_FOREST = `
+{{Infobox location
+| image   = ViridianForest.png
+| type    = Forest
+| mapdesc = A thick forest.
+}}
+[[Category:Kanto locations]]
+`;
+
+const MISTY = `
+{{Character Infobox
+| name  = Misty
+| jname = カスミ
+| color = Blue
+| image = Misty.png
+| size  = 200
+}}
+[[Category:Anime characters]]
+`;
+
+const GYM_LEADER = `
+{{TrainerClassInfobox
+| name   = Gym Leader
+| jpname = ジムリーダー
+| image  = GymLeaderSprite.png
+}}
+[[Category:Trainer classes]]
+`;
+
+const BRILLIANT_STARS_DECK = `
+{{DeckInfobox
+| name    = Leafeon V Strike
+| release = March 25, 2022
+| set     = Brilliant Stars
+}}
+[[Category:TCG decks]]
+`;
+
+const PROMO_CARD = `
+{{TCGPromoInfobox
+| name = Pikachu Promo
+}}
+[[Category:TCG promo cards]]
+`;
+
+// ─── extractLocation ──────────────────────────────────────────────────────────
+
+describe('extractLocation', () => {
+  it('sets _type to location for Town infobox', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result._type, 'location');
+  });
+
+  it('extracts name from Town infobox', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.name, 'Pallet Town');
+  });
+
+  it('extracts ja_name from jpname field', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.ja_name, 'マサラタウン');
+  });
+
+  it('extracts region', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.region, 'Kanto');
+  });
+
+  it('extracts generation', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.generation, 'I');
+  });
+
+  it('sets location_type to city for Town infobox', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.location_type, 'city');
+  });
+
+  it('sets location_type to route for Route infobox', () => {
+    const result = extractLocation('Route 1', ROUTE_1, []);
+    assert.equal(result.location_type, 'route');
+  });
+
+  it('sets location_type to location for Infobox location', () => {
+    const result = extractLocation('Viridian Forest', VIRIDIAN_FOREST, []);
+    assert.equal(result.location_type, 'location');
+  });
+
+  it('passes categories through', () => {
+    const cats = ['Kanto locations'];
+    const result = extractLocation('Pallet Town', PALLET_TOWN, cats);
+    assert.deepEqual(result.categories, cats);
+  });
+
+  it('preserves the title', () => {
+    const result = extractLocation('Pallet Town', PALLET_TOWN, []);
+    assert.equal(result.title, 'Pallet Town');
+  });
+
+  it('returns null region when field absent', () => {
+    const wikitext = `{{Town infobox\n| name = Test Town\n}}`;
+    const result = extractLocation('Test Town', wikitext, []);
+    assert.equal(result.region, null);
+  });
+
+  it('returns null generation when field absent', () => {
+    const wikitext = `{{Town infobox\n| name = Test Town\n}}`;
+    const result = extractLocation('Test Town', wikitext, []);
+    assert.equal(result.generation, null);
+  });
+});
+
+// ─── extractCharacter ─────────────────────────────────────────────────────────
+
+describe('extractCharacter', () => {
+  it('sets _type to character', () => {
+    const result = extractCharacter('Misty', MISTY, []);
+    assert.equal(result._type, 'character');
+  });
+
+  it('preserves the title', () => {
+    const result = extractCharacter('Misty', MISTY, []);
+    assert.equal(result.title, 'Misty');
+  });
+
+  it('extracts name', () => {
+    const result = extractCharacter('Misty', MISTY, []);
+    assert.equal(result.name, 'Misty');
+  });
+
+  it('extracts jname', () => {
+    const result = extractCharacter('Misty', MISTY, []);
+    assert.equal(result.jname, 'カスミ');
+  });
+
+  it('passes categories through', () => {
+    const cats = ['Anime characters'];
+    const result = extractCharacter('Misty', MISTY, cats);
+    assert.deepEqual(result.categories, cats);
+  });
+
+  it('returns null name when field absent', () => {
+    const wikitext = `{{Character Infobox\n| color = Red\n}}`;
+    const result = extractCharacter('Unknown', wikitext, []);
+    assert.equal(result.name, null);
+  });
+
+  it('returns null jname when field absent', () => {
+    const wikitext = `{{Character Infobox\n| name = Ash\n}}`;
+    const result = extractCharacter('Ash', wikitext, []);
+    assert.equal(result.jname, null);
+  });
+});
+
+// ─── extractTrainerClass ──────────────────────────────────────────────────────
+
+describe('extractTrainerClass', () => {
+  it('sets _type to trainer_class', () => {
+    const result = extractTrainerClass('Gym Leader', GYM_LEADER, []);
+    assert.equal(result._type, 'trainer_class');
+  });
+
+  it('preserves the title', () => {
+    const result = extractTrainerClass('Gym Leader', GYM_LEADER, []);
+    assert.equal(result.title, 'Gym Leader');
+  });
+
+  it('extracts name', () => {
+    const result = extractTrainerClass('Gym Leader', GYM_LEADER, []);
+    assert.equal(result.name, 'Gym Leader');
+  });
+
+  it('extracts ja_name from jpname field', () => {
+    const result = extractTrainerClass('Gym Leader', GYM_LEADER, []);
+    assert.equal(result.ja_name, 'ジムリーダー');
+  });
+
+  it('passes categories through', () => {
+    const cats = ['Trainer classes'];
+    const result = extractTrainerClass('Gym Leader', GYM_LEADER, cats);
+    assert.deepEqual(result.categories, cats);
+  });
+
+  it('returns null name when field absent', () => {
+    const wikitext = `{{TrainerClassInfobox\n| jpname = テスト\n}}`;
+    const result = extractTrainerClass('Test', wikitext, []);
+    assert.equal(result.name, null);
+  });
+
+  it('returns null ja_name when jpname absent', () => {
+    const wikitext = `{{TrainerClassInfobox\n| name = Test\n}}`;
+    const result = extractTrainerClass('Test', wikitext, []);
+    assert.equal(result.ja_name, null);
+  });
+});
+
+// ─── extractTcgDeck ───────────────────────────────────────────────────────────
+
+describe('extractTcgDeck', () => {
+  it('sets _type to tcg_deck', () => {
+    const result = extractTcgDeck('Leafeon V Strike', BRILLIANT_STARS_DECK, []);
+    assert.equal(result._type, 'tcg_deck');
+  });
+
+  it('preserves the title', () => {
+    const result = extractTcgDeck('Leafeon V Strike', BRILLIANT_STARS_DECK, []);
+    assert.equal(result.title, 'Leafeon V Strike');
+  });
+
+  it('extracts name', () => {
+    const result = extractTcgDeck('Leafeon V Strike', BRILLIANT_STARS_DECK, []);
+    assert.equal(result.name, 'Leafeon V Strike');
+  });
+
+  it('passes categories through', () => {
+    const cats = ['TCG decks'];
+    const result = extractTcgDeck('Leafeon V Strike', BRILLIANT_STARS_DECK, cats);
+    assert.deepEqual(result.categories, cats);
+  });
+
+  it('returns null name when field absent', () => {
+    const wikitext = `{{DeckInfobox\n| release = 2022\n}}`;
+    const result = extractTcgDeck('Unknown Deck', wikitext, []);
+    assert.equal(result.name, null);
+  });
+});
+
+// ─── extractTcgPromo ──────────────────────────────────────────────────────────
+
+describe('extractTcgPromo', () => {
+  it('sets _type to tcg_promo', () => {
+    const result = extractTcgPromo('Pikachu Promo', PROMO_CARD, []);
+    assert.equal(result._type, 'tcg_promo');
+  });
+
+  it('preserves the title', () => {
+    const result = extractTcgPromo('Pikachu Promo', PROMO_CARD, []);
+    assert.equal(result.title, 'Pikachu Promo');
+  });
+
+  it('extracts name', () => {
+    const result = extractTcgPromo('Pikachu Promo', PROMO_CARD, []);
+    assert.equal(result.name, 'Pikachu Promo');
+  });
+
+  it('passes categories through', () => {
+    const cats = ['TCG promo cards'];
+    const result = extractTcgPromo('Pikachu Promo', PROMO_CARD, cats);
+    assert.deepEqual(result.categories, cats);
+  });
+
+  it('returns null name when field absent', () => {
+    const wikitext = `{{TCGPromoInfobox\n}}`;
+    const result = extractTcgPromo('Unknown Promo', wikitext, []);
+    assert.equal(result.name, null);
   });
 });

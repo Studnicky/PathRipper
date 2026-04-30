@@ -10,13 +10,43 @@ const TEMPLATE_POKEMON2       = 'pokemon infobox';
 const TEMPLATE_MOVE           = 'moveinfobox';
 const TEMPLATE_ITEM_HEAD      = 'iteminfobox/head';
 const TEMPLATE_MASTERS        = 'mastersinfobox';
+const TEMPLATE_MASTERS_SKILL  = 'mastersskillinfobox';
+const TEMPLATE_MASTERS_EVENT  = 'masterseventinfobox';
 const TEMPLATE_TCG_POKEMON    = 'pokémoncardInfobox';
 const TEMPLATE_TCG_TRAINER    = 'TCGTrainerCardInfobox';
 const TEMPLATE_TCG_EXPANSION  = 'TCGExpansionInfobox';
+const TEMPLATE_TCG_DECK       = 'DeckInfobox';
+const TEMPLATE_TCG_PROMO      = 'TCGPromoInfobox';
+const TEMPLATE_TOWN_INFOBOX   = 'Town infobox';
+const TEMPLATE_LOCATION_INFOBOX = 'Infobox location';
+const TEMPLATE_ROUTE_INFOBOX  = 'Route infobox';
+const TEMPLATE_ANIME_LOCATION = 'AnimeLocationInfobox';
+const TEMPLATE_CHARACTER      = 'Character Infobox';
+const TEMPLATE_CHAR_INFOBOX   = 'CharInfobox';
+const TEMPLATE_TRAINER_CLASS  = 'TrainerClassInfobox';
 
 // ─── Output shapes ────────────────────────────────────────────────────────────
 
-type PageType = 'pokemon' | 'move' | 'item' | 'masters' | 'tcg_pokemon_card' | 'tcg_trainer_card' | 'tcg_set' | 'unknown';
+type PageType =
+  | 'pokemon'
+  | 'move'
+  | 'item'
+  | 'masters'
+  | 'masters_skill'
+  | 'masters_event'
+  | 'tcg_pokemon_card'
+  | 'tcg_trainer_card'
+  | 'tcg_set'
+  | 'tcg_deck'
+  | 'tcg_promo'
+  | 'location'
+  | 'character'
+  | 'trainer_class'
+  | 'learnset_data'
+  | 'card_list'
+  | 'anime_history'
+  | 'game_data'
+  | 'unknown';
 
 interface BaseOutput {
   _type: PageType;
@@ -115,6 +145,66 @@ interface TcgSetOutput extends BaseOutput {
   ja_release: string | null;
 }
 
+interface MastersSkillOutput extends BaseOutput {
+  _type: 'masters_skill';
+  name: string | null;
+}
+
+interface MastersEventOutput extends BaseOutput {
+  _type: 'masters_event';
+  name: string | null;
+}
+
+interface TcgDeckOutput extends BaseOutput {
+  _type: 'tcg_deck';
+  name: string | null;
+}
+
+interface TcgPromoOutput extends BaseOutput {
+  _type: 'tcg_promo';
+  name: string | null;
+}
+
+interface LocationOutput extends BaseOutput {
+  _type: 'location';
+  name: string | null;
+  ja_name: string | null;
+  region: string | null;
+  generation: string | null;
+  location_type: string | null;
+}
+
+interface CharacterOutput extends BaseOutput {
+  _type: 'character';
+  name: string | null;
+  jname: string | null;
+}
+
+interface TrainerClassOutput extends BaseOutput {
+  _type: 'trainer_class';
+  name: string | null;
+  ja_name: string | null;
+}
+
+interface LearnsetDataOutput extends BaseOutput {
+  _type: 'learnset_data';
+  pokemon: string;
+  generation: string | null;
+}
+
+interface CardListOutput extends BaseOutput {
+  _type: 'card_list';
+  subject: string;
+}
+
+interface AnimeHistoryOutput extends BaseOutput {
+  _type: 'anime_history';
+}
+
+interface GameDataOutput extends BaseOutput {
+  _type: 'game_data';
+}
+
 interface UnknownOutput extends BaseOutput {
   _type: 'unknown';
 }
@@ -124,9 +214,20 @@ type BulbapediaOutput =
   | MoveOutput
   | ItemOutput
   | MastersOutput
+  | MastersSkillOutput
+  | MastersEventOutput
   | TcgPokemonCardOutput
   | TcgTrainerCardOutput
   | TcgSetOutput
+  | TcgDeckOutput
+  | TcgPromoOutput
+  | LocationOutput
+  | CharacterOutput
+  | TrainerClassOutput
+  | LearnsetDataOutput
+  | CardListOutput
+  | AnimeHistoryOutput
+  | GameDataOutput
   | UnknownOutput;
 
 // ─── Value extraction helpers ─────────────────────────────────────────────────
@@ -273,6 +374,24 @@ function extractMasters(title: string, data: TemplateData, categories: string[])
     java:    templateStr(data, 'java'),
     image:   templateStr(data, 'image'),
     caption: templateStr(data, 'caption'),
+    categories,
+  };
+}
+
+function extractMastersSkill(title: string, data: TemplateData, categories: string[]): MastersSkillOutput {
+  return {
+    _type: 'masters_skill',
+    title,
+    name: templateStr(data, 'name'),
+    categories,
+  };
+}
+
+function extractMastersEvent(title: string, data: TemplateData, categories: string[]): MastersEventOutput {
+  return {
+    _type: 'masters_event',
+    title,
+    name: templateStr(data, 'name'),
     categories,
   };
 }
@@ -487,6 +606,101 @@ export function extractTcgSet(
   };
 }
 
+export function extractTcgDeck(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): TcgDeckOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_DECK) ?? {};
+  return {
+    _type: 'tcg_deck',
+    title,
+    name: kv['name'] !== undefined ? extractTcgRef(kv['name']) : null,
+    categories,
+  };
+}
+
+export function extractTcgPromo(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): TcgPromoOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_PROMO) ?? {};
+  return {
+    _type: 'tcg_promo',
+    title,
+    name: kv['name'] !== undefined ? extractTcgRef(kv['name']) : null,
+    categories,
+  };
+}
+
+export function extractLocation(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): LocationOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TOWN_INFOBOX)
+    ?? parseMainInfoboxKv(wikitext, TEMPLATE_ROUTE_INFOBOX)
+    ?? parseMainInfoboxKv(wikitext, TEMPLATE_LOCATION_INFOBOX)
+    ?? parseMainInfoboxKv(wikitext, TEMPLATE_ANIME_LOCATION)
+    ?? {};
+
+  let locationType: string | null = null;
+  if (hasTmpl(wikitext, TEMPLATE_TOWN_INFOBOX)) locationType = 'city';
+  else if (hasTmpl(wikitext, TEMPLATE_ROUTE_INFOBOX)) locationType = 'route';
+  else if (hasTmpl(wikitext, TEMPLATE_ANIME_LOCATION)) locationType = 'anime';
+  else if (hasTmpl(wikitext, TEMPLATE_LOCATION_INFOBOX)) locationType = 'location';
+
+  return {
+    _type: 'location',
+    title,
+    name: kv['name'] !== undefined ? kv['name'].trim() : null,
+    ja_name: kv['jpname'] !== undefined ? kv['jpname'].trim() : null,
+    region: kv['region'] !== undefined ? kv['region'].trim() : null,
+    generation: kv['generation'] !== undefined ? kv['generation'].trim() : null,
+    location_type: locationType,
+    categories,
+  };
+}
+
+export function extractCharacter(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): CharacterOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_CHARACTER)
+    ?? parseMainInfoboxKv(wikitext, TEMPLATE_CHAR_INFOBOX)
+    ?? {};
+  return {
+    _type: 'character',
+    title,
+    name: kv['name'] !== undefined ? kv['name'].trim() : null,
+    jname: kv['jname'] !== undefined ? kv['jname'].trim() : null,
+    categories,
+  };
+}
+
+export function extractTrainerClass(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): TrainerClassOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TRAINER_CLASS) ?? {};
+  return {
+    _type: 'trainer_class',
+    title,
+    name: kv['name'] !== undefined ? kv['name'].trim() : null,
+    ja_name: kv['jpname'] !== undefined ? kv['jpname'].trim() : null,
+    categories,
+  };
+}
+
+/** Extract the generation roman numeral from a learnset subpage title. */
+function parseLearnsetGeneration(title: string): string | null {
+  const m = /\/Generation ([IVX]+) learnset$/.exec(title);
+  return m?.[1] ?? null;
+}
+
 // ─── Task ─────────────────────────────────────────────────────────────────────
 
 const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
@@ -530,9 +744,25 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
     return;
   }
 
-  const mastersData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS));
+  const mastersData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS) && !n.includes('skill') && !n.includes('event'));
   if (mastersData !== null) {
     const output: BulbapediaOutput = extractMasters(title, mastersData, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  const mastersSkillData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS_SKILL));
+  if (mastersSkillData !== null) {
+    const output: BulbapediaOutput = extractMastersSkill(title, mastersSkillData, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  const mastersEventData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS_EVENT));
+  if (mastersEventData !== null) {
+    const output: BulbapediaOutput = extractMastersEvent(title, mastersEventData, categories);
     state.output = output as unknown as Record<string, unknown>;
     await next();
     return;
@@ -557,6 +787,83 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   // TCG set/expansion pages.
   if (hasTmpl(wikitext, TEMPLATE_TCG_EXPANSION)) {
     const output: BulbapediaOutput = extractTcgSet(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // TCG deck pages.
+  if (hasTmpl(wikitext, TEMPLATE_TCG_DECK)) {
+    const output: BulbapediaOutput = extractTcgDeck(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // TCG promo pages.
+  if (hasTmpl(wikitext, TEMPLATE_TCG_PROMO)) {
+    const output: BulbapediaOutput = extractTcgPromo(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Location pages (city/town/route/dungeon/anime location).
+  if (
+    hasTmpl(wikitext, TEMPLATE_TOWN_INFOBOX) ||
+    hasTmpl(wikitext, TEMPLATE_ROUTE_INFOBOX) ||
+    hasTmpl(wikitext, TEMPLATE_LOCATION_INFOBOX) ||
+    hasTmpl(wikitext, TEMPLATE_ANIME_LOCATION)
+  ) {
+    const output: BulbapediaOutput = extractLocation(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Character pages.
+  if (hasTmpl(wikitext, TEMPLATE_CHARACTER) || hasTmpl(wikitext, TEMPLATE_CHAR_INFOBOX)) {
+    const output: BulbapediaOutput = extractCharacter(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Trainer class pages.
+  if (hasTmpl(wikitext, TEMPLATE_TRAINER_CLASS)) {
+    const output: BulbapediaOutput = extractTrainerClass(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Title-pattern based classification for subpages (no infobox required).
+  if (/\/Generation [IVX]+ learnset$/.test(title)) {
+    const pokemon = title.split('/')[0] ?? title;
+    const generation = parseLearnsetGeneration(title);
+    const output: BulbapediaOutput = { _type: 'learnset_data', title, pokemon, generation, categories };
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  if (/ cards$/.test(title)) {
+    const subject = title.replace(/ cards$/, '');
+    const output: BulbapediaOutput = { _type: 'card_list', title, subject, categories };
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  if (/\/\w+ anime history$/.test(title)) {
+    const output: BulbapediaOutput = { _type: 'anime_history', title, categories };
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  if (/\/moves$/.test(title) || /\/base stats$/.test(title)) {
+    const output: BulbapediaOutput = { _type: 'game_data', title, categories };
     state.output = output as unknown as Record<string, unknown>;
     await next();
     return;
