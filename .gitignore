@@ -67,6 +67,9 @@ data
 # Build / scrape output
 dist/
 output/
+# Example output files are committed as documentation of expected output shape
+!examples/**/output/
+!examples/**/output/**
 
 # Compiled plugin outputs (built from plugins/**/*.ts via tsconfig.plugins.json)
 plugins/**/*.js
