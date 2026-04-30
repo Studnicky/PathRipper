@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-04-30
+
+### Added
+- Ripperoni icon (`docs/assets/ripperoni.png`) — a semi-cartoon salami being sliced, because the project is a web ingestion engine and this is the branding it deserves
+- Favicon and `<link rel="icon">` on all docs pages
+- CI, docs, node, and version badges in README
+- README links updated to point at the live GitHub Pages docs
+- Sidebar "View on GitHub" button; Releases and Issues links in sidebar page nav
+- `workflow_dispatch` on pages.yml for manual deploys
+
+### Changed
+- Docs accent color updated from orange to crimson-red (`#c8284a`) to match the icon palette
+- Sidebar tagline: "Web ingestion engine. It slices. You eat."
+- Intro copy rewritten with slicer/ingestion branding
+- `tasks` field corrected to `pipeline` throughout docs and README (breaking rename from beta)
+- MediaWiki feature card updated: native fetch, three scrape modes
+- Footer updated: Node 24+, correct version, full link set
+- Node requirement updated from 20+ to 24+ everywhere
+
+### Fixed
+- `docs-html` e2e test: spurious `TaskRegistry.reset()` call cleared the plugin registered in `before()`, causing `docs:parse` not found on every run
+
 ## [2.0.0-beta.5] - 2026-04-30
 
 ### Fixed
@@ -83,7 +105,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.5...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.5...v2.0.0
 [2.0.0-beta.5]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.4...v2.0.0-beta.5
 [2.0.0-beta.4]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.3...v2.0.0-beta.4
 [2.0.0-beta.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.2...v2.0.0-beta.3
