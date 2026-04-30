@@ -24,6 +24,9 @@ const TEMPLATE_ANIME_LOCATION = 'AnimeLocationInfobox';
 const TEMPLATE_CHARACTER      = 'Character Infobox';
 const TEMPLATE_CHAR_INFOBOX   = 'CharInfobox';
 const TEMPLATE_TRAINER_CLASS  = 'TrainerClassInfobox';
+const TEMPLATE_UNITE_INFOBOX  = 'UniteInfobox';
+const TEMPLATE_TCG_ENERGY     = 'TCGEnergyCardInfobox';
+const TEMPLATE_GAME_INFOBOX   = 'Infobox game';
 
 // ─── Output shapes ────────────────────────────────────────────────────────────
 
@@ -39,6 +42,9 @@ type PageType =
   | 'tcg_set'
   | 'tcg_deck'
   | 'tcg_promo'
+  | 'unite_pokemon'
+  | 'tcg_energy_card'
+  | 'game'
   | 'location'
   | 'character'
   | 'trainer_class'
@@ -186,6 +192,33 @@ interface TrainerClassOutput extends BaseOutput {
   ja_name: string | null;
 }
 
+interface UnitePokemonOutput extends BaseOutput {
+  _type: 'unite_pokemon';
+  pokemon: string | null;
+  jname: string | null;
+  role: string | null;
+  range: string | null;
+  damage: string | null;
+  difficulty: string | null;
+}
+
+interface TcgEnergyCardOutput extends BaseOutput {
+  _type: 'tcg_energy_card';
+  name: string | null;
+  energy_type: string | null;
+}
+
+interface GameOutput extends BaseOutput {
+  _type: 'game';
+  name: string | null;
+  jname: string | null;
+  platform: string | null;
+  developer: string | null;
+  publisher: string | null;
+  release_ja: string | null;
+  release_us: string | null;
+}
+
 interface LearnsetDataOutput extends BaseOutput {
   _type: 'learnset_data';
   pokemon: string;
@@ -221,6 +254,9 @@ type BulbapediaOutput =
   | TcgSetOutput
   | TcgDeckOutput
   | TcgPromoOutput
+  | UnitePokemonOutput
+  | TcgEnergyCardOutput
+  | GameOutput
   | LocationOutput
   | CharacterOutput
   | TrainerClassOutput
@@ -695,6 +731,63 @@ export function extractTrainerClass(
   };
 }
 
+export function extractUnitePokemon(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): UnitePokemonOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_UNITE_INFOBOX) ?? {};
+  return {
+    _type:      'unite_pokemon',
+    title,
+    pokemon:    kv['pokemon']    !== undefined ? kv['pokemon'].trim()    : null,
+    jname:      kv['jname']      !== undefined ? kv['jname'].trim()      : null,
+    role:       kv['role']       !== undefined ? kv['role'].trim()       : null,
+    range:      kv['range']      !== undefined ? kv['range'].trim()      : null,
+    damage:     kv['damage']     !== undefined ? kv['damage'].trim()     : null,
+    difficulty: kv['difficulty'] !== undefined ? kv['difficulty'].trim() : null,
+    categories,
+  };
+}
+
+export function extractTcgEnergyCard(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): TcgEnergyCardOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_ENERGY) ?? {};
+  return {
+    _type:       'tcg_energy_card',
+    title,
+    name:        kv['cardname']    !== undefined ? extractTcgRef(kv['cardname'])    : null,
+    energy_type: kv['energy']      !== undefined ? extractTcgRef(kv['energy'])      :
+                 kv['type']        !== undefined ? extractTcgRef(kv['type'])        : null,
+    categories,
+  };
+}
+
+export function extractGame(
+  title: string,
+  wikitext: string,
+  categories: string[],
+): GameOutput {
+  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_GAME_INFOBOX) ?? {};
+  return {
+    _type:      'game',
+    title,
+    name:       kv['name']               !== undefined ? kv['name'].trim()               : null,
+    jname:      kv['jname']              !== undefined ? kv['jname'].trim()              : null,
+    platform:   kv['platform']           !== undefined ? kv['platform'].trim()           : null,
+    developer:  kv['developer']          !== undefined ? kv['developer'].trim()          : null,
+    publisher:  kv['publisher']          !== undefined ? kv['publisher'].trim()          : null,
+    release_ja: kv['release_date_ja']    !== undefined ? kv['release_date_ja'].trim()    :
+                kv['releaseja']          !== undefined ? kv['releaseja'].trim()          : null,
+    release_us: kv['release_date_us']    !== undefined ? kv['release_date_us'].trim()    :
+                kv['releaseus']          !== undefined ? kv['releaseus'].trim()          : null,
+    categories,
+  };
+}
+
 /** Extract the generation roman numeral from a learnset subpage title. */
 function parseLearnsetGeneration(title: string): string | null {
   const m = /\/Generation ([IVX]+) learnset$/.exec(title);
@@ -832,6 +925,30 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   // Trainer class pages.
   if (hasTmpl(wikitext, TEMPLATE_TRAINER_CLASS)) {
     const output: BulbapediaOutput = extractTrainerClass(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Pokémon UNITE pages.
+  if (hasTmpl(wikitext, TEMPLATE_UNITE_INFOBOX)) {
+    const output: BulbapediaOutput = extractUnitePokemon(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // TCG Energy card pages.
+  if (hasTmpl(wikitext, TEMPLATE_TCG_ENERGY)) {
+    const output: BulbapediaOutput = extractTcgEnergyCard(title, wikitext, categories);
+    state.output = output as unknown as Record<string, unknown>;
+    await next();
+    return;
+  }
+
+  // Main game pages (Pokémon GO, Pokémon Sleep, etc.)
+  if (hasTmpl(wikitext, TEMPLATE_GAME_INFOBOX)) {
+    const output: BulbapediaOutput = extractGame(title, wikitext, categories);
     state.output = output as unknown as Record<string, unknown>;
     await next();
     return;
