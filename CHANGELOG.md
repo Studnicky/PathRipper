@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0-beta.3] - 2026-04-30
+
+### Fixed
+- RateLimiter unit test timing tolerance widened from ±5ms to ±15ms to prevent spurious failures on loaded CI runners
+
+## [2.0.0-beta.2] - 2026-04-30
+
+### Added
+- **Docs-as-fixtures**: `docs/architecture.html` enriched with `data-component` attributes and `.summary` paragraphs — the documentation page is simultaneously the HTML scraper fixture
+- **Wiki fixture server**: self-contained `node:http` server at `tests/e2e/fixtures/wiki/server.ts` serves the same 5 core-component pages as MediaWiki API responses (no network required)
+- **`wiki-docs` e2e test**: scrapes the local fixture server via MediaWiki mode, runs `wiki-docs:parse` pipeline, asserts `_type: 'ripperoni_component'` on all 5 pages, writes outputs to `examples/wiki-docs/output/`
+- **`docs-html` e2e test** (gated on `RIPPER_E2E=1`): scrapes `https://studnicky.github.io/PathRipper/architecture.html`, asserts ≥3 `docs_section` outputs
+- **`examples/docs-scraper/plugin.ts`**: extracts `section[data-component]` headings and summaries from HTML docs pages
+- **`examples/wiki-docs/plugin.ts`**: parses `{{RipperoniComponent}}` wikitext template, extracts `name`, `kind`, `since`, `description`, `source`
+- **GitHub Pages deployment** (`pages.yml`): deploys `docs/` to `https://studnicky.github.io/PathRipper/` on every push to master
+
 ## [2.0.0-beta.1] - 2026-04-30
 
 Complete TypeScript v2 rewrite of [PathRipper](https://github.com/Studnicky/PathRipper) (2019).
@@ -42,7 +58,7 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 - Native git hooks (`hooks/pre-commit`, `hooks/pre-push`); installed via `scripts/install-hooks.sh`
 - Matrix CI: Node 22/24 × ubuntu/macos; typecheck, lint, unit tests, build, audit
 - CHANGELOG gate on every PR
-- 232 unit tests; `node:test` native runner, `tsx`, no jest/vitest
+- 90 unit tests (framework core); `node:test` native runner, `tsx`, no jest/vitest; target-specific plugin tests live in `tests/e2e/` alongside their plugin source
 - Legacy PathRipper AONPRD e2e preserved at `tests/e2e/` (`npm run test:e2e`; never runs in CI)
 - `scripts/enginseer.sh` — local wrapper for `@noocodec/enginseer` analytical tools
 
@@ -57,5 +73,7 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.1...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.3...HEAD
+[2.0.0-beta.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.2...v2.0.0-beta.3
+[2.0.0-beta.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.1...v2.0.0-beta.2
 [2.0.0-beta.1]: https://github.com/Studnicky/PathRipper/releases/tag/v2.0.0-beta.1
