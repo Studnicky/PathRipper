@@ -41,9 +41,6 @@ describe('docs-html e2e — HTML scraper against live PathRipper docs', () => {
 
     const page = await scraper.fetchPage('/architecture.html');
 
-    TaskRegistry.reset();
-    await import('../../examples/docs-scraper/plugin.js');
-
     const state: PipelineStateInterface = {
       ...PipelineState.fromHtmlUrl('ripperoni-docs', page.url),
       page: {
