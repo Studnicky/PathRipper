@@ -4,41 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ripperoni · Architecture</title>
+  <meta name="description" content="Architecture overview of the Ripperoni web ingestion engine — pipeline, scrapers, crawler, cache, and plugin system.">
+  <link rel="icon" type="image/png" href="assets/ripperoni.png">
   <link rel="stylesheet" href="assets/sidebar.css">
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <style>
-    :root { --bg: #0d0d0d; --fg: #e8e8e8; --accent: #ff7c42; --accent-soft: #ffb899; --muted: #888; --card: #1a1a1a; --sidebar-w: 200px; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
-    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
-    code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; background: #1f1f1f; color: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; }
-    pre { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 1.1rem 1.25rem; overflow-x: auto; margin: 0.9rem 0 1.1rem; }
-    pre code { background: none; padding: 0; font-size: 0.85rem; color: #d4d4d4; }
-    .layout { display: flex; max-width: 980px; margin: 0 auto; padding: 0 1.5rem; gap: 3rem; }
-    .main { flex: 1; min-width: 0; padding: 3rem 0 3rem 3rem; border-left: 1px solid #1e1e1e; }
-    .intro { margin-bottom: 2.5rem; }
-    .intro p { color: #ccc; margin-bottom: 0.7rem; }
-    section { margin: 0 0 2.5rem; scroll-margin-top: 2rem; }
-    section:last-child { margin-bottom: 0; }
-    section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.4rem; }
-    section h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.4rem; color: var(--accent-soft); }
-    section p, section li { color: #ccc; }
-    section p { margin-bottom: 0.7rem; }
-    ul { list-style: none; padding: 0; } ul li { padding: 0.3rem 0; } ul li::before { content: "/ "; color: var(--accent); }
-    table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem; font-size: 0.88rem; }
-    th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #2a2a2a; color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #1e1e1e; color: #ccc; vertical-align: top; }
-    tr:last-child td { border-bottom: none; }
-    td code { font-size: 0.82rem; }
     .mermaid { background: #111; border: 1px solid #222; border-radius: 8px; padding: 1.5rem; margin: 1rem 0; overflow-x: auto; }
-    footer { border-top: 1px solid #1e1e1e; margin-top: 3rem; padding: 1.75rem 0 2rem; color: var(--muted); font-size: 0.82rem; }
-    footer a { color: var(--muted); } footer a:hover { color: var(--accent); }
-    @media (max-width: 700px) {
-      .layout { flex-direction: column; gap: 0; padding: 0 1.25rem; }
-      .sidebar { width: 100%; padding: 2rem 0 0; }
-      .sidebar-inner { position: static; }
-      .main { border-left: none; border-top: 1px solid #1e1e1e; padding-left: 0; padding-top: 2rem; margin-top: 1.5rem; }
-    }
   </style>
 </head>
 <body>
@@ -77,10 +48,10 @@ graph TD
     RetryExecutor[modules/http/RetryExecutor] --> ErrorClassifier
     RateLimiter[modules/http/RateLimiter] -.wraps.-> bottleneck
 
-    style Pipeline fill:#1a1a1a,stroke:#ff7c42
-    style ErrorClassifier fill:#1a1a1a,stroke:#ff7c42
-    style RetryExecutor fill:#1a1a1a,stroke:#ff7c42
-    style RateLimiter fill:#1a1a1a,stroke:#ff7c42
+    style Pipeline fill:#1a1a1a,stroke:#c8284a
+    style ErrorClassifier fill:#1a1a1a,stroke:#c8284a
+    style RetryExecutor fill:#1a1a1a,stroke:#c8284a
+    style RateLimiter fill:#1a1a1a,stroke:#c8284a
         </div>
       </section>
 
@@ -236,7 +207,7 @@ graph LR
 
   <script src="assets/sidebar.js"></script>
   <script>
-    mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1a1a1a', primaryTextColor: '#e8e8e8', primaryBorderColor: '#ff7c42', lineColor: '#888', background: '#0d0d0d' } });
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1a1a1a', primaryTextColor: '#e8e8e8', primaryBorderColor: '#c8284a', lineColor: '#888', background: '#0d0d0d' } });
     initSidebar([
       { href: '#module-graph', label: 'Module graph' },
       { href: '#pipeline',     label: 'Pipeline pattern' },
