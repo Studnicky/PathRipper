@@ -1,5 +1,19 @@
 {
   "output": { "basePath": "./output", "format": "json", "pretty": true },
+  "targets": {
+    "aonprd": {
+      "baseUrl":          "https://2e.aonprd.com",
+      "rateLimitMs":      1000,
+      "jitterMs":         250,
+      "maxRetries":       3,
+      "retryBaseDelayMs": 500,
+      "retryMaxDelayMs":  30000,
+      "headers": {
+        "User-Agent": "ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)"
+      },
+      "tasks": ["./plugins/aonprd/parse.task.js"]
+    }
+  },
   "crawlers": {
     "aonprd": {
       "startUrls": [

@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 
 import { LinkLister } from '../../src/crawlers/LinkLister.js';
-import { validateRipperConfig, formatRipperConfigErrors } from '../../src/schemas/internal/RipperConfigSchema.js';
+import { RipperConfigSchema } from '../../src/schemas/internal/RipperConfigSchema.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -83,7 +83,7 @@ export class MediaWikiScraper {
     return this.#limiter.schedule((): Promise<WikiPageInterface> =>
       this.#retry.execute(async (): Promise<WikiPageInterface> => {
         const params = new URLSearchParams({
-          action: 'query', titles: title, prop: 'revisions',
+          action: 'query', titles: title, prop: 'revisions', redirects: '1',
           rvprop: 'content', format: 'json',
         });
         const data  = await this.#get<RevisionsResponseInterface>(params);
@@ -108,7 +108,7 @@ export class MediaWikiScraper {
     return this.#limiter.schedule((): Promise<WikiPageInterface[]> =>
       this.#retry.execute(async (): Promise<WikiPageInterface[]> => {
         const params = new URLSearchParams({
-          action: 'query', titles: titles.join('|'), prop: 'revisions',
+          action: 'query', titles: titles.join('|'), prop: 'revisions', redirects: '1',
           rvprop: 'content', format: 'json',
         });
         const data = await this.#get<RevisionsResponseInterface>(params);

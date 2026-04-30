@@ -4,7 +4,6 @@ import { resolve } from 'node:path';
 import { HtmlScraper } from '../scrapers/HtmlScraper.js';
 import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
-import { WikitextParser } from '../scrapers/WikitextParser.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
 import type { NextFnInterface } from '../types/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
@@ -203,9 +202,13 @@ export class ScrapeOrchestrator {
         pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
           await next();
           const slug    = ScrapeOrchestrator.toSlug(page.title);
+          // Use plugin output when available; otherwise tag as unknown so
+          // the file has a consistent _type field for downstream consumers.
+          // Redirect pages are resolved server-side via redirects=1 in the API
+          // request — by this point, page.wikitext is the TARGET's content.
           const payload = state.output !== null
             ? state.output
-            : WikitextParser.parse(page.title, page.wikitext);
+            : { _type: 'unknown' as const, title: page.title, categories: [] as string[] };
           await writeFile(resolve(outDir, targetId, `${slug}.json`), JSON.stringify(payload, null, 2));
           written++;
         });
