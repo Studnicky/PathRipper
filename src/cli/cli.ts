@@ -1,11 +1,14 @@
 import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve, dirname, join } from 'node:path';
 
 import { RipperConfig } from '../config/RipperConfig.js';
 import { LinkLister } from '../crawlers/LinkLister.js';
 import { Logger } from '../modules/logger/logger.js';
 import { ScrapeOrchestrator } from '../orchestrators/ScrapeOrchestrator.js';
+import { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as { version: string };
 
@@ -121,8 +124,11 @@ program
   .option('--jitter <ms>', `Random jitter (${RATE_OPTION_PATTERN}N ms) added to each request`, DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
   .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }): Promise<void> => {
-    const log  = Logger.forComponent('cli');
-    const max  = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
+    const log   = Logger.forComponent('cli');
+    const max   = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
+    // Ad-hoc CLI crawl: ephemeral cache in tmp; not shared with any scraper run.
+    const cacheDir = mkdtempSync(join(tmpdir(), 'ripperoni-crawl-'));
+    const cache    = ScraperCache.create({ dir: cacheDir, mode: 'off' });
     const list = await LinkLister.create({
       domain:      new RegExp(opts.domain),
       target:      new RegExp(opts.target),
@@ -130,6 +136,7 @@ program
       rateLimitMs: parseInt(opts.rate, DECIMAL_RADIX),
       jitterMs:    parseInt(opts.jitter, DECIMAL_RADIX),
       ...(max !== undefined ? { maxPages: max } : {}),
+      cache,
     }).buildList(opts.starts);
 
     for (const link of list) log.info('crawl', link);

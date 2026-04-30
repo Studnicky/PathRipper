@@ -44,11 +44,10 @@ export const CLAMP_RULES: Readonly<Record<string, ClampRulesInterface>> = Object
   'rateLimitMs':      { min: 0,   max: 60_000,  reason: 'minimum gap between requests (0 = unlimited; ≥100 recommended for public wikis)' },
   'jitterMs':         { min: 0,   max: 10_000,  reason: 'random jitter added per request' },
   'batchSize':        { min: 1,   max: 50,      reason: 'MediaWiki revisions API hard limit is 50 titles per request' },
-  'allPagesLimit':    { min: 1,   max: 500,     reason: 'MediaWiki allpages API hard limit is 500 per request' },
   'maxRetries':       { min: 0,   max: 20,      reason: 'retry attempts per request failure' },
   'retryBaseDelayMs': { min: 50,  max: 30_000,  reason: 'initial retry back-off delay' },
   'retryMaxDelayMs':  { min: 100, max: 300_000, reason: 'ceiling for exponential back-off (5 min max)' },
-  'maxPages':         { min: 1,   max: 10_000_000, reason: 'maximum pages to collect per crawl run' },
+  'maxPages':         { min: 1,   max: 10_000_000, reason: 'maximum pages to collect / enumerate per target run' },
   'maxRetries_html':  { min: 0,   max: 20,      reason: 'HTML scraper retry attempts per request failure' },
 });
 

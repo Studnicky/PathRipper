@@ -1,7 +1,11 @@
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { LinkLister } from '../../../src/crawlers/LinkLister.js';
+import { ScraperCache } from '../../../src/modules/cache/ScraperCache.js';
 
 // LinkLister contract (preserved from original PathRipper):
 //   - `domain`    keeps the crawler in scope
@@ -29,6 +33,9 @@ const PAGES: Record<string, string> = {
 const realFetch = globalThis.fetch;
 
 describe('LinkLister', () => {
+  let cacheDir: string;
+  let cache:    ScraperCache;
+
   before(() => {
     globalThis.fetch = (async (url: string | URL): Promise<Response> => {
       const key = typeof url === 'string' ? url : url.href;
@@ -42,12 +49,22 @@ describe('LinkLister', () => {
     globalThis.fetch = realFetch;
   });
 
+  beforeEach(async () => {
+    cacheDir = await mkdtemp(join(tmpdir(), 'linklister-cache-'));
+    cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
+  });
+
+  afterEach(async () => {
+    await rm(cacheDir, { recursive: true, force: true });
+  });
+
   it('returns target-matching URLs, deduplicated, naturally sorted', async () => {
-    const lister = new LinkLister({
+    const lister = LinkLister.create({
       domain:      /example\.com/,
       target:      /\?id=/,
       delimiter:   /category/,
       rateLimitMs: 0,
+      cache,
     });
 
     const links = await lister.buildList(['https://example.com/index']);
@@ -60,11 +77,12 @@ describe('LinkLister', () => {
   });
 
   it('does not confuse target with delimiter (Lane 01 regression)', async () => {
-    const lister = new LinkLister({
+    const lister = LinkLister.create({
       domain:      /example\.com/,
       target:      /\?id=/,
       delimiter:   /category/,
       rateLimitMs: 0,
+      cache,
     });
     const links = await lister.buildList(['https://example.com/index']);
     for (const link of links) {
@@ -74,11 +92,12 @@ describe('LinkLister', () => {
   });
 
   it('filters out offsite links via the domain regex', async () => {
-    const lister = new LinkLister({
+    const lister = LinkLister.create({
       domain:      /example\.com/,
       target:      /\?id=/,
       delimiter:   /category/,
       rateLimitMs: 0,
+      cache,
     });
     const links = await lister.buildList(['https://example.com/index']);
     for (const link of links) {
@@ -88,28 +107,58 @@ describe('LinkLister', () => {
   });
 
   it('honors maxPages cap (Lane 11 redesign)', async () => {
-    const lister = new LinkLister({
+    const lister = LinkLister.create({
       domain:      /example\.com/,
       target:      /\?id=/,
       delimiter:   /category/,
       rateLimitMs: 0,
       maxPages:    2,
+      cache,
     });
     const links = await lister.buildList(['https://example.com/index']);
     assert.equal(links.length, 2);
   });
 
   it('accepts multiple startUrls and de-duplicates results', async () => {
-    const lister = new LinkLister({
+    const lister = LinkLister.create({
       domain:      /example\.com/,
       target:      /\?id=/,
       delimiter:   /category/,
       rateLimitMs: 0,
+      cache,
     });
     const links = await lister.buildList([
       'https://example.com/index',
       'https://example.com/index',  // identical seed → must not double-count
     ]);
     assert.equal(links.length, 3);
+  });
+
+  it('serves cached bodies on the second pass without hitting the network', async () => {
+    const fetchCalls: string[] = [];
+    const origFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: string | URL): Promise<Response> => {
+      const key = typeof url === 'string' ? url : url.href;
+      fetchCalls.push(key);
+      const body = PAGES[key];
+      if (body === undefined) return new Response('', { status: 404 });
+      return new Response(body, { status: 200 });
+    }) as typeof fetch;
+    try {
+      const a = LinkLister.create({
+        domain: /example\.com/, target: /\?id=/, delimiter: /category/, rateLimitMs: 0, cache,
+      });
+      await a.buildList(['https://example.com/index']);
+      const networkCallsAfterFirst = fetchCalls.length;
+      assert.ok(networkCallsAfterFirst > 0);
+
+      const b = LinkLister.create({
+        domain: /example\.com/, target: /\?id=/, delimiter: /category/, rateLimitMs: 0, cache,
+      });
+      await b.buildList(['https://example.com/index']);
+      assert.equal(fetchCalls.length, networkCallsAfterFirst, 'second crawl must hit only the cache');
+    } finally {
+      globalThis.fetch = origFetch;
+    }
   });
 });

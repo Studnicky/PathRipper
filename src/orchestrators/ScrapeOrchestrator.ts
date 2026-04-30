@@ -104,6 +104,7 @@ export class ScrapeOrchestrator {
         outDir: opts.outDir,
         scraper,
         config: targetCfg,
+        ...(cache !== null ? { cache } : {}),
       };
       const pipeline = Pipeline.create<PipelineStateInterface>({ name: opts.target });
       for (const taskName of pipelineNames) {
@@ -227,13 +228,15 @@ export class ScrapeOrchestrator {
   /**
    * Maps non-built-in pipeline entries (`<word>:<verb>`) to plugin file paths.
    * Built-in tasks (those starting with html:/wiki:/json:/jsonl:/validate:/crawl:)
-   * are skipped because they self-register on `builtinTasks` import.
+   * are skipped because they self-register on `builtinTasks` import. Tasks
+   * already registered (e.g. plugins imported eagerly by tests) are also skipped.
    */
   private static derivePluginPaths(pipeline: ReadonlyArray<string>): string[] {
     const paths: string[] = [];
     const seen = new Set<string>();
     for (const entry of pipeline) {
       if (BUILTIN_PREFIXES.some((p: string): boolean => entry.startsWith(p))) continue;
+      if (TaskRegistry.has(entry)) continue;
       const colon = entry.indexOf(':');
       if (colon <= 0) continue;
       const word = entry.slice(0, colon);
@@ -286,6 +289,7 @@ export class ScrapeOrchestrator {
         target: opts.target,
         outDir: opts.outDir,
         config: opts.targetConfig,
+        ...(opts.cache !== null ? { cache: opts.cache } : {}),
       },
     };
 

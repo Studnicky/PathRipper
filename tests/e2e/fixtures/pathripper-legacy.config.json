@@ -11,7 +11,8 @@
       "headers": {
         "User-Agent": "ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)"
       },
-      "tasks": ["./plugins/aonprd/parse.task.js"]
+      "pipeline": ["html:fetch", "aonprd:parse", "json:write"],
+      "cache": { "dir": "./output/.cache/aonprd", "mode": "read-write" }
     }
   },
   "crawlers": {

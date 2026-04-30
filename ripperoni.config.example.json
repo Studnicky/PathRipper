@@ -10,12 +10,13 @@
       "rateLimitMs":      2000,
       "jitterMs":         500,
       "batchSize":        50,
-      "allPagesLimit":    500,
+      "maxPages":         500,
       "maxRetries":       3,
       "retryBaseDelayMs": 500,
       "retryMaxDelayMs":  30000,
       "categories":       ["Example Category A", "Example Category B"],
-      "pipeline": ["./plugins/your-target/parse.task.js"]
+      "pipeline":         ["wiki:fetch", "your-wiki-target:parse", "json:write"],
+      "cache":            { "dir": "./output/.cache/your-wiki-target", "mode": "read-write" }
     }
   },
   "targets": {
@@ -28,7 +29,8 @@
       "headers": {
         "User-Agent": "MyApp/1.0"
       },
-      "pipeline": ["./plugins/your-target/parse.task.js"]
+      "pipeline": ["html:fetch", "your-html-target:parse", "json:write"],
+      "cache":    { "dir": "./output/.cache/your-html-target", "mode": "read-write" }
     }
   },
   "crawlers": {

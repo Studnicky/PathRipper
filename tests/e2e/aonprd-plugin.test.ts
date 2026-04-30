@@ -18,6 +18,7 @@ import { LinkLister }         from '../../src/crawlers/LinkLister.js';
 import { ScrapeOrchestrator } from '../../src/orchestrators/ScrapeOrchestrator.js';
 import { TaskRegistry }       from '../../src/registry/TaskRegistry.js';
 import { RipperConfig }       from '../../src/config/RipperConfig.js';
+import { ScraperCache }       from '../../src/modules/cache/ScraperCache.js';
 // Plugin self-registers `aonprd:parse` on import.
 import { parseAonHtml }       from '../../plugins/aonprd/parse.task.js';
 
@@ -151,6 +152,8 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
   it('full pipeline — LinkLister + ScrapeOrchestrator + plugin → typed JSON outputs', { skip: process.env['RIPPER_E2E_FULL'] !== '1' }, async () => {
     const fx = await RipperConfig.load(FIXTURE);
     const c  = fx.crawlers!['aonprd']!;
+    const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
+    const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
       domain:      new RegExp(c.domain),
       target:      new RegExp(c.target),
@@ -158,6 +161,7 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
       rateLimitMs: c.rateLimitMs,
       jitterMs:    c.jitterMs,
       maxPages:    5,
+      cache,
     });
     const links = await lister.buildList(['https://2e.aonprd.com/Conditions.aspx']);
     const sample = links.slice(0, 5);
@@ -190,6 +194,7 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
       }
     } finally {
       await rm(outDir, { recursive: true, force: true });
+      await rm(cacheDir, { recursive: true, force: true });
     }
   });
 });

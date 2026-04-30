@@ -262,6 +262,11 @@ export const crawlListTargetsTask: TaskFnInterface<PipelineStateInterface> = asy
       metadata: { target: ctx.target, task: 'crawl:list-targets' },
     });
   }
+  if (ctx.cache === undefined) {
+    throw ExternalSchemaError.create('crawl:list-targets requires the orchestrator-supplied shared cache (configure target.cache)', {
+      metadata: { target: ctx.target, task: 'crawl:list-targets' },
+    });
+  }
   // Lazy import keeps the module graph clean for tests that stub LinkLister.
   const { LinkLister } = await import('../crawlers/LinkLister.js');
   const headers = ctx.config['headers'] as Record<string, string> | undefined;
@@ -272,8 +277,8 @@ export const crawlListTargetsTask: TaskFnInterface<PipelineStateInterface> = asy
     ...(crawler.rateLimitMs !== undefined ? { rateLimitMs: crawler.rateLimitMs } : {}),
     ...(crawler.jitterMs    !== undefined ? { jitterMs:    crawler.jitterMs    } : {}),
     ...(crawler.maxPages    !== undefined ? { maxPages:    crawler.maxPages    } : {}),
-    ...(headers   !== undefined ? { headers } : {}),
-    ...(ctx.cache !== undefined ? { cache: ctx.cache } : {}),
+    ...(headers !== undefined ? { headers } : {}),
+    cache:    ctx.cache,
   });
   const urls = await lister.buildList(crawler.startUrls);
   (state.context as PipelineContextInterface).targets = urls;

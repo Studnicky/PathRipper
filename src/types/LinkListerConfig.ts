@@ -46,5 +46,5 @@ export interface LinkListerConfigInterface {
   /** HTTP headers sent with every request; passed identically to scrapers for cache-key parity. */
   readonly headers?: Readonly<Record<string, string>> | undefined;
   /** Shared content store; bodies fetched here become free hits for the scraper later in the same target run. */
-  readonly cache?: ScraperCache | undefined;
+  readonly cache: ScraperCache;
 }

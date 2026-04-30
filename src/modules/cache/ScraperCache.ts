@@ -116,6 +116,7 @@ export class ScraperCache {
       const meta = await this.readMeta(key);
       if (meta === null)            return false;
       if (this.isStale(meta))       return false;
+      if (typeof meta.bodyPath !== 'string' || meta.bodyPath.length === 0) return false;
       await stat(meta.bodyPath);
       return true;
     } catch (error) {
@@ -133,8 +134,12 @@ export class ScraperCache {
   public async read(key: string): Promise<CacheEntryInterface | null> {
     if (!this.readsAllowed()) return null;
     const meta = await this.readMeta(key);
-    if (meta === null)      return null;
-    if (this.isStale(meta)) return null;
+    if (meta === null)        return null;
+    if (this.isStale(meta))   return null;
+    if (typeof meta.bodyPath !== 'string' || meta.bodyPath.length === 0) {
+      this.#log.warn('read', 'meta missing bodyPath; treating as miss', { key });
+      return null;
+    }
     try {
       const body = await readFile(meta.bodyPath, 'utf8');
       this.#log.debug('read', 'cache hit', { key, url: meta.url });
