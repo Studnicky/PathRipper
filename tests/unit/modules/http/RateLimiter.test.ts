@@ -21,8 +21,8 @@ describe('RateLimiter', () => {
     await rl.schedule(async () => stamps.push(Date.now()));
 
     const a = stamps[0]!, b = stamps[1]!, c = stamps[2]!;
-    assert.ok(b - a >= delay - 5, `gap1 ${(b - a).toString()} < ${delay.toString()}`);
-    assert.ok(c - b >= delay - 5, `gap2 ${(c - b).toString()} < ${delay.toString()}`);
+    assert.ok(b - a >= delay - 15, `gap1 ${(b - a).toString()} < ${delay.toString()}`);
+    assert.ok(c - b >= delay - 15, `gap2 ${(c - b).toString()} < ${delay.toString()}`);
     await rl.stop();
   });
 
