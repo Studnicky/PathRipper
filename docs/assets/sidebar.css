@@ -1,4 +1,73 @@
-/* Shared sidebar styles — Ripperoni docs */
+/* ─── Theme — derived from the salami icon palette ──────────────────────────
+   Source of truth. All pages import this file. Do not redeclare :root elsewhere.
+   ──────────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:           #0d0d0d;
+  --fg:           #e8e8e8;
+  --accent:       #c8284a;   /* salami crimson */
+  --accent-soft:  #f08090;   /* fat/marbling pink */
+  --splash:       #4a90e2;   /* blue accent from the icon splashes */
+  --muted:        #888;
+  --card:         #1a1a1a;
+  --border:       #1e1e1e;
+  --border-hi:    #2a2a2a;
+  --code-bg:      #1f1f1f;
+  --pre-bg:       #141414;
+  --sidebar-w:    210px;
+}
+
+/* ─── Reset ──────────────────────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; background: var(--code-bg); color: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; }
+pre { background: var(--pre-bg); border: 1px solid #262626; border-radius: 8px; padding: 1.1rem 1.25rem; overflow-x: auto; margin: 0.9rem 0 1.1rem; }
+pre code { background: none; padding: 0; font-size: 0.85rem; color: #d4d4d4; }
+
+/* ─── Layout ─────────────────────────────────────────────────────────────── */
+.layout { display: flex; max-width: 980px; margin: 0 auto; padding: 0 1.5rem; gap: 3rem; }
+.main { flex: 1; min-width: 0; padding: 3rem 0 3rem 3rem; border-left: 1px solid var(--border); }
+.intro { margin-bottom: 2.5rem; }
+.intro p { color: #ccc; margin-bottom: 0.7rem; }
+.intro p:last-child { margin-bottom: 0; }
+
+/* ─── Sections ───────────────────────────────────────────────────────────── */
+section { margin: 0 0 2.5rem; scroll-margin-top: 2rem; }
+section:last-child { margin-bottom: 0; }
+section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-hi); padding-bottom: 0.4rem; }
+section h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.4rem; color: var(--accent-soft); }
+section p, section li { color: #ccc; }
+section p { margin-bottom: 0.7rem; }
+section p:last-child { margin-bottom: 0; }
+ul { list-style: none; padding: 0; }
+ul li { padding: 0.3rem 0; }
+ul li::before { content: "/ "; color: var(--accent); }
+
+/* ─── Tables ─────────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem; font-size: 0.88rem; }
+th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-hi); color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: #ccc; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td code { font-size: 0.82rem; }
+
+/* ─── Footer ─────────────────────────────────────────────────────────────── */
+footer { border-top: 1px solid var(--border); margin-top: 3rem; padding: 1.75rem 0 2rem; color: var(--muted); font-size: 0.82rem; }
+footer a { color: var(--muted); }
+footer a:hover { color: var(--accent); }
+footer p + p { margin-top: 0.3rem; }
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  .layout { flex-direction: column; gap: 0; padding: 0 1.25rem; }
+  .sidebar { width: 100%; padding: 2rem 0 0; }
+  .sidebar-inner { position: static; }
+  .main { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 2rem; margin-top: 1.5rem; }
+}
+
+/* ─── Sidebar ────────────────────────────────────────────────────────────── */
 .sidebar { width: var(--sidebar-w); flex-shrink: 0; padding: 3rem 0; }
 .sidebar-inner { position: sticky; top: 2rem; }
 .app-icon { width: 100%; display: block; margin-bottom: 0.75rem; object-fit: contain; }
@@ -10,9 +79,11 @@
 .toc-label, .pages-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; display: block; }
 .toc { list-style: none; margin-bottom: 1.75rem; }
 .toc li { padding: 0.15rem 0; }
+.toc li::before { content: none; }
 .toc a { font-size: 0.82rem; color: #aaa; }
 .toc a:hover { color: var(--accent); text-decoration: none; }
 .page-links { list-style: none; }
 .page-links li { padding: 0.15rem 0; }
+.page-links li::before { content: none; }
 .page-links a { font-size: 0.82rem; color: #aaa; }
 .page-links a:hover { color: var(--accent); text-decoration: none; }

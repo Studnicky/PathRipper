@@ -4,41 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ripperoni · Roadmap</title>
+  <meta name="description" content="Ripperoni roadmap — what's live, what's planned, what's shipping as a separate project.">
+  <link rel="icon" type="image/png" href="assets/ripperoni.png">
   <link rel="stylesheet" href="assets/sidebar.css">
   <style>
-    :root { --bg: #0d0d0d; --fg: #e8e8e8; --accent: #ff7c42; --accent-soft: #ffb899; --muted: #888; --card: #1a1a1a; --sidebar-w: 200px; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
-    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
-    code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; background: #1f1f1f; color: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; }
-    .layout { display: flex; max-width: 980px; margin: 0 auto; padding: 0 1.5rem; gap: 3rem; }
-    .main { flex: 1; min-width: 0; padding: 3rem 0 3rem 3rem; border-left: 1px solid #1e1e1e; }
-    .intro { margin-bottom: 2.5rem; }
-    .intro p { color: #ccc; margin-bottom: 0.7rem; }
-    section { margin: 0 0 2.5rem; scroll-margin-top: 2rem; }
-    section:last-child { margin-bottom: 0; }
-    section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.4rem; }
-    section p, section li { color: #ccc; }
-    section p { margin-bottom: 0.7rem; }
-    ul { list-style: none; padding: 0; } ul li { padding: 0.3rem 0; } ul li::before { content: "/ "; color: var(--accent); }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 1rem; }
     .card { background: var(--card); border-radius: 8px; padding: 1.1rem; }
     .card h3 { font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--accent-soft); }
     .card p { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.4rem; }
     .card p:last-child { margin: 0; }
     .status { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 999px; margin-bottom: 0.5rem; }
-    .status-live    { background: #1a3a1a; color: #6bdb6b; border: 1px solid #2a5a2a; }
-    .status-planned { background: #2a2a1a; color: #c4b45a; border: 1px solid #4a4a2a; }
+    .status-live     { background: #1a3a1a; color: #6bdb6b; border: 1px solid #2a5a2a; }
+    .status-planned  { background: #2a2a1a; color: #c4b45a; border: 1px solid #4a4a2a; }
     .status-separate { background: #1a1a3a; color: #6b7cdb; border: 1px solid #2a2a5a; }
-    footer { border-top: 1px solid #1e1e1e; margin-top: 3rem; padding: 1.75rem 0 2rem; color: var(--muted); font-size: 0.82rem; }
-    footer a { color: var(--muted); } footer a:hover { color: var(--accent); }
-    @media (max-width: 700px) {
-      .layout { flex-direction: column; gap: 0; padding: 0 1.25rem; }
-      .sidebar { width: 100%; padding: 2rem 0 0; }
-      .sidebar-inner { position: static; }
-      .main { border-left: none; border-top: 1px solid #1e1e1e; padding-left: 0; padding-top: 2rem; margin-top: 1.5rem; }
-      .grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
