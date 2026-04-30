@@ -5,7 +5,7 @@
 //
 // Run locally:                npm run test:e2e
 // Plugin smoke only:          npm run test:e2e -- --test-name-pattern='aonprd plugin smoke'
-// Full pipeline traversal:    npm run test:e2e -- --test-name-pattern='full pipeline'  RIPPER_E2E_FULL=1
+// Full pipeline traversal:    RIPPER_E2E_FULL=1 npm run test:e2e -- --test-name-pattern='full pipeline'
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, readdir, rm } from 'node:fs/promises';
@@ -13,54 +13,16 @@ import { resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-import { HtmlScraper }          from '../../src/scrapers/HtmlScraper.js';
-import { LinkLister }           from '../../src/crawlers/LinkLister.js';
-import { ScrapeOrchestrator }   from '../../src/orchestrators/ScrapeOrchestrator.js';
-import { TaskRegistry }         from '../../src/registry/TaskRegistry.js';
-import { RipperConfigSchema }   from '../../src/schemas/internal/RipperConfigSchema.js';
-// Plugin imports the *registry* by reaching into ./dist; importing the plugin
-// here registers `aonprd:parse` in the same in-memory registry the orchestrator
-// uses, since both go through the singleton in src/registry/TaskRegistry.
-import { parseAonHtml }         from '../../plugins/aonprd/parse.task.js';
+import { HtmlScraper }        from '../../src/scrapers/HtmlScraper.js';
+import { LinkLister }         from '../../src/crawlers/LinkLister.js';
+import { ScrapeOrchestrator } from '../../src/orchestrators/ScrapeOrchestrator.js';
+import { TaskRegistry }       from '../../src/registry/TaskRegistry.js';
+import { RipperConfig }       from '../../src/config/RipperConfig.js';
+// Plugin self-registers `aonprd:parse` on import.
+import { parseAonHtml }       from '../../plugins/aonprd/parse.task.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-
-interface LegacyFixture {
-  output: { basePath: string; format?: 'json' | 'html' | 'text'; pretty?: boolean };
-  targets: {
-    aonprd: {
-      baseUrl: string;
-      rateLimitMs: number;
-      jitterMs: number;
-      maxRetries: number;
-      retryBaseDelayMs: number;
-      retryMaxDelayMs: number;
-      headers: Record<string, string>;
-      tasks: string[];
-    };
-  };
-  crawlers: {
-    aonprd: {
-      startUrls: string[];
-      domain: string;
-      target: string;
-      delimiter: string;
-      rateLimitMs: number;
-      jitterMs: number;
-      maxPages: number;
-    };
-  };
-}
-
-async function loadFixture(): Promise<LegacyFixture> {
-  const path = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
-  const raw  = JSON.parse(await readFile(path, 'utf-8')) as unknown;
-  const errors = RipperConfigSchema.validate(raw);
-  if (errors !== null) {
-    throw new Error(`Legacy fixture invalid:\n  ${errors}`);
-  }
-  return raw as unknown as LegacyFixture;
-}
+const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
 
 // A curated set of stable URLs across every page-type the plugin supports.
 // These are deliberately classic entries unlikely to be deleted/renumbered.
@@ -76,10 +38,9 @@ const PLUGIN_PROBES: ReadonlyArray<{ url: string; expect_type: string }> = [
 ];
 
 describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
-
   it('aonprd plugin smoke — fetch and parse one of every page type', async () => {
-    const fx = await loadFixture();
-    const t  = fx.targets.aonprd;
+    const fx = await RipperConfig.load(FIXTURE);
+    const t  = fx.targets!['aonprd']!;
     const scraper = HtmlScraper.create({
       baseUrl:          t.baseUrl,
       rateLimitMs:      t.rateLimitMs,
@@ -93,8 +54,8 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     process.stdout.write(`\n  smoke: probing ${PLUGIN_PROBES.length.toString()} page types\n`);
     for (const probe of PLUGIN_PROBES) {
       const page   = await scraper.fetchPage(probe.url);
-      const result = parseAonHtml(page.html, page.url) as { _type: string; name?: string; title?: { name: string }; source?: { book: string | null; page: number | null } };
-      const name = result.name ?? result.title?.name ?? '?';
+      const result = parseAonHtml(page.html, page.url) as { _type: string; name?: string; source?: { book: string | null; page: number | null } };
+      const name = result.name ?? '?';
       const src  = result.source !== undefined ? `${result.source.book ?? '?'} pg. ${(result.source.page ?? 0).toString()}` : '?';
       process.stdout.write(`    • ${probe.expect_type.padEnd(10)}  ${name.padEnd(28)}  ${src}\n`);
 
@@ -102,15 +63,14 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
         `${probe.url}: expected _type='${probe.expect_type}', got '${result._type}'`);
       assert.ok(name !== '' && name !== '?',
         `${probe.url}: parser produced empty name`);
-      // Source must always parse on a real AON detail page.
       assert.ok(result.source !== undefined && result.source.book !== null,
         `${probe.url}: missing source.book`);
     }
   });
 
   it('spell deep extraction — Abyssal Plague', async () => {
-    const fx = await loadFixture();
-    const t  = fx.targets.aonprd;
+    const fx = await RipperConfig.load(FIXTURE);
+    const t  = fx.targets!['aonprd']!;
     const scraper = HtmlScraper.create({
       baseUrl:     t.baseUrl,
       rateLimitMs: t.rateLimitMs,
@@ -127,20 +87,19 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     process.stdout.write(`    affliction: ${r.affliction !== null ? `${r.affliction.name} (${r.affliction.type ?? '?'}), ${r.affliction.stages.length.toString()} stages` : 'none'}\n`);
 
     assert.equal(r.name, 'Abyssal Plague');
-    assert.ok(r.rank === 5 || r.rank === null, `rank: ${(r.rank ?? -1).toString()}`);
+    assert.equal(r.rank, 5);
     assert.ok(r.traditions.length >= 1, 'expected at least one tradition');
     assert.ok(r.traits.length >= 3, `expected ≥3 traits, got ${r.traits.length.toString()}`);
     assert.ok(r.saving_throw !== null && /Fortitude/i.test(r.saving_throw.raw ?? ''),
       'expected Fortitude save');
     assert.ok(r.affliction !== null, 'expected affliction subentry');
     assert.ok(r.affliction.stages.length >= 2, 'expected ≥2 affliction stages');
-    // Outcomes map to the four save tiers.
     assert.ok(r.outcomes.success !== null, 'expected Success tier');
   });
 
   it('monster deep extraction — Phantasmal Minion', async () => {
-    const fx = await loadFixture();
-    const t  = fx.targets.aonprd;
+    const fx = await RipperConfig.load(FIXTURE);
+    const t  = fx.targets!['aonprd']!;
     const scraper = HtmlScraper.create({
       baseUrl:     t.baseUrl,
       rateLimitMs: t.rateLimitMs,
@@ -157,7 +116,8 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     process.stdout.write(`    immunities: ${r.immunities.join(', ')}\n`);
 
     assert.equal(r.name, 'Phantasmal Minion');
-    assert.ok(r.size !== null, 'expected size from traitsize chip');
+    assert.equal(r.level, -1);
+    assert.equal(r.size, 'Medium');
     assert.ok(r.ac.value !== null, 'AC must parse');
     assert.ok(r.hp.value !== null, 'HP must parse');
     assert.ok(r.saves.fort !== null && r.saves.ref !== null && r.saves.will !== null,
@@ -167,8 +127,8 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
   });
 
   it('weapon deep extraction — id 1', async () => {
-    const fx = await loadFixture();
-    const t  = fx.targets.aonprd;
+    const fx = await RipperConfig.load(FIXTURE);
+    const t  = fx.targets!['aonprd']!;
     const scraper = HtmlScraper.create({
       baseUrl:     t.baseUrl,
       rateLimitMs: t.rateLimitMs,
@@ -189,9 +149,8 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
   });
 
   it('full pipeline — LinkLister + ScrapeOrchestrator + plugin → typed JSON outputs', { skip: process.env['RIPPER_E2E_FULL'] !== '1' }, async () => {
-    const fx = await loadFixture();
-    const c  = fx.crawlers.aonprd;
-    // Crawl just one category so we keep the request count bounded.
+    const fx = await RipperConfig.load(FIXTURE);
+    const c  = fx.crawlers!['aonprd']!;
     const lister = LinkLister.create({
       domain:      new RegExp(c.domain),
       target:      new RegExp(c.target),
@@ -206,7 +165,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
 
     const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-e2e-'));
     try {
-      // Force-clear and re-load tasks so the orchestrator picks up the freshest registration.
       TaskRegistry.reset();
       await ScrapeOrchestrator.scrapeHtml({
         target:    'aonprd',

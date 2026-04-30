@@ -141,7 +141,9 @@ export class MediaWikiScraper {
       });
 
       const data = await this.#limiter.schedule((): Promise<CategoryMembersResponseInterface> =>
-        this.#get<CategoryMembersResponseInterface>(params),
+        this.#retry.execute((): Promise<CategoryMembersResponseInterface> =>
+          this.#get<CategoryMembersResponseInterface>(params),
+        ),
       );
 
       for (const m of data.query?.categorymembers ?? []) {
@@ -175,7 +177,9 @@ export class MediaWikiScraper {
       });
 
       const data = await this.#limiter.schedule((): Promise<AllPagesResponseInterface> =>
-        this.#get<AllPagesResponseInterface>(params),
+        this.#retry.execute((): Promise<AllPagesResponseInterface> =>
+          this.#get<AllPagesResponseInterface>(params),
+        ),
       );
 
       for (const p of data.query?.allpages ?? []) {
