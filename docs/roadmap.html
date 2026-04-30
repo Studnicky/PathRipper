@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ripperoni · Roadmap</title>
+  <link rel="stylesheet" href="assets/sidebar.css">
+  <style>
+    :root { --bg: #0d0d0d; --fg: #e8e8e8; --accent: #ff7c42; --accent-soft: #ffb899; --muted: #888; --card: #1a1a1a; --sidebar-w: 200px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+    code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; background: #1f1f1f; color: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; }
+    .layout { display: flex; max-width: 980px; margin: 0 auto; padding: 0 1.5rem; gap: 3rem; }
+    .main { flex: 1; min-width: 0; padding: 3rem 0 3rem 3rem; border-left: 1px solid #1e1e1e; }
+    .intro { margin-bottom: 2.5rem; }
+    .intro p { color: #ccc; margin-bottom: 0.7rem; }
+    section { margin: 0 0 2.5rem; scroll-margin-top: 2rem; }
+    section:last-child { margin-bottom: 0; }
+    section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.4rem; }
+    section p, section li { color: #ccc; }
+    section p { margin-bottom: 0.7rem; }
+    ul { list-style: none; padding: 0; } ul li { padding: 0.3rem 0; } ul li::before { content: "/ "; color: var(--accent); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 1.1rem; }
+    .card h3 { font-size: 0.9rem; margin-bottom: 0.4rem; color: var(--accent-soft); }
+    .card p { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.4rem; }
+    .card p:last-child { margin: 0; }
+    .status { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 999px; margin-bottom: 0.5rem; }
+    .status-live    { background: #1a3a1a; color: #6bdb6b; border: 1px solid #2a5a2a; }
+    .status-planned { background: #2a2a1a; color: #c4b45a; border: 1px solid #4a4a2a; }
+    .status-separate { background: #1a1a3a; color: #6b7cdb; border: 1px solid #2a2a5a; }
+    footer { border-top: 1px solid #1e1e1e; margin-top: 3rem; padding: 1.75rem 0 2rem; color: var(--muted); font-size: 0.82rem; }
+    footer a { color: var(--muted); } footer a:hover { color: var(--accent); }
+    @media (max-width: 700px) {
+      .layout { flex-direction: column; gap: 0; padding: 0 1.25rem; }
+      .sidebar { width: 100%; padding: 2rem 0 0; }
+      .sidebar-inner { position: static; }
+      .main { border-left: none; border-top: 1px solid #1e1e1e; padding-left: 0; padding-top: 2rem; margin-top: 1.5rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar"><div class="sidebar-inner" id="sidebar-placeholder"></div></aside>
+
+    <main class="main">
+      <div class="intro">
+        <p>v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML scraper, MediaWiki scraper, and link crawler are live.</p>
+      </div>
+
+      <section id="shipped">
+        <h2>Shipped (v2.0.0)</h2>
+        <div class="grid">
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>TypeScript rewrite</h3>
+            <p>Full strict TypeScript from scratch. Torus tsconfig + eslint config ported directly. <code>exactOptionalPropertyTypes</code>, <code>noUncheckedIndexedAccess</code>, flat ESLint config.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>Pipeline (Transformer modernized)</h3>
+            <p>PathRipper's callback-based <code>Transformer</code> becomes a typed <code>Pipeline&lt;TState&gt;</code>. Same middleware pattern, fully typed generic state, no more <code>arguments</code> juggling.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>HTML scraper</h3>
+            <p>JSDOM replaced with native <code>fetch</code> + <code>cheerio</code>. Configurable base URL, headers, rate limit. Returns live <code>CheerioAPI</code> handle.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>MediaWiki scraper</h3>
+            <p><code>mwn</code>-backed. Category listing with full pagination, 50-page batch wikitext fetches, <code>wtf_wikipedia</code> infobox parsing. Single call to scrape an entire wiki category.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>LinkLister crawler</h3>
+            <p>PathRipper's recursive crawler rewritten. cheerio replaces JSDOM for link extraction. Concurrent traversals with <code>Promise.all</code>. Numeric-aware sort. <code>Set</code>-based deduplication.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>HTTP machinery</h3>
+            <p>ErrorClassifier + RetryExecutor ported from Torus. RateLimiter wrapping <code>bottleneck</code>. Retry-After header respected. Seven error categories. Exponential + jitter backoff.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>Structured logger</h3>
+            <p>Ported from Torreya's <code>@torreya/logger</code>. <code>Logger.forComponent(name)</code>, JSON lines, LOG_LEVEL gate, component + operation attribution on every entry.</p>
+          </div>
+          <div class="card">
+            <span class="status status-live">live</span>
+            <h3>JSON config</h3>
+            <p>All targets, URLs, rate limits, and output paths live in <code>ripperoni.config.json</code>. Nothing hardcoded. <code>RipperConfig.load(path)</code> validates and returns a typed interface.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="planned">
+        <h2>Planned</h2>
+        <div class="grid">
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>JSDOM fallback mode</h3>
+            <p>Some pages require JavaScript execution to render their content. A configurable <code>jsdom</code> mode in <code>HtmlScraper</code> would handle these without needing a full headless browser.</p>
+          </div>
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>Task registry</h3>
+            <p>A named task registry so config files can reference tasks by string (<code>"tasks": ["reporter", "myCustomTask", "exportJson"]</code>) rather than requiring a TypeScript entry point per job.</p>
+          </div>
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>Checkpoint + resume</h3>
+            <p>For long category scrapes (thousands of pages), persist progress to disk and resume from the last completed page on restart. Relevant for any large category walk against a rate-limited wiki.</p>
+          </div>
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>HTML → Markdown conversion</h3>
+            <p>Output mode that converts scraped HTML to clean Markdown. Useful for feeding scraped content into LLM pipelines without sending raw HTML. Likely via <code>turndown</code> or similar.</p>
+          </div>
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>Concurrent pipeline variants</h3>
+            <p>Current pipeline is strictly sequential. A <code>ConcurrentPipeline</code> variant that fans out tasks over a list of inputs (e.g., scrape 500 pages with a pool of N workers) would cover high-volume jobs.</p>
+          </div>
+          <div class="card">
+            <span class="status status-planned">planned</span>
+            <h3>Config schema validation</h3>
+            <p>AJV-based validation of the config file at load time with clear error messages. Currently typed but not runtime-validated — a malformed config produces cryptic downstream failures.</p>
+          </div>
+        </div>
+      </section>
+
+
+      <footer>
+        <p>Ripperoni v2.0.0 · <a href="index.html">Home</a> · <a href="architecture.html">Architecture</a> · <a href="https://github.com/Studnicky/PathRipper">GitHub</a></p>
+      </footer>
+    </main>
+  </div>
+
+  <script src="assets/sidebar.js"></script>
+  <script>
+    initSidebar([
+      { href: '#shipped',          label: 'Shipped (v2.0.0)' },
+      { href: '#planned',          label: 'Planned' },
+    ], 'roadmap.html');
+  </script>
+</body>
+</html>

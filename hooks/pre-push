@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Native git pre-push hook — runs full quality gate before any push reaches origin.
+set -euo pipefail
+
+npm run check

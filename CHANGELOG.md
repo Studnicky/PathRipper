@@ -1,0 +1,61 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [2.0.0-beta.1] - 2026-04-30
+
+Complete TypeScript v2 rewrite of [PathRipper](https://github.com/Studnicky/PathRipper) (2019).
+Ripperoni is a target-neutral, configuration-driven web scraper with a plugin-driven
+extraction pipeline. Plugin source files ship separately as examples in v1.
+
+### Added
+
+**Core engine**
+- `Pipeline` — typed async middleware chain; tasks receive `(next, state)` and chain with `next()`
+- `HtmlScraper` — native `fetch` + cheerio; no JSDOM or browser engine
+- `MediaWikiScraper` — direct MediaWiki JSON API; three-mode enumeration (single category / `categories[]` array / full-site `allpages`)
+- `WikitextParser` — `wtf_wikipedia` wrapper with `infoboxField`/`infoboxNumber` typed accessors
+- `LinkLister` — recursive link crawler with separated `#visited`/`#collected` sets; supports `startUrls[]`, `maxPages`, `jitterMs`
+- `TaskRegistry` — plugin loader; registers task functions by name, loads plugins via dynamic import
+- `PipelineState` — typed state bridge between scrapers and pipeline tasks
+- `ScrapeOrchestrator` — coordinates scrape runs; resume/retry via `failures.json`; redirect resolution via `redirects=1` API param
+- `ScraperCache` — sharded, content-addressed pointer cache with `read-write`/`read-only`/`write-only`/`off` modes and TTL/LRU eviction
+- `ConfigClamp` — validates and clamps all numeric config values to valid ranges with `warn`-level logging per violation
+- `BaseError` + named error hierarchy — ported from `@noocodec/cogitator`: `HttpError`, `RipperConfigError`, `MappingError`, `ExternalSchemaError`; all errors carry `code`, `retryable`, `cause`, `metadata`
+
+**Configuration**
+- AJV-validated JSON config (`ripperoni.config.json`) with full `json-schema-to-ts` derived types
+- All parameters configurable with documented defaults: `rateLimitMs`, `jitterMs`, `batchSize`, `allPagesLimit`, `maxRetries`, `retryBaseDelayMs`, `retryMaxDelayMs`
+- `litany.json` project standards config
+
+**CLI**
+- `ripperoni scrape` — unified command; detects `html`/`mediawiki` mode from config
+- `ripperoni crawl` — collects target URLs via `LinkLister`; `--starts`, `--jitter`, `--max`
+- `ripperoni scrape-html` / `ripperoni scrape-wiki` — explicit mode commands
+
+**Developer experience**
+- Native git hooks (`hooks/pre-commit`, `hooks/pre-push`); installed via `scripts/install-hooks.sh`
+- Matrix CI: Node 22/24 × ubuntu/macos; typecheck, lint, unit tests, build, audit
+- CHANGELOG gate on every PR
+- 232 unit tests; `node:test` native runner, `tsx`, no jest/vitest
+- Legacy PathRipper AONPRD e2e preserved at `tests/e2e/` (`npm run test:e2e`; never runs in CI)
+- `scripts/enginseer.sh` — local wrapper for `@noocodec/enginseer` analytical tools
+
+### Changed
+- Package renamed `ripperoni` (was `pathripper`); bin `ripperoni`
+- All source rewritten in TypeScript strict mode; ESM/NodeNext
+- Config renamed `ripperoni.config.json`; `tasks` field renamed `pipeline`
+- `startUrl` (singular) → `startUrls` (array) on crawler config
+- mwn upgraded to `^3.0.2` (clears transitive axios CVE chain)
+- Default MediaWiki rate limit raised to 2000 ms + 500 ms jitter (was 1000/250); prevents 503s on Bulbapedia-scale scrapes
+
+### Security
+- `npm audit --omit=dev` exits 0; all production dependency advisories resolved
+
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.1...HEAD
+[2.0.0-beta.1]: https://github.com/Studnicky/PathRipper/releases/tag/v2.0.0-beta.1
