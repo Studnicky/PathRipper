@@ -72,16 +72,15 @@ describe('ScrapeOrchestrator', () => {
         log,
         batchSize:      50,
         resumeFailures: false,
+        pipeline:       [],
+        targetConfig:   {},
       });
 
       // Goblin should NOT have been fetched — its slug was already on disk
       assert.equal(stub.fetched.includes('Goblin'), false, 'Goblin should be skipped (file already exists)');
 
-      // Orc SHOULD have been fetched and written
+      // Orc SHOULD have been fetched (pipeline tasks handle writing — not tested here)
       assert.equal(stub.fetched.includes('Orc'), true, 'Orc should be fetched (no existing file)');
-      const orcPath = join(targetDir, 'orc.json');
-      const orcContent = await readFile(orcPath, 'utf-8');
-      assert.ok(orcContent.length > 0, 'orc.json should be written');
 
       // goblin.json should be unchanged (same mtime — not re-written)
       const afterStat = await stat(join(targetDir, 'goblin.json'));

@@ -33,7 +33,7 @@ const SCHEMA = {
       additionalProperties: {
         type: 'object',
         additionalProperties: false,
-        required: ['baseUrl'],
+        required: ['baseUrl', 'pipeline'],
         properties: {
           baseUrl:          { type: 'string', format: 'uri', minLength: 1 },
           rateLimitMs:      { type: 'integer', minimum: 0 },
@@ -41,6 +41,7 @@ const SCHEMA = {
           maxRetries:       { type: 'integer', minimum: 0, maximum: 10 },
           retryBaseDelayMs: { type: 'integer', minimum: 100 },
           retryMaxDelayMs:  { type: 'integer', minimum: 1000 },
+          maxPages:         { type: 'integer', minimum: 0 },
           headers: {
             type: 'object',
             additionalProperties: { type: 'string' },
@@ -51,9 +52,38 @@ const SCHEMA = {
             type: 'object',
             additionalProperties: { type: 'string', minLength: 1 },
           },
-          tasks: {
-            type: 'array',
-            items: { type: 'string', minLength: 1 },
+          pipeline: {
+            type:     'array',
+            minItems: 1,
+            items:    { type: 'string', minLength: 1 },
+          },
+          cache: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['dir', 'mode'],
+            properties: {
+              dir:   { type: 'string',  minLength: 1 },
+              mode:  { type: 'string',  enum: ['read-write', 'read-only', 'write-only', 'off'] },
+              ttlMs: { type: 'integer', minimum: 0 },
+            },
+          },
+          crawler: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['startUrls', 'domain', 'target', 'delimiter'],
+            properties: {
+              startUrls: {
+                type: 'array',
+                minItems: 1,
+                items: { type: 'string', format: 'uri', minLength: 1 },
+              },
+              domain:      { type: 'string', minLength: 1 },
+              target:      { type: 'string', minLength: 1 },
+              delimiter:   { type: 'string', minLength: 1 },
+              rateLimitMs: { type: 'integer', minimum: 0 },
+              jitterMs:    { type: 'integer', minimum: 0 },
+              maxPages:    { type: 'integer', minimum: 1 },
+            },
           },
         },
       },
@@ -63,13 +93,13 @@ const SCHEMA = {
       additionalProperties: {
         type: 'object',
         additionalProperties: false,
-        required: ['apiUrl'],
+        required: ['apiUrl', 'pipeline'],
         properties: {
           apiUrl:           { type: 'string', format: 'uri', minLength: 1 },
           rateLimitMs:      { type: 'integer', minimum: 0 },
           jitterMs:         { type: 'integer', minimum: 0 },
           batchSize:        { type: 'integer', minimum: 1, maximum: 50 },
-          allPagesLimit:    { type: 'integer', minimum: 1, maximum: 500 },
+          maxPages:         { type: 'integer', minimum: 0 },
           maxRetries:       { type: 'integer', minimum: 0, maximum: 10 },
           retryBaseDelayMs: { type: 'integer', minimum: 100 },
           retryMaxDelayMs:  { type: 'integer', minimum: 1000 },
@@ -83,9 +113,20 @@ const SCHEMA = {
             type: 'array',
             items: { type: 'string', minLength: 1 },
           },
-          tasks: {
-            type: 'array',
-            items: { type: 'string', minLength: 1 },
+          pipeline: {
+            type:     'array',
+            minItems: 1,
+            items:    { type: 'string', minLength: 1 },
+          },
+          cache: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['dir', 'mode'],
+            properties: {
+              dir:   { type: 'string',  minLength: 1 },
+              mode:  { type: 'string',  enum: ['read-write', 'read-only', 'write-only', 'off'] },
+              ttlMs: { type: 'integer', minimum: 0 },
+            },
           },
         },
       },

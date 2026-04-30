@@ -1,8 +1,10 @@
 import type { FetchPageResult, FetchPagesBatchResult, FetchCategoryResult, FetchAllPagesResult, ScrapeCategoryResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
+import { CacheMissError } from '../errors/CacheMissError.js';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { RetryExecutor } from '../modules/http/retryExecutor.js';
 import { Logger } from '../modules/logger/logger.js';
+import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type {
   MediaWikiConfigInterface,
   WikiPageInterface,
@@ -44,6 +46,8 @@ export class MediaWikiScraper {
   readonly #retry:     RetryExecutor;
   readonly #batchSize: number;
   readonly #log:       Logger;
+  /** Optional shared content store; null when not provided in config. */
+  readonly #cache:     ScraperCache | null;
 
   /**
    * @param config - MediaWiki API URL and optional rate-limit settings.
@@ -59,6 +63,7 @@ export class MediaWikiScraper {
     });
     this.#batchSize = config.batchSize ?? DEFAULT_BATCH_SIZE;
     this.#log       = Logger.forComponent('MediaWikiScraper');
+    this.#cache     = config.cache ?? null;
   }
 
   /**
@@ -72,7 +77,7 @@ export class MediaWikiScraper {
   }
 
   /**
-   * Fetches the wikitext content of a single article.
+   * Fetches the wikitext content of a single article (cache-aware via fetchPagesBatch).
    *
    * @param title - Article title to fetch.
    * @returns Wiki page with title and wikitext content.
@@ -80,35 +85,52 @@ export class MediaWikiScraper {
    */
   public async fetchPage(title: string): FetchPageResult {
     this.#log.debug('fetchPage', title);
-    return this.#limiter.schedule((): Promise<WikiPageInterface> =>
-      this.#retry.execute(async (): Promise<WikiPageInterface> => {
-        const params = new URLSearchParams({
-          action: 'query', titles: title, prop: 'revisions', redirects: '1',
-          rvprop: 'content', format: 'json',
-        });
-        const data  = await this.#get<RevisionsResponseInterface>(params);
-        const pages = Object.values(data.query?.pages ?? {});
-        const page  = pages[0];
-        return { title, wikitext: MediaWikiScraper.wikitextOf(page) };
-      }),
-    );
+    const [page] = await this.fetchPagesBatch([title]);
+    return page ?? { title, wikitext: '' };
   }
 
   /**
-   * Fetches wikitext for multiple articles in a single API request.
+   * Fetches wikitext for multiple articles, partitioning by per-title cache hits.
    *
    * @param titles - Array of article titles to fetch.
    * @returns Array of wiki pages with title and wikitext content.
    * @throws {HttpError} When the API returns a non-OK response.
+   * @throws {CacheMissError} When mode is `read-only` and any title is missing.
    */
   public async fetchPagesBatch(titles: string[]): FetchPagesBatchResult {
     this.#log.debug('fetchPagesBatch', `${titles.length.toString()} pages`);
     if (titles.length === 0) return [];
 
-    return this.#limiter.schedule((): Promise<WikiPageInterface[]> =>
+    const cache = this.#cache;
+
+    const cached: WikiPageInterface[] = [];
+    const missing: string[]           = [];
+
+    if (cache !== null) {
+      for (const title of titles) {
+        const key = this.#cacheKeyForTitle(title);
+        const hit = await cache.read(key);
+        if (hit !== null) {
+          cached.push({ title, wikitext: hit.body });
+        } else {
+          missing.push(title);
+        }
+      }
+      if (cache.getMode() === 'read-only' && missing.length > 0) {
+        throw CacheMissError.create(`MediaWiki cache miss for ${missing.length.toString()} title(s)`, {
+          metadata: { titles: missing, apiUrl: this.#apiUrl },
+        });
+      }
+    } else {
+      missing.push(...titles);
+    }
+
+    if (missing.length === 0) return cached;
+
+    const fetched = await this.#limiter.schedule((): Promise<WikiPageInterface[]> =>
       this.#retry.execute(async (): Promise<WikiPageInterface[]> => {
         const params = new URLSearchParams({
-          action: 'query', titles: titles.join('|'), prop: 'revisions', redirects: '1',
+          action: 'query', titles: missing.join('|'), prop: 'revisions', redirects: '1',
           rvprop: 'content', format: 'json',
         });
         const data = await this.#get<RevisionsResponseInterface>(params);
@@ -118,6 +140,21 @@ export class MediaWikiScraper {
         }));
       }),
     );
+
+    if (cache !== null) {
+      const fetchedAt = new Date().toISOString();
+      for (const page of fetched) {
+        const key = this.#cacheKeyForTitle(page.title);
+        await cache.write(key, page.wikitext, { url: this.#apiUrl, method: 'GET', fetchedAt, status: 200 });
+      }
+    }
+
+    return [...cached, ...fetched];
+  }
+
+  /** Stable per-title cache key derived from the API URL and the title header. */
+  #cacheKeyForTitle(title: string): string {
+    return ScraperCache.keyFor({ method: 'GET', url: this.#apiUrl, headers: { titles: title } });
   }
 
   /**

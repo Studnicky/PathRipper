@@ -3,13 +3,15 @@ import { resolve } from 'node:path';
 
 import { HtmlScraper } from '../scrapers/HtmlScraper.js';
 import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
-import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
+import type { CategoryMemberInterface, MediaWikiConfigInterface } from '../types/MediaWikiScraper.js';
+import type { HtmlScraperConfigInterface } from '../types/HtmlScraper.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
-import type { NextFnInterface } from '../types/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
-import type { PipelineStateInterface } from '../types/PipelineState.js';
+import type { PipelineStateInterface, PipelinePageInterface } from '../types/PipelineState.js';
 import { Logger } from '../modules/logger/logger.js';
+import { ScraperCache } from '../modules/cache/ScraperCache.js';
+import type { ScraperCacheConfigInterface } from '../types/ScraperCache.js';
 import type {
   ScrapeHtmlOptionsInterface,
   ScrapeWikiOptionsInterface,
@@ -21,12 +23,17 @@ import { ConfigClamp } from '../config/ConfigClamp.js';
 
 export type { ScrapeHtmlOptionsInterface, ScrapeWikiOptionsInterface };
 
+const BUILTIN_PREFIXES: ReadonlyArray<string> = ['html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:'];
+
 /**
  * Coordinates scraping pipelines for both HTML and MediaWiki targets.
  *
  * @remarks
- * All methods are static. Instantiation is forbidden. Call `scrapeHtml` or `scrapeWiki`
- * with validated options to execute a full scrape pipeline.
+ * All methods are static. Instantiation is forbidden. Each invocation
+ * registers built-in tasks once (idempotent), loads any plugin tasks the
+ * pipeline references, builds a single `ScraperCache` instance shared
+ * between the LinkLister and HtmlScraper / MediaWikiScraper for that run,
+ * then runs the user-declared `pipeline: string[]` per page.
  *
  * @example
  * ```ts
@@ -55,27 +62,71 @@ export class ScrapeOrchestrator {
       process.exit(1);
     }
 
-    const tasks = (htmlTarget as { tasks?: string[] }).tasks ?? [];
-    await TaskRegistry.loadAll(tasks, opts.configDir);
+    await import('../registry/builtinTasks.js');
 
-    const scraper = HtmlScraper.create(ConfigClamp.html(htmlTarget as Record<string, unknown>, opts.target) as typeof htmlTarget);
+    const targetCfg     = htmlTarget as Record<string, unknown>;
+    const pipelineNames = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
+    const pluginPaths   = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    await TaskRegistry.loadAll(pluginPaths, opts.configDir);
+
+    const cache       = ScrapeOrchestrator.buildCache(targetCfg);
+    const clamped     = ConfigClamp.html(targetCfg, opts.target) as Record<string, unknown>;
+    const scraperCfg: HtmlScraperConfigInterface = {
+      baseUrl: clamped['baseUrl'] as string,
+      ...(typeof clamped['rateLimitMs']      === 'number' ? { rateLimitMs:      clamped['rateLimitMs']      as number } : {}),
+      ...(typeof clamped['jitterMs']         === 'number' ? { jitterMs:         clamped['jitterMs']         as number } : {}),
+      ...(typeof clamped['maxRetries']       === 'number' ? { maxRetries:       clamped['maxRetries']       as number } : {}),
+      ...(typeof clamped['retryBaseDelayMs'] === 'number' ? { retryBaseDelayMs: clamped['retryBaseDelayMs'] as number } : {}),
+      ...(typeof clamped['retryMaxDelayMs']  === 'number' ? { retryMaxDelayMs:  clamped['retryMaxDelayMs']  as number } : {}),
+      ...(clamped['headers'] !== undefined ? { headers: clamped['headers'] as Record<string, string> } : {}),
+      ...(cache !== null ? { cache } : {}),
+    };
+    const scraper = HtmlScraper.create(scraperCfg);
+
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
-    for (const path of opts.paths) {
-      const page     = await scraper.fetchPage(path);
+    const failures: string[] = [];
+
+    const urls = await ScrapeOrchestrator.resolveHtmlUrls({
+      paths:        opts.paths,
+      pipelineNames,
+      targetConfig: targetCfg,
+      target:       opts.target,
+      outDir:       opts.outDir,
+      cache,
+      log,
+    });
+
+    for (const path of urls) {
+      const state = PipelineState.fromHtmlUrl(opts.target, path);
+      state.context = {
+        target: opts.target,
+        outDir: opts.outDir,
+        scraper,
+        config: targetCfg,
+      };
       const pipeline = Pipeline.create<PipelineStateInterface>({ name: opts.target });
-      if (TaskRegistry.has(`${opts.target}:parse`)) {
-        pipeline.addTask(TaskRegistry.get(`${opts.target}:parse`));
+      for (const taskName of pipelineNames) {
+        if (taskName === 'crawl:list-targets') continue; // already executed during URL resolution
+        pipeline.addTask(TaskRegistry.get(taskName));
       }
-      pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
-        await next();
-        const slug     = page.url.replace(/[^a-z0-9-]/gi, '-').replace(/-+/g, '-').toLowerCase();
-        const payload  = state.output ?? { url: page.url };
-        const filePath = resolve(opts.outDir, opts.target, `${slug}.json`);
-        await writeFile(filePath, JSON.stringify(payload, null, 2));
-      });
-      await pipeline.execute(PipelineState.fromHtmlPage(opts.target, page));
-      log.info('scrapeHtml', `Wrote ${page.url}`);
+      try {
+        await pipeline.execute(state);
+        log.info('scrapeHtml', `Completed ${path}`);
+      } catch (err) {
+        failures.push(path);
+        log.warn('scrapeHtml', `Failed ${path}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    if (failures.length > 0) {
+      const manifest: FailuresManifestInterface = {
+        timestamp: new Date().toISOString(),
+        count:     failures.length,
+        titles:    failures,
+      };
+      await writeFile(resolve(opts.outDir, opts.target, 'failures.json'), JSON.stringify(manifest, null, 2));
+      log.warn('scrapeHtml', `${failures.length.toString()} pages failed — written to failures.json`);
     }
   }
 
@@ -94,10 +145,28 @@ export class ScrapeOrchestrator {
       process.exit(1);
     }
 
-    const tasks = (wikiTarget as { tasks?: string[] }).tasks ?? [];
-    await TaskRegistry.loadAll(tasks, opts.configDir);
+    await import('../registry/builtinTasks.js');
 
-    const scraper = await MediaWikiScraper.create(ConfigClamp.mediawiki(wikiTarget as Record<string, unknown>, opts.target) as typeof wikiTarget);
+    const targetCfg     = wikiTarget as Record<string, unknown>;
+    const pipelineNames = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
+    const pluginPaths   = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    await TaskRegistry.loadAll(pluginPaths, opts.configDir);
+
+    const cache       = ScrapeOrchestrator.buildCache(targetCfg);
+    const clamped     = ConfigClamp.mediawiki(targetCfg, opts.target) as Record<string, unknown>;
+    const scraperCfg: MediaWikiConfigInterface = {
+      apiUrl: clamped['apiUrl'] as string,
+      ...(typeof clamped['rateLimitMs']      === 'number' ? { rateLimitMs:      clamped['rateLimitMs']      as number } : {}),
+      ...(typeof clamped['jitterMs']         === 'number' ? { jitterMs:         clamped['jitterMs']         as number } : {}),
+      ...(typeof clamped['batchSize']        === 'number' ? { batchSize:        clamped['batchSize']        as number } : {}),
+      ...(typeof clamped['maxPages']         === 'number' ? { maxPages:         clamped['maxPages']         as number } : {}),
+      ...(typeof clamped['maxRetries']       === 'number' ? { maxRetries:       clamped['maxRetries']       as number } : {}),
+      ...(typeof clamped['retryBaseDelayMs'] === 'number' ? { retryBaseDelayMs: clamped['retryBaseDelayMs'] as number } : {}),
+      ...(typeof clamped['retryMaxDelayMs']  === 'number' ? { retryMaxDelayMs:  clamped['retryMaxDelayMs']  as number } : {}),
+      ...(cache !== null ? { cache } : {}),
+    };
+    const scraper = await MediaWikiScraper.create(scraperCfg);
+
     await mkdir(resolve(opts.outDir, opts.target), { recursive: true });
 
     // Resolve page list — four modes:
@@ -122,8 +191,8 @@ export class ScrapeOrchestrator {
       log.info('scrapeWiki', `Mode: ${configCategories.length.toString()} categories — ${members.length.toString()} unique pages`);
     } else {
       log.info('scrapeWiki', 'Mode: all pages in main namespace (this may take a while)');
-      const allPagesLimit = (wikiTarget as { allPagesLimit?: number }).allPagesLimit ?? 500;
-      members = await scraper.fetchAllPages(allPagesLimit);
+      const maxPages = (wikiTarget as { maxPages?: number }).maxPages ?? 500;
+      members = await scraper.fetchAllPages(maxPages);
     }
 
     const batchSize = (wikiTarget as { batchSize?: number }).batchSize ?? 50;
@@ -136,7 +205,97 @@ export class ScrapeOrchestrator {
       log,
       batchSize,
       resumeFailures: opts.resumeFailures === true,
+      pipeline:       pipelineNames,
+      targetConfig:   targetCfg,
     });
+  }
+
+  /** Reads `target.pipeline` and validates that it's a non-empty string array. */
+  private static requirePipeline(target: Record<string, unknown>, targetId: string): string[] {
+    const pipeline = target['pipeline'];
+    if (!Array.isArray(pipeline) || pipeline.length === 0) {
+      throw new Error(`Target "${targetId}" must declare a non-empty pipeline: string[]`);
+    }
+    for (const name of pipeline) {
+      if (typeof name !== 'string' || name.length === 0) {
+        throw new Error(`Target "${targetId}" pipeline contains a non-string entry`);
+      }
+    }
+    return pipeline as string[];
+  }
+
+  /**
+   * Maps non-built-in pipeline entries (`<word>:<verb>`) to plugin file paths.
+   * Built-in tasks (those starting with html:/wiki:/json:/jsonl:/validate:/crawl:)
+   * are skipped because they self-register on `builtinTasks` import.
+   */
+  private static derivePluginPaths(pipeline: ReadonlyArray<string>): string[] {
+    const paths: string[] = [];
+    const seen = new Set<string>();
+    for (const entry of pipeline) {
+      if (BUILTIN_PREFIXES.some((p: string): boolean => entry.startsWith(p))) continue;
+      const colon = entry.indexOf(':');
+      if (colon <= 0) continue;
+      const word = entry.slice(0, colon);
+      const verb = entry.slice(colon + 1);
+      const path = `./plugins/${word}/${verb}.task.js`;
+      if (!seen.has(path)) {
+        seen.add(path);
+        paths.push(path);
+      }
+    }
+    return paths;
+  }
+
+  /** Builds a `ScraperCache` from `target.cache`, layering `target.maxPages` into `maxEntries`. */
+  private static buildCache(target: Record<string, unknown>): ScraperCache | null {
+    const cacheCfg = target['cache'];
+    if (cacheCfg === undefined || cacheCfg === null) return null;
+    const cfg = cacheCfg as ScraperCacheConfigInterface;
+    if (cfg.mode === 'off') return null;
+    const maxPages = target['maxPages'];
+    const finalCfg: ScraperCacheConfigInterface = {
+      ...cfg,
+      ...(typeof maxPages === 'number' && maxPages > 0 ? { maxEntries: maxPages } : {}),
+    };
+    return ScraperCache.create(finalCfg);
+  }
+
+  /**
+   * Determines the URL list for an HTML scrape.
+   * If `crawl:list-targets` is part of the pipeline AND `paths` is empty, runs
+   * the crawl task once to surface URLs. Otherwise returns `paths` verbatim.
+   */
+  private static async resolveHtmlUrls(opts: {
+    paths:         ReadonlyArray<string>;
+    pipelineNames: ReadonlyArray<string>;
+    targetConfig:  Record<string, unknown>;
+    target:        string;
+    outDir:        string;
+    cache:         ScraperCache | null;
+    log:           ReturnType<typeof Logger.forComponent>;
+  }): Promise<string[]> {
+    if (opts.paths.length > 0) return [...opts.paths];
+    if (!opts.pipelineNames.includes('crawl:list-targets')) return [];
+
+    const discoveryState: PipelineStateInterface = {
+      targetId: opts.target,
+      page:     { targetId: opts.target, title: '', url: '' } as PipelinePageInterface,
+      output:   null,
+      context:  {
+        target: opts.target,
+        outDir: opts.outDir,
+        config: opts.targetConfig,
+      },
+    };
+
+    const task = TaskRegistry.get('crawl:list-targets');
+    await task(async (): Promise<void> => { /* terminal next */ }, discoveryState);
+
+    const ctx = discoveryState.context as { targets?: ReadonlyArray<string> } | undefined;
+    const discovered: ReadonlyArray<string> = ctx?.targets ?? [];
+    opts.log.info('resolveHtmlUrls', `crawl:list-targets discovered ${discovered.length.toString()} URLs`);
+    return [...discovered];
   }
 
   private static async fetchDeduplicatedCategories(
@@ -160,7 +319,7 @@ export class ScrapeOrchestrator {
   }
 
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
-    const { targetId, outDir, scraper, members, log, batchSize, resumeFailures } = opts;
+    const { targetId, outDir, scraper, members, log, batchSize, resumeFailures, pipeline: pipelineNames, targetConfig } = opts;
 
     // ── Resume: build set of already-written slugs ──────────────────────────
     const targetDir     = resolve(outDir, targetId);
@@ -195,25 +354,24 @@ export class ScrapeOrchestrator {
       const pages = await scraper.fetchPagesBatch(slice);
 
       for (const page of pages) {
+        const state: PipelineStateInterface = {
+          targetId,
+          page:    { targetId, title: page.title, url: '', wikitext: page.wikitext },
+          output:  null,
+          context: {
+            target: targetId,
+            outDir,
+            scraper,
+            config: targetConfig,
+          },
+        };
         const pipeline = Pipeline.create<PipelineStateInterface>({ name: targetId });
-        if (TaskRegistry.has(`${targetId}:parse`)) {
-          pipeline.addTask(TaskRegistry.get(`${targetId}:parse`));
+        for (const taskName of pipelineNames) {
+          pipeline.addTask(TaskRegistry.get(taskName));
         }
-        pipeline.addTask(async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
-          await next();
-          const slug    = ScrapeOrchestrator.toSlug(page.title);
-          // Use plugin output when available; otherwise tag as unknown so
-          // the file has a consistent _type field for downstream consumers.
-          // Redirect pages are resolved server-side via redirects=1 in the API
-          // request — by this point, page.wikitext is the TARGET's content.
-          const payload = state.output !== null
-            ? state.output
-            : { _type: 'unknown' as const, title: page.title, categories: [] as string[] };
-          await writeFile(resolve(outDir, targetId, `${slug}.json`), JSON.stringify(payload, null, 2));
-          written++;
-        });
         try {
-          await pipeline.execute(PipelineState.fromWikiPage(targetId, page));
+          await pipeline.execute(state);
+          written++;
         } catch {
           failures.push(page.title);
         }

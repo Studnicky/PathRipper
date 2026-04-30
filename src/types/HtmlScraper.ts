@@ -1,6 +1,7 @@
 import type { CheerioAPI } from 'cheerio';
 
 import type { RetryConfigInterface } from './RetryExecutor.js';
+import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 /**
  * Configuration passed to the `HtmlScraper` constructor.
@@ -41,6 +42,8 @@ export interface HtmlScraperConfigInterface {
   readonly retryMaxDelayMs?: number | undefined;
   /** HTTP headers sent with every request. */
   readonly headers?: Readonly<Record<string, string>> | undefined;
+  /** Optional shared content store; when set, fetchPage consults the cache before consuming the rate limiter. */
+  readonly cache?: ScraperCache | undefined;
 }
 
 /**

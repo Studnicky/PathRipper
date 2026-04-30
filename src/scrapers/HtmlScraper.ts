@@ -5,8 +5,10 @@ import { load } from 'cheerio';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { RetryExecutor } from '../modules/http/retryExecutor.js';
 import { Logger } from '../modules/logger/logger.js';
+import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type { FetchTextResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
+import { CacheMissError } from '../errors/CacheMissError.js';
 import type { HtmlScraperConfigInterface, ScrapedPageInterface } from '../types/HtmlScraper.js';
 
 export type { HtmlScraperConfigInterface, ScrapedPageInterface };
@@ -37,6 +39,8 @@ export class HtmlScraper {
   readonly #limiter: RateLimiter;
   readonly #retry: RetryExecutor;
   readonly #log: Logger;
+  /** Optional shared content store; null when not provided in config. */
+  readonly #cache: ScraperCache | null;
 
   /**
    * @param config - Scraper configuration including base URL, rate limit, and headers.
@@ -52,6 +56,7 @@ export class HtmlScraper {
       multiplier:  config.retry?.multiplier,
     });
     this.#log     = Logger.forComponent('HtmlScraper');
+    this.#cache   = config.cache ?? null;
   }
 
   /**
@@ -75,6 +80,20 @@ export class HtmlScraper {
     const url = path.startsWith('http') ? path : `${this.#base}${path}`;
     this.#log.debug('fetchPage', url);
 
+    const cache    = this.#cache;
+    const cacheKey = cache !== null ? ScraperCache.keyFor({ method: 'GET', url, headers: this.#headers }) : '';
+
+    if (cache !== null) {
+      const hit = await cache.read(cacheKey);
+      if (hit !== null) {
+        this.#log.debug('fetchPage', 'cache hit', { url, key: cacheKey });
+        return { url, $: load(hit.body), html: hit.body };
+      }
+      if (HtmlScraper.isReadOnly(cache)) {
+        throw CacheMissError.create(`Cache miss for ${url}`, { key: cacheKey, url, metadata: { url } });
+      }
+    }
+
     const html = await this.#limiter.schedule((): Promise<string> =>
       this.#retry.execute(async (): Promise<string> => {
         const res = await fetch(url, { headers: this.#headers });
@@ -85,7 +104,16 @@ export class HtmlScraper {
       }),
     );
 
+    if (cache !== null) {
+      await cache.write(cacheKey, html, { url, method: 'GET', fetchedAt: new Date().toISOString(), status: 200 });
+    }
+
     return { url, $: load(html), html };
+  }
+
+  /** Returns true when the cache config is read-only (no writes will reach disk). */
+  private static isReadOnly(cache: ScraperCache): boolean {
+    return cache.getMode() === 'read-only';
   }
 
   /**

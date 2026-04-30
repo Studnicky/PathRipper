@@ -1,5 +1,4 @@
 import type { WikiPageInterface } from '../types/MediaWikiScraper.js';
-import type { ScrapedPageInterface } from '../types/HtmlScraper.js';
 import type { PipelinePageInterface, PipelineStateInterface } from '../types/PipelineState.js';
 
 export type { PipelinePageInterface, PipelineStateInterface };
@@ -41,16 +40,16 @@ export class PipelineState {
   }
 
   /**
-   * Creates a pipeline state from a scraped HTML page.
+   * Creates a pipeline state from a starting HTML URL; html is left unset for `html:fetch` to populate.
    *
    * @param targetId - Config target key identifying the HTML target.
-   * @param page - Scraped HTML page with resolved URL and content.
-   * @returns Initial pipeline state with `output` set to `null`.
+   * @param url - Path or full URL to feed into the pipeline.
+   * @returns Initial pipeline state with `output` set to `null` and `page.html` undefined.
    */
-  public static fromHtmlPage(targetId: string, page: ScrapedPageInterface): PipelineStateInterface {
+  public static fromHtmlUrl(targetId: string, url: string): PipelineStateInterface {
     return {
       targetId,
-      page: { targetId, title: page.url, url: page.url, html: page.html },
+      page: { targetId, title: '', url, html: undefined },
       output: null,
     };
   }

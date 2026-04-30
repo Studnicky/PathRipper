@@ -8,7 +8,7 @@ const log = Logger.forComponent('ConfigClamp');
  *
  * @remarks
  * Limits reflect real API or protocol constraints where applicable:
- * `batchSize` and `allPagesLimit` are capped at the MediaWiki API maximums.
+ * `batchSize` and `maxPages` (wiki-side allpages enumeration) are capped at the MediaWiki API maximums.
  * All other limits are practical safety ceilings.
  *
  * @example

@@ -1,3 +1,5 @@
+import type { ScraperCache } from '../modules/cache/ScraperCache.js';
+
 /**
  * Internal shape of a single category member from the MediaWiki `categorymembers` list.
  *
@@ -116,14 +118,16 @@ export interface MediaWikiConfigInterface {
   readonly jitterMs?:    number | undefined;
   /** Number of page titles to fetch per batch API call (max 50, default 50). */
   readonly batchSize?: number | undefined;
-  /** Number of pages to enumerate per allpages API call (max 500, default 500). */
-  readonly allPagesLimit?: number | undefined;
+  /** Maximum pages to enumerate / collect for this target (per allpages API call cap is 500). */
+  readonly maxPages?: number | undefined;
   /** Maximum number of retry attempts for failed requests (default 3). */
   readonly maxRetries?: number | undefined;
   /** Base delay in milliseconds for retry backoff (default 500). */
   readonly retryBaseDelayMs?: number | undefined;
   /** Maximum delay cap in milliseconds for retry backoff (default 30000). */
   readonly retryMaxDelayMs?: number | undefined;
+  /** Optional shared content store; when set, fetchPage / fetchPagesBatch consult the cache before consuming the rate limiter. */
+  readonly cache?: ScraperCache | undefined;
 }
 
 /**

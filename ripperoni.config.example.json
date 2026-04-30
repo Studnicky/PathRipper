@@ -15,7 +15,7 @@
       "retryBaseDelayMs": 500,
       "retryMaxDelayMs":  30000,
       "categories":       ["Example Category A", "Example Category B"],
-      "tasks":            ["./plugins/your-target/parse.task.js"]
+      "pipeline": ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
@@ -28,7 +28,7 @@
       "headers": {
         "User-Agent": "MyApp/1.0"
       },
-      "tasks": ["./plugins/your-target/parse.task.js"]
+      "pipeline": ["./plugins/your-target/parse.task.js"]
     }
   },
   "crawlers": {

@@ -4,6 +4,7 @@ import type { Element } from 'domhandler';
 import { Logger } from '../modules/logger/logger.js';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
 import { RetryExecutor } from '../modules/http/retryExecutor.js';
+import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type { LinkListerConfigInterface } from '../types/LinkListerConfig.js';
 
 export type { LinkListerConfigInterface };
@@ -17,10 +18,13 @@ const DEFAULT_RATE_LIMIT_MS = 100;
  * @remarks
  * Respects domain, target, and delimiter filters configured at construction time.
  * Rate limiting and retry behaviour are delegated to {@link RateLimiter} and {@link RetryExecutor}.
+ * The shared {@link ScraperCache} is consulted before each network fetch so URLs already
+ * fetched by sibling components (HtmlScraper, MediaWikiScraper) become free hits.
  *
  * @example
  * ```ts
- * const lister = LinkLister.create({ domain: /example\.com/, target: /\/item\//, delimiter: /\//, startUrls: [] });
+ * const cache = ScraperCache.create({ dir: './.cache', mode: 'read-write' });
+ * const lister = LinkLister.create({ domain: /example\.com/, target: /\/item\//, delimiter: /\//, cache });
  * const links = await lister.buildList(['https://example.com/items/']);
  * ```
  *
@@ -39,9 +43,11 @@ export class LinkLister {
   readonly #log: Logger;
   readonly #limiter: RateLimiter;
   readonly #retry: RetryExecutor;
+  readonly #headers: Readonly<Record<string, string>>;
+  readonly #cache: ScraperCache | null;
 
   /**
-   * @param config - Crawl configuration including domain, target, and rate-limit settings.
+   * @param config - Crawl configuration including domain, target, rate-limit settings, and a shared cache.
    */
   private constructor(config: LinkListerConfigInterface) {
     this.#domain    = config.domain;
@@ -51,6 +57,8 @@ export class LinkLister {
     this.#log       = Logger.forComponent('LinkLister');
     this.#limiter   = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
     this.#retry     = RetryExecutor.create(config.retry);
+    this.#headers   = config.headers ?? {};
+    this.#cache     = config.cache ?? null;
   }
 
   /**
@@ -92,14 +100,36 @@ export class LinkLister {
     return this.#collected.size >= this.#maxPages;
   }
 
+  /** Fetches `url` via the shared cache (when configured); falls back to direct network on miss. */
+  async #fetchBody(url: string): Promise<string> {
+    const networkFetch = (): Promise<string> =>
+      this.#limiter.schedule((): Promise<string> =>
+        this.#retry.execute((): Promise<string> =>
+          fetch(url, { headers: this.#headers }).then((r: Response): Promise<string> => r.text())),
+      );
+
+    if (this.#cache === null) return networkFetch();
+
+    const key = ScraperCache.keyFor({ method: 'GET', url, headers: this.#headers });
+    const hit = await this.#cache.read(key);
+    if (hit !== null) {
+      this.#log.debug('fetchBody', 'cache hit', { url, key });
+      return hit.body;
+    }
+
+    const body = await networkFetch();
+    await this.#cache.write(key, body, {
+      url, method: 'GET', fetchedAt: new Date().toISOString(), status: 200,
+    });
+    return body;
+  }
+
   async #crawl(url: string): Promise<string[]> {
     if (this.#visited.has(url)) return [];
     if (this.#capReached())     return [];
     this.#visited.add(url);
 
-    const html = await this.#limiter.schedule((): Promise<string> =>
-      this.#retry.execute((): Promise<string> => fetch(url).then((r: Response): Promise<string> => r.text())),
-    );
+    const html = await this.#fetchBody(url);
 
     const allLinks = LinkLister.extractLinks(html, url)
       .filter((l: string): boolean => this.#domain.test(l))

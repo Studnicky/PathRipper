@@ -26,6 +26,10 @@ export interface RunPipelineOptionsInterface {
   readonly batchSize:      number;
   /** When true, delete failures.json after a successful retry run. */
   readonly resumeFailures: boolean;
+  /** Pipeline task names to run for each fetched wiki page. */
+  readonly pipeline:       ReadonlyArray<string>;
+  /** Per-target config object for state.context.config. */
+  readonly targetConfig:   Record<string, unknown>;
 }
 
 /**
