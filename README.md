@@ -1,16 +1,21 @@
 # Ripperoni
 
-Configurable web scraper. Plugin-driven pipeline tasks, HTML and MediaWiki modes, recursive link crawler, retry logic, rate limiting.
+[![CI](https://github.com/Studnicky/PathRipper/actions/workflows/ci.yml/badge.svg)](https://github.com/Studnicky/PathRipper/actions/workflows/ci.yml)
+[![docs](https://img.shields.io/badge/docs-studnicky.github.io-c8284a)](https://studnicky.github.io/PathRipper/)
+[![node](https://img.shields.io/badge/node-%3E%3D24.0.0-brightgreen)](package.json)
+[![version](https://img.shields.io/badge/version-2.0.0-c8284a)](CHANGELOG.md)
+
+Web ingestion engine. Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat.
 
 Evolved from [PathRipper](https://github.com/Studnicky/PathRipper) (2019). HTTP machinery ported from [Torus](https://github.com/Studnicky/torus).
 
-**[Documentation](docs/index.html)** · **[Architecture](docs/architecture.html)** · **[Roadmap](docs/roadmap.html)**
+**[Documentation](https://studnicky.github.io/PathRipper/)** · **[Architecture](https://studnicky.github.io/PathRipper/architecture.html)** · **[Roadmap](https://studnicky.github.io/PathRipper/roadmap.html)** · **[Releases](https://github.com/Studnicky/PathRipper/releases)**
 
 ---
 
 ## Requirements
 
-- Node 20+
+- Node 24+
 - TypeScript 5.7+
 
 ## Install
@@ -72,7 +77,7 @@ All scraper targets live in `ripperoni.config.json` (the project itself names no
       "apiUrl":      "https://wiki.example/w/api.php",
       "rateLimitMs": 1000,
       "categories":  ["Category A", "Category B"],
-      "tasks":       ["./plugins/your-target/parse.task.js"]
+      "pipeline":    ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
