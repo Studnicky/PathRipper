@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.1] - 2026-04-30
 
 ### Fixed
+- `perSecond(n)` timing test floor lowered from 95ms to 85ms (±15ms tolerance, consistent with earlier `withDelay` fix)
 - Color theme declared once in `sidebar.css` — removed three duplicate `:root` blocks and two stale orange accent values (`#ff7c42`) from `architecture.html` and `roadmap.html`
 - Mermaid diagram stroke colors updated to match crimson theme
 - Favicon and `<meta name="description">` added to architecture and roadmap pages
