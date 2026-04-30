@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Native git pre-commit hook (no husky).
+# Activated by `git config core.hooksPath hooks`, which the npm `prepare` script
+# runs on `npm install` for every clone.
+set -euo pipefail
+
+npm run lint

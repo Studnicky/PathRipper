@@ -63,3 +63,34 @@ typings/
 # output and reports
 reports
 data
+
+# Build / scrape output
+dist/
+output/
+
+# Compiled plugin outputs (built from plugins/**/*.ts via tsconfig.plugins.json)
+plugins/**/*.js
+plugins/**/*.js.map
+plugins/**/*.d.ts
+
+# Compiled artifacts must never land in src/ (only in dist/)
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+
+# User's local configs — never committed.
+# Only the canonical `ripperoni.config.example.json` is tracked.
+ripperoni.config*.json
+!ripperoni.config.example.json
+
+# Harness / tooling state
+.claude/
+.enginseer/
+
+# OS
+.DS_Store
+.orchestration/
+.env
+
+# Target-specific plugin source — shipped as examples in v1, not the beta
+plugins/
