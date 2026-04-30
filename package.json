@@ -1,6 +1,6 @@
 {
   "name": "ripperoni",
-  "version": "2.0.0-beta.5",
+  "version": "2.0.0",
   "description": "Configurable web scraper — pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
   "type": "module",
   "bin": {

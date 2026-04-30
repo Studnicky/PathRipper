@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ripperoni — configurable web scraper</title>
-  <meta name="description" content="TypeScript scraper with a pluggable pipeline, HTML and MediaWiki modes, recursive link crawler, and ported retry/rate-limit machinery from Torus.">
+  <title>Ripperoni — web ingestion engine</title>
+  <meta name="description" content="Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat.">
+  <link rel="icon" type="image/png" href="assets/ripperoni.png">
   <link rel="stylesheet" href="assets/sidebar.css">
   <style>
-    :root { --bg: #0d0d0d; --fg: #e8e8e8; --accent: #ff7c42; --accent-soft: #ffb899; --muted: #888; --card: #1a1a1a; --sidebar-w: 200px; }
+    :root { --bg: #0d0d0d; --fg: #e8e8e8; --accent: #c8284a; --accent-soft: #f08090; --muted: #888; --card: #1a1a1a; --sidebar-w: 210px; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
     a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
@@ -55,9 +56,9 @@
 
     <main class="main">
       <div class="intro">
-        <p>Ripperoni is a TypeScript scraper that grew out of <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). The domain-specific bits are gone. What's left is a composable pipeline for pulling structured data from HTML pages, MediaWiki instances, and link graphs — none of it hardcoded, all of it configurable from a JSON file.</p>
-        <p>The core pattern is a typed task queue: you compose scraping jobs from small middleware functions, the pipeline runs them in sequence, and each task hands control forward with <code>next()</code>. Retry logic, rate limiting, and error classification are first-class. The scraper doesn't know or care what you're scraping.</p>
-        <p>HTTP machinery ported from <a href="https://github.com/Studnicky/torus">Torus</a>. Logger ported from Torreya. Everything else is new.</p>
+        <p>Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat. The domain-specific bits are your problem — write a plugin, register it, and Ripperoni will run it against every page it finds.</p>
+        <p>The core is a typed middleware pipeline: small task functions chain with <code>next()</code>, each one narrowing the raw page into structured output. Retry logic, rate limiting, and error classification are built in. The engine doesn't know what you're scraping and it doesn't care. <em>That's the point.</em></p>
+        <p>Grew out of <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP machinery ported from <a href="https://github.com/Studnicky/torus">Torus</a>. The rest is new. Now available with 100% more salami iconography.</p>
       </div>
 
       <section id="features">
@@ -73,7 +74,7 @@
           </div>
           <div class="feature">
             <h3>MediaWiki Scraper</h3>
-            <p>Full <code>mwn</code>-backed client with paginated category listing, 50-page batch wikitext fetch, and per-page parsing via <code>wtf_wikipedia</code> infobox extraction. One call to scrape an entire wiki category to disk.</p>
+            <p>Native <code>fetch</code> against the MediaWiki JSON API. Three modes: single category, categories array, or full-wiki enumeration via <code>allpages</code>. Batch wikitext fetch, redirect resolution, <code>wtf_wikipedia</code> infobox extraction.</p>
           </div>
           <div class="feature">
             <h3>Link Crawler</h3>
@@ -113,14 +114,14 @@ npm run build</code></pre>
       "apiUrl":      "https://wiki.example/w/api.php",
       "rateLimitMs": 1000,
       "categories":  ["Category A", "Category B"],
-      "tasks":       ["./plugins/your-target/parse.task.js"]
+      "pipeline":    ["./plugins/your-target/parse.task.js"]
     }
   },
   "targets": {
     "&lt;your-html-target&gt;": {
       "baseUrl":     "https://example.com",
       "rateLimitMs": 500,
-      "tasks":       ["./plugins/your-target/parse.task.js"]
+      "pipeline":    ["./plugins/your-target/parse.task.js"]
     }
   }
 }</code></pre>
@@ -181,7 +182,7 @@ npm run build</code></pre>
             <tr><td><code>rateLimitMs</code></td><td><code>1000</code></td><td>Minimum ms between API requests. Most wiki policies require ≥1 req/s — check yours.</td></tr>
             <tr><td><code>jitterMs</code></td><td><code>0</code></td><td>Random per-request jitter added on top of <code>rateLimitMs</code>. Makes request spacing less robotic.</td></tr>
             <tr><td><code>categories</code></td><td>–</td><td>Optional list of category names to scrape. Omit to enumerate all articles via the allpages API.</td></tr>
-            <tr><td><code>tasks</code></td><td>–</td><td>Paths to parse plugin <code>.js</code> files. Each plugin registers a task as <code>&lt;targetId&gt;:parse</code>.</td></tr>
+            <tr><td><code>pipeline</code></td><td>–</td><td>Paths to parse plugin <code>.js</code> files. Each plugin registers a task as <code>&lt;targetId&gt;:parse</code>.</td></tr>
           </tbody>
         </table>
         <h3>targets (HTML scraper)</h3>
@@ -241,8 +242,8 @@ TaskRegistry.register('my-target:parse', async (next, state) => {
       </section>
 
       <footer>
-        <p>Ripperoni v2.0.0 · TypeScript · Node 20+ · <a href="https://github.com/Studnicky/PathRipper">GitHub</a></p>
-        <p>Evolved from <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP internals ported from <a href="https://github.com/Studnicky/torus">Torus</a>.</p>
+        <p>Ripperoni v2.0.0 · TypeScript · Node 24+ · <a href="https://github.com/Studnicky/PathRipper">GitHub</a> · <a href="https://github.com/Studnicky/PathRipper/releases">Releases</a> · <a href="https://github.com/Studnicky/PathRipper/issues">Issues</a></p>
+        <p>Evolved from <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP internals ported from <a href="https://github.com/Studnicky/torus">Torus</a>. Engineered with unreasonable care for a deeply optional purpose.</p>
       </footer>
     </main>
   </div>
