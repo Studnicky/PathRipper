@@ -7,7 +7,7 @@
 
 Web ingestion engine. Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat.
 
-Evolved from [PathRipper](https://github.com/Studnicky/PathRipper) (2019). HTTP machinery ported from [Torus](https://github.com/Studnicky/torus).
+Evolved from [PathRipper](https://github.com/Studnicky/PathRipper) (2019). HTTP machinery ported from TORUS (Topological Orchestration Runtime for Unified Streaming), an upcoming streaming DAG orchestration tool currently under development.
 
 **[Documentation](https://studnicky.github.io/PathRipper/)** · **[Architecture](https://studnicky.github.io/PathRipper/architecture.html)** · **[Roadmap](https://studnicky.github.io/PathRipper/roadmap.html)** · **[Releases](https://github.com/Studnicky/PathRipper/releases)**
 

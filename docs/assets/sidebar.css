@@ -1,19 +1,37 @@
-/* ─── Theme — derived from the salami icon palette ──────────────────────────
-   Source of truth. All pages import this file. Do not redeclare :root elsewhere.
+/* ─── Palette — extracted from the ripperoni icon ────────────────────────────
+   Pixel-accurate colors sampled from ripperoni-transparent-no-star.png.
+   Source of truth. Do not redeclare :root on any page.
+
+   --meat        #f05870   dominant body (7.9% of pixels) — primary accent
+   --meat-deep   #c82840   deepest shadows (1.8%)          — borders, hover
+   --fat         #f6d1cf   light marbling (9.7%)           — soft text/code
+   --blue        #2090e0   splash dots                     — minor accent
+   --blue-deep   #103050   dark blue shadow                — subtle depth
+   --ink         #2e0104   near-black outline              — darkest surfaces
    ──────────────────────────────────────────────────────────────────────────── */
 :root {
-  --bg:           #0d0d0d;
-  --fg:           #e8e8e8;
-  --accent:       #c8284a;   /* salami crimson */
-  --accent-soft:  #f08090;   /* fat/marbling pink */
-  --splash:       #4a90e2;   /* blue accent from the icon splashes */
-  --muted:        #888;
-  --card:         #1a1a1a;
-  --border:       #1e1e1e;
-  --border-hi:    #2a2a2a;
-  --code-bg:      #1f1f1f;
-  --pre-bg:       #141414;
-  --sidebar-w:    210px;
+  /* Extracted palette */
+  --meat:        #f05870;
+  --meat-deep:   #c82840;
+  --fat:         #f6d1cf;
+  --blue:        #2090e0;
+  --blue-deep:   #103050;
+  --ink:         #2e0104;
+
+  /* Semantic assignments */
+  --bg:          #0d0d0d;
+  --fg:          #ede0df;
+  --accent:      var(--meat);
+  --accent-deep: var(--meat-deep);
+  --accent-soft: var(--fat);
+  --splash:      var(--blue);
+  --muted:       #9a8080;
+  --card:        #180808;
+  --border:      #2a1010;
+  --border-hi:   #3d1818;
+  --code-bg:     #1a0808;
+  --pre-bg:      #100606;
+  --sidebar-w:   210px;
 }
 
 /* ─── Reset ──────────────────────────────────────────────────────────────── */
@@ -22,24 +40,26 @@
 /* ─── Base ───────────────────────────────────────────────────────────────── */
 body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; }
 a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { color: var(--meat-deep); text-decoration: underline; }
 code { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 0.9em; background: var(--code-bg); color: var(--accent-soft); padding: 0.1rem 0.4rem; border-radius: 4px; }
-pre { background: var(--pre-bg); border: 1px solid #262626; border-radius: 8px; padding: 1.1rem 1.25rem; overflow-x: auto; margin: 0.9rem 0 1.1rem; }
-pre code { background: none; padding: 0; font-size: 0.85rem; color: #d4d4d4; }
+pre { background: var(--pre-bg); border: 1px solid #2a1010; border-radius: 8px; padding: 1.1rem 1.25rem; overflow-x: auto; margin: 0.9rem 0 1.1rem; }
+pre code { background: none; padding: 0; font-size: 0.85rem; color: #ddd0cf; }
+strong { color: var(--fg); }
 
 /* ─── Layout ─────────────────────────────────────────────────────────────── */
 .layout { display: flex; max-width: 980px; margin: 0 auto; padding: 0 1.5rem; gap: 3rem; }
 .main { flex: 1; min-width: 0; padding: 3rem 0 3rem 3rem; border-left: 1px solid var(--border); }
 .intro { margin-bottom: 2.5rem; }
-.intro p { color: #ccc; margin-bottom: 0.7rem; }
+.intro p { color: #ccc0bf; margin-bottom: 0.7rem; }
 .intro p:last-child { margin-bottom: 0; }
+.intro em { color: var(--fat); font-style: italic; }
 
 /* ─── Sections ───────────────────────────────────────────────────────────── */
 section { margin: 0 0 2.5rem; scroll-margin-top: 2rem; }
 section:last-child { margin-bottom: 0; }
-section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-hi); padding-bottom: 0.4rem; }
+section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-hi); padding-bottom: 0.4rem; color: var(--fg); }
 section h3 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.4rem; color: var(--accent-soft); }
-section p, section li { color: #ccc; }
+section p, section li { color: #ccc0bf; }
 section p { margin-bottom: 0.7rem; }
 section p:last-child { margin-bottom: 0; }
 ul { list-style: none; padding: 0; }
@@ -49,8 +69,9 @@ ul li::before { content: "/ "; color: var(--accent); }
 /* ─── Tables ─────────────────────────────────────────────────────────────── */
 table { width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem; font-size: 0.88rem; }
 th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border-hi); color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
-td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: #ccc; vertical-align: top; }
+td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); color: #ccc0bf; vertical-align: top; }
 tr:last-child td { border-bottom: none; }
+tr:hover td { background: #180a0a; }
 td code { font-size: 0.82rem; }
 
 /* ─── Footer ─────────────────────────────────────────────────────────────── */
@@ -71,19 +92,19 @@ footer p + p { margin-top: 0.3rem; }
 .sidebar { width: var(--sidebar-w); flex-shrink: 0; padding: 3rem 0; }
 .sidebar-inner { position: sticky; top: 2rem; }
 .app-icon { width: 100%; display: block; margin-bottom: 0.75rem; object-fit: contain; }
-.sidebar h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.2rem; }
+.sidebar h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.2rem; color: var(--fg); }
 .sidebar .tagline { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; line-height: 1.4; }
-.badge { display: inline-block; background: #1f1f1f; color: var(--muted); font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #333; margin-bottom: 1.5rem; }
-.gh-btn { display: block; background: var(--accent); color: #fff; font-weight: 600; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.9rem; text-align: center; margin-bottom: 1.75rem; }
-.gh-btn:hover { text-decoration: none; opacity: 0.88; }
+.badge { display: inline-block; background: var(--card); color: var(--fat); font-size: 0.72rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid var(--border-hi); margin-bottom: 1.5rem; }
+.gh-btn { display: block; background: var(--meat-deep); color: #fff; font-weight: 600; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.9rem; text-align: center; margin-bottom: 1.75rem; border: 1px solid var(--meat); }
+.gh-btn:hover { background: var(--meat); text-decoration: none; }
 .toc-label, .pages-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.5rem; display: block; }
 .toc { list-style: none; margin-bottom: 1.75rem; }
 .toc li { padding: 0.15rem 0; }
 .toc li::before { content: none; }
-.toc a { font-size: 0.82rem; color: #aaa; }
+.toc a { font-size: 0.82rem; color: #a89090; }
 .toc a:hover { color: var(--accent); text-decoration: none; }
 .page-links { list-style: none; }
 .page-links li { padding: 0.15rem 0; }
 .page-links li::before { content: none; }
-.page-links a { font-size: 0.82rem; color: #aaa; }
+.page-links a { font-size: 0.82rem; color: #a89090; }
 .page-links a:hover { color: var(--accent); text-decoration: none; }
