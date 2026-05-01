@@ -1,6 +1,6 @@
 {
   "name": "ripperoni",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Configurable web scraper — pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
   "type": "module",
   "bin": {
@@ -9,6 +9,7 @@
   "exports": {
     "./config/ConfigClamp": "./dist/config/ConfigClamp.js",
     "./Pipeline": "./dist/pipeline/Pipeline.js",
+    "./ConcurrentPipeline": "./dist/pipeline/ConcurrentPipeline.js",
     "./LinkLister": "./dist/crawlers/LinkLister.js",
     "./HtmlScraper": "./dist/scrapers/HtmlScraper.js",
     "./MediaWikiScraper": "./dist/scrapers/MediaWikiScraper.js",

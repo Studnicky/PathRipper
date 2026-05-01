@@ -48,7 +48,8 @@ export const CLAMP_RULES: Readonly<Record<string, ClampRulesInterface>> = Object
   'retryBaseDelayMs': { min: 50,  max: 30_000,  reason: 'initial retry back-off delay' },
   'retryMaxDelayMs':  { min: 100, max: 300_000, reason: 'ceiling for exponential back-off (5 min max)' },
   'maxPages':         { min: 1,   max: 10_000_000, reason: 'maximum pages to collect / enumerate per target run' },
-  'maxRetries_html':  { min: 0,   max: 20,      reason: 'HTML scraper retry attempts per request failure' },
+  'concurrency':      { min: 1,   max: 32,         reason: 'maximum concurrent pipeline executions (1 = sequential)' },
+  'maxRetries_html':  { min: 0,   max: 20,         reason: 'HTML scraper retry attempts per request failure' },
 });
 
 /**

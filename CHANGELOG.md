@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-01
+
+### Added
+- `ConcurrentPipeline<TState>` — bounded-concurrency batch executor; wraps a shared `Pipeline` with a semaphore, fans N states through it simultaneously; shared cache and scraper instances flow through `state.context` naturally
+- `concurrency` config field on both `targets.<id>` and `mediawiki.<id>` (integer 1–32, default 1)
+- 6 unit tests for `ConcurrentPipeline` covering: full execution, failure isolation, semaphore ceiling, sequential mode, empty input, and cross-execution state isolation
+
+### Changed
+- `ScrapeOrchestrator.runPipeline` uses `ConcurrentPipeline` — one shared Pipeline instance per batch, N pages processed in parallel when `concurrency > 1`
+- Roadmap updated: task registry, checkpoint/resume, config validation, and concurrent pipeline moved to shipped section
+
 ## [2.0.4] - 2026-05-01
 
 ### Removed
@@ -132,7 +143,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.4...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/Studnicky/PathRipper/compare/v2.0.4...v2.1.0
 [2.0.4]: https://github.com/Studnicky/PathRipper/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.1...v2.0.2

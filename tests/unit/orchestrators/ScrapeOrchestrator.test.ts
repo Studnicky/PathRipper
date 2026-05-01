@@ -71,6 +71,7 @@ describe('ScrapeOrchestrator', () => {
         members,
         log,
         batchSize:      50,
+        concurrency:    1,
         resumeFailures: false,
         pipeline:       [],
         targetConfig:   {},

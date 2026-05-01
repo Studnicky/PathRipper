@@ -71,7 +71,30 @@
             <span class="status status-live">live</span>
             <h3>JSON config</h3>
             <p>All targets, URLs, rate limits, and output paths live in <code>ripperoni.config.json</code>. Nothing hardcoded. <code>RipperConfig.load(path)</code> validates and returns a typed interface.</p>
+                    <div class="card">
+            <span class="status status-live">live</span>
+            <h3>Concurrent pipeline</h3>
+            <p><code>ConcurrentPipeline.create(pipeline, concurrency)</code> fans N pages through the same pipeline simultaneously with a semaphore cap. Set <code>concurrency</code> in target config. Cache and scraper instances are shared across all concurrent executions.</p>
           </div>
+
+<div class="card">
+                      <span class="status status-live">live</span>
+                      <h3>Task registry</h3>
+                      <p><code>TaskRegistry.register(name, fn)</code> + dynamic plugin loading via <code>pipeline: ["my-target:parse"]</code> in config. Plugins are <code>.js</code> files loaded at runtime — no TypeScript entry point per job required.</p>
+                    </div>
+          
+<div class="card">
+                      <span class="status status-live">live</span>
+                      <h3>Checkpoint + resume</h3>
+                      <p>Already-written slugs are detected at run start and skipped. Failed pages are written to <code>failures.json</code>; pass <code>--resume-failures</code> to retry only those on the next run.</p>
+                    </div>
+          
+<div class="card">
+                      <span class="status status-live">live</span>
+                      <h3>Config schema validation</h3>
+                      <p>AJV validates the config at load time. <code>RipperConfig.load(path)</code> throws with the exact field path on any violation — malformed configs fail fast and loudly.</p>
+                    </div>
+                    </div>
         </div>
       </section>
 
@@ -85,28 +108,8 @@
           </div>
           <div class="card">
             <span class="status status-planned">planned</span>
-            <h3>Task registry</h3>
-            <p>A named task registry so config files can reference tasks by string (<code>"tasks": ["reporter", "myCustomTask", "exportJson"]</code>) rather than requiring a TypeScript entry point per job.</p>
-          </div>
-          <div class="card">
-            <span class="status status-planned">planned</span>
-            <h3>Checkpoint + resume</h3>
-            <p>For long category scrapes (thousands of pages), persist progress to disk and resume from the last completed page on restart. Relevant for any large category walk against a rate-limited wiki.</p>
-          </div>
-          <div class="card">
-            <span class="status status-planned">planned</span>
             <h3>HTML → Markdown conversion</h3>
             <p>Output mode that converts scraped HTML to clean Markdown. Useful for feeding scraped content into LLM pipelines without sending raw HTML. Likely via <code>turndown</code> or similar.</p>
-          </div>
-          <div class="card">
-            <span class="status status-planned">planned</span>
-            <h3>Concurrent pipeline variants</h3>
-            <p>Current pipeline is strictly sequential. A <code>ConcurrentPipeline</code> variant that fans out tasks over a list of inputs (e.g., scrape 500 pages with a pool of N workers) would cover high-volume jobs.</p>
-          </div>
-          <div class="card">
-            <span class="status status-planned">planned</span>
-            <h3>Config schema validation</h3>
-            <p>AJV-based validation of the config file at load time with clear error messages. Currently typed but not runtime-validated — a malformed config produces cryptic downstream failures.</p>
           </div>
         </div>
       </section>
