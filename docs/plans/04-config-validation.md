@@ -23,7 +23,7 @@ all silently succeed at load time and produce confusing failures downstream
 ## Fix
 
 Add AJV-based validation in `RipperConfig.load()`.
-Follow the Torreya/Torus pattern: write the JSON Schema once, derive the TypeScript type
+Follow the Torreya/TORUS pattern: write the JSON Schema once, derive the TypeScript type
 from it with `json-schema-to-ts`, compile the AJV validator once at module load.
 
 ### Schema location
