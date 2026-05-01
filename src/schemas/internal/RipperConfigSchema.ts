@@ -41,6 +41,7 @@ const SCHEMA = {
           maxRetries:       { type: 'integer', minimum: 0, maximum: 10 },
           retryBaseDelayMs: { type: 'integer', minimum: 100 },
           retryMaxDelayMs:  { type: 'integer', minimum: 1000 },
+          concurrency:      { type: 'integer', minimum: 1, maximum: 32 },
           maxPages:         { type: 'integer', minimum: 0 },
           headers: {
             type: 'object',
@@ -103,6 +104,7 @@ const SCHEMA = {
           maxRetries:       { type: 'integer', minimum: 0, maximum: 10 },
           retryBaseDelayMs: { type: 'integer', minimum: 100 },
           retryMaxDelayMs:  { type: 'integer', minimum: 1000 },
+          concurrency:      { type: 'integer', minimum: 1, maximum: 32 },
           outputSchema:  { type: 'string', minLength: 1 },
           onSchemaError: { type: 'string', enum: ['halt', 'skip', 'warn'] },
           mapping: {

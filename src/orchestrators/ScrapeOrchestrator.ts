@@ -6,6 +6,7 @@ import { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface, MediaWikiConfigInterface } from '../types/MediaWikiScraper.js';
 import type { HtmlScraperConfigInterface } from '../types/HtmlScraper.js';
 import { Pipeline } from '../pipeline/Pipeline.js';
+import { ConcurrentPipeline } from '../pipeline/ConcurrentPipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { PipelineState } from '../registry/PipelineState.js';
 import type { PipelineStateInterface, PipelinePageInterface } from '../types/PipelineState.js';
@@ -196,7 +197,8 @@ export class ScrapeOrchestrator {
       members = await scraper.fetchAllPages(maxPages);
     }
 
-    const batchSize = (wikiTarget as { batchSize?: number }).batchSize ?? 50;
+    const batchSize   = (wikiTarget as { batchSize?: number }).batchSize ?? 50;
+    const concurrency = (clamped['concurrency'] as number | undefined) ?? 1;
 
     await ScrapeOrchestrator.runPipeline({
       targetId:       opts.target,
@@ -205,6 +207,7 @@ export class ScrapeOrchestrator {
       members,
       log,
       batchSize,
+      concurrency,
       resumeFailures: opts.resumeFailures === true,
       pipeline:       pipelineNames,
       targetConfig:   targetCfg,
@@ -323,7 +326,7 @@ export class ScrapeOrchestrator {
   }
 
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
-    const { targetId, outDir, scraper, members, log, batchSize, resumeFailures, pipeline: pipelineNames, targetConfig } = opts;
+    const { targetId, outDir, scraper, members, log, batchSize, concurrency, resumeFailures, pipeline: pipelineNames, targetConfig } = opts;
 
     // ── Resume: build set of already-written slugs ──────────────────────────
     const targetDir     = resolve(outDir, targetId);
@@ -350,6 +353,12 @@ export class ScrapeOrchestrator {
     }
 
     // ── Batch loop ────────────────────────────────────────────────────────────
+    // One Pipeline instance shared across all concurrent executions — its task
+    // queue is read-only during execute() so concurrent calls are safe.
+    const pipeline = Pipeline.create<PipelineStateInterface>({ name: targetId });
+    for (const taskName of pipelineNames) pipeline.addTask(TaskRegistry.get(taskName));
+
+    const runner   = ConcurrentPipeline.create(pipeline, concurrency, { name: targetId });
     const failures: string[] = [];
     let written = 0;
 
@@ -357,8 +366,8 @@ export class ScrapeOrchestrator {
       const slice = pending.slice(i, i + batchSize);
       const pages = await scraper.fetchPagesBatch(slice);
 
-      for (const page of pages) {
-        const state: PipelineStateInterface = {
+      const states: PipelineStateInterface[] = pages.map(
+        (page): PipelineStateInterface => ({
           targetId,
           page:    { targetId, title: page.title, url: '', wikitext: page.wikitext },
           output:  null,
@@ -368,17 +377,13 @@ export class ScrapeOrchestrator {
             scraper,
             config: targetConfig,
           },
-        };
-        const pipeline = Pipeline.create<PipelineStateInterface>({ name: targetId });
-        for (const taskName of pipelineNames) {
-          pipeline.addTask(TaskRegistry.get(taskName));
-        }
-        try {
-          await pipeline.execute(state);
-          written++;
-        } catch {
-          failures.push(page.title);
-        }
+        }),
+      );
+
+      const result = await runner.executeAll(states);
+      written += result.completed.length;
+      for (const { state } of result.failed) {
+        failures.push((state.page as { title: string }).title);
       }
 
       log.debug('scrapeWiki', `Progress: ${written.toString()}/${pending.length.toString()}`);
