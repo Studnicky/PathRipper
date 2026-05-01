@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-04-30
+
+### Changed
+- All "Torus" references replaced with **TORUS** *(Topological Orchestration Runtime for Unified Streaming)* — described as an upcoming streaming DAG orchestration tool currently under development
+- Docs color palette rebuilt from pixel-accurate extraction of the ripperoni icon: `--meat` `#f05870`, `--meat-deep` `#c82840`, `--fat` `#f6d1cf`, `--blue` `#2090e0`, `--blue-deep` `#103050`, `--ink` `#2e0104`
+- Background surfaces, borders, code blocks, and Mermaid diagrams all updated to the extracted palette
+- Foreground text warm-shifted to echo the fat marbling tone (`#ede0df`)
+
 ## [2.0.1] - 2026-04-30
 
 ### Fixed
@@ -113,7 +121,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Studnicky/PathRipper/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.5...v2.0.0
 [2.0.0-beta.5]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.4...v2.0.0-beta.5

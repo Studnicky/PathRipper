@@ -24,7 +24,7 @@
       <div class="intro">
         <p>Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat. The domain-specific bits are your problem — write a plugin, register it, and Ripperoni will run it against every page it finds.</p>
         <p>The core is a typed middleware pipeline: small task functions chain with <code>next()</code>, each one narrowing the raw page into structured output. Retry logic, rate limiting, and error classification are built in. The engine doesn't know what you're scraping and it doesn't care. <em>That's the point.</em></p>
-        <p>Grew out of <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP machinery ported from <a href="https://github.com/Studnicky/torus">Torus</a>. The rest is new. Now available with 100% more salami iconography.</p>
+        <p>Grew out of <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP machinery ported from TORUS (Topological Orchestration Runtime for Unified Streaming), an upcoming streaming DAG orchestration tool currently under development. The rest is new. Now available with 100% more salami iconography.</p>
       </div>
 
       <section id="features">
@@ -48,11 +48,11 @@
           </div>
           <div class="feature">
             <h3>Retry + Backoff</h3>
-            <p>Ported from Torus's <code>RetryPolicyNode</code>. Exponential backoff with ±10% decorrelated jitter. Respects <code>Retry-After</code> headers. Configurable max attempts, base delay, multiplier, and ceiling.</p>
+            <p>Ported from TORUS's <code>RetryPolicyNode</code>. Exponential backoff with ±10% decorrelated jitter. Respects <code>Retry-After</code> headers. Configurable max attempts, base delay, multiplier, and ceiling.</p>
           </div>
           <div class="feature">
             <h3>Error Classification</h3>
-            <p>Ported from Torus's <code>ErrorClassifier</code>. Classifies errors as NETWORK / THROTTLED / TIMEOUT / TRANSIENT / PERMANENT / VALIDATION / RESOURCE. Only retryable categories trigger a retry.</p>
+            <p>Ported from TORUS's <code>ErrorClassifier</code>. Classifies errors as NETWORK / THROTTLED / TIMEOUT / TRANSIENT / PERMANENT / VALIDATION / RESOURCE. Only retryable categories trigger a retry.</p>
           </div>
           <div class="feature">
             <h3>Rate Limiter</h3>
@@ -209,7 +209,7 @@ TaskRegistry.register('my-target:parse', async (next, state) => {
 
       <footer>
         <p>Ripperoni v2.0.0 · TypeScript · Node 24+ · <a href="https://github.com/Studnicky/PathRipper">GitHub</a> · <a href="https://github.com/Studnicky/PathRipper/releases">Releases</a> · <a href="https://github.com/Studnicky/PathRipper/issues">Issues</a></p>
-        <p>Evolved from <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP internals ported from <a href="https://github.com/Studnicky/torus">Torus</a>. Engineered with unreasonable care for a deeply optional purpose.</p>
+        <p>Evolved from <a href="https://github.com/Studnicky/PathRipper">PathRipper</a> (2019). HTTP internals ported from TORUS (Topological Orchestration Runtime for Unified Streaming), an upcoming streaming DAG orchestration tool currently under development. Engineered with unreasonable care for a deeply optional purpose.</p>
       </footer>
     </main>
   </div>
