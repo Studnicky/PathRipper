@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-05-01
+
+### Fixed
+- RateLimiter tests rewritten with 300ms delay and perSecond(5) — resilient to OS scheduler variance on loaded machines (eliminates repeated flaky failures)
+
 ## [2.0.2] - 2026-04-30
 
 ### Changed
@@ -121,7 +126,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.3...HEAD
+[2.0.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Studnicky/PathRipper/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Studnicky/PathRipper/compare/v2.0.0-beta.5...v2.0.0
