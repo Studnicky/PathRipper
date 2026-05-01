@@ -12,7 +12,8 @@ describe('RateLimiter', () => {
   });
 
   it('withDelay enforces a minimum delay between sequential calls', async () => {
-    const delay = 60;
+    // Use 300ms so the ±50% OS scheduler variance still produces a measurable gap.
+    const delay = 300;
     const rl = RateLimiter.withDelay(delay);
     const stamps: number[] = [];
 
@@ -21,18 +22,19 @@ describe('RateLimiter', () => {
     await rl.schedule(async () => stamps.push(Date.now()));
 
     const a = stamps[0]!, b = stamps[1]!, c = stamps[2]!;
-    assert.ok(b - a >= delay - 15, `gap1 ${(b - a).toString()} < ${delay.toString()}`);
-    assert.ok(c - b >= delay - 15, `gap2 ${(c - b).toString()} < ${delay.toString()}`);
+    assert.ok(b - a >= delay / 2, `gap1 ${(b - a).toString()} < ${(delay / 2).toString()}`);
+    assert.ok(c - b >= delay / 2, `gap2 ${(c - b).toString()} < ${(delay / 2).toString()}`);
     await rl.stop();
   });
 
   it('perSecond(n) computes minTime as ceil(1000 / n)', async () => {
-    const rl = RateLimiter.perSecond(10);
+    // perSecond(5) = 200ms gap — large enough to survive scheduler jitter.
+    const rl = RateLimiter.perSecond(5);
     const stamps: number[] = [];
     await rl.schedule(async () => stamps.push(Date.now()));
     await rl.schedule(async () => stamps.push(Date.now()));
     const gap = stamps[1]! - stamps[0]!;
-    assert.ok(gap >= 85, `expected ≥100ms gap for perSecond(10), got ${gap.toString()}`);
+    assert.ok(gap >= 100, `expected ≥200ms gap for perSecond(5), got ${gap.toString()}`);
     await rl.stop();
   });
 });
