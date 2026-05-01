@@ -48,10 +48,10 @@ graph TD
     RetryExecutor[modules/http/RetryExecutor] --> ErrorClassifier
     RateLimiter[modules/http/RateLimiter] -.wraps.-> bottleneck
 
-    style Pipeline fill:#1a1a1a,stroke:#c8284a
-    style ErrorClassifier fill:#1a1a1a,stroke:#c8284a
-    style RetryExecutor fill:#1a1a1a,stroke:#c8284a
-    style RateLimiter fill:#1a1a1a,stroke:#c8284a
+    style Pipeline fill:#180808,stroke:#f05870
+    style ErrorClassifier fill:#180808,stroke:#f05870
+    style RetryExecutor fill:#180808,stroke:#f05870
+    style RateLimiter fill:#180808,stroke:#f05870
         </div>
       </section>
 
@@ -95,7 +95,7 @@ await pipeline.execute(PipelineState.fromWikiPage('my-target', page));</code></p
       <section id="http-layer" data-component="http">
         <h2>HTTP machinery</h2>
         <p class="summary">Three composable classes — RateLimiter, RetryExecutor, and ErrorClassifier — form the HTTP stack, each injected independently.</p>
-        <p>Three classes form the HTTP stack, ported from <a href="https://github.com/Studnicky/torus">Torus</a>. They're independent of each other and compose by injection.</p>
+        <p>Three classes form the HTTP stack, ported from TORUS (Topological Orchestration Runtime for Unified Streaming), an upcoming streaming DAG orchestration tool currently under development. They're independent of each other and compose by injection.</p>
 
         <div class="mermaid">
 graph LR
@@ -177,13 +177,13 @@ graph LR
 
       <section id="source-map" data-component="source-map">
         <h2>Source map</h2>
-        <p class="summary">Complete index of every source file, its exported symbols, and the PathRipper or Torus module it was ported from.</p>
+        <p class="summary">Complete index of every source file, its exported symbols, and the PathRipper or TORUS module it was ported from.</p>
         <table>
           <thead><tr><th>File</th><th>Exports</th><th>Ported from</th></tr></thead>
           <tbody>
             <tr><td><code>src/pipeline/Pipeline.ts</code></td><td><code>Pipeline&lt;TState&gt;</code></td><td>PathRipper <code>Transformer</code></td></tr>
-            <tr><td><code>src/modules/http/ErrorClassifier.ts</code></td><td><code>ErrorClassifier</code>, <code>ErrorCategory</code></td><td>Torus <code>errorClassifier.ts</code></td></tr>
-            <tr><td><code>src/modules/http/RetryExecutor.ts</code></td><td><code>RetryExecutor</code></td><td>Torus <code>RetryPolicyNode</code></td></tr>
+            <tr><td><code>src/modules/http/ErrorClassifier.ts</code></td><td><code>ErrorClassifier</code>, <code>ErrorCategory</code></td><td>TORUS <code>errorClassifier.ts</code></td></tr>
+            <tr><td><code>src/modules/http/RetryExecutor.ts</code></td><td><code>RetryExecutor</code></td><td>TORUS <code>RetryPolicyNode</code></td></tr>
             <tr><td><code>src/modules/http/RateLimiter.ts</code></td><td><code>RateLimiter</code></td><td>New — wraps <code>bottleneck</code></td></tr>
             <tr><td><code>src/modules/logger/Logger.ts</code></td><td><code>Logger</code></td><td>Torreya <code>@torreya/logger</code></td></tr>
             <tr><td><code>src/scrapers/HtmlScraper.ts</code></td><td><code>HtmlScraper</code></td><td>PathRipper <code>fetchPage</code>, cheerio replaces JSDOM</td></tr>
@@ -207,7 +207,7 @@ graph LR
 
   <script src="assets/sidebar.js"></script>
   <script>
-    mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#1a1a1a', primaryTextColor: '#e8e8e8', primaryBorderColor: '#c8284a', lineColor: '#888', background: '#0d0d0d' } });
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', themeVariables: { primaryColor: '#180808', primaryTextColor: '#f6d1cf', primaryBorderColor: '#f05870', lineColor: '#2090e0', secondaryColor: '#100606', tertiaryColor: '#103050', background: '#0d0d0d', nodeBorder: '#c82840', clusterBkg: '#180808', titleColor: '#f6d1cf', edgeLabelBackground: '#180808', actorBkg: '#180808', actorBorder: '#f05870', actorTextColor: '#f6d1cf', noteBkgColor: '#180808', noteTextColor: '#f6d1cf' } });
     initSidebar([
       { href: '#module-graph', label: 'Module graph' },
       { href: '#pipeline',     label: 'Pipeline pattern' },

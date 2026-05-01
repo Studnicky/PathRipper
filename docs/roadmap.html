@@ -14,9 +14,9 @@
     .card p { font-size: 0.85rem; color: var(--muted); margin: 0 0 0.4rem; }
     .card p:last-child { margin: 0; }
     .status { display: inline-block; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.15rem 0.5rem; border-radius: 999px; margin-bottom: 0.5rem; }
-    .status-live     { background: #1a3a1a; color: #6bdb6b; border: 1px solid #2a5a2a; }
-    .status-planned  { background: #2a2a1a; color: #c4b45a; border: 1px solid #4a4a2a; }
-    .status-separate { background: #1a1a3a; color: #6b7cdb; border: 1px solid #2a2a5a; }
+    .status-live     { background: #0a2010; color: #60c060; border: 1px solid #1a4a20; }
+    .status-planned  { background: #1a1008; color: var(--fat); border: 1px solid #3a2010; }
+    .status-separate { background: #080818; color: var(--blue); border: 1px solid var(--blue-deep); }
     @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -35,7 +35,7 @@
           <div class="card">
             <span class="status status-live">live</span>
             <h3>TypeScript rewrite</h3>
-            <p>Full strict TypeScript from scratch. Torus tsconfig + eslint config ported directly. <code>exactOptionalPropertyTypes</code>, <code>noUncheckedIndexedAccess</code>, flat ESLint config.</p>
+            <p>Full strict TypeScript from scratch. TORUS tsconfig + eslint config ported directly. <code>exactOptionalPropertyTypes</code>, <code>noUncheckedIndexedAccess</code>, flat ESLint config.</p>
           </div>
           <div class="card">
             <span class="status status-live">live</span>
@@ -60,7 +60,7 @@
           <div class="card">
             <span class="status status-live">live</span>
             <h3>HTTP machinery</h3>
-            <p>ErrorClassifier + RetryExecutor ported from Torus. RateLimiter wrapping <code>bottleneck</code>. Retry-After header respected. Seven error categories. Exponential + jitter backoff.</p>
+            <p>ErrorClassifier + RetryExecutor ported from TORUS (Topological Orchestration Runtime for Unified Streaming). RateLimiter wrapping <code>bottleneck</code>. Retry-After header respected. Seven error categories. Exponential + jitter backoff.</p>
           </div>
           <div class="card">
             <span class="status status-live">live</span>
