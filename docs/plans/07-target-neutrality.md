@@ -41,7 +41,7 @@ Replace all real target names with neutral placeholders. Standard placeholders:
 1. **`README.md`** — quickstart, config block, programmatic example
 2. **`docs/index.html`** — config block, CLI examples, programmatic example, opening blurb
 3. **`docs/architecture.html`** — drop the "Bulbapedia policy" line; speak generically about wiki rate limits
-4. **`docs/roadmap.html`** — companion tools section removed.
+4. **`docs/roadmap.html`** — removed companion tools section (mobile-app extractor and ROM data ingester are not planned).
 5. **`docs/plans/05-mediawiki-batch.md`** — change acceptance criteria to use `wiki.example` / generic page title pair / generic category
 6. **`docs/plans/06-example-config-cleanup.md`** — replaced by Lane 06 update below
 7. **`src/cli/cli.ts:21,51`** — align default config path to `./ripperoni.config.json` (matches README + bin name)

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.4] - 2026-05-01
+
+### Removed
+- `docs/roadmap.html`: companion tools section (mobile-app extractor, console ROM data ingester) — removed entirely, never planned
+- All references purged from git history via `git filter-repo`
+
 ## [2.0.3] - 2026-05-01
 
 ### Fixed
@@ -126,7 +132,8 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 ### Security
 - `npm audit --omit=dev` exits 0; all production dependency advisories resolved
 
-[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.3...HEAD
+[Unreleased]: https://github.com/Studnicky/PathRipper/compare/v2.0.4...HEAD
+[2.0.4]: https://github.com/Studnicky/PathRipper/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/Studnicky/PathRipper/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/Studnicky/PathRipper/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/Studnicky/PathRipper/compare/v2.0.0...v2.0.1
