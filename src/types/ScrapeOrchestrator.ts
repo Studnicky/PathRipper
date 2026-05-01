@@ -24,6 +24,8 @@ export interface RunPipelineOptionsInterface {
   readonly log:            ReturnType<typeof Logger.forComponent>;
   /** Number of page titles to fetch per batch API call (default 50). */
   readonly batchSize:      number;
+  /** Maximum number of page pipelines to execute in parallel per batch (default 1 = sequential). */
+  readonly concurrency:    number;
   /** When true, delete failures.json after a successful retry run. */
   readonly resumeFailures: boolean;
   /** Pipeline task names to run for each fetched wiki page. */
