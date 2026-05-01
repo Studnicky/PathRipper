@@ -26,7 +26,7 @@
 
     <main class="main">
       <div class="intro">
-        <p>v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML scraper, MediaWiki scraper, and link crawler are live. Two companion tools — a mobile-app extractor and a console ROM data ingester — are planned as separate projects in the same workspace, not as modules in this one.</p>
+        <p>v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML scraper, MediaWiki scraper, and link crawler are live.</p>
       </div>
 
       <section id="shipped">
@@ -111,22 +111,6 @@
         </div>
       </section>
 
-      <section id="companion-tools">
-        <h2>Companion tools (separate projects)</h2>
-        <p>These are distinct enough in scope and dependencies to be their own workspace projects. They are not planned as Ripperoni modules.</p>
-        <div class="grid">
-          <div class="card">
-            <span class="status status-separate">separate project</span>
-            <h3>Mobile app extractor</h3>
-            <p>Android APK download and asset extraction. A target-neutral mobile-app extraction pipeline that consumes Ripperoni's HTTP and pipeline modules but lives in its own repo because of its native-toolchain dependencies.</p>
-          </div>
-          <div class="card">
-            <span class="status status-separate">separate project</span>
-            <h3>Console ROM data ingester</h3>
-            <p>Clone community extract repositories that produce structured JSON from console ROM dumps. Configuration-driven mapping into the user's chosen output schema, same pattern as the rest of Ripperoni.</p>
-          </div>
-        </div>
-      </section>
 
       <footer>
         <p>Ripperoni v2.0.0 · <a href="index.html">Home</a> · <a href="architecture.html">Architecture</a> · <a href="https://github.com/Studnicky/PathRipper">GitHub</a></p>
@@ -139,7 +123,6 @@
     initSidebar([
       { href: '#shipped',          label: 'Shipped (v2.0.0)' },
       { href: '#planned',          label: 'Planned' },
-      { href: '#companion-tools',  label: 'Companion tools' },
     ], 'roadmap.html');
   </script>
 </body>
