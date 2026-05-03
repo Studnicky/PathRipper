@@ -12,7 +12,7 @@ import { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as { version: string };
 
-const DEFAULT_CONFIG_PATH   = './ripperoni.config.json';
+const DEFAULT_CONFIG_PATH   = './squashage.config.json';
 const DEFAULT_RATE_LIMIT_MS = '200';
 const DEFAULT_JITTER_MS     = '0';
 const DECIMAL_RADIX         = 10;
@@ -21,8 +21,8 @@ const RATE_OPTION_PATTERN   = '0..';
 const program = new Command();
 
 program
-  .name('ripperoni')
-  .description('Configurable web scraper — HTML, MediaWiki, and link crawler.')
+  .name('squashage')
+  .description('Graph reconstitution pipeline for RDF/JS output — currently bootstrapped from the Ripperoni scraper skeleton.')
   .version(pkg.version);
 
 program

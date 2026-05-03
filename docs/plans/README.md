@@ -1,49 +1,61 @@
-# Ripperoni — Implementation Lanes
+# Squashage — Implementation Lanes
 
 Current state: [`00-current-state.md`](00-current-state.md)
 
-## Can start now (no blocking deps)
+The workspace was created as a literal copy of Ripperoni. These lanes describe
+the migration from scraper skeleton to graph reconstitution tool whose output
+is a single serialized RDF file. **v0.x** ships against permissive open-source
+RDF libraries; **v1.x** swaps in the unpublished `@semantics/*` workspace
+without changing the application surface (see plan 13's "Publishing Posture"
+and "Compatibility Notes").
 
-| Lane | File | What |
-|------|------|------|
-| 01 | [linklister-bug](01-linklister-bug.md) | Fix double-assignment constructor bug (~15 min) |
-| 02 | [cli-static-imports](02-cli-static-imports.md) | Remove all dynamic imports from CLI (~30 min) |
-| 04 | [config-validation](04-config-validation.md) | AJV runtime validation on config load (~1h) |
-| 05 | [mediawiki-batch](05-mediawiki-batch.md) | Fix unverified mwn API usage in batch fetch (~1.5h) |
-| 06 | [example-config-cleanup](06-example-config-cleanup.md) | Target-neutral example config + repo hygiene (~20 min) |
-| 07 | [target-neutrality](07-target-neutrality.md) | Scrub all real target names from src/docs/README (~45 min) |
-| 09 | [changelog-githooks-flow](09-changelog-githooks-flow.md) | CHANGELOG, native git hooks, develop branch, PR template (~1h) |
+## Can Start Now
 
-## Blocked by earlier lanes
+| Lane | What |
+|------|------|
+| 01 | Rename public identity: package, CLI, config loader, docs, examples |
+| 02 | Add v0.x OSS deps: `@rdfjs/types`, `@rdfjs/data-model`, `@rdfjs/dataset`, `@rdfjs/namespace`, `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`. Add `no-restricted-imports` ESLint rule to keep application code off raw OSS packages |
+| 03 | Redefine `PipelineStateInterface` and `PipelineContextInterface` for the squashage shape (in-place edit of `src/types/PipelineState.ts`) |
+| 04 | Add JSON/JSONL input reader tasks |
+| 05 | Add deterministic classification interfaces and evidence model |
+| 06 | Add the `src/rdf/*` and `src/shacl/*` wrapper layer: `DataFactory`, `Dataset`, `Formats`, `Serializer`, `Parser`, `Canonicalize`, `SyntaxValidator`, `TermGuards`, `GraphBuilder`, `Namespaces`, `Vocab`, `ShaclGate` |
+| 07 | Add `output` config block (see plan 13). Require it on every target |
+| 08 | Implement `FileOutput` against `src/rdf/Serializer.ts` (v0.x: turtle, trig, nquads, ntriples, jsonld) |
+| 09 | Wire `FileOutput` into `rdfjs:finalize` (orchestrator-driven lifecycle); write output report under `./graphs/<target>/output.report.json` |
+| 10 | Add canonicalize and SHACL-validate hooks via `src/rdf/Canonicalize.ts` and `src/shacl/ShaclGate.ts` |
+| 11 | Add quarantine manifests for unknown, conflict, and projection-failed records |
+| 12 | Comprehensive output plan: [`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md) |
 
-| Lane | File | Blocked by |
-|------|------|------------|
-| 03 | [tests](03-tests.md) | Lanes 01 + 02 (test correct code) |
-| 08 | [external-schemas-and-mapping](08-external-schemas-and-mapping.md) | Lanes 04, 07 (AJV wiring + neutrality) |
-| 10 | [matrix-ci](10-matrix-ci.md) | Lanes 03, 09 (tests + branch flow) |
-| 11 | [pathripper-e2e](11-pathripper-e2e.md) | Lanes 03, 04, 08 — **local only, never CI** |
+## Later
 
-## Completion gate
+| Lane | What |
+|------|------|
+| 13 | Add Torreya/Bulbapedia example classifier and squasher plugins |
+| 14 | Add `--out` and `--format` CLI overrides for one-off runs |
+| 15 | Add embedding-assisted advisory workflow for quarantined records |
+| 16 | Remove scraper-only modules once replacement tasks exist |
+| 17 | **v1.x swap** to `@semantics/*` workspace (rewrite `src/rdf/*` and `src/shacl/*` wrapper bodies; re-enable `rdfxml` and `n3` output formats). No application-code churn. |
 
-The project is **trustworthy** when lanes 01–10 are done and `npm run check` exits 0
-in CI on a matrix of supported environments. Lane 11 (PathRipper e2e) is local-only
-and runs intentionally with `npm run test:e2e` — no CI workflow invokes it.
+## Out Of Scope
 
-## Order of execution (this branch: `feature/ripper-foundation`)
+- **Graph-store loading** — Oxigraph/Fuseki/GraphDB/LevelDB/Redis ingestion is
+  a downstream concern. Run any loader of your choice on the file Squashage
+  produced.
+- **Multi-output fan-out** — one file per build. Re-run for another, or use
+  any RDF format converter to translate.
 
-Parallel batch A (independent file sets):
-- 01 — `src/crawlers/LinkLister.ts`
-- 02 — `src/cli/cli.ts`
-- 04 — `src/config/RipperConfig.ts` + new `src/schemas/internal/RipperConfigSchema.ts`
-- 05 — `src/scrapers/MediaWikiScraper.ts`
-- 06 — `ripperoni.config.example.json` + `.gitignore`
-- 07 — `README.md`, `docs/*.html` (no source overlap with above)
-- 09 — `CHANGELOG.md`, `.husky/`, `.github/pull_request_template.md`, `package.json`
+## Completion Gate
 
-Sequential after batch A:
-- 03 — tests (depends on 01, 02 fixed)
-- 08 — schemas + mapping engine (depends on 04, 07)
-- 10 — matrix CI (depends on 03, 09)
+The first usable v0.x release is ready when this command shape works locally
+and writes a deterministic, well-formed RDF file:
 
-Local-only (not CI):
-- 11 — PathRipper AONPRD e2e (`npm run test:e2e`; no CI workflow invokes it)
+```bash
+squashage build \
+  --target bulbapedia \
+  --config squashage.config.torreya.example.json \
+  --in ./output/torreya/bulbapedia
+```
+
+The result should be deterministic RDF/JS quads serialized to one file, with
+an output report and quarantine reports for records that cannot be classified
+or projected.

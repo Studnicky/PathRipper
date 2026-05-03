@@ -1,99 +1,74 @@
-# Ripperoni — Current State
+# Current State
 
-Last updated: 2026-04-27
+Squashage currently exists as a documentation-first fork of the Ripperoni
+workspace.
 
----
+## Done
 
-## What compiles and lints clean
+- Literal workspace copy from `/Users/studs/Workspace/ripper` to
+  `/Users/studs/Workspace/squashage`.
+- Package identity changed to `squashage` in `package.json` and
+  `package-lock.json`.
+- Config examples renamed to `squashage.config*.example.json`.
+- README rewritten around graph reconstitution rather than source scraping.
+- Architecture and classification-engine docs added.
+- Output contract drafted in
+  [`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md):
+  RDF/JS is internal; the build's output is a single serialized RDF file.
+  **v0.x ships against permissive open-source libraries** (`n3`, `jsonld`,
+  `rdf-canonize`, `rdf-validate-shacl`, `@rdfjs/*`) behind a thin
+  `src/rdf/*` + `src/shacl/*` wrapper layer. **v1.x will swap** the wrapper
+  bodies to the unpublished `@semantics/*` workspace without touching
+  application code. Graph-store loading is out of scope in either version.
 
-- `npm run typecheck` — passes
-- `npm run lint` — passes
-- All 20 source files present with correct exports
+## Still Ripperoni Skeleton
 
-## What does NOT work yet
+These areas are copied and still need intentional migration:
 
-### 1. `LinkLister` constructor bug — wrong field assigned
+- `src/cli/cli.ts` still exposes scrape/crawl behavior.
+- `src/config/RipperConfig.ts` still models Ripperoni source targets.
+- `src/orchestrators/ScrapeOrchestrator.ts` still owns web scraping flow.
+- `src/scrapers/`, `src/crawlers/`, and scraper built-in tasks are still present.
+- `plugins/` are still source-parser examples, not graph squasher plugins.
+- `docs/*.html` still describe Ripperoni and should be replaced or regenerated.
+- `package.json` does not yet declare the v0.x OSS deps (`@rdfjs/*`, `n3`,
+  `jsonld`, `rdf-canonize`, `rdf-validate-shacl`).
+- Example configs still use the legacy `output: { type, mode }` shape rather
+  than the explicit `output.kind = 'file'` single-output shape.
 
-```
-src/crawlers/LinkLister.ts:48  this.#target   = config.delimiter;  // BUG: assigns delimiter to target
-src/crawlers/LinkLister.ts:49  this.#delimiter = config.delimiter;  // correct
-src/crawlers/LinkLister.ts:54  void config.target; // suppression
-src/crawlers/LinkLister.ts:55  this.#target = config.target;       // fixes it but via dead code pattern
-```
+## Desired First Runtime Shape
 
-`this.#target` is assigned twice. The `void config.target` is a lint suppression hack
-from development. Runtime is correct, code is wrong. → **Lane 01**
-
-### 2. CLI uses dynamic imports — violates project standards
-
-All three CLI commands use `await import(...)` inside action handlers, plus the default
-config path is `./ripper.config.json` while README/docs reference `./ripperoni.config.json`
-(drift). → **Lane 02** (imports), **Lane 07** (path alignment)
-
-### 3. Zero tests
-
-`tests/unit/` and `tests/integration/` are both empty. → **Lane 03**
-
-### 4. `RipperConfig` has no runtime validation
-
-`return raw as RipperConfigInterface` with no schema check. Wrong config silently
-succeeds, crashes downstream. → **Lane 04**
-
-### 5. `MediaWikiScraper.fetchPagesBatch` uses untyped mwn internals
-
-`massQuery` may not exist on `mwn@1.11.0`; result processing leans on `Record<string, unknown>`
-casts. → **Lane 05**
-
-### 6. No `ripperoni.config.example.json`
-
-README and CLI reference it, repo doesn't ship one. → **Lane 06**
-
-### 7. Real target names scattered across source, docs, and the existing example plan
-
-`bulbapedia`, `aonprd`, `serebii`, plus Pokémon-specific roadmap entries appear in
-`README.md`, `docs/index.html`, `docs/architecture.html`, `docs/roadmap.html`,
-`docs/plans/05-...md`, and `docs/plans/06-...md`. Ripperoni is target-neutral by
-design — these belong only in the user's own (gitignored) config. → **Lane 07**
-
-### 8. No internal schemas or mapping engine
-
-Internal types are hand-written interfaces; there is no JSON-Schema source of truth
-and no AJV validation of user-supplied output schemas or mapping declarations. The
-project cannot promise schema-shaped output. → **Lane 08**
-
-### 9. No CHANGELOG, no husky, no `develop` branch, no PR template
-
-`master` has no protection layer in this repo's structure: no commit hooks, no
-push hooks, no separation between trunk and integration branches, no PR scaffolding.
-→ **Lane 09**
-
-### 10. No CI workflows
-
-No `.github/workflows/` directory exists. Nothing runs on PR or push. No matrix
-across Node / OS. → **Lane 10**
-
-### 11. No e2e against deployed fixtures
-
-Deferred until the gh-pages docs site publishes for the first time. → **Lane 11**
-
----
-
-## Dependency map
-
-```
-01 (LinkLister bug)         — unblocked
-02 (CLI static imports)     — unblocked
-04 (config validation)      — unblocked
-05 (MediaWiki batch)        — unblocked
-06 (example config)         — unblocked
-07 (target neutrality)      — unblocked
-09 (CHANGELOG/husky/flow)   — unblocked
-
-03 (tests)                  — needs 01 + 02
-08 (schemas/mapping)        — needs 04 + 07
-10 (matrix CI)              — needs 03 + 09
-11 (gh-pages e2e)           — needs 03 + 08 + 10 + first publish
+```text
+json:read
+  -> target:classify
+  -> target:squash-*
+  -> rdfjs:finalize     # orchestrator-driven; serializes the canonical dataset to ONE file via src/rdf/Serializer.ts
 ```
 
-Parallel batch A: 01, 02, 04, 05, 06, 07, 09 (no source overlap among them).
-Sequential: 03 → 08 → 10. Deferred: 11.
+A target with no `output` block is a config error. The internal RDF/JS
+dataset is the build's canonical product, not an output.
+
+## Technical Direction
+
+- Reuse the generic `Pipeline`, `ConcurrentPipeline`, and `TaskRegistry`
+  shapes; preserve every Ripperoni code standard verbatim (lint, tsconfig
+  strictness, AJV setup, hooks, CI, conventional commits, changelog gate,
+  TSDoc density, logger discipline). See plan 13's "Code Standards
+  (Inherited From Ripperoni Verbatim)".
+- Redefine `PipelineStateInterface` and `PipelineContextInterface` in place
+  for the squashage domain (no `Reconstitution*` parallel types).
+- Use AJV and local decision tables for deterministic classification.
+- Emit RDF/JS quads into a shared canonical dataset using
+  `src/rdf/DataFactory.ts` and `src/rdf/GraphBuilder.ts`.
+- Output a single serialized RDF file via `src/rdf/Serializer.ts`. v0.x
+  formats: turtle, trig, nquads, ntriples, jsonld. v1.x adds rdfxml and n3.
+- Run optional canonicalization (`src/rdf/Canonicalize.ts`) and SHACL
+  validation (`src/shacl/ShaclGate.ts`) as pre-write hooks.
+- Application code imports **only** from `src/rdf/*` and `src/shacl/*` —
+  never `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`, `@rdfjs/*`,
+  or any `@semantics/*` package directly. Enforced by ESLint's
+  `no-restricted-imports`.
+- Never depend on any graph-store backend. Loading the produced file is a
+  downstream concern.
+- Keep embeddings and LLMs in advisory workflows that produce review
+  artifacts, not canonical RDF/JS output or output writes.

@@ -1,10 +1,10 @@
 {
-  "name": "ripperoni",
-  "version": "2.1.0",
-  "description": "Configurable web scraper — pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
+  "name": "squashage",
+  "version": "0.1.0",
+  "description": "Graph reconstitution pipeline — pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
   "type": "module",
   "bin": {
-    "ripperoni": "./dist/cli/cli.js"
+    "squashage": "./dist/cli/cli.js"
   },
   "exports": {
     "./config/ConfigClamp": "./dist/config/ConfigClamp.js",

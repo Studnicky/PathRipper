@@ -82,9 +82,9 @@ src/**/*.js.map
 src/**/*.d.ts
 
 # User's local configs — never committed.
-# Only the canonical `ripperoni.config.example.json` is tracked.
-ripperoni.config*.json
-!ripperoni.config.example.json
+# Only canonical `squashage.config*.example.json` files are tracked.
+squashage.config*.json
+!squashage.config*.example.json
 
 # Harness / tooling state
 .claude/
