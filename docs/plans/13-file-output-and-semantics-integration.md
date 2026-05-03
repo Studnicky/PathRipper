@@ -782,13 +782,19 @@ if (!report.conforms) {
 v0.x backing of `ShaclGate.run` (`rdf-validate-shacl`):
 
 ```ts
-import SHACLValidator from 'rdf-validate-shacl';     // eslint-disable-next-line no-restricted-imports
-import datasetFactory from '@rdfjs/dataset';         // eslint-disable-next-line no-restricted-imports
+import SHACLValidator from 'rdf-validate-shacl';
 import type { DatasetCore } from '@rdfjs/types';
 
 export class ShaclGate {
   static async run(shapes: DatasetCore, data: DatasetCore) {
-    const validator = new SHACLValidator(shapes, { factory: datasetFactory });
+    // NOTE: do NOT pass `{ factory: datasetFactory }` — `SHACLValidator` calls
+    // `factory.clownface(...)` and `factory.termMap(...)` and requires a full
+    // @rdfjs/environment (DataFactory + DatasetFactory + ClownfaceFactory +
+    // NamespaceFactory + TermMapFactory). Passing only @rdfjs/dataset throws
+    // `TypeError: this.factory.clownface is not a function` at construct time.
+    // Omitting `factory` lets the validator use its bundled defaultEnv. v0.x
+    // verified empirically against rdf-validate-shacl 0.6.5.
+    const validator = new SHACLValidator(shapes);
     const report    = await validator.validate(data);
     return {
       conforms:      report.conforms,
