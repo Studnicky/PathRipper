@@ -3,7 +3,8 @@
  *
  * `n3` v2.x ships as pure JavaScript with no bundled TypeScript declarations
  * and no `@types/n3` package is available.  This shim covers the surface
- * squashage uses: the named `Parser` export and the types it returns.
+ * squashage uses: the named `Parser` and `Writer` exports and the types they
+ * consume/return.
  *
  * The `Quad` produced by N3 satisfies `@rdfjs/types` `Quad`; we type the
  * callback accordingly so callers receive properly typed terms.
@@ -37,6 +38,21 @@ declare module 'n3' {
     blankNodePrefix?:  string;
   }
 
+  /** Options accepted by the {@link Writer} constructor. */
+  interface WriterOptions {
+    /** N3 format string (e.g. `'Turtle'`, `'application/trig'`, `'N-Quads'`). */
+    format?:   string;
+    /** Prefix map to emit `@prefix` / `PREFIX` declarations. */
+    prefixes?: Prefixes;
+  }
+
+  /**
+   * Callback shape used by {@link Writer.end}.
+   *
+   * Called once with `(null, result)` on success or `(error, '')` on failure.
+   */
+  type WriterEndCallback = (error: Error | null, result: string) => void;
+
   class Parser {
     constructor(options?: ParserOptions);
     /**
@@ -49,5 +65,18 @@ declare module 'n3' {
     parse(input: string, callback: ParseCallback): void;
     /** Synchronous form — returns all quads; throws on error. */
     parse(input: string): Quad[];
+  }
+
+  class Writer {
+    constructor(options?: WriterOptions);
+    /** Appends a single quad to the serialized output. */
+    addQuad(quad: Quad): void;
+    /**
+     * Finalises the serialized output.
+     *
+     * When no output stream is passed to the constructor the accumulated string
+     * is delivered to `done` as the second argument.
+     */
+    end(done?: WriterEndCallback): void;
   }
 }
