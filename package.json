@@ -1,7 +1,7 @@
 {
   "name": "ripperoni",
   "version": "2.1.0",
-  "description": "Configurable web scraper — pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
+  "description": "Configurable web scraper \u2014 pluggable pipeline tasks, HTML and MediaWiki modes, recursive link crawler.",
   "type": "module",
   "bin": {
     "ripperoni": "./dist/cli/cli.js"
@@ -45,6 +45,10 @@
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'"
   },
   "dependencies": {
+    "@rdfjs/data-model": "^2.1.1",
+    "@rdfjs/dataset": "^2.0.2",
+    "@rdfjs/namespace": "^2.0.1",
+    "@rdfjs/types": "^2.0.1",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bottleneck": "^2.19.5",
@@ -52,6 +56,10 @@
     "commander": "^12.0.0",
     "domhandler": "^6.0.1",
     "json-schema-to-ts": "^3.1.1",
+    "jsonld": "^9.0.0",
+    "n3": "^2.0.3",
+    "rdf-canonize": "^5.0.0",
+    "rdf-validate-shacl": "^0.6.5",
     "wtf_wikipedia": "^10.3.0"
   },
   "devDependencies": {
