@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Squashage config examples for generic and Torreya/Bulbapedia graph builds.
 - Comprehensive plan 13 (`docs/plans/13-file-output-and-semantics-integration.md`) covering: orchestrator-driven `rdfjs:finalize` lifecycle (zero changes to Pipeline/ConcurrentPipeline/TaskRegistry), AJV schema for the single-file `output` block, `PipelineStateInterface` redefined for the squashage shape (name preserved), QuarantineWriter contract, OutputReport edge cases, full File Inventory with importer-evidence-based deletion plan and 19-step ordered migration, ESLint `no-restricted-imports` boundary rule.
 - v0.x publishing posture: ships against permissive open-source RDF libraries (`@rdfjs/types`, `@rdfjs/data-model`, `@rdfjs/dataset`, `@rdfjs/namespace`, `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`) behind a `src/rdf/*` and `src/shacl/*` wrapper layer; v1.x will swap wrapper bodies to the unpublished `@semantics/*` workspace without touching application code.
+- Squashage icon (`docs/assets/squashage.png`) — a semi-cartoon eggplant absorbing blue node-spheres along curved arrows, because the project is a graph reconstitution engine and this is the branding it deserves.
 
 ### Changed
 - Package identity changed from `ripperoni` to `squashage` for the copied skeleton.
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 - `ripperoni.config.example.json` (replaced by `squashage.config.example.json` and `squashage.config.torreya.example.json`).
+- `docs/assets/ripperoni.png` (replaced by `docs/assets/squashage.png`).
 
 ## [2.1.0] - 2026-05-01
 
