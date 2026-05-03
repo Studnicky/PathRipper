@@ -24,6 +24,8 @@
     "./errors/HttpError": "./dist/errors/HttpError.js",
     "./errors/RipperConfigError": "./dist/errors/RipperConfigError.js",
     "./errors/ExternalSchemaError": "./dist/errors/ExternalSchemaError.js",
+    "./errors/OutputConfigError": "./dist/errors/OutputConfigError.js",
+    "./errors/SquashageConfigError": "./dist/errors/SquashageConfigError.js",
     "./registry/TaskRegistry": "./dist/registry/TaskRegistry.js",
     "./registry/PipelineState": "./dist/registry/PipelineState.js",
     "./orchestrators/ScrapeOrchestrator": "./dist/orchestrators/ScrapeOrchestrator.js"

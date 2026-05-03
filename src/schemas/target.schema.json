@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://squashage.dev/schemas/target.json",
+  "title": "Squashage Target Config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["input", "pipeline", "output"],
+  "properties": {
+    "input":          { "type": "string", "minLength": 1 },
+    "pipeline":       {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "output":         { "$ref": "https://squashage.dev/schemas/output.json" },
+    "graphs":         {
+      "type": "object",
+      "additionalProperties": { "type": "string", "format": "uri" }
+    },
+    "ontology":       { "type": "object" },
+    "classification": { "type": "object" },
+    "quarantine":     { "type": "object" },
+    "concurrency":    { "type": "integer", "minimum": 1, "default": 1 }
+  }
+}

@@ -1,0 +1,94 @@
+import type { FromSchema } from 'json-schema-to-ts';
+
+const JSON_SCHEMA_DRAFT_07_URI = 'http://json-schema.org/draft-07/schema#';
+
+/**
+ * JSON Schema (draft-07) for the `output` block of a squashage target config.
+ *
+ * @remarks
+ * Defined as a `const` TypeScript object so that `json-schema-to-ts` can derive
+ * {@link OutputConfigInterface} statically. The canonical copy lives alongside this
+ * file at `src/schemas/output.schema.json` for IDE and tooling support.
+ *
+ * @category Schema
+ * @since 2.2.0
+ * @see {@link OutputConfigInterface}
+ * @group Schema
+ */
+export const OUTPUT_SCHEMA = {
+  $schema: JSON_SCHEMA_DRAFT_07_URI,
+  $id: 'https://squashage.dev/schemas/output.json',
+  title: 'Squashage Output Config',
+  type: 'object',
+  additionalProperties: false,
+  required: ['kind', 'path'],
+  properties: {
+    kind:        { type: 'string', const: 'file' },
+    path:        { type: 'string', minLength: 1 },
+    format:      {
+      type: 'string',
+      enum: ['turtle', 'trig', 'ntriples', 'nquads', 'jsonld'] as const,
+      description: 'RDF/XML and N3 output are deferred to v1.x — the AJV schema rejects them in v0.x.',
+    },
+    mode:        { type: 'string', enum: ['dataset', 'stream'] as const, default: 'dataset' },
+    prefixes:    {
+      type: 'object',
+      additionalProperties: { type: 'string', format: 'uri' },
+    },
+    baseIRI:     { type: 'string', format: 'uri' },
+    graph:       {
+      type: 'string',
+      format: 'uri',
+      description: 'Collapse all quads to this named graph at write time.',
+    },
+    canonicalize: { type: 'boolean', default: false },
+    validate:    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['shapes'],
+      properties: {
+        shapes: {
+          type: 'string',
+          description: 'Path to a SHACL shapes graph (any RDF format).',
+        },
+      },
+    },
+    dryRun: { type: 'boolean', default: false },
+  },
+  allOf: [
+    {
+      if:   { properties: { mode: { const: 'stream' } } },
+      then: {
+        properties: {
+          canonicalize: { const: false },
+          validate:     { not: {} },
+        },
+      },
+    },
+  ],
+} as const;
+
+/**
+ * Validated output configuration for a squashage target, derived from
+ * {@link OUTPUT_SCHEMA} via `json-schema-to-ts`.
+ *
+ * @remarks
+ * The shape is authoritative — editing {@link OUTPUT_SCHEMA} changes this type
+ * automatically. Load and validate with {@link SquashageConfig.loadFromFile}.
+ * This interface satisfies the `PipelineContextInterface.output` slot.
+ *
+ * @example
+ * ```ts
+ * const output: OutputConfigInterface = {
+ *   kind:   'file',
+ *   path:   './graphs/bulbapedia.trig',
+ *   mode:   'dataset',
+ * };
+ * ```
+ *
+ * @category Configuration
+ * @since 2.2.0
+ * @see {@link OUTPUT_SCHEMA}
+ * @group Types
+ */
+export type OutputConfigInterface = FromSchema<typeof OUTPUT_SCHEMA>;

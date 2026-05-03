@@ -1,0 +1,34 @@
+{
+  "input": {
+    "basePath": "./output",
+    "format": "json"
+  },
+  "targets": {
+    "your-ripperoni-target": {
+      "input": "./output/your-ripperoni-target",
+      "concurrency": 4,
+      "pipeline": [
+        "json:read",
+        "your-ripperoni-target:classify",
+        "your-ripperoni-target:squash",
+        "rdfjs:finalize"
+      ],
+      "graphs": {
+        "default": "https://example.com/graph/default"
+      },
+      "classification": {
+        "onConflict": "quarantine",
+        "onUnknown": "quarantine",
+        "evidence": true
+      },
+      "quarantine": {
+        "dir": "./graphs/quarantine/your-ripperoni-target"
+      },
+      "output": {
+        "kind": "file",
+        "path": "./graphs/your-ripperoni-target.trig",
+        "mode": "dataset"
+      }
+    }
+  }
+}
