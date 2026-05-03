@@ -80,6 +80,8 @@ plugins/**/*.d.ts
 src/**/*.js
 src/**/*.js.map
 src/**/*.d.ts
+# Hand-written ambient shims are committed (they carry the -shim suffix)
+!src/**/*-shim.d.ts
 
 # User's local configs — never committed.
 # Only canonical `squashage.config*.example.json` files are tracked.
