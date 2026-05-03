@@ -241,36 +241,7 @@ export class BaseIRIResolver {
   }
 }
 
-// ---------------------------------------------------------------------------
-// STANDARD_PREFIXES
-// ---------------------------------------------------------------------------
-
-/**
- * Frozen prefix table for the v0.x default vocabularies.
- *
- * @remarks
- * Contains the five core RDF/OWL/SHACL prefixes used across all Squashage
- * pipelines.  Pass this object (or a subset) to `Serializer.serialize` as
- * the `prefixes` option to get a well-prefixed Turtle or TriG document.
- *
- * The object is frozen — mutation attempts throw in strict mode.
- *
- * @example
- * ```ts
- * STANDARD_PREFIXES.rdf  // 'http://www.w3.org/1999/02/22-rdf-syntax-ns#'
- * STANDARD_PREFIXES.rdfs // 'http://www.w3.org/2000/01/rdf-schema#'
- * STANDARD_PREFIXES.owl  // 'http://www.w3.org/2002/07/owl#'
- * STANDARD_PREFIXES.xsd  // 'http://www.w3.org/2001/XMLSchema#'
- * STANDARD_PREFIXES.sh   // 'http://www.w3.org/ns/shacl#'
- * ```
- *
- * @category RDF
- * @since 0.1.0
- */
-export const STANDARD_PREFIXES: Readonly<Record<string, string>> = Object.freeze({
-  rdf:  'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-  rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
-  owl:  'http://www.w3.org/2002/07/owl#',
-  xsd:  'http://www.w3.org/2001/XMLSchema#',
-  sh:   'http://www.w3.org/ns/shacl#',
-});
+// STANDARD_PREFIXES was previously exported from this module (W4 placeholder).
+// The canonical export has been moved to src/rdf/Vocab.ts, which is the single
+// authoritative source consumed by the serializer.  Import from there instead:
+//   import { STANDARD_PREFIXES } from './Vocab.js';

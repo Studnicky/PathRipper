@@ -5,8 +5,9 @@ import {
   Namespaces,
   IRIUtils,
   BaseIRIResolver,
-  STANDARD_PREFIXES,
 } from '../../../src/rdf/Namespaces.js';
+// STANDARD_PREFIXES canonical export moved to Vocab.ts (W5); imported from there.
+import { STANDARD_PREFIXES } from '../../../src/rdf/Vocab.js';
 
 // ---------------------------------------------------------------------------
 // Namespaces
