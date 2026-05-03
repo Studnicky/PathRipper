@@ -24,6 +24,19 @@ declare module 'jsonld' {
     base?: string;
   }
 
+  /** Options accepted by {@link jsonld.fromRDF}. */
+  interface FromRdfOptions {
+    /**
+     * Input serialization format.  Pass `'application/n-quads'` when the
+     * dataset argument is an N-Quads string.
+     */
+    format?: string;
+    /** Whether to use the RDF 1.1 datatypes rules. */
+    useNativeTypes?: boolean;
+    /** Whether to use the `@vocab` mapping for predicates. */
+    useRdfType?: boolean;
+  }
+
   /**
    * Converts a JSON-LD document to RDF.
    *
@@ -32,5 +45,14 @@ declare module 'jsonld' {
    */
   function toRDF(input: unknown, options?: ToRdfOptions): Promise<string>;
 
-  export { toRDF };
+  /**
+   * Converts an RDF dataset to a JSON-LD document.
+   *
+   * When `dataset` is a string and `options.format` is `'application/n-quads'`
+   * the string is interpreted as N-Quads text and the result is a JSON-LD
+   * array (expanded form).
+   */
+  function fromRDF(dataset: unknown, options?: FromRdfOptions): Promise<unknown>;
+
+  export { toRDF, fromRDF };
 }
