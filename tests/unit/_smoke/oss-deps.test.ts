@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-// eslint-disable-next-line no-restricted-imports
+ 
 import { Writer } from 'n3';
-// eslint-disable-next-line no-restricted-imports
+ 
 import datafactory from '@rdfjs/data-model';
 
 test('n3.Writer serializes a quad', async () => {
