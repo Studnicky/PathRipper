@@ -24,5 +24,23 @@ export default [
       '@typescript-eslint/ban-ts-comment': 'error',
       '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }]
     }
-  }
+  },
+  {
+    files: ['src/**/*.ts'],
+    ignores: ['src/rdf/**', 'src/shacl/**'],
+    rules: {
+      'no-restricted-imports': ['error', {
+        paths: [
+          { name: 'n3',                 message: 'Use src/rdf/Serializer.ts or src/rdf/Parser.ts' },
+          { name: 'jsonld',             message: 'Use src/rdf/Serializer.ts or src/rdf/Parser.ts' },
+          { name: 'rdf-canonize',       message: 'Use src/rdf/Canonicalize.ts' },
+          { name: 'rdf-validate-shacl', message: 'Use src/shacl/ShaclGate.ts' },
+          { name: '@rdfjs/data-model',  message: 'Use src/rdf/DataFactory.ts' },
+          { name: '@rdfjs/dataset',     message: 'Use src/rdf/Dataset.ts' },
+          { name: '@rdfjs/namespace',   message: 'Use src/rdf/Namespaces.ts or src/rdf/Vocab.ts' },
+        ],
+        patterns: [{ group: ['@semantics/*'], message: 'v1.x only — application code stays behind src/rdf/* wrappers' }],
+      }],
+    },
+  },
 ];
