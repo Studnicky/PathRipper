@@ -27,7 +27,7 @@ export default [
   },
   {
     files: ['src/**/*.ts'],
-    ignores: ['src/rdf/**', 'src/shacl/**'],
+    ignores: ['src/rdf/**', 'src/shacl/**', 'src/viz/vendor/**'],
     rules: {
       'no-restricted-imports': ['error', {
         paths: [
