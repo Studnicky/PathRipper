@@ -39,6 +39,7 @@ import { Parser }                from '../../../src/rdf/Parser.js';
 import type { SquashageConfigInterface } from '../../../src/config/SquashageConfig.js';
 import type { PipelineStateInterface }   from '../../../src/types/PipelineState.js';
 import type { NextFnInterface }          from '../../../src/types/Pipeline.js';
+import type { PrefixResolutionInterface } from '../../../src/classification/PrefixResolver.js';
 
 // ---------------------------------------------------------------------------
 // Fixture task registration
@@ -89,6 +90,29 @@ const buildConfig = (
   },
 });
 
+/** Name for the context-capture fixture task. */
+const CAPTURE_TASK_NAME = 'fixture:capture-context';
+
+/** Mutable slot that gets written by the capture task during a run. */
+let capturedPrefixes: PrefixResolutionInterface | undefined;
+
+/**
+ * Registers `fixture:capture-context` — records `state.context.prefixes` for assertions.
+ * The capture slot is reset before each test that uses it.
+ */
+function registerCaptureTask(): void {
+  TaskRegistry.register(
+    CAPTURE_TASK_NAME,
+    async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
+      const ctx = state.context;
+      if (ctx !== undefined) {
+        capturedPrefixes = ctx.prefixes;
+      }
+      await next();
+    },
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Suite-level setup
 // ---------------------------------------------------------------------------
@@ -98,6 +122,7 @@ let workDir = '';
 before(async () => {
   workDir = await mkdtemp(join(tmpdir(), 'squashage-orchestrator-'));
   registerFixtureTask();
+  registerCaptureTask();
 });
 
 after(async () => {
@@ -246,7 +271,106 @@ describe('SquashageOrchestrator', () => {
     });
   });
 
-  describe('run — parallel runs do not pollute each other\'s registries', () => {
+  describe('run — prefixes are populated and propagated into state.context', () => {
+    let prefixRunDir = '';
+
+    before(async () => {
+      prefixRunDir = join(workDir, 'prefix-test');
+      await mkdir(prefixRunDir, { recursive: true });
+
+      await writeFile(join(prefixRunDir, 'record1.json'),
+        JSON.stringify({ name: 'PrefixTestRecord' }),
+        'utf8',
+      );
+    });
+
+    it('state.context.prefixes is populated after a run', async () => {
+      capturedPrefixes = undefined;
+
+      const outDir  = join(workDir, 'prefix-out');
+      await mkdir(outDir, { recursive: true });
+      const outPath = join(outDir, 'out.ttl');
+      const config: SquashageConfigInterface = {
+        input:   { basePath: prefixRunDir, format: 'json' },
+        targets: {
+          target1: {
+            input:    prefixRunDir,
+            pipeline: ['json:read', CAPTURE_TASK_NAME, 'rdfjs:finalize'],
+            output:   { kind: 'file', path: outPath },
+          },
+        },
+      };
+
+      await SquashageOrchestrator.run(config, 'target1', { outDir });
+
+      assert.ok(capturedPrefixes !== undefined, 'capturedPrefixes should be set');
+      assert.ok(typeof capturedPrefixes.instances.base   === 'string', 'instances.base is a string');
+      assert.ok(typeof capturedPrefixes.instances.prefix === 'string', 'instances.prefix is a string');
+      assert.ok(typeof capturedPrefixes.graphs.base      === 'string', 'graphs.base is a string');
+      assert.ok(typeof capturedPrefixes.graphs.prefix    === 'string', 'graphs.prefix is a string');
+      assert.ok(typeof capturedPrefixes.vocabulary.base  === 'string', 'vocabulary.base is a string');
+      assert.ok(
+        typeof capturedPrefixes.vocabulary.prefix === 'string',
+        'vocabulary.prefix is a string',
+      );
+      assert.ok(
+        ['config', 'derived', 'fallback'].includes(capturedPrefixes.source),
+        `source must be config|derived|fallback, got "${capturedPrefixes.source}"`,
+      );
+    });
+
+    it('prefixes.instances.base ends with /', async () => {
+      capturedPrefixes = undefined;
+
+      const outDir  = join(workDir, 'prefix-out2');
+      await mkdir(outDir, { recursive: true });
+      const outPath = join(outDir, 'out.ttl');
+      const config: SquashageConfigInterface = {
+        input:   { basePath: prefixRunDir, format: 'json' },
+        targets: {
+          target1: {
+            input:    prefixRunDir,
+            pipeline: ['json:read', CAPTURE_TASK_NAME, 'rdfjs:finalize'],
+            output:   { kind: 'file', path: outPath },
+          },
+        },
+      };
+
+      await SquashageOrchestrator.run(config, 'target1', { outDir });
+
+      assert.ok(capturedPrefixes !== undefined);
+      assert.ok(
+        capturedPrefixes.instances.base.endsWith('/'),
+        `instances.base must end with '/', got "${capturedPrefixes.instances.base}"`,
+      );
+    });
+
+    it('fallback: prefixes use squashage.dev namespace for target with no config or URL source', async () => {
+      capturedPrefixes = undefined;
+
+      const outDir  = join(workDir, 'prefix-fallback');
+      await mkdir(outDir, { recursive: true });
+      const outPath = join(outDir, 'out.ttl');
+      const config: SquashageConfigInterface = {
+        input:   { basePath: prefixRunDir, format: 'json' },
+        targets: {
+          'my-target': {
+            input:    prefixRunDir,
+            pipeline: ['json:read', CAPTURE_TASK_NAME, 'rdfjs:finalize'],
+            output:   { kind: 'file', path: outPath },
+          },
+        },
+      };
+
+      await SquashageOrchestrator.run(config, 'my-target', { outDir });
+
+      assert.ok(capturedPrefixes !== undefined);
+      assert.equal(capturedPrefixes.source, 'fallback');
+      assert.ok(capturedPrefixes.instances.base.includes('squashage.dev'));
+    });
+  });
+
+    describe('run — parallel runs do not pollute each other\'s registries', () => {
     let parallelRunDir = '';
 
     before(async () => {

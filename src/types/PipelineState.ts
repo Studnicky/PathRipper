@@ -2,6 +2,7 @@ import type { DataFactory, DatasetCore, NamedNode } from '@rdfjs/types';
 import type { GraphBuilder }     from '../rdf/GraphBuilder.js';
 import type { NamespaceBuilder } from '../rdf/Namespaces.js';
 import type { OutputConfigInterface } from '../config/OutputConfig.js';
+import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
 
 /**
  * Source metadata for a single Ripperoni JSON record flowing through the pipeline.
@@ -124,6 +125,8 @@ export interface PipelineContextInterface {
   readonly iri:     NamespaceBuilder;
   /** Resolved output config (merged with CLI overrides). */
   readonly output:  OutputConfigInterface;
+  /** Resolved prefix→base pairs (instances, graphs, vocabulary) for this run. */
+  readonly prefixes: PrefixResolutionInterface;
 }
 
 /**
