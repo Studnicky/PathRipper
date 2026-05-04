@@ -3,13 +3,13 @@
 [![CI](https://github.com/Studnicky/PathRipper/actions/workflows/ci.yml/badge.svg)](https://github.com/Studnicky/PathRipper/actions/workflows/ci.yml)
 [![docs](https://img.shields.io/badge/docs-studnicky.github.io-c8284a)](https://studnicky.github.io/PathRipper/)
 [![node](https://img.shields.io/badge/node-%3E%3D24.0.0-brightgreen)](package.json)
-[![version](https://img.shields.io/badge/version-2.0.0-c8284a)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-2.1.0-c8284a)](CHANGELOG.md)
 
 Web ingestion engine. Point it at a wiki, a site, or a list of URLs. It slices through everything, one page at a time, and hands you the meat.
 
 Evolved from [PathRipper](https://github.com/Studnicky/PathRipper) (2019). HTTP machinery ported from TORUS (Topological Orchestration Runtime for Unified Streaming), an upcoming streaming DAG orchestration tool currently under development.
 
-**[Documentation](https://studnicky.github.io/PathRipper/)** · **[Architecture](https://studnicky.github.io/PathRipper/architecture.html)** · **[Roadmap](https://studnicky.github.io/PathRipper/roadmap.html)** · **[Releases](https://github.com/Studnicky/PathRipper/releases)**
+**[Documentation](https://studnicky.github.io/PathRipper/)** · **[Architecture](https://studnicky.github.io/PathRipper/architecture)** · **[Roadmap](https://studnicky.github.io/PathRipper/roadmap)** · **[Releases](https://github.com/Studnicky/PathRipper/releases)**
 
 ---
 
@@ -62,6 +62,7 @@ npm run build       # compile TypeScript + plugins
 npm run typecheck   # tsc --noEmit
 npm run lint        # eslint src/
 npm run check       # typecheck + lint + unit tests
+npm run docs:build  # build VitePress docs
 npm run test:e2e    # local e2e against live targets (not run by CI)
 ```
 
@@ -94,7 +95,7 @@ All scraper targets live in `ripperoni.config.json` (the project itself names no
 
 The config is validated on load against the internal JSON Schema; malformed files fail fast with a precise field-path error message.
 
-See [docs/index.html#config](docs/index.html#config) for the full reference.
+See the [config reference](https://studnicky.github.io/PathRipper/getting-started) for the full reference.
 
 ## Plugins
 
