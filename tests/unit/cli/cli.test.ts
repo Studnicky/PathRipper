@@ -29,23 +29,6 @@ import { buildCli } from '../../../src/cli/cli.js';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Parses a fake argv array with Commander `exitOverride` so that validation
- * errors throw instead of calling `process.exit`.
- *
- * @param args - argv tokens after `['node', 'squashage']`.
- * @returns The commander Command after parsing.
- */
-async function parse(args: string[]): ReturnType<typeof buildCli.prototype.parseAsync> {
-  const cli = buildCli();
-  cli.exitOverride();
-  // Propagate exitOverride to all subcommands so they throw too.
-  for (const sub of cli.commands) {
-    sub.exitOverride();
-  }
-  return cli.parseAsync(['node', 'squashage', ...args]);
-}
-
 // ---------------------------------------------------------------------------
 // --help surface
 // ---------------------------------------------------------------------------
