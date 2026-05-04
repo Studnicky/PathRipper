@@ -11,15 +11,18 @@
  *    builder, graphs, iri, output).
  * 3. Strips `rdfjs:finalize` from the per-record pipeline so the finalize task
  *    never runs inside a per-record `ConcurrentPipeline` execution.
- * 4. Walks the input source (single `.json`, single `.jsonl`, or a directory
+ * 4. Instantiates classifier task classes from `targetConfig.classification` via
+ *    {@link ClassificationFactory.build} and registers each on the per-run
+ *    {@link TaskRegistry} instance.
+ * 5. Walks the input source (single `.json`, single `.jsonl`, or a directory
  *    that is recursively walked for `.json` and `.jsonl` files) and builds one
  *    {@link PipelineStateInterface} per record, each carrying its own augmented
  *    context with `config.recordPath` / `config.recordLine` so `json:read` can
  *    locate the record on disk.
- * 5. Drives per-record execution via {@link ConcurrentPipeline.executeAll}.
- * 6. After the per-record batch settles, invokes the finalize task once with a
+ * 6. Drives per-record execution via {@link ConcurrentPipeline.executeAll}.
+ * 7. After the per-record batch settles, invokes the finalize task once with a
  *    synthetic state carrying the run-wide context.
- * 7. Computes and returns the {@link RunResultInterface}.
+ * 8. Computes and returns the {@link RunResultInterface}.
  *
  * The module `'../tasks/index.js'` is imported once at the top so the global
  * {@link TaskRegistry} is populated with all built-in tasks before any pipeline
@@ -31,7 +34,7 @@
  */
 
 import { readdir, stat, readFile } from 'node:fs/promises';
-import { join, extname }           from 'node:path';
+import { join, extname, dirname }  from 'node:path';
 
 // Bootstrap built-in task registrations (json:read, rdfjs:finalize).
 import '../tasks/index.js';
@@ -39,18 +42,20 @@ import '../tasks/index.js';
 import type { SquashageConfigInterface, TargetConfigInterface } from '../config/SquashageConfig.js';
 import type { OutputConfigInterface }      from '../config/OutputConfig.js';
 import type { PipelineStateInterface, PipelineContextInterface } from '../types/PipelineState.js';
+import type { ClassificationConfigInterface } from '../classification/ClassificationFactory.js';
 
-import { Pipeline }            from '../pipeline/Pipeline.js';
-import { ConcurrentPipeline }  from '../pipeline/ConcurrentPipeline.js';
-import { PipelineState }       from '../registry/PipelineState.js';
-import { TaskRegistry }        from '../registry/TaskRegistry.js';
-import { SquashageConfigError } from '../errors/SquashageConfigError.js';
-import { dataFactory }         from '../rdf/DataFactory.js';
-import { Dataset }             from '../rdf/Dataset.js';
-import { GraphBuilder }        from '../rdf/GraphBuilder.js';
-import { Namespaces }          from '../rdf/Namespaces.js';
-import { QuarantineWriter }    from '../quarantine/QuarantineWriter.js';
-import { Logger }              from '../modules/logger/logger.js';
+import { ClassificationFactory }   from '../classification/ClassificationFactory.js';
+import { Pipeline }                from '../pipeline/Pipeline.js';
+import { ConcurrentPipeline }      from '../pipeline/ConcurrentPipeline.js';
+import { PipelineState }           from '../registry/PipelineState.js';
+import { TaskRegistry }            from '../registry/TaskRegistry.js';
+import { SquashageConfigError }     from '../errors/SquashageConfigError.js';
+import { dataFactory }             from '../rdf/DataFactory.js';
+import { Dataset }                 from '../rdf/Dataset.js';
+import { GraphBuilder }            from '../rdf/GraphBuilder.js';
+import { Namespaces }              from '../rdf/Namespaces.js';
+import { QuarantineWriter }        from '../quarantine/QuarantineWriter.js';
+import { Logger }                  from '../modules/logger/logger.js';
 
 const logger = Logger.forComponent('SquashageOrchestrator');
 
@@ -112,6 +117,14 @@ export interface RunOptionsInterface {
   readonly inputOverride?:  string | undefined;
   /** Output base directory for reports and quarantine artifacts (default: `'./graphs'`). */
   readonly outDir?:         string | undefined;
+  /**
+   * Absolute path to the squashage config file.
+   *
+   * @remarks
+   * Used to derive `schemasBase` for resolving relative `schemaPath` entries in
+   * `classification.schemas[]`. When absent, `process.cwd()` is used as the base.
+   */
+  readonly configPath?:     string | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,13 +157,16 @@ interface RecordLocatorInterface {
  * 2. Apply CLI overrides to a synthesized {@link OutputConfigInterface}.
  * 3. Construct the run-wide {@link PipelineContextInterface}.
  * 4. Strip `rdfjs:finalize` from the per-record task list; hold a reference.
- * 5. Build a {@link Pipeline} from the remaining per-record tasks.
- * 6. Walk the input source to produce `RecordLocatorInterface[]`.
- * 7. Build one {@link PipelineStateInterface} per record, each augmented with
+ * 5. Instantiate classifier tasks via {@link ClassificationFactory.build} and
+ *    register them on a per-run {@link TaskRegistry} instance.
+ * 6. Build a {@link Pipeline} from the remaining per-record tasks (backed by
+ *    the per-run registry).
+ * 7. Walk the input source to produce `RecordLocatorInterface[]`.
+ * 8. Build one {@link PipelineStateInterface} per record, each augmented with
  *    `config.recordPath` / `config.recordLine`.
- * 8. Execute via {@link ConcurrentPipeline.executeAll}.
- * 9. Invoke the finalize task once with a synthetic state carrying `ctx`.
- * 10. Return the {@link RunResultInterface}.
+ * 9. Execute via {@link ConcurrentPipeline.executeAll}.
+ * 10. Invoke the finalize task once with a synthetic state carrying `ctx`.
+ * 11. Return the {@link RunResultInterface}.
  *
  * @example
  * ```ts
@@ -158,6 +174,7 @@ interface RecordLocatorInterface {
  * const result = await SquashageOrchestrator.run(config, 'bulbapedia', {
  *   outOverride: './graphs/bulbapedia.trig',
  *   outDir:      './graphs',
+ *   configPath:  './squashage.config.json',
  * });
  * process.exitCode = result.exitCode;
  * ```
@@ -217,9 +234,59 @@ export class SquashageOrchestrator {
     const FINALIZE_NAME   = 'rdfjs:finalize';
     const perRecordNames  = targetConfig.pipeline.filter(name => name !== FINALIZE_NAME);
 
-    // Look up all per-record tasks eagerly; throws ExternalSchemaError on any missing task.
-    const perRecordTasks = perRecordNames.map(name => TaskRegistry.get(name));
-    const finalizeTask   = TaskRegistry.get(FINALIZE_NAME);
+    // Step 5 — Build a per-run TaskRegistry and register classifier task instances.
+    const registry = new TaskRegistry();
+
+    // Instantiate and register classifier tasks when classification config is present.
+    const classification = targetConfig.classification as ClassificationConfigInterface | undefined;
+    if (classification !== undefined) {
+      const schemasBase = options.configPath !== undefined
+        ? dirname(options.configPath)
+        : process.cwd();
+
+      logger.debug('run', 'Building classifier instances', { target, schemasBase });
+      const classifierInstances = ClassificationFactory.build(
+        classification,
+        outDir,
+        target,
+        schemasBase,
+      );
+
+      // Register only the classifier instances that are both instantiated AND
+      // listed in the target's pipeline.
+      const pipelineSet = new Set(targetConfig.pipeline);
+
+      if (pipelineSet.has('classify:source') && classifierInstances['classify:source'] !== undefined) {
+        registry.register('classify:source', classifierInstances['classify:source'].execute);
+      }
+      if (pipelineSet.has('classify:structural') && classifierInstances['classify:structural'] !== undefined) {
+        registry.register('classify:structural', classifierInstances['classify:structural'].execute);
+      }
+      if (pipelineSet.has('classify:rules') && classifierInstances['classify:rules'] !== undefined) {
+        registry.register('classify:rules', classifierInstances['classify:rules'].execute);
+      }
+      if (pipelineSet.has('classify:schema') && classifierInstances['classify:schema'] !== undefined) {
+        registry.register('classify:schema', classifierInstances['classify:schema'].execute);
+      }
+      if (pipelineSet.has('classify:ontology') && classifierInstances['classify:ontology'] !== undefined) {
+        registry.register('classify:ontology', classifierInstances['classify:ontology'].execute);
+      }
+      if (pipelineSet.has('classify:conflict') && classifierInstances['classify:conflict'] !== undefined) {
+        registry.register('classify:conflict', classifierInstances['classify:conflict'].execute);
+      }
+
+      logger.info('run', 'Classifier tasks registered', { target, tasks: Object.keys(classifierInstances) });
+    }
+
+    // Look up all per-record tasks eagerly; classifier tasks come from the per-run registry,
+    // built-in tasks (json:read, rdfjs:finalize, plugin tasks) fall back to the static registry.
+    const perRecordTasks = perRecordNames.map(name => {
+      if (registry.has(name)) {
+        return registry.get(name);
+      }
+      return TaskRegistry.get(name);
+    });
+    const finalizeTask = TaskRegistry.get(FINALIZE_NAME);
 
     logger.debug('run', 'Pipeline tasks resolved', {
       target,
@@ -227,17 +294,17 @@ export class SquashageOrchestrator {
       finalize:  FINALIZE_NAME,
     });
 
-    // Step 5 — Build per-record Pipeline.
+    // Step 6 — Build per-record Pipeline.
     const pipeline = Pipeline.create<PipelineStateInterface>({ name: `squashage:${target}` });
     pipeline.addTasks(perRecordTasks);
 
-    // Step 6 — Walk input source.
+    // Step 7 — Walk input source.
     const inputRoot = options.inputOverride ?? targetConfig.input;
     const locators  = await SquashageOrchestrator.#walkInput(inputRoot);
 
     logger.info('walk', 'Input walk complete', { target, inputRoot, recordCount: locators.length });
 
-    // Step 7 — Build one state per record with per-record context augmentation.
+    // Step 8 — Build one state per record with per-record context augmentation.
     const states = locators.map(({ recordPath, recordLine }) => {
       const source = { target, path: recordPath };
       const state  = PipelineState.fromInput(target, source, {});
@@ -256,7 +323,7 @@ export class SquashageOrchestrator {
       return state;
     });
 
-    // Step 8 — Execute per-record pipeline with bounded concurrency.
+    // Step 9 — Execute per-record pipeline with bounded concurrency.
     const concurrency = targetConfig.concurrency ?? 1;
     const runner = ConcurrentPipeline.create<PipelineStateInterface>(pipeline, concurrency, {
       name: `squashage:${target}`,
@@ -276,7 +343,7 @@ export class SquashageOrchestrator {
       failed:    failed.length,
     });
 
-    // Step 9 — Invoke finalize task once with a synthetic state carrying ctx.
+    // Step 10 — Invoke finalize task once with a synthetic state carrying ctx.
     const finalizeState: PipelineStateInterface = {
       targetId:        target,
       source:          { target, path: '__finalize__' },
@@ -293,15 +360,7 @@ export class SquashageOrchestrator {
 
     logger.info('finalize', 'rdfjs:finalize completed', { target });
 
-    // Step 10 — Compute RunResultInterface.
-    // A fresh QuarantineWriter.forRun reads zero counts — the actual quarantine
-    // counts land in individual task-owned QuarantineWriter instances per record.
-    // The orchestrator-level summary here reflects the finalize phase only.
-    // Per-record quarantine counts are emitted by json:read into its own writer;
-    // those files are already on disk.  The exit-code logic checks projection/
-    // conflicts / output buckets from the dataset; since per-record quarantine
-    // writers are not shared with this instance, we derive exitCode by checking
-    // whether any records failed (failed.length > 0) as a proxy for exit code 1.
+    // Step 11 — Compute RunResultInterface.
     const qw         = QuarantineWriter.forRun(outDir, target);
     const quarantine = qw.summary();
     const exitCode   = failed.length > 0

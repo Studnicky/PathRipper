@@ -1089,6 +1089,44 @@ build on any quarantine activity should grep
 `QuarantineWriter.summary()` returns counts by bucket; `rdfjs:finalize`
 includes them in the output report.
 
+## Deterministic Classifier Menu
+
+Squashage offers six built-in classifier task classes. Targets pick which
+to use by listing them in `pipeline: [...]`. Each task is an idiomatic
+class with a constructor that takes its frozen, AJV-validated config at
+startup; per-record execution does no I/O and no allocations beyond the
+proposal array.
+
+| Task | Required config block | Role |
+|------|-----------------------|------|
+| `classify:source`     | `classification.source: true`      | Reads `_source` metadata; emits a `__source__` marker proposal. |
+| `classify:structural` | `classification.structural[]`      | Predicate-based structural gate (required keys, discriminators). |
+| `classify:rules`      | `classification.rules[]`           | Predicate-based decision table over normalized facts. |
+| `classify:schema`     | `classification.schemas[]`         | Per-class JSON Schema validation via AJV. |
+| `classify:ontology`   | `classification.ontology.classes`  | Validates proposed classNames against a known IRI map. |
+| `classify:conflict`   | `classification.conflict`          | Picks winner by priority+lex; quarantines on tie/unknown. |
+
+The predicate vocabulary (closed, validated by `predicate.schema.json`):
+`equals`, `notEquals`, `in`, `notIn`, `exists`, `missing`, `type`, `regex`,
+`length`, `range`, plus `all`/`any`/`not` composition. Paths are JSON
+Pointer (RFC 6901). Regex must be anchored (`^...$`).
+
+Per-target isolation: `SquashageOrchestrator.run` constructs a fresh
+`TaskRegistry` per run and instantiates classifier task classes with the
+target's frozen config. Two targets with different `classify:rules` configs
+do not collide.
+
+Determinism guarantees:
+- No `Math.random`, `Date.now`, network, or fs after startup. (Schema files
+  are read by `ClassificationFactory.build` at run startup; the per-record
+  evaluators have zero file I/O.)
+- AJV in strict mode; schemas frozen.
+- Tiebreaks: `priority` descending, then `className` lex ascending — both
+  dimensions deterministic across runs and machines.
+- Same config + same input → byte-identical proposals and final
+  `state.classification`.
+
+
 ## File Inventory
 
 For dispatched implementation. Paths relative to repo root.
@@ -1130,6 +1168,15 @@ src/classification/ClassifierInterface.ts
 src/classification/AjvClassifier.ts
 src/classification/DecisionTableClassifier.ts
 src/classification/Cascade.ts
+src/classification/ClassificationFactory.ts             (C5: startup compiler — predicates, AJV schemas, six classifier instances)
+src/classification/predicates/Predicate.ts              (C1: closed-vocabulary predicate engine)
+src/classification/tasks/SourceClassifier.ts            (C2: classify:source task class)
+src/classification/tasks/StructuralClassifier.ts        (C2: classify:structural task class)
+src/classification/tasks/RulesClassifier.ts             (C2: classify:rules task class)
+src/classification/tasks/SchemaClassifier.ts            (C3: classify:schema task class wrapping AjvClassifier)
+src/classification/tasks/OntologyClassifier.ts          (C4: classify:ontology task class)
+src/classification/tasks/ConflictResolver.ts            (C4: classify:conflict task class)
+src/classification/tasks/_shared.ts                     (shared evaluateRules helper; private to tasks/)
 src/config/SquashageConfig.ts                      (typed loader, replaces RipperConfig usage; keeps named-error pattern)
 src/config/OutputConfig.ts
 src/schemas/output.schema.json
@@ -1158,7 +1205,9 @@ tests/unit/classification/Cascade.test.ts
 tests/unit/tasks/jsonRead.test.ts
 tests/unit/tasks/rdfjsFinalize.test.ts
 tests/integration/build-trig.test.ts               (end-to-end smoke against fixtures)
+tests/integration/build-classify-cascade.test.ts   (C5: full classifier cascade — matched quad + unknown quarantine)
 tests/fixtures/squashage/...                       (sample ripperoni JSON for tests)
+tests/fixtures/squashage/build-classify-cascade/plugin.ts  (C5: fixture:squash plugin for cascade test)
 ```
 
 ### Modify

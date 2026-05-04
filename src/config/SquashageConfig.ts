@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath }    from 'node:url';
 
 import AjvModule, { type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
@@ -16,6 +17,18 @@ const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInter
 
 const log = Logger.forComponent('SquashageConfig');
 
+// ─── Schemas directory ─────────────────────────────────────────────────────────
+// Resolve the schemas directory relative to this source file so that
+// predicate.schema.json can be loaded and registered for the classification
+// $ref resolution in target.schema.json.
+const _schemasDir = resolve(dirname(fileURLToPath(import.meta.url)), '../schemas');
+
+function _loadSchema(name: string): object {
+  const absPath = resolve(_schemasDir, name);
+  const text = readFileSync(absPath, 'utf-8');
+  return JSON.parse(text) as object;
+}
+
 // ─── Target schema ─────────────────────────────────────────────────────────────
 
 const TARGET_SCHEMA = {
@@ -31,7 +44,79 @@ const TARGET_SCHEMA = {
     output:         { $ref: 'https://squashage.dev/schemas/output.json' },
     graphs:         { type: 'object', additionalProperties: { type: 'string', format: 'uri' } },
     ontology:       { type: 'object' },
-    classification: { type: 'object' },
+    classification: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        source: { type: 'boolean', const: true },
+        structural: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['className', 'priority', 'predicate', 'reasons'],
+            properties: {
+              className: { type: 'string', minLength: 1 },
+              priority:  { type: 'number' },
+              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
+              reasons:   { type: 'array', items: { type: 'string' } },
+            },
+          },
+        },
+        rules: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['className', 'priority', 'predicate', 'reasons'],
+            properties: {
+              className: { type: 'string', minLength: 1 },
+              priority:  { type: 'number' },
+              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
+              reasons:   { type: 'array', items: { type: 'string' } },
+            },
+          },
+        },
+        schemas: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            required: ['className', 'priority', 'schemaPath'],
+            properties: {
+              className:  { type: 'string', minLength: 1 },
+              priority:   { type: 'number' },
+              schemaPath: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+        ontology: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['classes'],
+          properties: {
+            classes: {
+              type: 'object',
+              additionalProperties: { type: 'string', format: 'uri' },
+              minProperties: 1,
+            },
+          },
+        },
+        conflict: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['onConflict', 'onUnknown', 'evidence'],
+          properties: {
+            onConflict: { type: 'string', enum: ['quarantine', 'pickPriority'] as const },
+            onUnknown:  { type: 'string', enum: ['quarantine', 'skip'] as const },
+            evidence:   { type: 'boolean' },
+          },
+        },
+      },
+    },
     quarantine:     { type: 'object' },
     concurrency:    { type: 'integer', minimum: 1, default: 1 },
   },
@@ -64,11 +149,13 @@ const ROOT_SCHEMA = {
   },
 } as const;
 
-// ─── AJV instance (all three schemas registered so $ref resolves) ──────────────
+// ─── AJV instance (all schemas registered so $ref resolves) ───────────────────
+// Register predicate schema FIRST so target.schema's $ref resolves correctly.
 
 const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
 addFormats(ajv);
 ajv.addSchema(OUTPUT_SCHEMA);
+ajv.addSchema(_loadSchema('predicate.schema.json'));
 ajv.addSchema(TARGET_SCHEMA);
 
 const _validate: ValidateFunction<object> = ajv.compile(ROOT_SCHEMA);
@@ -142,6 +229,98 @@ export interface SquashageConfigInterface {
   };
   /** Map of target id → target configuration. Must have at least one entry. */
   readonly targets: Record<string, TargetConfigInterface>;
+}
+
+// ─── Cross-validation helper ───────────────────────────────────────────────────
+
+/**
+ * Set of `classify:*` task names that are class-proposers (not just gates).
+ * When 2+ of these are in the pipeline, `classify:conflict` is required.
+ *
+ * @internal
+ */
+const CLASS_PROPOSERS = new Set<string>([
+  'classify:structural',
+  'classify:rules',
+  'classify:schema',
+]);
+
+/**
+ * Map from classify task name to the classification config sub-key that must
+ * be present when the task is in the pipeline.
+ *
+ * @internal
+ */
+const CLASSIFY_TASK_CONFIG_KEYS: Readonly<Record<string, string>> = {
+  'classify:source':     'source',
+  'classify:structural': 'structural',
+  'classify:rules':      'rules',
+  'classify:schema':     'schemas',
+  'classify:ontology':   'ontology',
+  'classify:conflict':   'conflict',
+};
+
+/**
+ * Performs cross-validation of a single target config after AJV schema
+ * validation passes.
+ *
+ * @remarks
+ * Validates that every `classify:*` task in the pipeline has a corresponding
+ * `classification.*` config sub-key present. Also enforces that when ≥2
+ * distinct class-proposing classifiers are in the pipeline
+ * (`classify:structural`, `classify:rules`, `classify:schema`), the
+ * `classify:conflict` task must be present.
+ *
+ * @param target      - Target identifier for error messages.
+ * @param targetConfig - Validated target config to cross-check.
+ * @throws {SquashageConfigError} When a classify task is listed without its config sub-key.
+ * @throws {SquashageConfigError} When ≥2 class-proposers are listed without `classify:conflict`.
+ *
+ * @internal
+ */
+function crossValidateTarget(target: string, targetConfig: TargetConfigInterface): void {
+  const classification = targetConfig.classification as Record<string, unknown> | undefined;
+  const pipeline = targetConfig.pipeline;
+
+  // Validate each classify:* task has its config sub-key.
+  for (const taskName of pipeline) {
+    const configKey = CLASSIFY_TASK_CONFIG_KEYS[taskName];
+    if (configKey === undefined) {
+      // Not a classify task — skip.
+      continue;
+    }
+
+    const configValue = classification?.[configKey];
+    const isMissing =
+      configValue === undefined ||
+      configValue === null ||
+      (configKey === 'source' && configValue !== true) ||
+      (Array.isArray(configValue) && (configValue as unknown[]).length === 0) ||
+      (configKey === 'ontology' &&
+        typeof configValue === 'object' &&
+        configValue !== null &&
+        Object.keys((configValue as Record<string, unknown>)['classes'] as Record<string, unknown> ?? {}).length === 0);
+
+    if (isMissing) {
+      throw SquashageConfigError.create(
+        `Pipeline lists "${taskName}" but classification.${configKey} is missing or empty`,
+        { metadata: { target, task: taskName, configKey } },
+      );
+    }
+  }
+
+  // Enforce classify:conflict when ≥2 class-proposers are in the pipeline.
+  const proposersInPipeline = pipeline.filter((name) => CLASS_PROPOSERS.has(name));
+  const distinctProposers = new Set(proposersInPipeline);
+  if (distinctProposers.size >= 2 && !pipeline.includes('classify:conflict')) {
+    throw SquashageConfigError.create(
+      `Pipeline includes ${distinctProposers.size} class-proposing classifiers ` +
+      `(${[...distinctProposers].join(', ')}) but is missing "classify:conflict". ` +
+      `When multiple class-proposers are active, the ConflictResolver must be ` +
+      `present in the pipeline to pick the winning class.`,
+      { metadata: { target, distinctProposers: [...distinctProposers] } },
+    );
+  }
 }
 
 // ─── Schema class ──────────────────────────────────────────────────────────────
@@ -260,10 +439,13 @@ export class SquashageConfig {
    * Pure validation with no I/O. Useful for callers that have already parsed
    * the config JSON (e.g. from an environment variable or a test fixture).
    *
+   * After AJV schema validation passes, cross-validation is performed for each
+   * target's `pipeline` vs `classification` config sub-keys.
+   *
    * @param raw - Unknown value to validate.
    * @param configPath - Optional path shown in error messages for context.
    * @returns Validated {@link SquashageConfigInterface} object.
-   * @throws {SquashageConfigError} When `raw` fails schema validation.
+   * @throws {SquashageConfigError} When `raw` fails schema validation or cross-validation.
    *
    * @example
    * ```ts
@@ -280,7 +462,15 @@ export class SquashageConfig {
         { metadata: { configPath, errors } },
       );
     }
+
+    const validated = raw as SquashageConfigInterface;
+
+    // Cross-validate each target: pipeline classify tasks vs classification config.
+    for (const [target, targetConfig] of Object.entries(validated.targets)) {
+      crossValidateTarget(target, targetConfig);
+    }
+
     log.debug('validate', 'Squashage config validated successfully', { configPath });
-    return raw as SquashageConfigInterface;
+    return validated;
   }
 }
