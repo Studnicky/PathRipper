@@ -15,6 +15,8 @@ agent or contributor starts on it.
 | Plan | What |
 |------|------|
 | [13](13-file-output-and-semantics-integration.md) | File output via `@semantics/*`-shaped wrappers (v0.x backed by `n3`/`jsonld`/`rdf-canonize`/`rdf-validate-shacl`/`@rdfjs/*`); orchestrator-driven `rdfjs:finalize`; SHACL pre-write gate; quarantine; AJV-validated config; deterministic classifier menu; per-run `TaskRegistry`. |
+| 14 (in plan 13) | Deterministic prefix derivation (`PrefixResolver`) + auto JSON-LD `@context` build (`JsonldContext.build`) + `output.jsonldContext` override; Pathfinder/aonprd e2e suite proving the pipeline with zero hardcoded IRIs. |
+| [15](15-graph-viz.md) | Cytoscape graph renderer (vendored, offline) + `squashage viz` CLI subcommand + checked-in `docs/examples/aonprd/{aonprd.jsonld,aonprd.html}` demo. |
 
 The historical Ripperoni-era plans (01–12) covered scraper bugs and
 features that no longer apply — Squashage deleted that layer wholesale

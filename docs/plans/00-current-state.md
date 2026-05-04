@@ -1,6 +1,6 @@
 # Current State
 
-Squashage v0.x is implemented and tests pass: 557 unit + 22 integration, all
+Squashage v0.x is implemented and tests pass: 662 unit + 22 integration + 43 e2e, all
 gates clean (`npm run check`, `npm run test:integration`). The package
 consumes Ripperoni JSON, classifies each record through a configurable
 deterministic cascade, projects matched records into RDF/JS quads, and
@@ -42,11 +42,31 @@ remains out of scope in both v0.x and v1.x.
   recursively, drives `ConcurrentPipeline.executeAll`, strips
   `rdfjs:finalize` from the per-record queue and invokes it once after
   the final batch settles, returns `RunResultInterface`.
-- **CLI** (`src/cli/cli.ts`): `build`, `classify`, `inspect`. `build`
-  honors `--out`, `--format`, `--in`, `--dry-run` overrides.
-- **Integration tests**: `build-trig.test.ts` (full pipeline smoke,
-  malformed-record quarantine, SHACL pass/fail) and
-  `build-classify-cascade.test.ts` (full classifier menu).
+- **CLI** (`src/cli/cli.ts`): `build`, `classify`, `inspect`, `viz`.
+  `build` honors `--out`, `--format`, `--in`, `--dry-run` overrides;
+  `viz --in <jsonld> --out <html>` renders a JSON-LD output as a
+  self-contained interactive cytoscape graph.
+- **Prefix derivation + auto JSON-LD context**
+  (`src/classification/PrefixResolver.ts`, `src/rdf/JsonldContext.ts`):
+  resolves instance/graph/vocabulary prefix-base pairs from
+  `targets[].ontology.prefixes` if present, otherwise derives from
+  `_source.url` host + target name; auto-builds the JSON-LD `@context`
+  from the produced quad set + `ctx.prefixes` (predicate datatype
+  inference, `@container: @set` for multi-valued properties, `@type: @id`
+  for IRI-typed object properties). `output.jsonldContext` override is
+  optional; default is auto-build.
+- **Graph viz** (`src/viz/`): `JsonLdGraph` adapter + `GraphRenderer`
+  emitting a standalone HTML document with the vendored cytoscape
+  bundle. Demo at `docs/examples/aonprd/aonprd.html` opens in any
+  browser, runs offline.
+- **Integration tests** (`tests/integration/`): `build-trig.test.ts`
+  (full pipeline smoke, malformed-record quarantine, SHACL pass/fail)
+  and `build-classify-cascade.test.ts` (full classifier menu).
+- **End-to-end test** (`tests/e2e/aonprd.test.ts`): 43 explicit
+  assertions over 12 Pathfinder/aonprd fixtures (feat / spell / monster
+  / action / equipment + quarantine triggers). The e2e config has zero
+  hardcoded IRIs — proves `PrefixResolver` + auto-context end-to-end
+  against realistic input.
 
 ## Runtime Shape
 
