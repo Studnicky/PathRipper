@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+(no changes since 0.1.0-beta.1)
+
+## [0.1.0-beta.1] - 2026-05-04
+
 The Squashage v0.x branch — graph reconstitution pipeline that consumes structured JSON records, classifies each record through a deterministic cascade, projects matched records into RDF/JS quads, and emits a single serialized RDF file (or interactive HTML graph). 662 unit tests + 22 integration tests + 43 e2e tests, all gates green. Branch ready for the v0.x npm release.
 
 ### Added

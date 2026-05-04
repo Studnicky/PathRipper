@@ -1,6 +1,6 @@
 {
   "name": "squashage",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "description": "Graph reconstitution pipeline — classifies structured JSON records into a deterministic RDF graph and renders it as TriG, JSON-LD, or an interactive HTML view.",
   "type": "module",
   "bin": {
