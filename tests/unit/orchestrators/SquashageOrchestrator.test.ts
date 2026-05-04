@@ -245,4 +245,64 @@ describe('SquashageOrchestrator', () => {
       );
     });
   });
+
+  describe('run — parallel runs do not pollute each other\'s registries', () => {
+    let parallelRunDir = '';
+
+    before(async () => {
+      parallelRunDir = join(workDir, 'parallel');
+      await mkdir(parallelRunDir, { recursive: true });
+
+      // Two input files for target A
+      const dirA = join(parallelRunDir, 'a-in');
+      await mkdir(dirA, { recursive: true });
+      await writeFile(join(dirA, 'a1.json'), JSON.stringify({ name: 'A1' }), 'utf8');
+      await writeFile(join(dirA, 'a2.json'), JSON.stringify({ name: 'A2' }), 'utf8');
+
+      // Two input files for target B
+      const dirB = join(parallelRunDir, 'b-in');
+      await mkdir(dirB, { recursive: true });
+      await writeFile(join(dirB, 'b1.json'), JSON.stringify({ name: 'B1' }), 'utf8');
+      await writeFile(join(dirB, 'b2.json'), JSON.stringify({ name: 'B2' }), 'utf8');
+    });
+
+    it('two simultaneous runs for different targets complete independently without registry cross-contamination', async () => {
+      const outDirA = join(parallelRunDir, 'out-a');
+      const outDirB = join(parallelRunDir, 'out-b');
+      await mkdir(outDirA, { recursive: true });
+      await mkdir(outDirB, { recursive: true });
+
+      const configA = buildConfig(
+        join(parallelRunDir, 'a-in'),
+        join(outDirA, 'out.ttl'),
+      );
+
+      // configB is a distinct config with its own target key, same pipeline.
+      const configB: import('../../../src/config/SquashageConfig.js').SquashageConfigInterface = {
+        input: { basePath: join(parallelRunDir, 'b-in'), format: 'json' },
+        targets: {
+          targetB: {
+            input:    join(parallelRunDir, 'b-in'),
+            pipeline: ['json:read', FIXTURE_TASK_NAME, 'rdfjs:finalize'],
+            output:   { kind: 'file', path: join(outDirB, 'out.ttl') },
+          },
+        },
+      };
+
+      // Run both targets concurrently — each must get its own isolated registry.
+      const [resultA, resultB] = await Promise.all([
+        SquashageOrchestrator.run(configA, 'target1', { outDir: outDirA }),
+        SquashageOrchestrator.run(configB, 'targetB', { outDir: outDirB }),
+      ]);
+
+      // Both runs succeed with 2 records each.
+      assert.equal(resultA.recordCount, 2, 'run A: recordCount');
+      assert.equal(resultA.succeeded,   2, 'run A: succeeded');
+      assert.equal(resultA.failed,      0, 'run A: failed');
+
+      assert.equal(resultB.recordCount, 2, 'run B: recordCount');
+      assert.equal(resultB.succeeded,   2, 'run B: succeeded');
+      assert.equal(resultB.failed,      0, 'run B: failed');
+    });
+  });
 });
