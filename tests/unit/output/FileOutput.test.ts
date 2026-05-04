@@ -1,6 +1,6 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, stat, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
 import { join, basename }                            from 'node:path';
 import { tmpdir }                                    from 'node:os';
 import { rm }                                        from 'node:fs/promises';

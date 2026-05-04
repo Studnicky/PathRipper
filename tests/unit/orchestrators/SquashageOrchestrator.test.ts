@@ -17,7 +17,7 @@
  * @since 0.1.0
  */
 
-import { describe, it, before, after, afterEach } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   mkdtemp,
