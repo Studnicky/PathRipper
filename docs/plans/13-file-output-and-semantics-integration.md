@@ -1066,11 +1066,25 @@ and overwrites it.
 
 Exit codes:
 
-- `0`: build succeeded, every record either projected or quarantined as
-  `unknown` (a quarantine bucket counted as "expected", not "failure").
-- `1`: at least one record landed in `conflicts/` or `projection/`, OR
-  `rdfjs:finalize` failed (output, validation, write).
-- `2`: config / schema / startup error before any record processed.
+- `0`: every record either projected cleanly or landed in any quarantine
+  bucket (`unknown`, `conflicts`, or `projection`). Quarantine is a *graceful*
+  path — `json:read` and `classify:*` tasks short-circuit with a quarantine
+  write rather than throwing, so the per-record pipeline does not register a
+  failure. The build's exit code stays `0`; the quarantine artifacts on disk
+  are how the caller learns which records were rejected. (Verified
+  empirically by I1's malformed-JSON test case.)
+- `1`: a per-record task threw (caught by `ConcurrentPipeline.executeAll`'s
+  `failed[]`), OR `rdfjs:finalize` threw (`OutputConfigError` from
+  format/named-graph mismatch, `FileOutputError` from atomic-write or SHACL
+  validation failure). The orchestrator surfaces these via
+  `result.failed > 0` or by letting the finalize error propagate.
+- `2`: config / schema / startup error before any record processed (e.g.
+  unknown task name in `pipeline:`, missing target, invalid JSON Schema).
+
+The CLI distinguishes "graceful with quarantine" from "all clean" by counting
+artifacts on disk, not via the exit code. Operators who want to fail their
+build on any quarantine activity should grep
+`./graphs/<target>/quarantine/` after the run.
 
 `QuarantineWriter.summary()` returns counts by bucket; `rdfjs:finalize`
 includes them in the output report.
