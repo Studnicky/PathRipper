@@ -42,6 +42,10 @@ import { OutputConfigError }     from '../errors/OutputConfigError.js';
 import { SquashageConfigError }  from '../errors/SquashageConfigError.js';
 import { FileOutputError }       from '../errors/FileOutputError.js';
 import { ExternalSchemaError }   from '../errors/ExternalSchemaError.js';
+import { readFile, writeFile }   from 'node:fs/promises';
+import { resolve, basename, dirname as pathDirname, join } from 'node:path';
+import { JsonLdGraph }           from '../viz/JsonLdGraph.js';
+import { GraphRenderer }         from '../viz/GraphRenderer.js';
 
 // ---------------------------------------------------------------------------
 // Package metadata
@@ -213,6 +217,52 @@ export function buildCli(): Command {
       process.stdout.write(
         'inspect subcommand not implemented in v0.x — coming with the classifier cascade lane\n',
       );
+      _exitCode = 0;
+    });
+
+
+  // -------------------------------------------------------------------------
+  // viz  — render a squashage JSON-LD file as a standalone HTML graph
+  // -------------------------------------------------------------------------
+
+  program
+    .command('viz')
+    .description('Render a squashage JSON-LD output file as a standalone interactive HTML graph')
+    .requiredOption('--in <path>', 'Path to a squashage-produced JSON-LD file')
+    .option('--out <path>', 'Output HTML path (default: <basename>.html next to --in)')
+    .option('--title <string>', 'HTML page title (default: Squashage — <basename>)')
+    .action(async (opts: { in: string; out?: string; title?: string }): Promise<void> => {
+      const inPath  = resolve(opts.in);
+      const inBase  = basename(inPath, '.jsonld');
+      const outPath = opts.out !== undefined
+        ? resolve(opts.out)
+        : join(pathDirname(inPath), `${inBase}.html`);
+      const title   = opts.title ?? `Squashage — ${inBase}`;
+
+      let doc: unknown;
+      try {
+        const raw = await readFile(inPath, 'utf-8');
+        doc = JSON.parse(raw);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`viz: cannot read/parse ${inPath}: ${msg}\n`);
+        _exitCode = 1;
+        return;
+      }
+
+      const payload = JsonLdGraph.fromCompactedJsonLd(doc);
+      const html    = GraphRenderer.render(payload, { title });
+
+      try {
+        await writeFile(outPath, html, 'utf-8');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`viz: cannot write ${outPath}: ${msg}\n`);
+        _exitCode = 1;
+        return;
+      }
+
+      process.stdout.write(`viz: wrote ${html.length.toString()} bytes to ${outPath}\n`);
       _exitCode = 0;
     });
 

@@ -100,3 +100,6 @@ squashage.config*.json
 
 # Target-specific plugin source — shipped as examples in v1, not the beta
 plugins/
+
+# Demo build artifacts (graphs/ subdirectory from viz:demo script)
+docs/examples/aonprd/graphs/

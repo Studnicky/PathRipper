@@ -333,3 +333,23 @@ boring and stable so downstream graph code does not inherit the bit.
 - @rdfjs/data-model, @rdfjs/dataset, @rdfjs/namespace: <https://github.com/rdfjs-base>
 - W3C SHACL: <https://www.w3.org/TR/shacl/>
 - W3C OWL: <https://www.w3.org/OWL/>
+
+## Demo
+
+Open [`docs/examples/aonprd/aonprd.html`](docs/examples/aonprd/aonprd.html) in
+any browser to see the package's JSON-LD output rendered as an interactive graph.
+Nodes are coloured by RDF class, edges show object-property links, and clicking
+a node reveals its properties in the sidebar. The file runs entirely offline —
+no network access, no Node.js, no `node_modules` required at display time.
+
+To rebuild the demo from the fixture data:
+
+```bash
+npm run viz:demo
+```
+
+To render any squashage JSON-LD output as a standalone HTML graph:
+
+```bash
+squashage viz --in ./graphs/aonprd.jsonld --out aonprd.html --title "My Graph"
+```

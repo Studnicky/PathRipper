@@ -1,0 +1,197 @@
+{
+  "@context": {
+    "aonprd": "https://squashage.dev/vocabulary/aonprd#",
+    "aonprd:actionCost": {
+      "@id": "aonprd:actionCost"
+    },
+    "aonprd:itemLevel": {
+      "@id": "aonprd:itemLevel",
+      "@type": "xsd:integer"
+    },
+    "aonprd:level": {
+      "@id": "aonprd:level",
+      "@type": "xsd:integer"
+    },
+    "aonprd:name": {
+      "@id": "aonprd:name"
+    },
+    "aonprd:rarity": {
+      "@id": "aonprd:rarity",
+      "@type": "@id"
+    },
+    "aonprd:size": {
+      "@id": "aonprd:size"
+    },
+    "aonprd:tradition": {
+      "@id": "aonprd:tradition",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "aonprd:trait": {
+      "@id": "aonprd:trait",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "aonprdg": "https://squashage.dev/graph/aonprd/",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdf:type": {
+      "@id": "rdf:type",
+      "@type": "@id"
+    },
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@graph": [
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Actions.aspx?ID=88",
+          "@type": "aonprd:Action",
+          "aonprd:actionCost": "one-action",
+          "aonprd:name": "Stride",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:trait": [
+            "aonprd:Trait-move"
+          ]
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Actions.aspx?ID=89",
+          "@type": "aonprd:Action",
+          "aonprd:actionCost": "one-action",
+          "aonprd:name": "Strike",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:trait": [
+            "aonprd:Trait-attack"
+          ]
+        }
+      ],
+      "@id": "aonprdg:action"
+    },
+    {
+      "@graph": [
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Equipment.aspx?ID=186",
+          "@type": "aonprd:Equipment",
+          "aonprd:itemLevel": "1",
+          "aonprd:name": "Healing Potion (Minor)",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:trait": [
+            "aonprd:Trait-consumable",
+            "aonprd:Trait-healing",
+            "aonprd:Trait-magical",
+            "aonprd:Trait-necromancy",
+            "aonprd:Trait-positive",
+            "aonprd:Trait-potion"
+          ]
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Weapons.aspx?ID=31",
+          "@type": "aonprd:Equipment",
+          "aonprd:itemLevel": "0",
+          "aonprd:name": "Longsword",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:trait": [
+            "aonprd:Trait-versatile-P"
+          ]
+        }
+      ],
+      "@id": "aonprdg:equipment"
+    },
+    {
+      "@graph": [
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Feats.aspx?ID=750",
+          "@type": "aonprd:Feat",
+          "aonprd:actionCost": "two-actions",
+          "aonprd:level": "1",
+          "aonprd:name": "Power Attack",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:trait": [
+            "aonprd:Trait-flourish"
+          ]
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Feats.aspx?ID=773",
+          "@type": "aonprd:Feat",
+          "aonprd:actionCost": "free-action",
+          "aonprd:level": "1",
+          "aonprd:name": "Quick Draw",
+          "aonprd:rarity": "aonprd:Rarity-common"
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Feats.aspx?ID=848",
+          "@type": "aonprd:Feat",
+          "aonprd:level": "1",
+          "aonprd:name": "Toughness",
+          "aonprd:rarity": "aonprd:Rarity-common"
+        }
+      ],
+      "@id": "aonprdg:feat"
+    },
+    {
+      "@graph": [
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Monsters.aspx?ID=136",
+          "@type": "aonprd:Monster",
+          "aonprd:level": "19",
+          "aonprd:name": "Ancient Red Dragon",
+          "aonprd:rarity": "aonprd:Rarity-rare",
+          "aonprd:size": "Gargantuan",
+          "aonprd:trait": [
+            "aonprd:Trait-dragon",
+            "aonprd:Trait-fire"
+          ]
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Monsters.aspx?ID=232",
+          "@type": "aonprd:Monster",
+          "aonprd:level": "-1",
+          "aonprd:name": "Goblin Warrior",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:size": "Small",
+          "aonprd:trait": [
+            "aonprd:Trait-goblin",
+            "aonprd:Trait-humanoid"
+          ]
+        }
+      ],
+      "@id": "aonprdg:monster"
+    },
+    {
+      "@graph": [
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Spells.aspx?ID=119",
+          "@type": "aonprd:Spell",
+          "aonprd:level": "3",
+          "aonprd:name": "Fireball",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:tradition": [
+            "aonprd:Tradition-arcane",
+            "aonprd:Tradition-primal"
+          ],
+          "aonprd:trait": [
+            "aonprd:Trait-evocation",
+            "aonprd:Trait-fire"
+          ]
+        },
+        {
+          "@id": "https://squashage.dev/instance/aonprd/Spells.aspx?ID=148",
+          "@type": "aonprd:Spell",
+          "aonprd:level": "1",
+          "aonprd:name": "Heal",
+          "aonprd:rarity": "aonprd:Rarity-common",
+          "aonprd:tradition": [
+            "aonprd:Tradition-divine",
+            "aonprd:Tradition-primal"
+          ],
+          "aonprd:trait": [
+            "aonprd:Trait-healing",
+            "aonprd:Trait-necromancy",
+            "aonprd:Trait-positive"
+          ]
+        }
+      ],
+      "@id": "aonprdg:spell"
+    }
+  ]
+}

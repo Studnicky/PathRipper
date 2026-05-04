@@ -1,7 +1,7 @@
 {
   "name": "squashage",
   "version": "0.1.0",
-  "description": "Graph reconstitution pipeline — pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
+  "description": "Graph reconstitution pipeline \u2014 pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
   "type": "module",
   "bin": {
     "squashage": "./dist/cli/cli.js"
@@ -36,7 +36,9 @@
     "postinstall": "bash scripts/install-hooks.sh && node scripts/create-type-stubs.js",
     "prepare": "bash scripts/install-hooks.sh",
     "test:integration": "node --import tsx --test 'tests/integration/**/*.test.ts'",
-    "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'"
+    "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'",
+    "viz:demo": "node --import tsx scripts/build-aonprd-demo.ts",
+    "viz:refresh-vendor": "node scripts/refresh-viz-vendor.js"
   },
   "dependencies": {
     "@rdfjs/data-model": "^2.1.1",
@@ -57,6 +59,7 @@
     "@types/node": "^22.0.0",
     "@types/rdfjs__data-model": "^2.0.9",
     "@types/rdfjs__dataset": "^2.0.7",
+    "cytoscape": "^3.33.3",
     "eslint": "^9.18.0",
     "globals": "^15.0.0",
     "tsx": "^4.0.0",
