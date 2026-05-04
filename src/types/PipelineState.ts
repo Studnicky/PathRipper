@@ -5,7 +5,7 @@ import type { OutputConfigInterface } from '../config/OutputConfig.js';
 import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
 
 /**
- * Source metadata for a single Ripperoni JSON record flowing through the pipeline.
+ * Source metadata for a single input JSON record flowing through the pipeline.
  *
  * @remarks
  * Populated by `json:read` from the file path the record was loaded from and
@@ -19,13 +19,13 @@ import type { PrefixResolutionInterface } from '../classification/PrefixResolver
  * @group Types
  */
 export interface InputSourceInterface {
-  /** Ripperoni target id this record came from (e.g. `"bulbapedia"`). */
+  /** Upstream target id this record came from (e.g. `"bulbapedia"`). */
   readonly target:    string;
   /** Filesystem path the record was loaded from, relative to the run's input root. */
   readonly path:      string;
-  /** Ripperoni plugin that produced the record (e.g. `"bulbapedia:parse"`). */
+  /** Upstream plugin that produced the record (e.g. `"bulbapedia:parse"`). */
   readonly plugin?:   string | undefined;
-  /** Ripperoni schema id the record was validated against upstream, if known. */
+  /** Schema id the record was validated against upstream, if known. */
   readonly schemaId?: string | undefined;
 }
 
@@ -81,7 +81,7 @@ export interface ClassificationEvidenceInterface {
  * Shared per-run pipeline context populated by the orchestrator before task execution.
  *
  * @remarks
- * Same role as the scraper-era {@link PipelineContextInterface}: built-in
+ * Same role as the original {@link PipelineContextInterface}: built-in
  * tasks (`json:read`, `rdfjs:finalize`) read it; plugin tasks may use it but
  * are not required to. Field is optional on {@link PipelineStateInterface}
  * so existing callers keep working.
@@ -160,7 +160,7 @@ export interface PipelineStateInterface extends Record<string, unknown> {
   readonly targetId:       string;
   /** Source metadata for the record flowing through the pipeline. */
   readonly source:         InputSourceInterface;
-  /** Parsed Ripperoni JSON record. */
+  /** Parsed input JSON record. */
   readonly input:          Readonly<Record<string, unknown>>;
   /** Classification result; `null` until a `classify:*` task populates it. */
   classification:          ClassificationEvidenceInterface | null;

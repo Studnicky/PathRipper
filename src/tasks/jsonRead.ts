@@ -2,7 +2,7 @@
  * @fileoverview Built-in `json:read` task for the Squashage pipeline.
  *
  * @remarks
- * Reads a single Ripperoni JSON or JSONL record identified by the
+ * Reads a single input JSON or JSONL record identified by the
  * orchestrator-supplied `state.context.config.recordPath` (and optionally
  * `state.context.config.recordLine` for JSONL). Populates `state.input` from
  * the parsed record. On any parse failure, missing file, or non-object record,

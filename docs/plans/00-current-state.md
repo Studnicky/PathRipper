@@ -2,7 +2,7 @@
 
 Squashage v0.x is implemented and tests pass: 662 unit + 22 integration + 43 e2e, all
 gates clean (`npm run check`, `npm run test:integration`). The package
-consumes Ripperoni JSON, classifies each record through a configurable
+consumes structured JSON records, classifies each record through a configurable
 deterministic cascade, projects matched records into RDF/JS quads, and
 serializes the canonical dataset to a single RDF file. Graph-store loading
 remains out of scope in both v0.x and v1.x.

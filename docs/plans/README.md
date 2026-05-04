@@ -18,10 +18,8 @@ agent or contributor starts on it.
 | 14 (in plan 13) | Deterministic prefix derivation (`PrefixResolver`) + auto JSON-LD `@context` build (`JsonldContext.build`) + `output.jsonldContext` override; Pathfinder/aonprd e2e suite proving the pipeline with zero hardcoded IRIs. |
 | [15](15-graph-viz.md) | Cytoscape graph renderer (vendored, offline) + `squashage viz` CLI subcommand + checked-in `docs/examples/aonprd/{aonprd.jsonld,aonprd.html}` demo. |
 
-The historical Ripperoni-era plans (01–12) covered scraper bugs and
-features that no longer apply — Squashage deleted that layer wholesale
-during the v0.x migration. They are kept on disk for archaeology but are
-no longer actionable.
+Historical plans (01–12) covered scraper bugs and features from the
+initial bootstrap that no longer apply — those files have been removed.
 
 ## Open
 

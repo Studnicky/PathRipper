@@ -143,7 +143,7 @@ export function buildCli(): Command {
 
   program
     .name('squashage')
-    .description('Graph reconstitution pipeline — classify, project, and serialize Ripperoni JSON records to RDF.')
+    .description('Graph reconstitution pipeline — classify, project, and serialize structured JSON records to RDF.')
     .version(pkg.version);
 
   // -------------------------------------------------------------------------
@@ -210,7 +210,7 @@ export function buildCli(): Command {
 
   program
     .command('inspect')
-    .description('Inspect a single Ripperoni JSON record through the classification cascade')
+    .description('Inspect a single input JSON record through the classification cascade')
     .requiredOption('--file <path>', 'Path to a JSON record to inspect')
     .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
     .action((_opts: { file: string; config?: string }): void => {

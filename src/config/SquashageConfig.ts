@@ -182,7 +182,7 @@ const _validate: ValidateFunction<object> = ajv.compile(ROOT_SCHEMA);
  * @group Types
  */
 export interface TargetConfigInterface {
-  /** Path to the input directory or file produced by a Ripperoni run. */
+  /** Path to the input directory or file containing source JSON records. */
   readonly input: string;
   /** Ordered list of pipeline task names to execute per record. */
   readonly pipeline: ReadonlyArray<string>;
@@ -222,9 +222,9 @@ export interface TargetConfigInterface {
 export interface SquashageConfigInterface {
   /** Input source settings shared across all targets. */
   readonly input: {
-    /** Base path to the directory containing Ripperoni output files. */
+    /** Base path to the directory containing source JSON input files. */
     readonly basePath: string;
-    /** File format produced by Ripperoni (one file per record). */
+    /** Input file format (one record per file for json; multiple per file for jsonl). */
     readonly format: 'json' | 'jsonl';
   };
   /** Map of target id → target configuration. Must have at least one entry. */
@@ -381,10 +381,9 @@ class SquashageConfigSchema {
  * Synchronous loader and AJV validator for squashage configuration files.
  *
  * @remarks
- * All methods are static; the class cannot be instantiated. Mirrors the
- * loader pattern of `RipperConfig` but targets the squashage config schema
- * (three registered AJV schemas: output, target, root) and uses synchronous
- * I/O so callers can use it at startup without top-level `await`.
+ * All methods are static; the class cannot be instantiated. Uses synchronous
+ * I/O with three registered AJV schemas (output, target, root) so callers can
+ * load config at startup without top-level `await`.
  *
  * Throws {@link SquashageConfigError} on I/O failure, JSON parse failure, or
  * AJV schema violation. The error message includes the absolute config path

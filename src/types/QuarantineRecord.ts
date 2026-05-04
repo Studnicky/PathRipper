@@ -55,9 +55,9 @@ export interface QuarantineRecordInterface {
   readonly target:         string;
   /** Destination bucket that categorises the failure mode. */
   readonly bucket:         QuarantineBucket;
-  /** Source metadata identifying the originating Ripperoni JSON file. */
+  /** Source metadata identifying the originating input JSON file. */
   readonly source:         InputSourceInterface;
-  /** Parsed Ripperoni JSON record, or `null` if unavailable at quarantine time. */
+  /** Parsed input JSON record, or `null` if unavailable at quarantine time. */
   readonly input:          Record<string, unknown> | null;
   /** Classification result at the time of quarantine, or `null` if unclassified. */
   readonly classification: ClassificationEvidenceInterface | null;
