@@ -8,7 +8,7 @@
  *
  * 1. Resolves the target config and applies CLI overrides.
  * 2. Constructs the run-wide {@link PipelineContextInterface} (factory, dataset,
- *    builder, graphs, iri, output).
+ *    builder, graphs, iri, output, prefixes).
  * 3. Strips `rdfjs:finalize` from the per-record pipeline so the finalize task
  *    never runs inside a per-record `ConcurrentPipeline` execution.
  * 4. Instantiates classifier task classes from `targetConfig.classification` via
@@ -45,6 +45,8 @@ import type { PipelineStateInterface, PipelineContextInterface } from '../types/
 import type { ClassificationConfigInterface } from '../classification/ClassificationFactory.js';
 
 import { ClassificationFactory }   from '../classification/ClassificationFactory.js';
+import { PrefixResolver }          from '../classification/PrefixResolver.js';
+import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
 import { Pipeline }                from '../pipeline/Pipeline.js';
 import { ConcurrentPipeline }      from '../pipeline/ConcurrentPipeline.js';
 import { PipelineState }           from '../registry/PipelineState.js';
@@ -155,7 +157,7 @@ interface RecordLocatorInterface {
  *
  * 1. Validate target exists in `config.targets`.
  * 2. Apply CLI overrides to a synthesized {@link OutputConfigInterface}.
- * 3. Construct the run-wide {@link PipelineContextInterface}.
+ * 3. Construct the run-wide {@link PipelineContextInterface} (including `prefixes`).
  * 4. Strip `rdfjs:finalize` from the per-record task list; hold a reference.
  * 5. Instantiate classifier tasks via {@link ClassificationFactory.build} and
  *    register them on a per-run {@link TaskRegistry} instance.
@@ -227,8 +229,9 @@ export class SquashageOrchestrator {
     const outDir       = options.outDir ?? './graphs';
     const outputConfig = SquashageOrchestrator.#buildOutputConfig(targetConfig, options);
 
-    // Step 3 — Construct run-wide PipelineContextInterface.
-    const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig);
+    // Step 3 — Context construction is deferred to after the input walk so that
+    //           PrefixResolver.resolve() can peek at the first record's path.
+    //           See Step 7b below.
 
     // Step 4 — Strip rdfjs:finalize from per-record tasks; retain a reference.
     const FINALIZE_NAME   = 'rdfjs:finalize';
@@ -303,6 +306,29 @@ export class SquashageOrchestrator {
     const locators  = await SquashageOrchestrator.#walkInput(inputRoot);
 
     logger.info('walk', 'Input walk complete', { target, inputRoot, recordCount: locators.length });
+
+    // Step 7b — Resolve prefix-base pairs.
+    //
+    // Peek at the first locator to produce a minimal InputSourceInterface for URL
+    // derivation. This requires no additional I/O — the path is already known from
+    // the walk. PrefixResolver.resolve is pure and deterministic.
+    const firstLocator = locators[0];
+    const sampleSource = firstLocator !== undefined
+      ? { target, path: firstLocator.recordPath }
+      : undefined;
+
+    const prefixes = PrefixResolver.resolve(target, targetConfig, sampleSource);
+
+    // Step 3 (deferred) — Construct run-wide PipelineContextInterface with resolved prefixes.
+    const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig, prefixes);
+
+    logger.debug('run', 'Run-wide context constructed', {
+      target,
+      instanceBase:   prefixes.instances.base,
+      graphBase:      prefixes.graphs.base,
+      vocabularyBase: prefixes.vocabulary.base,
+      prefixSource:   prefixes.source,
+    });
 
     // Step 8 — Build one state per record with per-record context augmentation.
     const states = locators.map(({ recordPath, recordLine }) => {
@@ -440,12 +466,13 @@ export class SquashageOrchestrator {
 
   /**
    * Constructs the run-wide {@link PipelineContextInterface} from the target
-   * config and the resolved output config.
+   * config, resolved output config, and resolved prefix-base pairs.
    *
    * @param target       - Target identifier.
    * @param outDir       - Output base directory.
    * @param targetConfig - Validated target config.
    * @param outputConfig - Synthesized output config (CLI overrides already applied).
+   * @param prefixes     - Resolved prefix-base pairs from {@link PrefixResolver.resolve}.
    * @returns Fully populated `PipelineContextInterface`.
    */
   static #buildContext(
@@ -453,6 +480,7 @@ export class SquashageOrchestrator {
     outDir:       string,
     targetConfig: TargetConfigInterface,
     outputConfig: OutputConfigInterface,
+    prefixes:     PrefixResolutionInterface,
   ): PipelineContextInterface {
     const ontology = targetConfig.ontology;
     const baseIri  =
@@ -473,6 +501,7 @@ export class SquashageOrchestrator {
       graphs:  Object.freeze(graphs),
       iri:     Namespaces.for(baseIri),
       output:  outputConfig,
+      prefixes,
     };
 
     return ctx;
