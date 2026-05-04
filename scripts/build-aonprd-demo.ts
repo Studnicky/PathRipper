@@ -2,8 +2,9 @@
  * @fileoverview Build script for the Pathfinder/aonprd demo.
  *
  * @remarks
- * Produces both `docs/examples/aonprd/aonprd.jsonld` and
- * `docs/examples/aonprd/aonprd.html` — the checked-in demo files.
+ * Produces both `docs/public/examples/aonprd/aonprd.jsonld` and
+ * `docs/public/examples/aonprd/aonprd.html` — the checked-in demo files
+ * served via VitePress public passthrough under /examples/aonprd/.
  *
  * Usage:
  *   npm run viz:demo
@@ -24,7 +25,7 @@ import { GraphRenderer }         from '../src/viz/GraphRenderer.js';
 const __dirname    = dirname(fileURLToPath(import.meta.url));
 const ROOT         = resolve(__dirname, '..');
 const FIXTURE      = resolve(ROOT, 'tests', 'e2e', 'aonprd');
-const OUT_DIR      = resolve(ROOT, 'docs', 'examples', 'aonprd');
+const OUT_DIR      = resolve(ROOT, 'docs', 'public', 'examples', 'aonprd');
 const JSON_LD_PATH = resolve(OUT_DIR, 'aonprd.jsonld');
 const HTML_PATH    = resolve(OUT_DIR, 'aonprd.html');
 const TARGET       = 'aonprd';

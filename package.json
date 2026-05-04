@@ -22,8 +22,7 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc --noEmit false && npm run build:plugins",
-    "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
+    "build": "tsc --noEmit false",
     "typecheck": "tsc --noEmit",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
@@ -36,7 +35,10 @@
     "test:integration": "node --import tsx --test 'tests/integration/**/*.test.ts'",
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'",
     "viz:demo": "node --import tsx scripts/build-aonprd-demo.ts",
-    "viz:refresh-vendor": "node scripts/refresh-viz-vendor.js"
+    "viz:refresh-vendor": "node scripts/refresh-viz-vendor.js",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
     "@rdfjs/data-model": "^2.1.1",
@@ -62,7 +64,9 @@
     "globals": "^15.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "8.59.0"
+    "typescript-eslint": "8.59.0",
+    "vitepress": "^1.6.4",
+    "vue": "^3.0.0"
   },
   "engines": {
     "node": ">=24.0.0"

@@ -103,3 +103,4 @@ plugins/
 
 # Demo build artifacts (graphs/ subdirectory from viz:demo script)
 docs/examples/aonprd/graphs/
+docs/.vitepress/dist/

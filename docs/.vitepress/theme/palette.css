@@ -1,0 +1,49 @@
+/**
+ * palette.css — Squashage colour tokens (eggplant-purple accent).
+ * Source pattern: W3C Design System https://design-system.w3.org/settings/
+ *
+ * Squashage override: primary accent replaced with eggplant purples.
+ *   primary #8b5fbf  accent #e94560 (carried from the cytoscape demo HTML)
+ * To swap the accent for another project, change ONLY this file.
+ * base.css reads every --vp-c-brand-* and surface variable via var().
+ */
+
+:root {
+  --vp-c-brand-1:    #8b5fbf;
+  --vp-c-brand-2:    #6b3f9f;
+  --vp-c-brand-3:    #8b5fbf;
+  --vp-c-brand-soft: rgba(139, 95, 191, 0.12);
+
+  --vp-c-text-1: #111111;
+  --vp-c-text-2: #444444;
+  --vp-c-text-3: #707070;
+
+  --vp-c-bg:        #ffffff;
+  --vp-c-bg-alt:    #fafafa;
+  --vp-c-bg-elv:    #ffffff;
+  --vp-c-bg-soft:   #fafafa;
+
+  --vp-c-divider: #e0e0e0;
+  --vp-c-border:  #e0e0e0;
+
+  --vp-c-accent: #e94560;
+}
+
+.dark {
+  --vp-c-brand-1:    #c09fef;
+  --vp-c-brand-2:    #d4baf8;
+  --vp-c-brand-3:    #c09fef;
+  --vp-c-brand-soft: rgba(192, 159, 239, 0.12);
+
+  --vp-c-text-1: #fafafa;
+  --vp-c-text-2: #c0c0c0;
+  --vp-c-text-3: #808080;
+
+  --vp-c-bg:        #0a0a0a;
+  --vp-c-bg-alt:    #111111;
+  --vp-c-bg-elv:    #1a1a1a;
+  --vp-c-bg-soft:   #111111;
+
+  --vp-c-divider: #2a2a2a;
+  --vp-c-border:  #2a2a2a;
+}
