@@ -60,12 +60,13 @@ const buildState = (
     output,
   };
   return {
-    targetId:       target,
-    source:         { target, path: 'test' },
-    input:          {},
-    classification: null,
-    output:         null,
-    context:        ctx,
+    targetId:        target,
+    source:          { target, path: 'test' },
+    input:           {},
+    classification:  null,
+    classifications: [],
+    output:          null,
+    context:         ctx,
   };
 };
 

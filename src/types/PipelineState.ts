@@ -29,6 +29,29 @@ export interface InputSourceInterface {
 }
 
 /**
+ * A classification proposal emitted by one classifier task; the conflict
+ * resolver consumes the accumulated array on `state.classifications` to
+ * pick the winning class for the record.
+ *
+ * @category Pipeline
+ * @since 0.1.0
+ * @see {@link PipelineStateInterface}
+ * @group Types
+ */
+export interface ClassificationProposalInterface {
+  /** Identifier of the task that emitted this proposal (e.g. 'classify:rules'). */
+  readonly source:     string;
+  /** Proposed ontology class id (or 'unknown' / '__validation__' for non-class proposals). */
+  readonly className:  string;
+  /** Numeric priority; ConflictResolver picks the highest. */
+  readonly priority:   number;
+  /** Confidence in [0,1]; deterministic classifiers always emit 1.0. */
+  readonly confidence: number;
+  /** Human-readable evidence reasons preserved verbatim into the final classification. */
+  readonly reasons:    ReadonlyArray<string>;
+}
+
+/**
  * Result of the classification cascade for a single record.
  *
  * @remarks
@@ -138,6 +161,8 @@ export interface PipelineStateInterface extends Record<string, unknown> {
   readonly input:          Readonly<Record<string, unknown>>;
   /** Classification result; `null` until a `classify:*` task populates it. */
   classification:          ClassificationEvidenceInterface | null;
+  /** Per-record classification proposals; populated additively by classifier tasks. */
+  classifications:         ReadonlyArray<ClassificationProposalInterface>;
   /** Per-record projection report; `null` until `squash:*` writes it. */
   output:                  Record<string, unknown> | null;
   /** Per-run context populated by the orchestrator. */
