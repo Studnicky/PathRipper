@@ -46,7 +46,7 @@ describe('TaskRegistry', () => {
   });
 
   it('load() with a nonexistent path throws ExternalSchemaError', async () => {
-    const tmpDir = await mkdtemp(join(tmpdir(), 'ripperoni-registry-'));
+    const tmpDir = await mkdtemp(join(tmpdir(), 'squashage-registry-'));
     try {
       await assert.rejects(
         TaskRegistry.load('does-not-exist-plugin.js', tmpDir),

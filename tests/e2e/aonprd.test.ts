@@ -6,8 +6,7 @@
  * auto-context pipeline work end-to-end without hardcoded IRIs in config.
  *
  * Test mode: programmatic (SquashageOrchestrator imported directly).
- * This worktree does not have the squashage CLI; the old ripperoni CLI is
- * present instead. All invocations use SquashageOrchestrator.run().
+ * All invocations use SquashageOrchestrator.run() directly.
  *
  * OntologyClassifier deviation:
  * AJV schema requires ontology.classes values to be valid URIs (format: uri).

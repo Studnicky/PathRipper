@@ -1,6 +1,3 @@
-// Modernized from PathRipper/src/transformer/index.js
-// Transforms the callback-based task queue into typed async middleware.
-
 import type { NextFnInterface, TaskFnInterface, PipelineConfigInterface } from '../types/Pipeline.js';
 import { TaskRegistry } from '../registry/TaskRegistry.js';
 import { Logger } from '../modules/logger/logger.js';

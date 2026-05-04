@@ -25,11 +25,11 @@ export class PipelineState {
   private constructor() { /* static-only */ }
 
   /**
-   * Creates a pipeline state from a Ripperoni JSON record and its source metadata.
+   * Creates a pipeline state from an input JSON record and its source metadata.
    *
    * @param targetId - Squashage target key from the config.
    * @param source - Source metadata (target, path, optional plugin and schemaId).
-   * @param input - Parsed Ripperoni JSON record (immutable snapshot).
+   * @param input - Parsed input JSON record (immutable snapshot).
    * @returns Initial pipeline state with `output` and `classification` set to `null`.
    */
   public static fromInput(

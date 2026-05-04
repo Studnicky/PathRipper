@@ -1,7 +1,7 @@
 {
   "name": "squashage",
   "version": "0.1.0",
-  "description": "Graph reconstitution pipeline \u2014 pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
+  "description": "Graph reconstitution pipeline — classifies structured JSON records into a deterministic RDF graph and renders it as TriG, JSON-LD, or an interactive HTML view.",
   "type": "module",
   "bin": {
     "squashage": "./dist/cli/cli.js"
@@ -11,10 +11,8 @@
     "./Pipeline": "./dist/pipeline/Pipeline.js",
     "./ConcurrentPipeline": "./dist/pipeline/ConcurrentPipeline.js",
     "./Logger": "./dist/modules/logger/logger.js",
-    "./RipperConfig": "./dist/config/RipperConfig.js",
     "./errors/BaseError": "./dist/errors/BaseError.js",
     "./errors/HttpError": "./dist/errors/HttpError.js",
-    "./errors/RipperConfigError": "./dist/errors/RipperConfigError.js",
     "./errors/ExternalSchemaError": "./dist/errors/ExternalSchemaError.js",
     "./errors/OutputConfigError": "./dist/errors/OutputConfigError.js",
     "./errors/FileOutputError": "./dist/errors/FileOutputError.js",

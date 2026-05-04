@@ -4,8 +4,8 @@
     "format": "json"
   },
   "targets": {
-    "your-ripperoni-target": {
-      "input": "./output/your-ripperoni-target",
+    "your-target": {
+      "input": "./output/your-target",
       "concurrency": 4,
       "pipeline": [
         "json:read",
@@ -14,7 +14,7 @@
         "classify:rules",
         "classify:ontology",
         "classify:conflict",
-        "your-ripperoni-target:squash",
+        "your-target:squash",
         "rdfjs:finalize"
       ],
       "graphs": {
@@ -55,11 +55,11 @@
         }
       },
       "quarantine": {
-        "dir": "./graphs/quarantine/your-ripperoni-target"
+        "dir": "./graphs/quarantine/your-target"
       },
       "output": {
         "kind": "file",
-        "path": "./graphs/your-ripperoni-target.trig",
+        "path": "./graphs/your-target.trig",
         "mode": "dataset"
       }
     }

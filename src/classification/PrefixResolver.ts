@@ -427,7 +427,7 @@ export class PrefixResolver {
    *
    * @remarks
    * Checks whether `source.path` begins with `https://` or `http://` (some
-   * Ripperoni producers write the source URL directly into `_source.path`).
+   * upstream producers write the source URL directly into `_source.path`).
    *
    * @param source - Record source metadata.
    * @returns Parsed `URL` when found; `undefined` otherwise.

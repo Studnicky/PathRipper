@@ -29,14 +29,14 @@ export type FlattenResult = Error[];
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 /**
- * Return type of {@link RipperConfigSchema.validate} — `null` when the config
+ * Return type of schema validation methods — `null` when the input
  * is valid; a human-readable error string describing the first violation otherwise.
  *
  * @remarks The string format is suitable for direct display in CLI error messages.
- * @example `const err: ValidateResult = RipperConfigSchema.validate(raw);  if (err) throw new RipperConfigError(err);`
+ * @example `const err: ValidateResult = SquashageConfigSchema.validate(raw);  if (err) throw new SquashageConfigError(err);`
  * @category Results
  * @since 2.0.0
- * @see {@link RipperConfigSchema}
+ * @see {@link SquashageConfig}
  * @group Schema
  */
 export type ValidateResult = string | null;

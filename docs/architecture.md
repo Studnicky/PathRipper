@@ -1,13 +1,9 @@
 # Squashage Architecture
 
-Squashage is a graph reconstitution pipeline. It starts where Ripperoni stops:
-with structured JSON records already extracted from source material. It ends
-with a single serialized RDF file produced by the build run.
+Squashage is a graph reconstitution pipeline. It starts with structured JSON
+records and ends with a single serialized RDF file produced by the build run.
 
 ```text
-Ripperoni
-  source -> raw page -> parse task -> JSON record
-
 Squashage
   JSON record -> classify -> normalize -> RDF/JS quads -> serialized file
                                                           (v0.x: turtle | trig | nquads | ntriples | jsonld
@@ -32,17 +28,16 @@ boundary is the wrapper, not a specific package.
 
 | Package | Owns | Does Not Own |
 |---------|------|--------------|
-| Ripperoni | acquisition, fetching, crawling, source parsing, JSON output | classification, ontology projection, RDF/JS quads, graph identity |
 | Squashage | classification, normalization, projection of records into RDF/JS, pipeline + task registry, single-file output and quarantine reports | RDF/JS implementations (factory, dataset), parser/serializer code, graph-store loading, format → format translation |
-| Semantics | RDF/JS factories and datasets, parse/serialize for all supported formats, store adapters (in-memory, embedded, remote), canonicalization, validation, vocabulary, IRI utilities, reasoning, format and store CLIs | source extraction, source-specific classification, ripperoni-shape JSON ingestion |
+| Semantics | RDF/JS factories and datasets, parse/serialize for all supported formats, store adapters (in-memory, embedded, remote), canonicalization, validation, vocabulary, IRI utilities, reasoning, format and store CLIs | source extraction, source-specific classification |
 | Torreya | ontology conventions and runtime graph usage that consumes squashage output | source extraction, generic classification framework |
 
 ## Core Concepts
 
 ### Input Record
 
-An input record is a single JSON object from Ripperoni. It should include enough
-source metadata to make classification reproducible:
+An input record is a single JSON object. It should include optional `_source`
+metadata to make classification reproducible and attribution tractable:
 
 ```json
 {
@@ -153,20 +148,14 @@ records were rejected. Exit codes:
   validation, atomic-write).
 - `2` — config / schema / startup error before any record processed.
 
-## Migration History
-
-The repository was bootstrapped as a literal copy of Ripperoni and
-migrated module-by-module. The full record — file inventory with
-importer-evidence-based deletion plan, ordered migration steps, code
-standards inherited verbatim, AJV cross-validation, deterministic
-classifier menu — lives in
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md).
+## Implementation History
 
 The scraper layer (HtmlScraper, MediaWikiScraper, LinkLister,
 ScrapeOrchestrator, the cache, the rate limiter, the retry executor)
-was deleted wholesale. `PipelineStateInterface` and
+was deleted during the initial bootstrap. `PipelineStateInterface` and
 `PipelineContextInterface` kept their names but redefined their fields
 for the graph-reconstitution domain. Built-in classification tasks live
 in `src/classification/tasks/`; the predicate engine in
 `src/classification/predicates/`; configuration in
-`src/schemas/*.json`.
+`src/schemas/*.json`. The full implementation record lives in
+[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md).

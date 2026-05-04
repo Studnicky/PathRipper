@@ -11,7 +11,7 @@ const EXAMPLE_CONFIG_PATH = join(import.meta.dirname, '..', '..', '..', 'squasha
 describe('SquashageConfig.loadFromFile()', () => {
   it('loads the example config and finds the expected target key', () => {
     const cfg = SquashageConfig.loadFromFile(EXAMPLE_CONFIG_PATH);
-    assert.ok(cfg.targets['your-ripperoni-target'], 'expected target key to be present');
+    assert.ok(cfg.targets['your-target'], 'expected target key to be present');
   });
 
   it('example config has the expected input.format', () => {
@@ -21,7 +21,7 @@ describe('SquashageConfig.loadFromFile()', () => {
 
   it('example config target has output.kind === "file"', () => {
     const cfg = SquashageConfig.loadFromFile(EXAMPLE_CONFIG_PATH);
-    const target = cfg.targets['your-ripperoni-target'];
+    const target = cfg.targets['your-target'];
     assert.ok(target !== undefined);
     assert.equal(target.output.kind, 'file');
   });

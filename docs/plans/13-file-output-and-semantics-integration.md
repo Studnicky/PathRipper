@@ -365,10 +365,9 @@ file Squashage produced.
   `@semantics/rdf-builder` builder). Output awareness lives in finalize,
   config, and the report — not in plugin code.
 
-## Code Standards (Inherited From Ripperoni Verbatim)
+## Code Standards
 
-Squashage was bootstrapped as a literal copy of Ripperoni. **Every
-engineering standard from that copy is preserved unchanged.** Dispatched
+**Every engineering standard is preserved unchanged.** Dispatched
 implementation work must not weaken any of them. Where the migration touches
 a file under one of these gates, the new code must satisfy the existing
 gate; where the migration deletes a file, the gate's coverage shrinks but
@@ -399,7 +398,7 @@ the gate itself stays in place.
 - New code lands with new unit tests. Coverage must not regress.
 - Integration / e2e tests for new code that exercise the file-output
   pipeline against fixtures from `tests/fixtures/` (mirroring the
-  Ripperoni convention) are required before merge.
+  squashage convention) are required before merge.
 - `npm run check` (the typecheck + lint + unit umbrella) is the local
   pre-push gate.
 
@@ -409,9 +408,9 @@ the gate itself stays in place.
   reused for the new config schemas. Schemas live alongside the existing
   ones under `src/schemas/`.
 - Schema validation gates the config loader the same way it gates the
-  current Ripperoni config loader. The loader fails fast on invalid
-  config, and the failure name is an existing
-  `ExternalSchemaError` / `RipperConfigError`-style named error.
+  existing config loader pattern. The loader fails fast on invalid
+  config, and the failure name is a named error subclass of `BaseError`
+  (e.g. `ExternalSchemaError`, `SquashageConfigError`).
 
 ### Hooks, CI, Conventional Commits, Changelog
 
@@ -502,7 +501,7 @@ import type { NamespaceBuilder }   from '../rdf/Namespaces.js';
 import type { OutputConfigInterface } from '../config/OutputConfig.js';
 
 /**
- * Source metadata for a single Ripperoni JSON record flowing through the pipeline.
+ * Source metadata for a single input JSON record flowing through the pipeline.
  *
  * @remarks
  * Populated by `json:read` from the file path the record was loaded from and
@@ -516,13 +515,13 @@ import type { OutputConfigInterface } from '../config/OutputConfig.js';
  * @group Types
  */
 export interface InputSourceInterface {
-  /** Ripperoni target id this record came from (e.g. `"bulbapedia"`). */
+  /** Upstream target id this record came from (e.g. `"bulbapedia"`). */
   readonly target:    string;
   /** Filesystem path the record was loaded from, relative to the run's input root. */
   readonly path:      string;
-  /** Ripperoni plugin that produced the record (e.g. `"bulbapedia:parse"`). */
+  /** Upstream plugin that produced the record (e.g. `"bulbapedia:parse"`). */
   readonly plugin?:   string | undefined;
-  /** Ripperoni schema id the record was validated against upstream, if known. */
+  /** Schema id the record was validated against upstream, if known. */
   readonly schemaId?: string | undefined;
 }
 
@@ -632,7 +631,7 @@ export interface PipelineStateInterface extends Record<string, unknown> {
   readonly targetId:       string;
   /** Source metadata for the record flowing through the pipeline. */
   readonly source:         InputSourceInterface;
-  /** Parsed Ripperoni JSON record. */
+  /** Parsed input JSON record. */
   readonly input:          Readonly<Record<string, unknown>>;
   /** Classification result; `null` until a `classify:*` task populates it. */
   classification:          ClassificationEvidenceInterface | null;
@@ -1177,12 +1176,12 @@ src/classification/tasks/SchemaClassifier.ts            (C3: classify:schema tas
 src/classification/tasks/OntologyClassifier.ts          (C4: classify:ontology task class)
 src/classification/tasks/ConflictResolver.ts            (C4: classify:conflict task class)
 src/classification/tasks/_shared.ts                     (shared evaluateRules helper; private to tasks/)
-src/config/SquashageConfig.ts                      (typed loader, replaces RipperConfig usage; keeps named-error pattern)
+src/config/SquashageConfig.ts                      (typed loader; keeps named-error pattern)
 src/config/OutputConfig.ts
 src/schemas/output.schema.json
 src/schemas/target.schema.json
 src/schemas/squashage-config.schema.json
-src/errors/OutputConfigError.ts                    (extends BaseError, mirrors RipperConfigError shape)
+src/errors/OutputConfigError.ts                    (extends BaseError, same pattern as SquashageConfigError)
 src/errors/QuarantineError.ts                      (extends BaseError)
 ```
 
@@ -1206,7 +1205,7 @@ tests/unit/tasks/jsonRead.test.ts
 tests/unit/tasks/rdfjsFinalize.test.ts
 tests/integration/build-trig.test.ts               (end-to-end smoke against fixtures)
 tests/integration/build-classify-cascade.test.ts   (C5: full classifier cascade — matched quad + unknown quarantine)
-tests/fixtures/squashage/...                       (sample ripperoni JSON for tests)
+tests/fixtures/squashage/...                       (sample input JSON for tests)
 tests/fixtures/squashage/build-classify-cascade/plugin.ts  (C5: fixture:squash plugin for cascade test)
 ```
 
@@ -1220,7 +1219,7 @@ src/pipeline/Pipeline.ts                           no API change
 src/pipeline/ConcurrentPipeline.ts                 no API change
 src/types/Pipeline.ts                              no API change; ensures `TaskFnInterface<PipelineStateInterface>` compiles
 src/cli/cli.ts                                     drop `scrape`/`crawl` subcommands; add `build`, `classify`, `inspect`; add `--out`, `--format`, `--dry-run`; preserve commander setup style
-src/config/RipperConfig.ts                         either rename to SquashageConfig.ts or re-export under both names during transition; AJV validation pattern preserved
+src/config/SquashageConfig.ts                      AJV validation pattern
 package.json                                       add `@semantics/*` deps, `@rdfjs/types`, `n3` peer; drop `cheerio`, `wtf_wikipedia`, `domhandler` once their consumers are deleted; do not change scripts, engines, or hook wiring
 README.md                                          already corrected
 docs/architecture.md                               already corrected
@@ -1259,15 +1258,15 @@ src/types/Http.ts
 src/types/ErrorClassifier.ts
 plugins/aonprd/                                     (entire dir; only consumers are deleted e2e tests)
 plugins/bulbapedia/parse.task.ts                    (only consumers are deleted e2e tests)
-tests/e2e/                                          (entire dir: aonprd*, docs-html, wiki-docs — all Ripperoni-era)
+tests/e2e/                                          (entire dir: aonprd*, docs-html, wiki-docs — scraper-era; replaced by new e2e suite)
 tests/unit/scrapers/                                (entire dir)
 tests/unit/crawlers/LinkLister.test.ts
 tests/unit/orchestrators/ScrapeOrchestrator.test.ts
 tests/unit/modules/ScraperCache.test.ts
 tests/unit/modules/http/                            (entire dir)
 tests/unit/registry/builtinTasks.test.ts            (rebuilds as tests/unit/tasks/*)
-tests/unit/config/RipperConfig.test.ts              (adapt → SquashageConfig.test.ts in Modify pass)
-docs/architecture.html                              (Ripperoni-era; regenerate later)
+tests/unit/config/SquashageConfig.test.ts           (adapted from initial config test)
+docs/architecture.html                              (scraper-era; replaced by docs/architecture.md)
 docs/index.html
 docs/roadmap.html
 scrapers/HtmlScraper.js                             (stray compiled artifact at repo root)
@@ -1281,7 +1280,7 @@ Stray compiled `.js` siblings inside `src/scrapers/`, `src/modules/cache/`,
 parent directories.
 
 Confirm with the user before deleting (not in earlier inventory): the
-Ripperoni example fixtures `examples/docs-scraper/` and
+Initial bootstrap examples `examples/docs-scraper/` and
 `examples/wiki-docs/`. Both import `src/types/PipelineState.js` (which is
 being redefined) and feed deleted e2e tests. Likely target for deletion in
 the same pass, but flagged for confirmation.
@@ -1304,8 +1303,7 @@ files and would publish broken specifiers):
 ```
 
 Keep: `./Pipeline`, `./ConcurrentPipeline`, `./Logger`,
-`./config/ConfigClamp`, `./RipperConfig` (until renamed to
-`./SquashageConfig`), `./errors/*`, `./registry/TaskRegistry`,
+`./config/ConfigClamp`, `./errors/*`, `./registry/TaskRegistry`,
 `./registry/PipelineState`. Add new exports under `./output/FileOutput`,
 `./tasks/jsonRead`, `./tasks/rdfjsFinalize`,
 `./orchestrators/SquashageOrchestrator`,
@@ -1428,5 +1426,5 @@ When the `@semantics/*` workspace publishes:
 - **Bug fixes and performance improvements in the underlying stack flow
   to every squashage release without changing the application surface.**
 - **Squashage stays focused on what it actually adds**: classifying
-  Ripperoni JSON deterministically and projecting it into RDF/JS quads,
+  structured JSON records deterministically and projecting them into RDF/JS quads,
   then handing one well-formed RDF file to the rest of the toolchain.

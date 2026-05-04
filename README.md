@@ -1,16 +1,12 @@
 # Squashage
 
-Squashage is the companion package to Ripperoni.
-
-Ripperoni rips source material into structured JSON. Squashage squashes those
-records back together into classified RDF: it classifies each record, projects
-it into RDF/JS quads, and writes those quads to **a single serialized RDF
-file** for the build run.
+Squashage is a graph reconstitution pipeline. It consumes structured JSON
+records (from a single file, directory tree, or JSONL source) and produces
+classified RDF: it classifies each record, projects it into RDF/JS quads, and
+writes those quads to **a single serialized RDF file** for the build run.
 
 ```text
-source site/wiki/API
-  -> ripperoni
-  -> JSON records
+input JSON records
   -> squashage
        (classify -> normalize -> RDF/JS quads -> serialized file)
        └─ file output (v0.x: turtle | trig | nquads | ntriples | jsonld
@@ -22,10 +18,8 @@ ingest the file into Oxigraph, Fuseki, GraphDB, or any other store, hand the
 file to whichever loader you prefer. Loading is a graph-store concern, not
 Squashage's.
 
-v0.x is implemented and tests pass: 557 unit + 22 integration. The package
-was bootstrapped as a literal file copy of Ripperoni and migrated module by
-module — the scraper layer is gone; the classification cascade,
-output pipeline, AJV-validated config, and CLI are in. See
+v0.x is implemented and tests pass: 557 unit + 22 integration. The classification
+cascade, output pipeline, AJV-validated config, and CLI are all in place. See
 [`docs/plans/00-current-state.md`](docs/plans/00-current-state.md) for the
 component inventory and
 [`docs/plans/13-file-output-and-semantics-integration.md`](docs/plans/13-file-output-and-semantics-integration.md)
@@ -33,7 +27,7 @@ for the implementation record.
 
 ## Goals
 
-- Consume Ripperoni JSON output from one file, a directory tree, or JSONL.
+- Consume structured JSON input records from one file, a directory tree, or JSONL.
 - Classify each input record into an ontology type with deterministic evidence.
 - Normalize source-specific records into stable graph entities.
 - Project records into RDF/JS quads using a small wrapper layer over the
@@ -49,7 +43,7 @@ for the implementation record.
 
 ## Non-Goals
 
-- Squashage does not scrape web pages. Ripperoni owns source acquisition.
+- Squashage does not scrape web pages. Source acquisition is an upstream concern.
 - Squashage does not treat LLM output as authoritative classification.
 - Squashage does not hide graph identity behind opaque generated IDs.
 - Squashage does not vendor RDF parsers or serializers — it consumes them
@@ -89,13 +83,7 @@ Loading is downstream of the file Squashage produces.
 ## CLI Sketch
 
 ```bash
-# Ripperoni produces the chopped ingredients.
-ripperoni scrape \
-  --target bulbapedia \
-  --config ripperoni.config.json \
-  --out ./output
-
-# Squashage rebuilds them into graph sausage and writes one file.
+# Squashage processes input JSON records and writes one file.
 squashage build \
   --target bulbapedia \
   --config squashage.config.json \
@@ -190,7 +178,7 @@ target must declare an `output` block. The full output contract lives in
 
 ## Pipeline Contract
 
-Squashage follows Ripperoni's task-registry pattern: tasks are async
+Squashage uses a task-registry pattern: tasks are async
 middleware over `PipelineStateInterface`, and the orchestrator builds a
 per-target `Pipeline` from `targets[].pipeline`. Built-in tasks
 (`json:read`, `rdfjs:finalize`, the six `classify:*` cascade tasks)
@@ -319,8 +307,7 @@ once they publish.
 
 ## Branding
 
-The joke lives in the project language and iconography: ripperoni, sausage,
-squashage, squash/eggplant visuals. The exported TypeScript contracts stay
+The joke lives in the project language and iconography: squashage, squash/eggplant visuals. The exported TypeScript contracts stay
 boring and stable so downstream graph code does not inherit the bit.
 
 ## References
