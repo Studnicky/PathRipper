@@ -10,7 +10,8 @@ Ripperoni
 
 Squashage
   JSON record -> classify -> normalize -> RDF/JS quads -> serialized file
-                                                          (turtle | trig | nquads | ntriples | jsonld | rdfxml | n3)
+                                                          (v0.x: turtle | trig | nquads | ntriples | jsonld
+                                                           v1.x: adds rdfxml, n3)
 ```
 
 RDF/JS is the **internal canonical product** of the build — the shape every
@@ -89,15 +90,10 @@ step serializes the canonical dataset to the configured output file via
 
 `PipelineStateInterface` and `PipelineContextInterface` keep their existing
 names from `src/types/PipelineState.ts`; their fields adapt to the
-graph-reconstitution domain. The full TypeScript definitions
-(`PipelineStateInterface`, `PipelineContextInterface`,
-`InputSourceInterface`, `ClassificationEvidenceInterface`) live in
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md#pipelinestateinterface-squashage-shape).
-Dispatched agents must use those definitions as canonical and preserve every
-Ripperoni code standard (lint, tsc, tests, hooks, CI, conventional commits,
-changelog gate, logger discipline) inherited verbatim from the copied
-workspace — see the plan's "Code Standards (Inherited From Ripperoni
-Verbatim)" section.
+graph-reconstitution domain. The full type definitions live in
+`src/types/PipelineState.ts` and are documented inline; plan 13 carries
+the rationale and the `ClassificationProposalInterface` /
+`ClassificationEvidenceInterface` shapes the cascade populates.
 
 ### File Output
 
@@ -133,35 +129,44 @@ through the build API; that is not an output, just the API return value.
 
 ## Failure Policy
 
-Failures should be explicit artifacts:
+Failures land as explicit artifacts on disk:
 
-- Unknown class: write to `quarantine/unknown/*.json`.
-- Classification conflict: write candidates and evidence to
-  `quarantine/conflicts/*.json`.
-- Projection failure: write source record, classification evidence, and partial
-  RDF/JS projection report to `quarantine/projection/*.json`.
-- Output failure: write a `.partial` artifact next to the target path, plus
-  `./graphs/<target>/output.report.json`. Pre-write SHACL failure quarantines
-  the dataset under `./graphs/<target>/quarantine/output/`.
+- Unknown class: `./graphs/<target>/quarantine/unknown/<id>.json`.
+- Classification conflict: `./graphs/<target>/quarantine/conflicts/<id>.json`
+  with the tied candidates preserved.
+- Projection failure (parse error in `json:read`, throw in a `squash:*`
+  task): `./graphs/<target>/quarantine/projection/<id>.json`.
+- Pre-write SHACL failure: `./graphs/<target>/quarantine/output/validation.report.{txt,ttl}`.
+  The destination output file is not written.
+- Atomic-write failure: a `<output.path>.partial` artifact alongside the
+  intended destination, plus the run's `output.report.json`.
 
-The default favors reproducibility over best-effort guessing. Build exit code
-is non-zero on any quarantine or output failure.
+Quarantine is a *graceful* path. `json:read` and the classifier tasks
+short-circuit with a quarantine write rather than throwing, so the
+per-record pipeline registers no failure and the build exit code stays
+`0`. Quarantine artifacts on disk are how the caller learns which
+records were rejected. Exit codes:
 
-## Initial Code Migration Plan
+- `0` — every record either projected cleanly or landed in quarantine
+  gracefully.
+- `1` — a per-record task threw, or `rdfjs:finalize` threw (output,
+  validation, atomic-write).
+- `2` — config / schema / startup error before any record processed.
 
-This repository was copied from Ripperoni to preserve the pipeline skeleton.
-Migration should happen in narrow passes:
+## Migration History
 
-1. Rename package identity and config docs.
-2. Introduce `ReconstitutionStateInterface` beside the existing pipeline state.
-3. Add the `src/rdf/*` and `src/shacl/*` wrapper layer (v0.x backed by
-   `@rdfjs/data-model`, `@rdfjs/dataset`, `@rdfjs/namespace`, `n3`,
-   `jsonld`, `rdf-canonize`, `rdf-validate-shacl`).
-4. Replace scraper orchestrators with `ReconstitutionOrchestrator`.
-5. Replace built-in scraper tasks with JSON reader and `rdfjs:finalize` tasks.
-6. Add the `output` config block; require it on every target.
-7. Implement `FileOutput` against `src/rdf/Serializer.ts`.
-8. Port only reusable utilities such as `Pipeline`, `ConcurrentPipeline`,
-   `TaskRegistry`, logger, AJV config validation, and named errors.
-9. Add Torreya-specific example plugins after the generic graph pipeline
-   works end-to-end producing a TriG file.
+The repository was bootstrapped as a literal copy of Ripperoni and
+migrated module-by-module. The full record — file inventory with
+importer-evidence-based deletion plan, ordered migration steps, code
+standards inherited verbatim, AJV cross-validation, deterministic
+classifier menu — lives in
+[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md).
+
+The scraper layer (HtmlScraper, MediaWikiScraper, LinkLister,
+ScrapeOrchestrator, the cache, the rate limiter, the retry executor)
+was deleted wholesale. `PipelineStateInterface` and
+`PipelineContextInterface` kept their names but redefined their fields
+for the graph-reconstitution domain. Built-in classification tasks live
+in `src/classification/tasks/`; the predicate engine in
+`src/classification/predicates/`; configuration in
+`src/schemas/*.json`.

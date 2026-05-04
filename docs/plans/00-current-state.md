@@ -1,74 +1,83 @@
 # Current State
 
-Squashage currently exists as a documentation-first fork of the Ripperoni
-workspace.
+Squashage v0.x is implemented and tests pass: 557 unit + 22 integration, all
+gates clean (`npm run check`, `npm run test:integration`). The package
+consumes Ripperoni JSON, classifies each record through a configurable
+deterministic cascade, projects matched records into RDF/JS quads, and
+serializes the canonical dataset to a single RDF file. Graph-store loading
+remains out of scope in both v0.x and v1.x.
 
-## Done
+## What Ships
 
-- Literal workspace copy from `/Users/studs/Workspace/ripper` to
-  `/Users/studs/Workspace/squashage`.
-- Package identity changed to `squashage` in `package.json` and
-  `package-lock.json`.
-- Config examples renamed to `squashage.config*.example.json`.
-- README rewritten around graph reconstitution rather than source scraping.
-- Architecture and classification-engine docs added.
-- Output contract drafted in
-  [`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md):
-  RDF/JS is internal; the build's output is a single serialized RDF file.
-  **v0.x ships against permissive open-source libraries** (`n3`, `jsonld`,
-  `rdf-canonize`, `rdf-validate-shacl`, `@rdfjs/*`) behind a thin
-  `src/rdf/*` + `src/shacl/*` wrapper layer. **v1.x will swap** the wrapper
-  bodies to the unpublished `@semantics/*` workspace without touching
-  application code. Graph-store loading is out of scope in either version.
+- **Wrappers** (`src/rdf/*`, `src/shacl/*`): `Formats`, `DataFactory`,
+  `TermGuards`, `Namespaces` (+ `IRIUtils`, `BaseIRIResolver`), `Vocab`
+  (RDF/RDFS/OWL/XSD/SHACL + `STANDARD_PREFIXES`), `Dataset`, `Parser`
+  (n3 + jsonld dispatcher), `Serializer` (n3.Writer + jsonld dispatcher),
+  `Canonicalize` (rdf-canonize RDFC-1.0), `SyntaxValidator`,
+  `GraphBuilder` (vendored from `semantics/rdf-builder`), `ShaclGate`
+  (rdf-validate-shacl). Application code never imports the underlying OSS
+  packages directly — enforced by ESLint `no-restricted-imports`.
+- **Output layer** (`src/output/*`): `OutputInterface`, `OutputReport`,
+  `FormatResolver`, `FileOutput` with atomic write (tmp + fsync + rename),
+  optional pre-write canonicalization, optional pre-write SHACL gate that
+  emits `validation.report.{txt,ttl}` quarantine artifacts on failure,
+  `dryRun`, and `output.graph` collapse for triple-only formats.
+- **Quarantine** (`src/quarantine/QuarantineWriter.ts`): four buckets
+  (`unknown`, `conflicts`, `projection`, `output`), SHA-1 record IDs,
+  `summary()` and `exitCodeFor()` helpers.
+- **Config** (`src/config/*`, `src/schemas/*`): AJV-validated
+  `SquashageConfig.loadFromFile`, JSON Schemas for `output`, `target`,
+  `predicate`, and root config. Cross-validation enforces
+  classification-task ↔ config-block presence.
+- **Built-in tasks** (`src/tasks/*`): `json:read` (file / JSONL),
+  `rdfjs:finalize` (orchestrator-invoked drain-then-finalize),
+  `index.ts` side-effect bootstrap.
+- **Classification cascade** (`src/classification/*`): six idiomatic task
+  classes — `SourceClassifier`, `StructuralClassifier`, `RulesClassifier`,
+  `SchemaClassifier` (over `AjvClassifier` engine), `OntologyClassifier`,
+  `ConflictResolver` — instantiated per-target by `ClassificationFactory`.
+  Closed-vocabulary `Predicate` engine consumed by Structural and Rules.
+- **Orchestrator** (`src/orchestrators/SquashageOrchestrator.ts`):
+  builds a fresh per-run `TaskRegistry`, walks the input source
+  recursively, drives `ConcurrentPipeline.executeAll`, strips
+  `rdfjs:finalize` from the per-record queue and invokes it once after
+  the final batch settles, returns `RunResultInterface`.
+- **CLI** (`src/cli/cli.ts`): `build`, `classify`, `inspect`. `build`
+  honors `--out`, `--format`, `--in`, `--dry-run` overrides.
+- **Integration tests**: `build-trig.test.ts` (full pipeline smoke,
+  malformed-record quarantine, SHACL pass/fail) and
+  `build-classify-cascade.test.ts` (full classifier menu).
 
-## Still Ripperoni Skeleton
-
-These areas are copied and still need intentional migration:
-
-- `src/cli/cli.ts` still exposes scrape/crawl behavior.
-- `src/config/RipperConfig.ts` still models Ripperoni source targets.
-- `src/orchestrators/ScrapeOrchestrator.ts` still owns web scraping flow.
-- `src/scrapers/`, `src/crawlers/`, and scraper built-in tasks are still present.
-- `plugins/` are still source-parser examples, not graph squasher plugins.
-- `docs/*.html` still describe Ripperoni and should be replaced or regenerated.
-- `package.json` does not yet declare the v0.x OSS deps (`@rdfjs/*`, `n3`,
-  `jsonld`, `rdf-canonize`, `rdf-validate-shacl`).
-- Example configs still use the legacy `output: { type, mode }` shape rather
-  than the explicit `output.kind = 'file'` single-output shape.
-
-## Desired First Runtime Shape
+## Runtime Shape
 
 ```text
 json:read
-  -> target:classify
-  -> target:squash-*
-  -> rdfjs:finalize     # orchestrator-driven; serializes the canonical dataset to ONE file via src/rdf/Serializer.ts
+  -> classify:source         (optional)
+  -> classify:structural     (optional)
+  -> classify:rules          (optional)
+  -> classify:schema         (optional)
+  -> classify:ontology       (optional)
+  -> classify:conflict       (required when ≥2 class-proposers are listed)
+  -> <target>:squash-*       (user-supplied plugin tasks)
+  -> rdfjs:finalize          (orchestrator-driven; runs once per target run)
 ```
 
-A target with no `output` block is a config error. The internal RDF/JS
-dataset is the build's canonical product, not an output.
+Exit codes: `0` for clean runs and graceful quarantine paths; `1` when a
+per-record task throws or `rdfjs:finalize` fails (output, validation,
+write); `2` for config / schema / startup errors. Quarantine artifacts on
+disk are how the caller learns which records were rejected — exit code is
+not the signal.
 
-## Technical Direction
+## What's Next
 
-- Reuse the generic `Pipeline`, `ConcurrentPipeline`, and `TaskRegistry`
-  shapes; preserve every Ripperoni code standard verbatim (lint, tsconfig
-  strictness, AJV setup, hooks, CI, conventional commits, changelog gate,
-  TSDoc density, logger discipline). See plan 13's "Code Standards
-  (Inherited From Ripperoni Verbatim)".
-- Redefine `PipelineStateInterface` and `PipelineContextInterface` in place
-  for the squashage domain (no `Reconstitution*` parallel types).
-- Use AJV and local decision tables for deterministic classification.
-- Emit RDF/JS quads into a shared canonical dataset using
-  `src/rdf/DataFactory.ts` and `src/rdf/GraphBuilder.ts`.
-- Output a single serialized RDF file via `src/rdf/Serializer.ts`. v0.x
-  formats: turtle, trig, nquads, ntriples, jsonld. v1.x adds rdfxml and n3.
-- Run optional canonicalization (`src/rdf/Canonicalize.ts`) and SHACL
-  validation (`src/shacl/ShaclGate.ts`) as pre-write hooks.
-- Application code imports **only** from `src/rdf/*` and `src/shacl/*` —
-  never `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`, `@rdfjs/*`,
-  or any `@semantics/*` package directly. Enforced by ESLint's
-  `no-restricted-imports`.
-- Never depend on any graph-store backend. Loading the produced file is a
-  downstream concern.
-- Keep embeddings and LLMs in advisory workflows that produce review
-  artifacts, not canonical RDF/JS output or output writes.
+- **v1.x swap**: replace the OSS wrapper bodies with `@semantics/*`
+  imports once that workspace publishes. Re-enable `rdfxml` and `n3`
+  output formats. No application-code churn — the wrapper boundary is the
+  swap point.
+- **Plugin examples**: Torreya/Bulbapedia squashers as a separate lane.
+- **Embedding-assisted advisory lane**: produces review proposals for
+  quarantined records; never writes canonical RDF/JS.
+
+See [`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md)
+for the full plan, including the Deterministic Classifier Menu, AJV
+schemas, and v0.x → v1.x migration steps.

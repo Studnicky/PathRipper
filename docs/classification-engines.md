@@ -1,221 +1,149 @@
-# Classification Engines
+# Classifier Engines
 
-Squashage classification must be deterministic by default. The build should be
-safe to re-run on the same inputs and produce the same RDF/JS quads, failure
-manifests, and evidence reports.
+Squashage's classification cascade is purely deterministic. Same inputs
+plus same config produce byte-identical proposals and final
+`state.classification` across runs and machines. No `Math.random`, no
+`Date.now()`, no network, no fs after startup. No probabilistic models
+in the build path.
 
-## Classifier Cascade
+The implemented engine surface is the deterministic classifier menu
+described in
+[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md#deterministic-classifier-menu).
+This document covers the *why* behind those engine choices and the
+considered alternatives that did not ship.
 
-Use a cascade rather than one monolithic classifier:
+## What Ships
 
-1. **Source contract**: trust the configured target and source plugin metadata.
-2. **Structural gate**: inspect keys, literal discriminators, path patterns, and
-   required field groups.
-3. **Schema gate**: validate against class-specific JSON Schemas.
-4. **Rules gate**: evaluate source-specific decisions over extracted facts.
-5. **Ontology gate**: verify that the selected class can map to a known graph
-   class, graph lane, and IRI pattern.
-6. **Conflict gate**: pick the most specific valid class, or quarantine.
+Six idiomatic classifier task classes. Targets pick which to use by
+listing them in `pipeline:`; each task's config block must be present
+and non-empty (cross-validation enforces this at config-load).
 
-The first implementation can be local and simple: AJV schemas plus a source
-plugin decision table. External rule engines are optional classifier adapters.
+| Task | Engine | Source file |
+|------|--------|-------------|
+| `classify:source`     | reads `_source` from the record; emits a marker proposal | `src/classification/tasks/SourceClassifier.ts` |
+| `classify:structural` | closed-vocab predicate over normalized facts             | `src/classification/tasks/StructuralClassifier.ts` |
+| `classify:rules`      | closed-vocab predicate decision table                    | `src/classification/tasks/RulesClassifier.ts` |
+| `classify:schema`     | per-class JSON Schema via pre-compiled AJV validators    | `src/classification/tasks/SchemaClassifier.ts` (over `src/classification/AjvClassifier.ts`) |
+| `classify:ontology`   | validates proposals against a known className → IRI map  | `src/classification/tasks/OntologyClassifier.ts` |
+| `classify:conflict`   | priority desc + className lex asc tiebreak; quarantines  | `src/classification/tasks/ConflictResolver.ts` |
 
-## Deterministic Node.js Options
+Each task is an idiomatic class with a public constructor that takes
+its frozen, AJV-validated config at run startup. Per-record execution
+allocates only the proposal array. `ClassificationFactory.build`
+instantiates the set per target; `SquashageOrchestrator` registers each
+instance's bound `execute` on a fresh per-run `TaskRegistry`.
 
-### AJV
+## Predicate Vocabulary
 
-AJV is the first gate. It handles fast JSON Schema validation and can classify
-records by trying class-specific schemas in priority order.
+`StructuralClassifier` and `RulesClassifier` consume compiled
+predicates from `src/classification/predicates/Predicate.ts`. The
+operator set is closed and validated at config-load against
+`src/schemas/predicate.schema.json`:
 
-Use it for:
+| Operator | Shape |
+|----------|-------|
+| `equals` / `notEquals`   | `{ path, equals \| notEquals: <constant> }` (deep structural equality) |
+| `in` / `notIn`           | `{ path, in \| notIn: [<constants>] }` |
+| `exists` / `missing`     | `{ path, exists \| missing: true }` |
+| `type`                   | `{ path, type: 'string' \| 'number' \| 'boolean' \| 'object' \| 'array' \| 'null' }` |
+| `regex`                  | `{ path, regex: '^...$' }` (anchors required; no flags) |
+| `length`                 | `{ path, length: { gte?, lte?, eq? } }` (strings + arrays) |
+| `range`                  | `{ path, range: { gte?, lte?, gt?, lt? } }` (finite numbers) |
+| `all` / `any` / `not`    | composition |
 
-- required property signatures
-- `const` / `enum` discriminators
-- `if` / `then` / `else` source variants
-- schema-driven normalization preconditions
-- input contract validation before graph projection
+Paths are RFC 6901 JSON Pointers (`/types/0`, `~1` escapes `/`,
+`~0` escapes `~`). Empty pointer (`""`) is rejected at compile.
 
-### json-rules-engine
+Compilation pre-builds RegExp objects and pre-splits path segments;
+runtime evaluation is a single switch over the AST.
 
-`json-rules-engine` is a good fit when rules need to be persisted as JSON and
-edited outside TypeScript. It supports nested `all` / `any` conditions and custom
-facts.
+## AJV Schema Engine
 
-Use it for:
+`AjvClassifier` runs records against an ordered set of pre-compiled AJV
+validators (one per class). Schema files are read by
+`ClassificationFactory.build` at run startup, parsed, and compiled
+through a single AJV instance with `addFormats` and strict mode (matching
+`SquashageConfig`). The engine itself does no I/O and no compilation.
+Per-class entries carry `{ className, priority, validate }`.
 
-- source-specific classification rules
-- explicit tie breakers
-- routing records into graph lanes
-- readable evidence from rule names and fact matches
-
-### JSON Logic
-
-JSON Logic is smaller and more portable than a full rules engine. It is useful
-for field-level predicates and mapping preconditions.
-
-Use it for:
-
-- "emit this predicate only when..." clauses
-- config-embedded predicates
-- portable rule snippets shared with other tools
-
-### Decision Tables
-
-A tiny built-in decision table may be better than a dependency for the first
-version:
-
-```json
-[
-  {
-    "class": "pokemon",
-    "priority": 100,
-    "all": [
-      { "path": "_type", "equals": "pokemon" },
-      { "path": "ndex", "type": "number" }
-    ]
-  }
-]
-```
-
-Decision tables give Squashage a stable core, while integrations can later compile
-from GoRules, JSON Logic, or json-rules-engine into the same internal plan.
-
-### GoRules / Zen Engine
-
-GoRules is useful if classification becomes business-rule-heavy and decision
-tables need a visual editor. It is probably too much for the default core, but
-it is a good adapter candidate.
-
-### RDF/JS And The Wrapper Layer
-
-Squashage emits standard RDF/JS terms, quads, and datasets and delegates
-every RDF implementation detail to a small `src/rdf/*` and `src/shacl/*`
-wrapper layer. RDF/JS is the build's internal canonical product; the
-actual output is a single serialized RDF file (see
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md)).
-
-**v0.x backing of the wrappers** (permissive OSS):
-
-- `DataFactory`, term, and quad construction → `src/rdf/DataFactory.ts`
-  over `@rdfjs/data-model`.
-- Fluent quad emission inside plugins → `src/rdf/GraphBuilder.ts`
-  (vendored from semantics/rdf-builder).
-- Format parse/serialize for the output file → `src/rdf/Serializer.ts`
-  and `src/rdf/Parser.ts` over `n3` (Turtle/TriG/N-Triples/N-Quads) and
-  `jsonld` (JSON-LD via N-Quads bridge).
-- Format detection / MIME negotiation → `src/rdf/Formats.ts` (hand-rolled
-  table covering the five v0.x formats).
-- Canonicalization → `src/rdf/Canonicalize.ts` over `rdf-canonize`.
-- IRI building and slugging → `src/rdf/Namespaces.ts` over
-  `@rdfjs/namespace` plus vendored `IRIUtils` / `BaseIRIResolver`.
-- Vocabulary constants and prefix tables → `src/rdf/Vocab.ts`
-  (hand-rolled with `@rdfjs/namespace`).
-
-Application code imports **only** from `src/rdf/*` and `src/shacl/*` —
-never `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`, `@rdfjs/*`,
-or any `@semantics/*` package directly. The wrappers' public surfaces
-stay stable; v1.x rewrites their bodies against the published
-`@semantics/*` workspace and re-enables RDF/XML and N3 output.
-
-Graph-store loading is **not** Squashage's job — run any loader of your
-choice on the produced file.
-
-### N3.js Reasoning
-
-N3.js (already a v0.x runtime dep, used inside `src/rdf/*` for
-parse/serialize) supports limited deterministic forward inference via its
-`Store` + reasoning helpers. Reasoning is not wired into the v0.x
-pipeline; v1.x will likely consume `@semantics/n3-reasoner` and
-`@semantics/sparql-*-entailment` for the same purpose.
-
-Use it for:
-
-- optional deterministic post-projection inference
-- simple subclass or relation completion rules
-- compatibility testing against RDF/JS expectations
-
-### SHACL Validation
+## SHACL Validation
 
 SHACL validation runs through `src/shacl/ShaclGate.ts` (v0.x backed by
-`rdf-validate-shacl`; v1.x by `@semantics/shacl-validator`). It is configured
-as a sink-time hook (`validate` on the sink) — failures quarantine the
-dataset for that sink rather than aborting the entire build.
+`rdf-validate-shacl`; v1.x by `@semantics/shacl-validator`). It is a
+pre-write hook on `output.validate.shapes`: when configured, the gate
+validates the canonical dataset against the shapes graph before the
+output file is written. On non-conformance, `ShaclGate.formatReport` and
+the report's W3C SHACL `dataset` are written to
+`./graphs/<target>/quarantine/output/validation.report.{txt,ttl}` and
+the destination output file is *not* written.
 
-Use it for:
+`SHACLValidator` is constructed without a `factory` option — the
+validator's bundled `defaultEnv` is required (passing only
+`@rdfjs/dataset`'s factory triggers `factory.clownface is not a
+function`). `Dataset` from `@rdfjs/dataset` already implements the
+`DatasetCore` shape `rdf-validate-shacl` accepts.
 
-- graph shape validation
-- required predicate checks
-- datatype checks
-- IRI-vs-literal checks
-- per-sink quarantine reports
+## Considered Alternatives (did not ship)
 
-### Natural
+The following options were evaluated and rejected in favor of the
+closed-vocab engine plus AJV. They are documented here for posterity
+and to keep future contributors from re-running the same evaluation.
 
-Natural's Bayes and logistic classifiers can be deterministic if the training
-set, tokenizer, stemmer, and model artifact are fixed. They should still be
-advisory, not authoritative.
+- **`json-rules-engine`**: open-ended fact callbacks, runtime function
+  references, and operator extensibility break determinism guarantees.
+  Closed-vocab predicates with AJV-validated config are equivalent for
+  the v0.x rule shapes we need.
+- **`json-logic-js`**: smaller surface than `json-rules-engine` but
+  still admits arbitrary function shimming. Same determinism concern.
+- **GoRules / Zen Engine**: useful when decision tables need a visual
+  editor; for v0.x, the JSON rule arrays are edited as text and the
+  closed-vocab AST is enough.
+- **`natural` Bayes / logistic**: probabilistic; out of scope for
+  canonical RDF/JS output. Could appear later as an *advisory*
+  proposal generator that writes review artifacts only.
+- **ONNX / embedding models**: probabilistic; same out-of-scope
+  rationale.
 
-Use it for:
+If a future lane needs any of these, it lands as an *advisory*
+classifier that writes proposals into `quarantine/<bucket>/` for human
+review and never participates in the canonical RDF emission. The
+`SHOULD NOT run in `squashage build`` rule from the original design
+holds: a deterministic config update promotes a proposal, never a
+probabilistic ranker.
 
-- ranking ambiguous text-heavy records
-- suggesting a likely class for unknowns
-- generating review queues
+## Embeddings (advisory only)
 
-Do not use it as the default build gate for canonical RDF/JS output.
+Embeddings help authoring, not classification. Useful for:
 
-## Embeddings
+- finding duplicates across sources with different labels
+- suggesting candidate ontology classes for unknown records
+- aligning messy source fields to ontology predicates
+- clustering quarantined records into batches
 
-Embeddings are useful for recall and review. They are not classification truth.
+Output from any future embedding lane is written as proposals next to
+the quarantine artifacts, with `status: "needs-review"` and a clear
+`source` field. A deterministic config update (a new `classify:rules`
+entry, a new schema, a new structural predicate) is what ever promotes a
+proposal into the build.
 
-Good uses:
+## LLM / Reasoning Assistants (authoring tools only)
 
-- find duplicates across sources with different names
-- suggest candidate ontology classes for unknown records
-- align messy source fields to known ontology predicates
-- cluster quarantined records into batches
-- detect "this looks like an existing mapping" opportunities
+LLMs are useful for authoring config and explaining failures:
 
-Output from embedding workflows should be written as proposals:
+- drafting a `classify:rules` entry from a cluster of unknown records
+- summarising a SHACL `validation.report.ttl`
+- proposing a JSON Schema for a class
+- generating test fixtures for new predicates
 
-```json
-{
-  "source": "quarantine/unknown/foo.json",
-  "suggestions": [
-    {
-      "type": "pokemon",
-      "score": 0.84,
-      "neighbors": [
-        "https://pokemontology.dev/species/bulbasaur"
-      ]
-    }
-  ],
-  "status": "needs-review"
-}
-```
-
-A deterministic rule, schema, or mapping update promotes proposals into the
-build. The model suggestion itself does not.
-
-## LLM / Reasoning Assistants
-
-LLMs are helpful for authoring and explanation:
-
-- draft a mapping from a cluster of unknown records
-- summarize why SHACL validation failed
-- propose a JSON Schema for a source record family
-- explain graph conflicts to a human reviewer
-- generate test fixtures for new classifier rules
-
-They should not run in `squashage build` unless the user explicitly enables an
-advisory mode that writes review artifacts instead of canonical RDF/JS output.
+They do not run inside `squashage build`. The boundary is the same as
+embeddings: deterministic config in, deterministic graph out.
 
 ## References
 
 - AJV: <https://github.com/ajv-validator/ajv>
-- json-rules-engine: <https://github.com/CacheControl/json-rules-engine>
-- JSON Logic: <https://github.com/jwadhams/json-logic-js>
-- GoRules: <https://docs.gorules.io/learn/getting-started/what-is-gorules>
-- N3.js: <https://github.com/rdfjs/N3.js>
+- N3.js (consumed via `src/rdf/Serializer.ts` and `src/rdf/Parser.ts`): <https://github.com/rdfjs/N3.js>
+- jsonld.js: <https://github.com/digitalbazaar/jsonld.js>
+- rdf-canonize: <https://github.com/digitalbazaar/rdf-canonize>
 - rdf-validate-shacl: <https://github.com/zazuko/rdf-validate-shacl>
 - W3C SHACL: <https://www.w3.org/TR/shacl/>
 - W3C OWL: <https://www.w3.org/OWL/>

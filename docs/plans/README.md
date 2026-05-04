@@ -1,61 +1,40 @@
-# Squashage — Implementation Lanes
+# Squashage — Plans
 
-Current state: [`00-current-state.md`](00-current-state.md)
+Squashage v0.x is **shipped**. See [`00-current-state.md`](00-current-state.md)
+for what's in the build today, and
+[`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md)
+for the implementation record (file output, classifier cascade,
+configuration, AJV schemas, code standards, migration history).
 
-The workspace was created as a literal copy of Ripperoni. These lanes describe
-the migration from scraper skeleton to graph reconstitution tool whose output
-is a single serialized RDF file. **v0.x** ships against permissive open-source
-RDF libraries; **v1.x** swaps in the unpublished `@semantics/*` workspace
-without changing the application surface (see plan 13's "Publishing Posture"
-and "Compatibility Notes").
+This directory is the project's living plan log: implemented plans are
+preserved as record; outstanding work goes here as new plans before any
+agent or contributor starts on it.
 
-## Can Start Now
+## Implemented
 
-| Lane | What |
+| Plan | What |
 |------|------|
-| 01 | Rename public identity: package, CLI, config loader, docs, examples |
-| 02 | Add v0.x OSS deps: `@rdfjs/types`, `@rdfjs/data-model`, `@rdfjs/dataset`, `@rdfjs/namespace`, `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`. Add `no-restricted-imports` ESLint rule to keep application code off raw OSS packages |
-| 03 | Redefine `PipelineStateInterface` and `PipelineContextInterface` for the squashage shape (in-place edit of `src/types/PipelineState.ts`) |
-| 04 | Add JSON/JSONL input reader tasks |
-| 05 | Add deterministic classification interfaces and evidence model |
-| 06 | Add the `src/rdf/*` and `src/shacl/*` wrapper layer: `DataFactory`, `Dataset`, `Formats`, `Serializer`, `Parser`, `Canonicalize`, `SyntaxValidator`, `TermGuards`, `GraphBuilder`, `Namespaces`, `Vocab`, `ShaclGate` |
-| 07 | Add `output` config block (see plan 13). Require it on every target |
-| 08 | Implement `FileOutput` against `src/rdf/Serializer.ts` (v0.x: turtle, trig, nquads, ntriples, jsonld) |
-| 09 | Wire `FileOutput` into `rdfjs:finalize` (orchestrator-driven lifecycle); write output report under `./graphs/<target>/output.report.json` |
-| 10 | Add canonicalize and SHACL-validate hooks via `src/rdf/Canonicalize.ts` and `src/shacl/ShaclGate.ts` |
-| 11 | Add quarantine manifests for unknown, conflict, and projection-failed records |
-| 12 | Comprehensive output plan: [`13-file-output-and-semantics-integration.md`](13-file-output-and-semantics-integration.md) |
+| [13](13-file-output-and-semantics-integration.md) | File output via `@semantics/*`-shaped wrappers (v0.x backed by `n3`/`jsonld`/`rdf-canonize`/`rdf-validate-shacl`/`@rdfjs/*`); orchestrator-driven `rdfjs:finalize`; SHACL pre-write gate; quarantine; AJV-validated config; deterministic classifier menu; per-run `TaskRegistry`. |
 
-## Later
+The historical Ripperoni-era plans (01–12) covered scraper bugs and
+features that no longer apply — Squashage deleted that layer wholesale
+during the v0.x migration. They are kept on disk for archaeology but are
+no longer actionable.
 
-| Lane | What |
+## Open
+
+| Plan | What |
 |------|------|
-| 13 | Add Torreya/Bulbapedia example classifier and squasher plugins |
-| 14 | Add `--out` and `--format` CLI overrides for one-off runs |
-| 15 | Add embedding-assisted advisory workflow for quarantined records |
-| 16 | Remove scraper-only modules once replacement tasks exist |
-| 17 | **v1.x swap** to `@semantics/*` workspace (rewrite `src/rdf/*` and `src/shacl/*` wrapper bodies; re-enable `rdfxml` and `n3` output formats). No application-code churn. |
+| _none_ | The next outstanding work (Torreya/Bulbapedia plugin examples; embedding-assisted advisory lane; v1.x swap to the published `@semantics/*` workspace) does not yet have a written plan. Add one here before starting. |
 
 ## Out Of Scope
 
-- **Graph-store loading** — Oxigraph/Fuseki/GraphDB/LevelDB/Redis ingestion is
-  a downstream concern. Run any loader of your choice on the file Squashage
-  produced.
-- **Multi-output fan-out** — one file per build. Re-run for another, or use
-  any RDF format converter to translate.
-
-## Completion Gate
-
-The first usable v0.x release is ready when this command shape works locally
-and writes a deterministic, well-formed RDF file:
-
-```bash
-squashage build \
-  --target bulbapedia \
-  --config squashage.config.torreya.example.json \
-  --in ./output/torreya/bulbapedia
-```
-
-The result should be deterministic RDF/JS quads serialized to one file, with
-an output report and quarantine reports for records that cannot be classified
-or projected.
+- **Graph-store loading.** Hand the file Squashage produced to whichever
+  loader you prefer (Oxigraph, Fuseki, GraphDB, Apache Jena LOAD, etc.).
+- **Multi-output fan-out.** One file per build. Re-run with a different
+  `--out` for a different format, or use any RDF format converter to
+  translate.
+- **Probabilistic classification (LLM, embeddings, ONNX) in the build
+  path.** All canonical RDF emission is deterministic. Embedding lanes
+  may write *advisory* review proposals separately, but never the
+  canonical product.

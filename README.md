@@ -13,7 +13,8 @@ source site/wiki/API
   -> JSON records
   -> squashage
        (classify -> normalize -> RDF/JS quads -> serialized file)
-       └─ file output (turtle | trig | nquads | ntriples | jsonld | rdfxml | n3)
+       └─ file output (v0.x: turtle | trig | nquads | ntriples | jsonld
+                       v1.x: adds rdfxml, n3)
 ```
 
 A single build produces one file. Squashage does not load graph stores. To
@@ -21,11 +22,14 @@ ingest the file into Oxigraph, Fuseki, GraphDB, or any other store, hand the
 file to whichever loader you prefer. Loading is a graph-store concern, not
 Squashage's.
 
-The package was bootstrapped as a literal file copy of the Ripperoni
-workspace, so the implementation skeleton still contains scraper-era code.
-This repository is currently documentation-first: the public shape, config
-model, classifier contract, and file-output contract are being defined before
-the code is renamed module by module.
+v0.x is implemented and tests pass: 557 unit + 22 integration. The package
+was bootstrapped as a literal file copy of Ripperoni and migrated module by
+module — the scraper layer is gone; the classification cascade,
+output pipeline, AJV-validated config, and CLI are in. See
+[`docs/plans/00-current-state.md`](docs/plans/00-current-state.md) for the
+component inventory and
+[`docs/plans/13-file-output-and-semantics-integration.md`](docs/plans/13-file-output-and-semantics-integration.md)
+for the implementation record.
 
 ## Goals
 
@@ -36,8 +40,12 @@ the code is renamed module by module.
   open-source RDF/JS stack (`@rdfjs/*`, `n3`, `jsonld`, `rdf-canonize`,
   `rdf-validate-shacl`).
 - Serialize the canonical dataset to a single RDF file per build run
-  (Turtle, TriG, N-Quads, N-Triples, JSON-LD, RDF/XML, or N3).
-- Keep uncertain embedding or LLM help outside the default deterministic build.
+  (v0.x: Turtle, TriG, N-Triples, N-Quads, JSON-LD; v1.x adds RDF/XML
+  and N3 once the `@semantics/*` workspace publishes).
+- Run a deterministic, declaratively configured classifier cascade
+  (no probabilistic models in the build path).
+- Keep embedding and LLM help out of canonical RDF emission entirely —
+  they may produce *advisory* review artifacts in future lanes.
 
 ## Non-Goals
 
@@ -125,7 +133,11 @@ internal canonical product; the file is the actual output.
       "input": "./output/bulbapedia",
       "pipeline": [
         "json:read",
-        "bulbapedia:classify",
+        "classify:source",
+        "classify:structural",
+        "classify:rules",
+        "classify:ontology",
+        "classify:conflict",
         "bulbapedia:squash-pokemon",
         "bulbapedia:squash-move",
         "rdfjs:finalize"
@@ -135,10 +147,36 @@ internal canonical product; the file is the actual output.
         "moves":   "https://pokemontology.dev/graph/universal/moves",
         "tcg":     "https://pokemontology.dev/graph/tcg/cards"
       },
+      "classification": {
+        "source": true,
+        "structural": [
+          { "className": "pokemon", "priority": 10,
+            "predicate": { "path": "/_type", "equals": "pokemon" },
+            "reasons": ["_type=pokemon (structural)"] }
+        ],
+        "rules": [
+          { "className": "pokemon", "priority": 20,
+            "predicate": { "all": [
+              { "path": "/_type", "equals": "pokemon" },
+              { "path": "/ndex",  "type": "number" }
+            ] },
+            "reasons": ["_type=pokemon", "ndex present"] }
+        ],
+        "ontology": {
+          "classes": {
+            "pokemon": "https://pokemontology.dev/ontology#Species"
+          }
+        },
+        "conflict": {
+          "onConflict": "quarantine",
+          "onUnknown":  "quarantine",
+          "evidence":   true
+        }
+      },
       "output": {
-        "kind": "file",
-        "path": "./graphs/torreya/bulbapedia.trig",
-        "mode": "dataset",
+        "kind":         "file",
+        "path":         "./graphs/torreya/bulbapedia.trig",
+        "mode":         "dataset",
         "canonicalize": true
       }
     }
@@ -152,22 +190,15 @@ target must declare an `output` block. The full output contract lives in
 
 ## Pipeline Contract
 
-Squashage follows Ripperoni's task-registry pattern: plugins self-register
-named async middleware tasks, and the orchestrator builds per-target pipelines
-from config.
+Squashage follows Ripperoni's task-registry pattern: tasks are async
+middleware over `PipelineStateInterface`, and the orchestrator builds a
+per-target `Pipeline` from `targets[].pipeline`. Built-in tasks
+(`json:read`, `rdfjs:finalize`, the six `classify:*` cascade tasks)
+self-register at module load. Custom tasks (squashers, target-specific
+classifiers) register the same way.
 
 ```ts
 import { TaskRegistry } from 'squashage/registry/TaskRegistry';
-
-TaskRegistry.register('bulbapedia:classify', async (next, state) => {
-  state.classification = {
-    type: String(state.input['_type'] ?? 'unknown'),
-    confidence: state.input['_type'] === undefined ? 0.2 : 1,
-    reasons: ['input._type'],
-  };
-
-  await next();
-});
 
 TaskRegistry.register('bulbapedia:squash-pokemon', async (next, state) => {
   if (state.classification?.type !== 'pokemon') {
@@ -175,105 +206,116 @@ TaskRegistry.register('bulbapedia:squash-pokemon', async (next, state) => {
     return;
   }
 
-  const slug = state.iri.slug(String(state.input['name'] ?? state.input['title']));
-  const species = `https://pokemontology.dev/species/${slug}`;
+  const ctx     = state.context!;
+  const slug    = ctx.iri.slug(String(state.input['name'] ?? state.input['title']));
+  const species = ctx.factory.namedNode(`https://pokemontology.dev/species/${slug}`);
 
-  state.dataset.add(state.factory.quad(
-    state.factory.namedNode(species),
-    state.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-    state.factory.namedNode('https://pokemontology.dev/ontology#Species'),
-    state.factory.namedNode('https://pokemontology.dev/graph/universal/species'),
+  ctx.dataset.add(ctx.factory.quad(
+    species,
+    ctx.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+    ctx.factory.namedNode('https://pokemontology.dev/ontology#Species'),
+    ctx.graphs['pokemon'] ?? ctx.factory.defaultGraph(),
   ));
 
   await next();
 });
 ```
 
-Plugins emit quads into the shared canonical dataset. The `rdfjs:finalize`
-task serializes that dataset to the configured output file via
-`src/rdf/Serializer.ts`, runs any configured canonicalization
-(`src/rdf/Canonicalize.ts`) and SHACL validation
-(`src/shacl/ShaclGate.ts`), and writes the output report.
+`state.classification` is populated by `classify:conflict` after the
+upstream cascade tasks emit proposals into `state.classifications` —
+plugins read it but do not write it. Plugins emit quads into
+`ctx.dataset`. The `rdfjs:finalize` task serializes that dataset to the
+configured output file via `src/rdf/Serializer.ts`, runs any configured
+canonicalization (`src/rdf/Canonicalize.ts`) and SHACL validation
+(`src/shacl/ShaclGate.ts`), and writes `output.report.json` next to it.
 
-## Deterministic Classification
+## Deterministic Classifier Menu
 
-The classifier cascade should be deterministic and explainable:
+Squashage offers six classifier task classes. Targets pick which to use
+by listing them in `pipeline:`. Each task is an idiomatic class
+instantiated per-target with its frozen, AJV-validated config at run
+startup.
 
-1. Source contract: target ID, source path, Ripperoni plugin name, and schema ID.
-2. Structural signatures: required keys, discriminators, URL/title patterns, and
-   template names.
-3. JSON Schema gates: `const`, `enum`, `required`, `if`/`then`, and
-   `unevaluatedProperties` checks.
-4. Rule engine decisions: JSON rules over normalized facts.
-5. Ontology gates: known IRI lookup, graph lane checks, and subclass checks.
-6. Tie-break policy: priority, specificity, source trust, then explicit
-   quarantine when conflict remains.
+| Task | Required config block | Role |
+|------|-----------------------|------|
+| `classify:source`     | `classification.source: true`     | Reads `_source` metadata; emits a `__source__` marker proposal. |
+| `classify:structural` | `classification.structural[]`     | Predicate-based structural gate. |
+| `classify:rules`      | `classification.rules[]`          | Predicate-based decision table over normalized facts. |
+| `classify:schema`     | `classification.schemas[]`        | Per-class JSON Schema validation via pre-compiled AJV. |
+| `classify:ontology`   | `classification.ontology.classes` | Validates proposed classNames against a known IRI map. |
+| `classify:conflict`   | `classification.conflict`         | Picks winner by priority desc + className lex asc; quarantines on tie/unknown. |
 
-Every final classification should carry evidence:
+Cross-validation at config-load enforces "if you list a `classify:*`
+task in `pipeline:`, its matching config block must be present and
+non-empty"; pipelines listing ≥2 distinct class-proposing classifiers
+must end with `classify:conflict`. Misconfigured targets fail fast with
+exit code `2` before any record processes.
+
+The predicate vocabulary consumed by `classify:structural` and
+`classify:rules` is closed and AJV-validated against
+`src/schemas/predicate.schema.json`: `equals`, `notEquals`, `in`,
+`notIn`, `exists`, `missing`, `type`, `regex` (must be anchored),
+`length`, `range`, plus `all`/`any`/`not` composition. Paths are RFC
+6901 JSON Pointers.
+
+The final `state.classification` carries evidence:
 
 ```json
 {
   "type": "pokemon",
   "confidence": 1,
-  "engine": "schema+rules",
+  "engine": "classify:rules,classify:structural",
   "reasons": [
-    "input._type == pokemon",
-    "required keys present: ndex, types, abilities",
-    "matched graph target: universal/species"
+    "_type=pokemon (structural)",
+    "_type=pokemon",
+    "ndex present"
   ]
 }
 ```
 
-## Engine Options
+See [`docs/classification-engines.md`](docs/classification-engines.md)
+for the engine details, the rationale behind the closed vocabulary, and
+the considered alternatives that did not ship.
 
-Good deterministic candidates for Node.js:
+## Engines In Use
 
-- **AJV** for JSON Schema validation, structural classification gates, and fast
-  target-specific input contracts.
-- **json-rules-engine** for human-readable `all`/`any` rule trees over extracted
-  facts.
-- **json-logic-js** for small portable predicates stored as JSON next to mapping
-  rules.
-- **GoRules / Zen Engine** when decision tables become easier to maintain than
-  nested JSON rules.
-- **`src/rdf/GraphBuilder.ts` (vendored) + `src/rdf/DataFactory.ts`** for
-  emitting canonical RDF/JS quads inside plugins.
-- **`src/rdf/Serializer.ts`** (over `n3` + `jsonld`) for serializing the
-  finalized dataset to Turtle, TriG, N-Quads, N-Triples, and JSON-LD in
-  v0.x (RDF/XML + N3 in v1.x).
-- **`src/shacl/ShaclGate.ts`** (over `rdf-validate-shacl`) for SHACL
-  validation as a pre-write hook.
-- **Natural** Bayes/logistic classifiers only as frozen, deterministic
-  advisory rankers; not as authoritative build gates.
+Application code consumes these wrappers; the OSS packages they sit on
+are listed under "Package Family" above.
 
-The likely first implementation stack is AJV + a tiny local decision-table
-runner + the vendored `GraphBuilder` for projection, with
-`src/rdf/Serializer.ts` (n3 + jsonld) producing a single output file
-end-to-end. External rule engines remain optional classifier adapters
-until the mapping language proves it needs them.
+- **`src/rdf/DataFactory.ts`** + **`src/rdf/GraphBuilder.ts`** —
+  RDF/JS factory and fluent quad builder for plugins.
+- **`src/rdf/Serializer.ts`** — single output dispatcher (Turtle, TriG,
+  N-Triples, N-Quads, JSON-LD).
+- **`src/rdf/Parser.ts`** — same five formats; used to load shapes
+  graphs and as a round-trip syntax check.
+- **`src/rdf/Canonicalize.ts`** — RDFC-1.0 canonicalization on the
+  pre-write path when `output.canonicalize: true`.
+- **`src/rdf/SyntaxValidator.ts`** — optional post-write syntax sanity.
+- **`src/shacl/ShaclGate.ts`** — pre-write SHACL hook with
+  `validation.report.{txt,ttl}` quarantine emission on non-conformance.
+- **AJV** — config validation (every schema under `src/schemas/`) and
+  the engine inside `classify:schema`.
+- **`src/classification/predicates/Predicate.ts`** — closed-vocabulary
+  predicate engine for `classify:structural` and `classify:rules`.
+
+Plugins remain a custom escape hatch: register a task with `TaskRegistry`
+and list it in `pipeline:`. The cascade tasks above cover the
+config-driven cases; custom plugins handle target-specific projection
+and any niche normalization.
 
 ## Embeddings And Reasoning
 
-Embeddings help before deterministic classification, not after:
+`squashage build` runs zero model calls. Embeddings and LLMs are
+authoring tools — they help draft rules, summarise SHACL failures, and
+suggest mappings for quarantined records, but their output is never the
+canonical product. A future advisory lane writes proposals next to the
+quarantine artifacts; a human or a deterministic config update is what
+ever promotes a proposal into the build.
 
-- Suggest candidate ontology classes for messy unknown records.
-- Find duplicate entities across sources with different labels.
-- Align source field names to ontology predicates.
-- Recommend rule additions for records that fall into quarantine.
-- Cluster unknown records so humans can add one mapping rule for a batch.
-
-Reasoning engines help after deterministic projection (and run on the
-canonical dataset before serialization):
-
-- Infer superclass membership from emitted `rdf:type` triples.
-- Complete relation chains such as form -> base species -> generation.
-- Detect contradictions through SHACL via `src/shacl/ShaclGate.ts`
-  (entailment is out of v0.x scope).
-- Explain why a pre-write validation failed.
-
-Default `squashage build` should be reproducible with no model calls. Model
-and embedding lanes write proposals, evidence, and review artifacts; a human
-or deterministic rule update promotes those proposals into the build.
+SHACL validation runs through `src/shacl/ShaclGate.ts` as a pre-write
+hook. Forward inference and entailment are out of v0.x scope; v1.x may
+consume `@semantics/n3-reasoner` and `@semantics/sparql-*-entailment`
+once they publish.
 
 ## Branding
 
@@ -284,9 +326,6 @@ boring and stable so downstream graph code does not inherit the bit.
 ## References
 
 - AJV: <https://github.com/ajv-validator/ajv>
-- json-rules-engine: <https://github.com/CacheControl/json-rules-engine>
-- JSON Logic: <https://github.com/jwadhams/json-logic-js>
-- GoRules: <https://docs.gorules.io/learn/getting-started/what-is-gorules>
 - N3.js (consumed via `src/rdf/Serializer.ts` and `src/rdf/Parser.ts`): <https://github.com/rdfjs/N3.js>
 - jsonld.js: <https://github.com/digitalbazaar/jsonld.js>
 - rdf-canonize: <https://github.com/digitalbazaar/rdf-canonize>
