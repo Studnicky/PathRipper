@@ -1,7 +1,7 @@
 {
   "name": "squashage",
   "version": "0.1.0",
-  "description": "Graph reconstitution pipeline \u2014 pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
+  "description": "Graph reconstitution pipeline — pluggable classifiers and normalizers that squash Ripperoni JSON into RDF/JS.",
   "type": "module",
   "bin": {
     "squashage": "./dist/cli/cli.js"
@@ -35,7 +35,7 @@
     "dev": "node --watch dist/cli/cli.js",
     "postinstall": "bash scripts/install-hooks.sh && node scripts/create-type-stubs.js",
     "prepare": "bash scripts/install-hooks.sh",
-    "test:integration": "node --test tests/integration/**/*.test.ts",
+    "test:integration": "node --import tsx --test 'tests/integration/**/*.test.ts'",
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'"
   },
   "dependencies": {
