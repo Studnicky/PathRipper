@@ -36,7 +36,14 @@
         }
       }
     },
-    "dryRun":      { "type": "boolean", "default": false }
+    "dryRun":      { "type": "boolean", "default": false },
+    "jsonldContext": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ],
+      "description": "Compaction context for JSON-LD output. Path string (resolved against config dir), inline object, or omit/'auto' to let squashage build one from the quad set + ctx.prefixes. Rejected by cross-validation when format is not jsonld."
+    }
   },
   "allOf": [
     {

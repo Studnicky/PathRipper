@@ -16,6 +16,11 @@
  * is triple-only (turtle, ntriples) without `output.graph` set to collapse,
  * the task throws {@link OutputConfigError} with `metadata.stage = 'finalize'`.
  *
+ * When `output.format === 'jsonld'`, a compaction context is resolved via
+ * {@link FileOutput}'s built-in priority order (inline object → auto-build from
+ * quads + `ctx.prefixes` → path-based load).  The `configDir` is derived from
+ * `ctx.config.configPath` when present (set by the CLI via {@link RunOptionsInterface}).
+ *
  * The task self-registers under the name `rdfjs:finalize` at module load time;
  * a side-effect import of this file is sufficient.
  *
@@ -25,7 +30,7 @@
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join }    from 'node:path';
 
 import type { NextFnInterface, TaskFnInterface } from '../types/Pipeline.js';
 import type { PipelineStateInterface } from '../types/PipelineState.js';
@@ -84,6 +89,10 @@ const assertGraphCompatibility = (
  * {@link OutputReportInterface}, and persists the report JSON next to the
  * output file (under the run directory). Invokes `next()` on success.
  *
+ * The `FileOutput` constructor receives `ctx.prefixes` and the config directory
+ * (from `ctx.config.configPath` when set by the CLI) so JSON-LD context
+ * auto-build and path resolution work correctly.
+ *
  * @param next  - Advance function; supplied by the orchestrator (typically a no-op).
  * @param state - Synthetic pipeline state whose `context` carries the run-wide
  *   factory, dataset, builder, graphs, iri, output, target, outDir, and config.
@@ -114,7 +123,14 @@ const rdfjsFinalizeTask: TaskFnInterface<PipelineStateInterface> = async (
   );
 
   const runDir = runDirFor(ctx.outDir, ctx.target);
-  const output = new FileOutput(ctx.output, runDir);
+
+  // Derive configDir from ctx.config.configPath when it was threaded through by the CLI.
+  const configPathRaw = ctx.config['configPath'];
+  const configDir = typeof configPathRaw === 'string'
+    ? dirname(configPathRaw)
+    : undefined;
+
+  const output = new FileOutput(ctx.output, runDir, ctx.prefixes, configDir);
 
   logger.debug('serialize', 'Opening output and writing dataset', {
     targetId:  state.targetId,

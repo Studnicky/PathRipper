@@ -147,3 +147,116 @@ describe('SquashageConfig.validate()', () => {
     assert.equal(cfg.targets['foo']?.output.mode, 'stream');
   });
 });
+
+describe('SquashageConfig.validate() — jsonldContext cross-validation', () => {
+  it('accepts jsonldContext when format is explicitly "jsonld"', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   { kind: 'file', path: './graphs/foo.jsonld', format: 'jsonld', jsonldContext: 'auto' },
+        },
+      },
+    };
+    const cfg = SquashageConfig.validate(raw);
+    assert.ok(cfg.targets['foo'] !== undefined, 'target should be valid');
+  });
+
+  it('accepts jsonldContext when format resolves from .jsonld extension', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   { kind: 'file', path: './graphs/foo.jsonld', jsonldContext: 'auto' },
+        },
+      },
+    };
+    const cfg = SquashageConfig.validate(raw);
+    assert.ok(cfg.targets['foo'] !== undefined, 'target with .jsonld extension should be valid');
+  });
+
+  it('accepts inline object jsonldContext with jsonld format', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   {
+            kind:         'file',
+            path:         './graphs/foo.jsonld',
+            format:       'jsonld',
+            jsonldContext: { '@context': { ex: 'http://example.org/' } },
+          },
+        },
+      },
+    };
+    const cfg = SquashageConfig.validate(raw);
+    assert.ok(cfg.targets['foo'] !== undefined, 'target with inline context object should be valid');
+  });
+
+  it('throws SquashageConfigError when jsonldContext is set with turtle format', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   {
+            kind:         'file',
+            path:         './graphs/foo.ttl',
+            format:       'turtle',
+            jsonldContext: 'auto',
+          },
+        },
+      },
+    };
+    assert.throws(
+      () => SquashageConfig.validate(raw),
+      (err: unknown) => {
+        assert.ok(err instanceof SquashageConfigError, 'should throw SquashageConfigError');
+        assert.match(err.message, /jsonldContext/i);
+        return true;
+      },
+    );
+  });
+
+  it('throws SquashageConfigError when jsonldContext is set with nquads format', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   { kind: 'file', path: './graphs/foo.nq', format: 'nquads', jsonldContext: 'auto' },
+        },
+      },
+    };
+    assert.throws(
+      () => SquashageConfig.validate(raw),
+      (err: unknown) => {
+        assert.ok(err instanceof SquashageConfigError);
+        return true;
+      },
+    );
+  });
+
+  it('accepts config without jsonldContext for non-jsonld format (no error)', () => {
+    const raw = {
+      input:   { basePath: './output', format: 'json' },
+      targets: {
+        foo: {
+          input:    './output/foo',
+          pipeline: ['json:read', 'rdfjs:finalize'],
+          output:   { kind: 'file', path: './graphs/foo.trig' },
+        },
+      },
+    };
+    const cfg = SquashageConfig.validate(raw);
+    assert.ok(cfg.targets['foo'] !== undefined);
+  });
+});

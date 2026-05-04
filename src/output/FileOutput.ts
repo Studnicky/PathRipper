@@ -21,6 +21,14 @@
  * `<runDir>/quarantine/output/`: `validation.report.txt` and
  * `validation.report.ttl`.  The destination output file is never created.
  *
+ * **JSON-LD context** — when `output.format === 'jsonld'`, a compaction
+ * context is resolved via the following priority order:
+ *   1. `output.jsonldContext` is a plain object → used verbatim.
+ *   2. `output.jsonldContext` is the string `'auto'` or is absent → auto-built
+ *      from the buffered quads + `prefixes` via {@link JsonldContext.build}.
+ *   3. `output.jsonldContext` is any other string → treated as a path resolved
+ *      relative to `configDir`; loaded via {@link JsonldContext.loadFromPath}.
+ *
  * @module output/FileOutput
  * @category Output
  * @since 2.2.0
@@ -28,15 +36,17 @@
 
 import { mkdir, open, rename, writeFile } from 'node:fs/promises';
 import { readFile }                        from 'node:fs/promises';
-import { join, dirname }                   from 'node:path';
+import { join, dirname, resolve }          from 'node:path';
 
 import type { Quad }                       from '@rdfjs/types';
 import type { RDFFormat }                  from '../rdf/Formats.js';
 import type { OutputConfigInterface }      from '../config/OutputConfig.js';
 import type { OutputInterface, OutputReportInterface } from './OutputInterface.js';
+import type { PrefixResolutionInterface }  from '../classification/PrefixResolver.js';
 
 import { Formats }                         from '../rdf/Formats.js';
 import { Serializer }                      from '../rdf/Serializer.js';
+import { JsonldContext }                   from '../rdf/JsonldContext.js';
 import { Canonicalize }                    from '../rdf/Canonicalize.js';
 import { Parser }                          from '../rdf/Parser.js';
 import { Dataset }                         from '../rdf/Dataset.js';
@@ -101,9 +111,14 @@ function countGraphs(quads: ReadonlyArray<Quad>): number {
  * `<runDir>/quarantine/output/`; the destination file is never touched and
  * `FileOutputError` is thrown with `metadata.stage === 'validate'`.
  *
+ * **JSON-LD context** — When `output.format === 'jsonld'`, a compaction
+ * context is resolved at close time from `output.jsonldContext`, the run's
+ * `prefixes`, and the buffered quad set.  See the module-level remarks for the
+ * full priority order.
+ *
  * @example Basic usage
  * ```ts
- * const out = new FileOutput(config, runDir);
+ * const out = new FileOutput(config, runDir, prefixes, configDir);
  * await out.open();
  * await out.writeBatch(ctx.dataset);
  * const report = await out.close();
@@ -111,7 +126,7 @@ function countGraphs(quads: ReadonlyArray<Quad>): number {
  *
  * @example Dry run
  * ```ts
- * const out = new FileOutput({ ...config, dryRun: true }, runDir);
+ * const out = new FileOutput({ ...config, dryRun: true }, runDir, prefixes, configDir);
  * await out.open();
  * await out.writeBatch(quads);
  * const report = await out.close();
@@ -123,25 +138,41 @@ function countGraphs(quads: ReadonlyArray<Quad>): number {
  * @see {@link OutputInterface}
  * @see {@link FormatResolver}
  * @see {@link ShaclGate}
+ * @see {@link JsonldContext}
  * @group Core
  */
 export class FileOutput implements OutputInterface {
-  readonly #config: OutputConfigInterface;
-  readonly #runDir: string;
-  readonly #format: RDFFormat;
-  readonly #buffer: Quad[] = [];
+  readonly #config:    OutputConfigInterface;
+  readonly #runDir:    string;
+  readonly #format:    RDFFormat;
+  readonly #buffer:    Quad[] = [];
+  readonly #prefixes:  PrefixResolutionInterface | undefined;
+  readonly #configDir: string | undefined;
 
   #openedAt: number = 0;
 
   /**
-   * @param config - Validated output config from the squashage target.
-   * @param runDir - Run-scoped base directory; quarantine artifacts are written
+   * @param config    - Validated output config from the squashage target.
+   * @param runDir    - Run-scoped base directory; quarantine artifacts are written
    *   under `<runDir>/quarantine/output/`.
+   * @param prefixes  - Optional resolved prefix-base pairs from the run, used to
+   *   auto-build a JSON-LD compaction context when `format === 'jsonld'` and no
+   *   explicit `jsonldContext` path is configured.
+   * @param configDir - Optional absolute path to the directory containing the
+   *   squashage config file.  Used to resolve a relative `output.jsonldContext`
+   *   string path.  Falls back to `process.cwd()` when absent.
    */
-  public constructor(config: OutputConfigInterface, runDir: string) {
-    this.#config = config;
-    this.#runDir = runDir;
-    this.#format = FormatResolver.resolve(config);
+  public constructor(
+    config:     OutputConfigInterface,
+    runDir:     string,
+    prefixes?:  PrefixResolutionInterface,
+    configDir?: string,
+  ) {
+    this.#config    = config;
+    this.#runDir    = runDir;
+    this.#format    = FormatResolver.resolve(config);
+    this.#prefixes  = prefixes;
+    this.#configDir = configDir;
   }
 
   // ---------------------------------------------------------------------------
@@ -391,6 +422,54 @@ export class FileOutput implements OutputInterface {
   }
 
   /**
+   * Resolves the JSON-LD compaction context to use for serialization.
+   *
+   * @remarks
+   * Priority order:
+   * 1. `output.jsonldContext` is a plain object → used verbatim.
+   * 2. `output.jsonldContext` is `'auto'` or absent → auto-built from quads + prefixes.
+   * 3. `output.jsonldContext` is any other string → treated as a path, resolved
+   *    relative to `configDir` (or `process.cwd()`), loaded with
+   *    {@link JsonldContext.loadFromPath}.
+   *
+   * @param quads - The buffered quad set (used for auto-build).
+   * @returns The resolved context document.
+   */
+  async #resolveJsonldContext(
+    quads: ReadonlyArray<Quad>,
+  ): Promise<Record<string, unknown>> {
+    const rawContext = (this.#config as Record<string, unknown>)['jsonldContext'];
+
+    // Case 1: inline object → use verbatim.
+    if (rawContext !== undefined && typeof rawContext === 'object' && rawContext !== null) {
+      log.debug('resolveJsonldContext', 'Using inline jsonldContext object');
+      return rawContext as Record<string, unknown>;
+    }
+
+    // Case 2: absent or 'auto' string → auto-build from quads + prefixes.
+    if (rawContext === undefined || rawContext === 'auto') {
+      log.debug('resolveJsonldContext', 'Auto-building JSON-LD context from quads and prefixes');
+      if (this.#prefixes !== undefined) {
+        return JsonldContext.build(quads, this.#prefixes) as Record<string, unknown>;
+      }
+      // No prefixes available — build with an empty-ish context (just well-known prefixes).
+      // This is safe: the auto-builder seeds rdf:/xsd: regardless.
+      return JsonldContext.build(quads, {
+        instances:  { prefix: '', base: '' },
+        graphs:     { prefix: '', base: '' },
+        vocabulary: { prefix: '', base: '' },
+        source:     'fallback',
+      }) as Record<string, unknown>;
+    }
+
+    // Case 3: string path → resolve and load.
+    const base = this.#configDir ?? process.cwd();
+    const absPath = resolve(base, rawContext as string);
+    log.debug('resolveJsonldContext', 'Loading JSON-LD context from path', { absPath });
+    return JsonldContext.loadFromPath(absPath) as unknown as Record<string, unknown>;
+  }
+
+  /**
    * Serializes the buffered quads to a string.
    */
   async #serialize(quads: ReadonlyArray<Quad>): Promise<{ data: string }> {
@@ -403,6 +482,12 @@ export class FileOutput implements OutputInterface {
       if (this.#config.baseIRI !== undefined) {
         opts.baseIRI = this.#config.baseIRI;
       }
+
+      // Resolve JSON-LD context when the format is jsonld.
+      if (this.#format === 'jsonld') {
+        opts.jsonldContext = await this.#resolveJsonldContext(quads);
+      }
+
       const result = await Serializer.serialize([...quads], opts);
       log.debug('serialize', 'Serialization complete', { byteLength: Buffer.byteLength(result.data, 'utf8') });
       return { data: result.data };

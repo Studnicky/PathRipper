@@ -54,6 +54,13 @@ export const OUTPUT_SCHEMA = {
       },
     },
     dryRun: { type: 'boolean', default: false },
+    jsonldContext: {
+      oneOf: [
+        { type: 'string' },
+        { type: 'object' },
+      ] as const,
+      description: 'Compaction context for JSON-LD output. Path string (resolved against config dir), inline object, or omit/auto to let squashage build one from the quad set + ctx.prefixes. Rejected when format is not jsonld.',
+    },
   },
   allOf: [
     {

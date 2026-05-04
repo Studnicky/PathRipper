@@ -402,7 +402,7 @@ describe('SquashageOrchestrator', () => {
       );
 
       // configB is a distinct config with its own target key, same pipeline.
-      const configB: import('../../../src/config/SquashageConfig.js').SquashageConfigInterface = {
+      const configB: SquashageConfigInterface = {
         input: { basePath: join(parallelRunDir, 'b-in'), format: 'json' },
         targets: {
           targetB: {

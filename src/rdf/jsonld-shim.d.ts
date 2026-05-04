@@ -37,6 +37,14 @@ declare module 'jsonld' {
     useRdfType?: boolean;
   }
 
+  /** Options accepted by {@link jsonld.compact}. */
+  interface CompactOptions {
+    /** Base IRI to use during compaction. */
+    base?: string;
+    /** Whether to compact arrays to single values when appropriate (default: true). */
+    compactArrays?: boolean;
+  }
+
   /**
    * Converts a JSON-LD document to RDF.
    *
@@ -54,5 +62,15 @@ declare module 'jsonld' {
    */
   function fromRDF(dataset: unknown, options?: FromRdfOptions): Promise<unknown>;
 
-  export { toRDF, fromRDF };
+  /**
+   * Compacts a JSON-LD document using the supplied context.
+   *
+   * @param input   - Expanded JSON-LD document (output of {@link fromRDF}).
+   * @param ctx     - Compaction context object.
+   * @param options - Optional compaction options.
+   * @returns Promise resolving to the compacted JSON-LD document.
+   */
+  function compact(input: unknown, ctx: unknown, options?: CompactOptions): Promise<Record<string, unknown>>;
+
+  export { toRDF, fromRDF, compact };
 }

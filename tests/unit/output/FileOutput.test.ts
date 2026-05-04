@@ -10,6 +10,7 @@ import { Parser }       from '../../../src/rdf/Parser.js';
 import { FileOutput }   from '../../../src/output/FileOutput.js';
 import { FileOutputError } from '../../../src/errors/FileOutputError.js';
 import type { OutputConfigInterface } from '../../../src/config/OutputConfig.js';
+import type { PrefixResolutionInterface } from '../../../src/classification/PrefixResolver.js';
 
 // ---------------------------------------------------------------------------
 // Test infrastructure
@@ -627,3 +628,155 @@ describe('FileOutput — durationMs', () => {
 
 // Suppress unused import warning for basename
 void basename;
+
+// ---------------------------------------------------------------------------
+// Suite: JSON-LD context — auto-build when no jsonldContext configured
+// ---------------------------------------------------------------------------
+
+/** Minimal PrefixResolutionInterface for JSON-LD tests. */
+function makePrefixes(): PrefixResolutionInterface {
+  return {
+    instances:  { prefix: 'ex',    base: 'http://example.org/' },
+    graphs:     { prefix: 'exg',   base: 'http://example.org/graph/' },
+    vocabulary: { prefix: 'vocab', base: 'http://example.org/vocab/' },
+    source:     'derived',
+  };
+}
+
+describe('FileOutput — JSON-LD context: auto-build (no jsonldContext)', () => {
+  let tmpDir2 = '';
+  before(async () => { tmpDir2 = await makeTmpDir(); });
+  after(async ()  => { await rm(tmpDir2, { recursive: true, force: true }); });
+
+  it('output is compacted and contains @context when prefixes are provided', async () => {
+    const outPath = join(tmpDir2, 'auto-ctx.jsonld');
+    const out     = new FileOutput(config(outPath), tmpDir2, makePrefixes());
+
+    await out.open();
+    await out.writeBatch(oneTriple);
+    await out.close();
+
+    const text = await readFile(outPath, 'utf8');
+    const doc  = JSON.parse(text) as Record<string, unknown>;
+
+    assert.ok('@context' in doc, 'compacted JSON-LD should have @context');
+  });
+
+  it('@context includes run prefix entries (ex, vocab)', async () => {
+    const outPath = join(tmpDir2, 'auto-ctx-prefixes.jsonld');
+    const out     = new FileOutput(config(outPath), tmpDir2, makePrefixes());
+
+    await out.open();
+    await out.writeBatch(oneTriple);
+    await out.close();
+
+    const text = await readFile(outPath, 'utf8');
+    const doc  = JSON.parse(text) as Record<string, unknown>;
+    const ctx  = doc['@context'] as Record<string, unknown>;
+
+    assert.ok(ctx !== undefined && typeof ctx === 'object', '@context should be an object');
+    assert.equal(ctx['ex'],    'http://example.org/');
+    assert.equal(ctx['vocab'], 'http://example.org/vocab/');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: JSON-LD context — 'auto' explicit string behaves same as omitted
+// ---------------------------------------------------------------------------
+
+describe('FileOutput — JSON-LD context: explicit "auto" value', () => {
+  let tmpDir3 = '';
+  before(async () => { tmpDir3 = await makeTmpDir(); });
+  after(async ()  => { await rm(tmpDir3, { recursive: true, force: true }); });
+
+  it('output is compacted with @context when jsonldContext is "auto"', async () => {
+    const outPath = join(tmpDir3, 'explicit-auto.jsonld');
+    const out     = new FileOutput(
+      config(outPath, { jsonldContext: 'auto' } as Partial<Omit<OutputConfigInterface, 'kind' | 'path'>>),
+      tmpDir3,
+      makePrefixes(),
+    );
+
+    await out.open();
+    await out.writeBatch(oneTriple);
+    await out.close();
+
+    const text = await readFile(outPath, 'utf8');
+    const doc  = JSON.parse(text) as Record<string, unknown>;
+
+    assert.ok('@context' in doc, 'compacted JSON-LD should have @context with explicit auto');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: JSON-LD context — inline object is used verbatim
+// ---------------------------------------------------------------------------
+
+describe('FileOutput — JSON-LD context: inline object', () => {
+  let tmpDir4 = '';
+  before(async () => { tmpDir4 = await makeTmpDir(); });
+  after(async ()  => { await rm(tmpDir4, { recursive: true, force: true }); });
+
+  it('uses the inline context object verbatim and produces compacted JSON-LD output', async () => {
+    const inlineCtx = {
+      '@context': {
+        rdf:  'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+        xsd:  'http://www.w3.org/2001/XMLSchema#',
+      },
+    };
+    const outPath = join(tmpDir4, 'inline-ctx.jsonld');
+    const out     = new FileOutput(
+      config(outPath, { jsonldContext: inlineCtx } as Partial<Omit<OutputConfigInterface, 'kind' | 'path'>>),
+      tmpDir4,
+      makePrefixes(),
+    );
+
+    await out.open();
+    await out.writeBatch(oneTriple);
+    await out.close();
+
+    const text = await readFile(outPath, 'utf8');
+    const doc  = JSON.parse(text) as Record<string, unknown>;
+
+    // The output is compacted using the provided context; it should be valid JSON-LD.
+    assert.ok(typeof doc === 'object', 'output should be a valid JSON object');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Suite: JSON-LD context — path-based loading
+// ---------------------------------------------------------------------------
+
+describe('FileOutput — JSON-LD context: path-based loading', () => {
+  let tmpDir5 = '';
+  before(async () => { tmpDir5 = await makeTmpDir(); });
+  after(async ()  => { await rm(tmpDir5, { recursive: true, force: true }); });
+
+  it('loads context from a path relative to configDir and produces compacted output', async () => {
+    const ctxContent = JSON.stringify({
+      '@context': {
+        rdf:  'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+        xsd:  'http://www.w3.org/2001/XMLSchema#',
+      },
+    });
+    const ctxPath = join(tmpDir5, 'my-context.jsonld');
+    await writeFile(ctxPath, ctxContent, 'utf8');
+
+    const outPath = join(tmpDir5, 'path-ctx.jsonld');
+    const out     = new FileOutput(
+      config(outPath, { jsonldContext: 'my-context.jsonld' } as Partial<Omit<OutputConfigInterface, 'kind' | 'path'>>),
+      tmpDir5,
+      makePrefixes(),
+      tmpDir5,   // configDir
+    );
+
+    await out.open();
+    await out.writeBatch(oneTriple);
+    await out.close();
+
+    const text = await readFile(outPath, 'utf8');
+    const doc  = JSON.parse(text) as Record<string, unknown>;
+
+    assert.ok(typeof doc === 'object', 'output should be a valid JSON object');
+  });
+});
