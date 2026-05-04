@@ -41,8 +41,9 @@ export class PipelineState {
       targetId,
       source,
       input,
-      classification: null,
-      output:         null,
+      classification:  null,
+      classifications: [],
+      output:          null,
     };
   }
 }

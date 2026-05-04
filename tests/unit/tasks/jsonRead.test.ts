@@ -28,12 +28,13 @@ const buildState = (
   const input   = partial.input  ?? {};
   const context: TestContext = { target: 'unit-target', outDir, config };
   return {
-    targetId:       'unit-target',
+    targetId:        'unit-target',
     source,
     input,
-    classification: null,
-    output:         null,
-    context:        context as unknown as PipelineContextInterface,
+    classification:  null,
+    classifications: [],
+    output:          null,
+    context:         context as unknown as PipelineContextInterface,
   };
 };
 

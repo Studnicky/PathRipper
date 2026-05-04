@@ -214,19 +214,12 @@ export class SquashageOrchestrator {
     const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig);
 
     // Step 4 — Strip rdfjs:finalize from per-record tasks; retain a reference.
-    const FINALIZE_NAME  = 'rdfjs:finalize';
-    const perRecordNames = targetConfig.pipeline.filter(name => name !== FINALIZE_NAME);
+    const FINALIZE_NAME   = 'rdfjs:finalize';
+    const perRecordNames  = targetConfig.pipeline.filter(name => name !== FINALIZE_NAME);
 
-    // Build a fresh per-run registry seeded from the global default, so that future
-    // per-target classifiers can register onto this instance without cross-contaminating
-    // concurrent runs targeting different config entries.
-    const registry = new TaskRegistry();
-    for (const name of [...perRecordNames, FINALIZE_NAME]) {
-      registry.register(name, TaskRegistry.get(name));
-    }
-
-    // Retrieve the finalize task from the per-run registry (eagerly validates).
-    const finalizeTask = registry.get(FINALIZE_NAME);
+    // Look up all per-record tasks eagerly; throws ExternalSchemaError on any missing task.
+    const perRecordTasks = perRecordNames.map(name => TaskRegistry.get(name));
+    const finalizeTask   = TaskRegistry.get(FINALIZE_NAME);
 
     logger.debug('run', 'Pipeline tasks resolved', {
       target,
@@ -234,9 +227,9 @@ export class SquashageOrchestrator {
       finalize:  FINALIZE_NAME,
     });
 
-    // Step 5 — Build per-record Pipeline with the per-run registry.
-    const pipeline = new Pipeline<PipelineStateInterface>({ name: `squashage:${target}` }, registry);
-    for (const name of perRecordNames) pipeline.addTaskByName(name);
+    // Step 5 — Build per-record Pipeline.
+    const pipeline = Pipeline.create<PipelineStateInterface>({ name: `squashage:${target}` });
+    pipeline.addTasks(perRecordTasks);
 
     // Step 6 — Walk input source.
     const inputRoot = options.inputOverride ?? targetConfig.input;
@@ -285,12 +278,13 @@ export class SquashageOrchestrator {
 
     // Step 9 — Invoke finalize task once with a synthetic state carrying ctx.
     const finalizeState: PipelineStateInterface = {
-      targetId:       target,
-      source:         { target, path: '__finalize__' },
-      input:          {},
-      classification: null,
-      output:         null,
-      context:        ctx,
+      targetId:        target,
+      source:          { target, path: '__finalize__' },
+      input:           {},
+      classification:  null,
+      classifications: [],
+      output:          null,
+      context:         ctx,
     };
 
     logger.debug('finalize', 'Invoking rdfjs:finalize', { target });
