@@ -18,8 +18,10 @@
  *
  * **JSON-LD bridge** — JSON-LD output is produced by first serializing the
  * quad array to N-Quads (recursive call), then passing the N-Quads string to
- * `jsonld.fromRDF` with `{ format: 'application/n-quads' }`.  The expanded
- * JSON-LD array is then pretty-printed with `JSON.stringify(doc, null, 2)`.
+ * `jsonld.fromRDF` with `{ format: 'application/n-quads' }`.  When a
+ * `jsonldContext` is provided in the options, the expanded array is then
+ * compacted via `jsonld.compact(expanded, context)`.  Otherwise the raw
+ * expanded form is pretty-printed.
  *
  * @module rdf/Serializer
  * @category RDF
@@ -31,6 +33,7 @@ import jsonld from 'jsonld';
 
 import type { Quad } from '@rdfjs/types';
 import type { RDFFormat } from './Formats.js';
+import type { JsonldContextDocInterface } from './JsonldContext.js';
 import { OutputConfigError } from '../errors/OutputConfigError.js';
 
 // ---------------------------------------------------------------------------
@@ -82,6 +85,14 @@ export interface SerializeOptionsInterface {
    * n3's Writer does not consume `baseIRI` directly in v0.x.
    */
   baseIRI?:  string;
+  /**
+   * JSON-LD compaction context to apply when `format === 'jsonld'`.
+   *
+   * When supplied, the expanded JSON-LD array produced by `jsonld.fromRDF` is
+   * compacted using `jsonld.compact(expanded, jsonldContext)` before serialization.
+   * When absent, the raw expanded form is returned.
+   */
+  jsonldContext?: JsonldContextDocInterface | undefined;
 }
 
 /**
@@ -147,8 +158,9 @@ export class Serializer {
    *   N-Triples); this is expected n3 behaviour.
    * - **JSON-LD** — the quads are first serialized to N-Quads (recursive
    *   call), then `jsonld.fromRDF` converts the N-Quads string to an
-   *   expanded JSON-LD array which is pretty-printed with
-   *   `JSON.stringify(doc, null, 2)`.
+   *   expanded JSON-LD array.  When `options.jsonldContext` is provided, the
+   *   expanded array is compacted via `jsonld.compact`; otherwise the raw
+   *   expanded form is pretty-printed with `JSON.stringify(doc, null, 2)`.
    *
    * @param quads   - Quads to serialize.
    * @param options - Serialization options including the required `format`.
@@ -163,9 +175,10 @@ export class Serializer {
    * );
    * ```
    *
-   * @example JSON-LD
+   * @example JSON-LD with compaction context
    * ```ts
-   * const { data } = await Serializer.serialize([quad], { format: 'jsonld' });
+   * const ctx = JsonldContext.build(quads, prefixes);
+   * const { data } = await Serializer.serialize(quads, { format: 'jsonld', jsonldContext: ctx });
    * const doc = JSON.parse(data);
    * ```
    */
@@ -230,14 +243,22 @@ export class Serializer {
    * The N-Quads string is produced by a recursive call to
    * {@link Serializer.serialize} so that the same n3.Writer code path is
    * reused.  `jsonld.fromRDF` then converts the N-Quads to an expanded
-   * JSON-LD array which is pretty-printed.
+   * JSON-LD array.  When `options.jsonldContext` is provided, the array is
+   * further compacted via `jsonld.compact`; otherwise the raw expanded form
+   * is pretty-printed.
    */
   private static async serializeJsonLd(
     quads:   ReadonlyArray<Quad>,
-    _options: SerializeOptionsInterface,
+    options: SerializeOptionsInterface,
   ): Promise<SerializeResultInterface> {
     const { data: nq } = await Serializer.serialize(quads, { format: 'nquads' });
-    const doc = await jsonld.fromRDF(nq, { format: 'application/n-quads' });
-    return { data: JSON.stringify(doc, null, 2), format: 'jsonld' };
+    const expanded = await jsonld.fromRDF(nq, { format: 'application/n-quads' });
+
+    if (options.jsonldContext !== undefined) {
+      const compacted = await jsonld.compact(expanded, options.jsonldContext);
+      return { data: JSON.stringify(compacted, null, 2), format: 'jsonld' };
+    }
+
+    return { data: JSON.stringify(expanded, null, 2), format: 'jsonld' };
   }
 }

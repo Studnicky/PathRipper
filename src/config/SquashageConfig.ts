@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve, dirname } from 'node:path';
+import { resolve, dirname, extname } from 'node:path';
 import { fileURLToPath }    from 'node:url';
 
 import AjvModule, { type ValidateFunction } from 'ajv';
@@ -271,10 +271,14 @@ const CLASSIFY_TASK_CONFIG_KEYS: Readonly<Record<string, string>> = {
  * (`classify:structural`, `classify:rules`, `classify:schema`), the
  * `classify:conflict` task must be present.
  *
+ * Also enforces that `output.jsonldContext` is only present when the resolved
+ * format is `jsonld` (explicit `format: 'jsonld'` or a `.jsonld` path extension).
+ *
  * @param target      - Target identifier for error messages.
  * @param targetConfig - Validated target config to cross-check.
  * @throws {SquashageConfigError} When a classify task is listed without its config sub-key.
  * @throws {SquashageConfigError} When ≥2 class-proposers are listed without `classify:conflict`.
+ * @throws {SquashageConfigError} When `output.jsonldContext` is set but format is not jsonld.
  *
  * @internal
  */
@@ -320,6 +324,24 @@ function crossValidateTarget(target: string, targetConfig: TargetConfigInterface
       `present in the pipeline to pick the winning class.`,
       { metadata: { target, distinctProposers: [...distinctProposers] } },
     );
+  }
+
+  // Enforce jsonldContext is only set when output format resolves to jsonld.
+  const output = targetConfig.output as Record<string, unknown>;
+  const jsonldContext = output['jsonldContext'];
+  if (jsonldContext !== undefined) {
+    const format = output['format'] as string | undefined;
+    const path   = output['path'] as string | undefined;
+    const isJsonldFormat =
+      format === 'jsonld' ||
+      (format === undefined && path !== undefined && extname(path).toLowerCase() === '.jsonld');
+    if (!isJsonldFormat) {
+      throw SquashageConfigError.create(
+        `output.jsonldContext is set on target "${target}" but the resolved output format is not "jsonld". ` +
+        `Either set output.format to "jsonld", use a ".jsonld" output path extension, or remove jsonldContext.`,
+        { metadata: { target, format, path } },
+      );
+    }
   }
 }
 
@@ -440,7 +462,8 @@ export class SquashageConfig {
    * the config JSON (e.g. from an environment variable or a test fixture).
    *
    * After AJV schema validation passes, cross-validation is performed for each
-   * target's `pipeline` vs `classification` config sub-keys.
+   * target's `pipeline` vs `classification` config sub-keys, and for
+   * `output.jsonldContext` vs the resolved output format.
    *
    * @param raw - Unknown value to validate.
    * @param configPath - Optional path shown in error messages for context.
@@ -465,7 +488,8 @@ export class SquashageConfig {
 
     const validated = raw as SquashageConfigInterface;
 
-    // Cross-validate each target: pipeline classify tasks vs classification config.
+    // Cross-validate each target: pipeline classify tasks vs classification config,
+    // and jsonldContext vs resolved output format.
     for (const [target, targetConfig] of Object.entries(validated.targets)) {
       crossValidateTarget(target, targetConfig);
     }
