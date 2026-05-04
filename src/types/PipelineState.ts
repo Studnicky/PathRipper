@@ -29,6 +29,32 @@ export interface InputSourceInterface {
 }
 
 /**
+ * A single class proposal emitted by one classification engine pass.
+ *
+ * @remarks
+ * Populated by `classify:*` tasks (e.g. `classify:schema`, `classify:predicate`).
+ * The cascade accumulates proposals from every engine and resolves to a final
+ * {@link ClassificationEvidenceInterface} once all engines have run.
+ *
+ * @category Pipeline
+ * @since 2.2.0
+ * @see {@link PipelineStateInterface}
+ * @group Types
+ */
+export interface ClassificationProposalInterface {
+  /** Engine identifier that produced this proposal (e.g. `"classify:schema"`). */
+  readonly source:     string;
+  /** Proposed ontology class id (e.g. `"pokemon"`). */
+  readonly className:  string;
+  /** Ordering hint; higher values take precedence when resolving conflicts. */
+  readonly priority:   number;
+  /** `0..1` confidence in this proposal; `1` means the engine is certain. */
+  readonly confidence: number;
+  /** Human-readable evidence strings, one per matching rule or schema. */
+  readonly reasons:    ReadonlyArray<string>;
+}
+
+/**
  * Result of the classification cascade for a single record.
  *
  * @remarks
@@ -119,8 +145,9 @@ export interface PipelineContextInterface {
  *   targetId:       'bulbapedia',
  *   source:         { target: 'bulbapedia', path: 'bulbasaur.json' },
  *   input:          { _type: 'pokemon', name: 'Bulbasaur', ndex: 1 },
- *   classification: null,
- *   output:         null,
+ *   classification:  null,
+ *   classifications: [],
+ *   output:          null,
  * };
  * ```
  *
@@ -138,6 +165,8 @@ export interface PipelineStateInterface extends Record<string, unknown> {
   readonly input:          Readonly<Record<string, unknown>>;
   /** Classification result; `null` until a `classify:*` task populates it. */
   classification:          ClassificationEvidenceInterface | null;
+  /** Accumulated proposals from all `classify:*` engines; empty until a classifier runs. */
+  classifications:         ReadonlyArray<ClassificationProposalInterface>;
   /** Per-record projection report; `null` until `squash:*` writes it. */
   output:                  Record<string, unknown> | null;
   /** Per-run context populated by the orchestrator. */

@@ -285,12 +285,13 @@ export class SquashageOrchestrator {
 
     // Step 9 — Invoke finalize task once with a synthetic state carrying ctx.
     const finalizeState: PipelineStateInterface = {
-      targetId:       target,
-      source:         { target, path: '__finalize__' },
-      input:          {},
-      classification: null,
-      output:         null,
-      context:        ctx,
+      targetId:        target,
+      source:          { target, path: '__finalize__' },
+      input:           {},
+      classification:  null,
+      classifications: [],
+      output:          null,
+      context:         ctx,
     };
 
     logger.debug('finalize', 'Invoking rdfjs:finalize', { target });

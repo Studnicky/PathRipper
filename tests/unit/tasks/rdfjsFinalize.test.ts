@@ -60,12 +60,13 @@ const buildState = (
     output,
   };
   return {
-    targetId:       target,
-    source:         { target, path: 'test' },
-    input:          {},
-    classification: null,
-    output:         null,
-    context:        ctx,
+    targetId:        target,
+    source:          { target, path: 'test' },
+    input:           {},
+    classification:  null,
+    classifications: [],
+    output:          null,
+    context:         ctx,
   };
 };
 
@@ -168,11 +169,12 @@ describe('rdfjs:finalize', () => {
 
   it('throws ExternalSchemaError when state.context is undefined', async () => {
     const state = {
-      targetId:       'no-ctx',
-      source:         { target: 'no-ctx', path: 'x' },
-      input:          {},
-      classification: null,
-      output:         null,
+      targetId:        'no-ctx',
+      source:          { target: 'no-ctx', path: 'x' },
+      input:           {},
+      classification:  null,
+      classifications: [],
+      output:          null,
     } as PipelineStateInterface;
     await assert.rejects(() => finalizeTask(noopNext, state));
   });
