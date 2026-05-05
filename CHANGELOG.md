@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-05
+
 ### Added
 
 - `JsonLdGraph.fromJsonLd` (async): expands compacted JSON-LD via `jsonld.expand` before walking, so `@type: @id` CURIE-string references produce edges. Fixes missing edges in the aonprd demo.
