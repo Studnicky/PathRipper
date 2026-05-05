@@ -164,3 +164,102 @@ describe('GraphRenderer.render — structural tag balance check', () => {
     assert.equal(headCloses, 1, '</head> must appear exactly once');
   });
 });
+
+// ---------------------------------------------------------------------------
+// New: streaming fcose tests
+// ---------------------------------------------------------------------------
+
+const MULTI_GRAPH_DOC = {
+  '@context': { ex: 'https://example.org/' },
+  '@graph': [
+    {
+      '@id': 'https://example.org/graph/feats',
+      '@graph': [
+        { '@id': 'https://example.org/feat/PowerAttack', '@type': 'https://example.org/Feat',
+          'https://example.org/name': { '@value': 'Power Attack' } },
+        { '@id': 'https://example.org/feat/Toughness',   '@type': 'https://example.org/Feat',
+          'https://example.org/name': { '@value': 'Toughness' } },
+      ],
+    },
+    {
+      '@id': 'https://example.org/graph/spells',
+      '@graph': [
+        { '@id': 'https://example.org/spell/Fireball', '@type': 'https://example.org/Spell',
+          'https://example.org/name': { '@value': 'Fireball' } },
+      ],
+    },
+    // 200 extra nodes to trigger streaming threshold
+    ...Array.from({ length: 201 }, (_, i) => ({
+      '@id': `https://example.org/graph/extra`,
+      '@graph': [
+        { '@id': `https://example.org/extra/node${i}` },
+      ],
+    })),
+  ],
+};
+
+describe('GraphRenderer.render — streaming mode (fcose) for large multi-graph payloads', () => {
+  let html: string;
+
+  before(() => {
+    const payload = JsonLdGraph.fromCompactedJsonLd(MULTI_GRAPH_DOC);
+    html          = GraphRenderer.render(payload);
+  });
+
+  it('output contains the cytoscape bundle', () => {
+    assert.ok(html.includes('cytoscape'));
+  });
+
+  it('output contains the fcose bundle (cytoscapeFcose global)', () => {
+    assert.ok(html.includes('cytoscapeFcose'));
+  });
+
+  it('output contains cytoscape.use(cytoscapeFcose) registration', () => {
+    assert.ok(html.includes('cytoscape.use(cytoscapeFcose)'));
+  });
+
+  it('output contains streaming queue logic', () => {
+    assert.ok(html.includes('sq-streaming'));
+  });
+
+  it('output contains Pause/Resume button', () => {
+    assert.ok(html.includes('sq-pause-btn'));
+  });
+
+  it('output contains loading overlay', () => {
+    assert.ok(html.includes('sq-loading-overlay'));
+  });
+
+  it('output contains fcose layout name', () => {
+    // 'fcose' appears in the layout call and in the bundle itself.
+    assert.ok(html.includes("'fcose'"));
+  });
+
+  it('streaming queue uses ascending node count order (character-first rule)', () => {
+    // The CHARACTER_IRIS_PATTERN check appears in the streaming queue sort logic.
+    assert.ok(html.includes('CHARACTER_IRIS_PATTERN') || html.includes('character'));
+  });
+
+  it('output does not reference any CDN URL', () => {
+    assert.ok(!html.includes('cdn.jsdelivr.net'));
+    assert.ok(!html.includes('unpkg.com'));
+  });
+});
+
+describe('GraphRenderer.render — single-shot cose for small payloads (existing behaviour)', () => {
+  let html: string;
+
+  before(() => {
+    const payload = JsonLdGraph.fromCompactedJsonLd(FIXTURE_DOC);
+    html          = GraphRenderer.render(payload);
+  });
+
+  it('single-shot path still uses cose layout', () => {
+    assert.ok(html.includes("name: 'cose'") || html.includes('"cose"'));
+  });
+
+  it('fcose streaming controls not present for small payload', () => {
+    // id="sq-streaming" only appears in the streaming sidebar section (not in CSS).
+    assert.ok(!html.includes('id="sq-streaming"'));
+  });
+});

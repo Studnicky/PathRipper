@@ -37,7 +37,7 @@ const jsonld = jsonldDefault as any as { expand: (doc: unknown, opts?: { base?: 
 export interface VizNodeInterface {
   /** Entity `@id` (compacted if possible, else full IRI). */
   readonly id:          string;
-  /** Human-readable label (compacted via `@context`). */
+  /** Human-readable label (name/title/label literal, or compacted IRI). */
   readonly label:       string;
   /** First `@type` value (full IRI) or `undefined` when untyped. */
   readonly classIri:    string | undefined;
@@ -153,7 +153,7 @@ export class JsonLdGraph {
    *
    * @remarks
    * Expands the document via `jsonld.expand()` so that every reference is
-   * `{ "@id": "..." }` and every literal is `{ "@value": "...", "@type"?: "..." }`.
+   * `{ "@id": "..." }` and every literal is `{ "@value": ..., "@type"?: "..." }`.
    * Walks the expanded form to produce nodes and edges.
    *
    * The original document's `@context` is used to extract prefix labels for
@@ -214,10 +214,11 @@ export class JsonLdGraph {
     }
 
     // Ensure every edge target has a node entry (JSON-LD expand may elide
-    // entities that have no properties beyond @id).
+    // entities that have no properties beyond @id). These are implicit-IRI
+    // nodes — use the human-friendlier local name rather than the full CURIE.
     for (const edge of edges) {
       if (!nodeMap.has(edge.target)) {
-        const label = JsonLdGraph.#compactIri(edge.target, prefixes);
+        const label = JsonLdGraph.#implicitIriLabel(edge.target, prefixes);
         nodeMap.set(edge.target, {
           id:         edge.target,
           label,
@@ -228,7 +229,7 @@ export class JsonLdGraph {
         });
       }
       if (!nodeMap.has(edge.source)) {
-        const label = JsonLdGraph.#compactIri(edge.source, prefixes);
+        const label = JsonLdGraph.#implicitIriLabel(edge.source, prefixes);
         nodeMap.set(edge.source, {
           id:         edge.source,
           label,
@@ -384,6 +385,72 @@ export class JsonLdGraph {
   }
 
   /**
+   * Picks a human-readable label from an expanded entity's literal properties.
+   *
+   * @remarks
+   * Scans all properties on the expanded entity. For each property whose
+   * local name (after the last `#` or `/`) is one of `name`, `title`, or
+   * `label`, takes the first literal `@value`. Returns the best match by
+   * priority order (name > title > label) or `undefined` when none found.
+   *
+   * @param obj - Expanded entity object.
+   * @returns Human-readable label string, or `undefined`.
+   */
+  static #pickHumanLabel(obj: Record<string, unknown>): string | undefined {
+    const NAME_LOCAL_NAMES = ['name', 'title', 'label'] as const;
+    const candidates: Array<{ priority: number; value: string }> = [];
+
+    for (const [iri, val] of Object.entries(obj)) {
+      if (iri.startsWith('@')) continue;
+      const segments = iri.split(/[#/]/);
+      const localName = segments[segments.length - 1]?.toLowerCase();
+      if (!localName) continue;
+      const idx = NAME_LOCAL_NAMES.indexOf(localName as 'name' | 'title' | 'label');
+      if (idx === -1) continue;
+      if (!Array.isArray(val) || val.length === 0) continue;
+      const first = val[0];
+      if (
+        first !== null &&
+        typeof first === 'object' &&
+        !Array.isArray(first) &&
+        '@value' in (first as Record<string, unknown>) &&
+        typeof (first as Record<string, unknown>)['@value'] === 'string'
+      ) {
+        candidates.push({ priority: idx, value: (first as Record<string, unknown>)['@value'] as string });
+      }
+    }
+
+    if (candidates.length === 0) return undefined;
+    candidates.sort((a, b) => a.priority - b.priority);
+    return candidates[0]!.value;
+  }
+
+  /**
+   * Derives a human-friendlier label from a compacted IRI for implicit-IRI
+   * nodes (referenced targets that have no explicit entity definition).
+   *
+   * @remarks
+   * Strips the prefix label, then strips a leading `TypeName-` segment if
+   * the dash appears within the first 20 characters.
+   *
+   * Examples:
+   * - `aonprd:Trait-flourish` → `'flourish'`
+   * - `aonprd:Rarity-common` → `'common'`
+   * - `aonprd:ActionCost-two` → `'two'`
+   *
+   * @param iri      - Full IRI of the implicit node.
+   * @param prefixes - Prefix map for compaction.
+   * @returns Human-friendlier label string.
+   */
+  static #implicitIriLabel(iri: string, prefixes: Record<string, string>): string {
+    const compacted = JsonLdGraph.#compactIri(iri, prefixes);
+    const colonIdx  = compacted.indexOf(':');
+    const local     = colonIdx >= 0 ? compacted.slice(colonIdx + 1) : compacted;
+    const dashIdx   = local.indexOf('-');
+    return (dashIdx > 0 && dashIdx < 20) ? local.slice(dashIdx + 1) : local;
+  }
+
+  /**
    * Walks a single expanded entity object, creating or updating a
    * `WorkingNodeInterface` in `nodeMap` and appending edges.
    *
@@ -416,7 +483,9 @@ export class JsonLdGraph {
     // Get or create the working node.
     let node = nodeMap.get(id);
     if (node === undefined) {
-      const label      = JsonLdGraph.#compactIri(id, prefixes);
+      // Prefer a human-readable name literal over the compacted IRI.
+      const humanLabel = JsonLdGraph.#pickHumanLabel(obj);
+      const label      = humanLabel ?? JsonLdGraph.#compactIri(id, prefixes);
       // In expanded form @type is an array of full IRIs.
       const typeArr    = obj['@type'];
       const classIri   = Array.isArray(typeArr) && typeof typeArr[0] === 'string'
@@ -449,7 +518,7 @@ export class JsonLdGraph {
           const valObj = val as Record<string, unknown>;
 
           if (typeof valObj['@id'] === 'string') {
-            // Object reference → edge.
+            // Object reference -> edge.
             const targetId = valObj['@id'] as string;
             const edgeId   = `${id}--${predLabel}->>${targetId}`;
             edges.push({

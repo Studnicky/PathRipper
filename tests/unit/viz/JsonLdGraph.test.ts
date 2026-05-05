@@ -508,3 +508,96 @@ describe('JsonLdGraph.fromJsonLd — explicit @id reference in compacted doc', (
     assert.equal(payload.edges[0]?.target, 'https://example.org/b');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Test 14: fromJsonLd — human-readable label from name literal
+// ---------------------------------------------------------------------------
+
+describe('JsonLdGraph.fromJsonLd — human-readable labels from name/title/label literals', () => {
+  const doc = {
+    '@context': { ex: 'https://example.org/' },
+    '@graph': [
+      {
+        '@id':   'https://example.org/feat/PowerAttack',
+        '@type': 'https://example.org/Feat',
+        'https://example.org/name':  { '@value': 'Power Attack' },
+        'https://example.org/level': { '@value': 1 },
+      },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('node label is the name literal value, not the compacted IRI', async () => {
+    assert.equal(payload.nodes[0]?.label, 'Power Attack');
+  });
+});
+
+describe('JsonLdGraph.fromJsonLd — name wins over rdfs:label', () => {
+  const doc = {
+    '@context': { ex: 'https://example.org/', rdfs: 'http://www.w3.org/2000/01/rdf-schema#' },
+    '@graph': [
+      {
+        '@id':          'https://example.org/feat/Toughness',
+        '@type':        'https://example.org/Feat',
+        'https://example.org/name':              { '@value': 'Toughness' },
+        'http://www.w3.org/2000/01/rdf-schema#label': { '@value': 'rdfsLabel' },
+      },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('name property wins over rdfs:label', async () => {
+    assert.equal(payload.nodes[0]?.label, 'Toughness');
+  });
+});
+
+describe('JsonLdGraph.fromJsonLd — fallback to compacted IRI when no name literal', () => {
+  const doc = {
+    '@context': { ex: 'https://example.org/' },
+    '@graph': [
+      {
+        '@id':   'https://example.org/feat/Special',
+        '@type': 'https://example.org/Feat',
+        'https://example.org/level': { '@value': 5 },
+      },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('label falls back to compacted IRI when no name/title/label literal', async () => {
+    assert.equal(payload.nodes[0]?.label, 'ex:feat/Special');
+  });
+});
+
+describe('JsonLdGraph.fromJsonLd — implicit-IRI node gets human-friendlier local name', () => {
+  const doc = {
+    '@context': {
+      aonprd: 'https://squashage.dev/vocabulary/aonprd#',
+      'aonprd:rarity': { '@id': 'aonprd:rarity', '@type': '@id' },
+    },
+    '@graph': [
+      {
+        '@id':            'https://squashage.dev/instance/aonprd/Feats.aspx?ID=1',
+        '@type':          'aonprd:Feat',
+        'aonprd:rarity':  'aonprd:Rarity-common',
+      },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('implicit rarity node label strips TypeName- prefix', async () => {
+    const rarityNode = payload.nodes.find(n =>
+      n.id === 'https://squashage.dev/vocabulary/aonprd#Rarity-common'
+    );
+    assert.ok(rarityNode !== undefined, 'rarity node should exist');
+    assert.equal(rarityNode.label, 'common');
+  });
+});

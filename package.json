@@ -60,6 +60,7 @@
     "@types/rdfjs__data-model": "^2.0.9",
     "@types/rdfjs__dataset": "^2.0.7",
     "cytoscape": "^3.33.3",
+    "cytoscape-fcose": "^2.2.0",
     "eslint": "^9.18.0",
     "globals": "^15.0.0",
     "tsx": "^4.0.0",
