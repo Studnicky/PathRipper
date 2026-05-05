@@ -6,8 +6,14 @@
  * `docs/public/examples/aonprd/aonprd.html` — the checked-in demo files
  * served via VitePress public passthrough under /examples/aonprd/.
  *
- * Usage:
+ * Usage (fixture-based, 12 records):
  *   npm run viz:demo
+ *
+ * Usage (full corpus, requires ripperoni scrape output):
+ *   SQUASHAGE_DEMO_INPUT=/path/to/ripper/output/aonprd/aonprd npm run viz:demo
+ *
+ * When SQUASHAGE_DEMO_INPUT is set it overrides the fixture input path.
+ * All other paths (output JSON-LD, HTML, schemas) remain canonical.
  *
  * @module scripts/build-aonprd-demo
  */
@@ -30,8 +36,19 @@ const JSON_LD_PATH = resolve(OUT_DIR, 'aonprd.jsonld');
 const HTML_PATH    = resolve(OUT_DIR, 'aonprd.html');
 const TARGET       = 'aonprd';
 
+// Allow SQUASHAGE_DEMO_INPUT to override the input directory.
+// When set, it points to the ripperoni scrape output (absolute path).
+const DEMO_INPUT_OVERRIDE = process.env['SQUASHAGE_DEMO_INPUT'];
+
 async function main(): Promise<void> {
-  console.log('Building aonprd demo...');
+  const isFullCorpus = DEMO_INPUT_OVERRIDE !== undefined && DEMO_INPUT_OVERRIDE.length > 0;
+
+  if (isFullCorpus) {
+    console.log(`Building aonprd demo — full corpus mode`);
+    console.log(`  Input: ${DEMO_INPUT_OVERRIDE}`);
+  } else {
+    console.log('Building aonprd demo — fixture mode (12 records)');
+  }
 
   // Register the aonprd squash task plugin.
   registerAonprdPlugin();
@@ -45,8 +62,12 @@ async function main(): Promise<void> {
 
   const targets = raw['targets'] as Record<string, Record<string, unknown>>;
 
-  // Override input/output paths to absolute paths.
-  targets[TARGET]!['input'] = resolve(FIXTURE, 'input');
+  // Override input path — either from env var (full corpus) or fixture dir.
+  const inputPath = isFullCorpus
+    ? DEMO_INPUT_OVERRIDE!
+    : resolve(FIXTURE, 'input');
+  targets[TARGET]!['input'] = inputPath;
+
   (targets[TARGET]!['output'] as Record<string, string>)['path'] = JSON_LD_PATH;
 
   // Resolve schema paths to absolute paths (relative to the fixture dir).
@@ -100,9 +121,10 @@ async function main(): Promise<void> {
 
   await writeFile(HTML_PATH, html, 'utf-8');
 
-  const htmlBytes = Buffer.byteLength(html, 'utf-8');
-  console.log(`JSON-LD: ${JSON_LD_PATH}`);
-  console.log(`HTML:    ${HTML_PATH} (${htmlBytes} bytes)`);
+  const jsonldBytes = Buffer.byteLength(jsonldText, 'utf-8');
+  const htmlBytes   = Buffer.byteLength(html, 'utf-8');
+  console.log(`JSON-LD: ${JSON_LD_PATH} (${(jsonldBytes / 1024 / 1024).toFixed(2)} MB)`);
+  console.log(`HTML:    ${HTML_PATH} (${(htmlBytes / 1024 / 1024).toFixed(2)} MB)`);
   console.log('Done.');
 }
 

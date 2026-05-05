@@ -37,39 +37,44 @@ const XSD_INTEGER_IRI = 'http://www.w3.org/2001/XMLSchema#integer';
 // ---------------------------------------------------------------------------
 
 /**
- * Derives the URL tail from a record's `_source.url` field.
+ * Derives the URL tail from a record's `_source.url` or top-level `url` field.
  *
  * @remarks
- * Strips the scheme+host prefix from the URL, yielding a path+query string
- * suitable for use as the local part of the instance IRI.
- * Falls back to the record name (lowercased, spaces replaced with hyphens)
- * when `_source.url` is absent or unparseable.
+ * Checks `_source.url` first (squashage-enriched records written by the
+ * orchestrator), then the top-level `url` field (direct ripperoni scrape
+ * output), yielding a path+query string suitable for use as the local part
+ * of the instance IRI.  Falls back to a sanitized form of the record name
+ * when neither URL field is present or parseable.
  *
  * @param input - Parsed record from `state.input`.
  * @returns The URL tail string (e.g. `Feats.aspx?ID=750`).
  */
 function deriveUrlTail(input: Readonly<Record<string, unknown>>): string {
-  const source = input['_source'];
-  if (
-    source !== null &&
-    typeof source === 'object' &&
-    !Array.isArray(source) &&
-    typeof (source as Record<string, unknown>)['url'] === 'string'
-  ) {
-    const rawUrl = (source as Record<string, unknown>)['url'] as string;
+  // Helper: attempt to parse a raw URL string and return its path+query tail.
+  const tryUrl = (rawUrl: unknown): string | null => {
+    if (typeof rawUrl !== 'string' || rawUrl.length === 0) return null;
     try {
       const parsed = new URL(rawUrl);
-      // Return path + search (strips scheme+host, e.g. "/Feats.aspx?ID=750")
-      // Drop leading slash for cleaner IRI construction.
       return (parsed.pathname + parsed.search).replace(/^\//, '');
     } catch {
-      // Malformed URL — fall through to name-based fallback.
+      return null;
     }
+  };
+
+  // 1. _source.url (squashage-enriched records).
+  const source = input['_source'];
+  if (source !== null && typeof source === 'object' && !Array.isArray(source)) {
+    const tail = tryUrl((source as Record<string, unknown>)['url']);
+    if (tail !== null) return tail;
   }
 
-  // Fallback: use the record name.
+  // 2. Top-level url (direct ripperoni scrape output).
+  const tail = tryUrl(input['url']);
+  if (tail !== null) return tail;
+
+  // 3. Fallback: sanitized name — no URL available.
   const name = typeof input['name'] === 'string' ? input['name'] : 'unknown';
-  return name.toLowerCase().replace(/\s+/g, '-');
+  return sanitizeLocal(name.toLowerCase());
 }
 
 /**
@@ -532,6 +537,74 @@ function emitEquipmentQuads(
   return quads;
 }
 
+/**
+ * Generic emitter for types that share the minimal BaseShape:
+ * name, rarity, traits. Used for weapon, armor, shield, ancestry, class,
+ * background, condition, trait, hazard, generic, and unknown.
+ *
+ * Emits (all in graph `<graphs:className>`):
+ * - `<instances:tail>  rdf:type            <vocabulary:ClassName>`
+ * - `<instances:tail>  <vocabulary:name>    "name"^^xsd:string`
+ * - `<instances:tail>  <vocabulary:rarity>  <vocabulary:Rarity-rarity>` (when present)
+ * - `<instances:tail>  <vocabulary:trait>   <vocabulary:Trait-X>` (per trait)
+ *
+ * @param className - RDF class local name (e.g. `'Weapon'`, `'Ancestry'`).
+ * @param subject   - Subject NamedNode.
+ * @param input     - Parsed record.
+ * @param vocabBase - Vocabulary base IRI.
+ * @param graphNode - Named graph NamedNode.
+ * @param factory   - RDF/JS data factory.
+ * @returns Array of quads.
+ */
+function emitBaseQuads(
+  className: string,
+  subject:   NamedNode,
+  input:     Readonly<Record<string, unknown>>,
+  vocabBase: string,
+  graphNode: NamedNode,
+  factory:   DataFactory,
+): Quad[] {
+  const quads: Quad[] = [];
+  const rdfType   = factory.namedNode(RDF_TYPE_IRI);
+  const xsdString = factory.namedNode(XSD_STRING_IRI);
+
+  quads.push(factory.quad(subject, rdfType, vocab(vocabBase, className, factory), graphNode));
+
+  if (typeof input['name'] === 'string') {
+    quads.push(factory.quad(
+      subject,
+      vocab(vocabBase, 'name', factory),
+      factory.literal(input['name'], xsdString),
+      graphNode,
+    ));
+  }
+
+  if (typeof input['rarity'] === 'string') {
+    quads.push(factory.quad(
+      subject,
+      vocab(vocabBase, 'rarity', factory),
+      vocab(vocabBase, `Rarity-${input['rarity']}`, factory),
+      graphNode,
+    ));
+  }
+
+  const traits = input['traits'];
+  if (Array.isArray(traits)) {
+    for (const trait of traits) {
+      if (typeof trait === 'string') {
+        quads.push(factory.quad(
+          subject,
+          vocab(vocabBase, 'trait', factory),
+          vocab(vocabBase, `Trait-${trait}`, factory),
+          graphNode,
+        ));
+      }
+    }
+  }
+
+  return quads;
+}
+
 // ---------------------------------------------------------------------------
 // Task: aonprd:squash
 // ---------------------------------------------------------------------------
@@ -573,11 +646,22 @@ const aonprdSquashTask = async (
     const graphNode = graph(graphBase, className, factory);
 
     const dispatch: Record<string, () => Quad[]> = {
-      feat:      () => emitFeatQuads(subject, input, vocabBase, graphNode, factory),
-      spell:     () => emitSpellQuads(subject, input, vocabBase, graphNode, factory),
-      monster:   () => emitMonsterQuads(subject, input, vocabBase, graphNode, factory),
-      action:    () => emitActionQuads(subject, input, vocabBase, graphNode, factory),
-      equipment: () => emitEquipmentQuads(subject, input, vocabBase, graphNode, factory),
+      feat:       () => emitFeatQuads(subject, input, vocabBase, graphNode, factory),
+      spell:      () => emitSpellQuads(subject, input, vocabBase, graphNode, factory),
+      monster:    () => emitMonsterQuads(subject, input, vocabBase, graphNode, factory),
+      action:     () => emitActionQuads(subject, input, vocabBase, graphNode, factory),
+      equipment:  () => emitEquipmentQuads(subject, input, vocabBase, graphNode, factory),
+      weapon:     () => emitBaseQuads('Weapon',     subject, input, vocabBase, graphNode, factory),
+      armor:      () => emitBaseQuads('Armor',      subject, input, vocabBase, graphNode, factory),
+      shield:     () => emitBaseQuads('Shield',     subject, input, vocabBase, graphNode, factory),
+      ancestry:   () => emitBaseQuads('Ancestry',   subject, input, vocabBase, graphNode, factory),
+      class:      () => emitBaseQuads('Class',      subject, input, vocabBase, graphNode, factory),
+      background: () => emitBaseQuads('Background', subject, input, vocabBase, graphNode, factory),
+      condition:  () => emitBaseQuads('Condition',  subject, input, vocabBase, graphNode, factory),
+      trait:      () => emitBaseQuads('Trait',      subject, input, vocabBase, graphNode, factory),
+      hazard:     () => emitBaseQuads('Hazard',     subject, input, vocabBase, graphNode, factory),
+      generic:    () => emitBaseQuads('Generic',    subject, input, vocabBase, graphNode, factory),
+      unknown:    () => emitBaseQuads('Unknown',    subject, input, vocabBase, graphNode, factory),
     };
 
     const emitter = dispatch[className];

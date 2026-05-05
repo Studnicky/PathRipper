@@ -86,9 +86,19 @@ const readRecordFile = async (recordPath: string): Promise<string> => {
  * @throws {SyntaxError} When the extracted text is not valid JSON.
  */
 const extractRecord = (rawText: string, recordLine: number): unknown => {
+  // Prefer whole-document parse: handles single-object JSON whether compact or
+  // pretty-printed. This path succeeds for any `.json` file regardless of
+  // indentation. Falls back to JSONL-line extraction when the whole-document
+  // parse fails (e.g. a two-record JSONL file where line 0 is requested).
+  if (recordLine === 0) {
+    try {
+      return JSON.parse(rawText.trim());
+    } catch {
+      // Fall through to JSONL line extraction below.
+    }
+  }
   const lines = rawText.split('\n').filter((l) => l.trim().length > 0);
-  const text  = lines.length > 1 ? (lines[recordLine] ?? '') : rawText.trim();
-  return JSON.parse(text);
+  return JSON.parse(lines[recordLine] ?? '');
 };
 
 /**
