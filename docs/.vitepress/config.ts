@@ -6,7 +6,8 @@ const sidebar = [
     text: 'Introduction',
     items: [
       { link: '/getting-started', text: 'Getting Started' },
-      { link: '/', text: 'What it does' }
+      { link: '/usage',           text: 'Walk-through' },
+      { link: '/',                text: 'What it does' }
     ]
   },
   {
@@ -41,6 +42,7 @@ export default defineConfig({
     siteTitle: 'Ripperoni',
     nav: [
       { text: 'Home', link: '/' },
+      { text: 'Walk-through', link: '/usage' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'GitHub', link: 'https://github.com/Studnicky/PathRipper' }
     ],

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `docs/usage.md`: Walk-through — end-to-end example from target URL through rate-limited fetch, plugin execution, and JSON record output using the Pathfinder/aonprd target.
+- `docs/index.md` switched from `layout: home` to `layout: doc` so the sidebar is visible on the home page.
+- Sidebar "Walk-through" entry in `docs/.vitepress/config.ts`.
+
 ## [2.1.0] - 2026-05-01
 
 ### Added
