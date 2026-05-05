@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `.gitattributes`: scraped AON HTML test fixtures (`tests/{e2e,unit}/plugins/fixtures/**/*.html`) marked `linguist-vendored=true` so GitHub's language detector reports the repo as the TypeScript ingestion engine it is, not majority-HTML.
+
 ## [2.2.0] - 2026-05-05
 
 ### Added

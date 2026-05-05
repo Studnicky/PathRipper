@@ -1,0 +1,6 @@
+# Linguist hints — these directories contain captured third-party HTML used as
+# test fixtures, not authored project source. Excluding them keeps GitHub's
+# language breakdown accurate (Ripperoni is a TypeScript project that consumes
+# HTML, not an HTML project).
+tests/e2e/plugins/fixtures/**/*.html linguist-vendored=true
+tests/unit/plugins/fixtures/**/*.html linguist-vendored=true
