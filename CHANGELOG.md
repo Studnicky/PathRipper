@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-05-05
+
+### Added
+
+- VitePress documentation site at `docs/` (modeled on the json-tology template). New navbar logo, salami-red accent palette, dark mode default. Per-concept Usage section: cache, configuration, crawler, mediawiki, pipeline, plugins, scrapers. Walk-through page using the Pathfinder/aonprd target.
+- `docs/index.md` uses `layout: doc` so the sidebar is visible on the home page.
+- `.github/workflows/pages.yml`: GitHub Pages deploy via `docs:build`.
+
+### Changed
+
+- `crawl:list-targets` no longer requires `--paths` for html targets — listing-only operations on html-typed targets now run without the flag.
+
+### Removed
+
+- `docs/plans/` and `docs/roadmap.html` — replaced by the VitePress site.
+
 ## [2.1.0] - 2026-05-01
 
 ### Added

@@ -44,8 +44,10 @@ program
     const wikiTarget = config.mediawiki?.[opts.target];
 
     if (htmlTarget !== undefined) {
-      if (!opts.paths?.length) { log.error('scrape', '--paths required for html targets'); process.exit(1); }
-      await ScrapeOrchestrator.scrapeHtml({ target: opts.target, paths: opts.paths!, outDir, configDir, config });
+      const pipeline = (htmlTarget as Record<string, unknown>)['pipeline'];
+      const hasCrawler = Array.isArray(pipeline) && (pipeline as string[]).includes('crawl:list-targets');
+      if (!opts.paths?.length && !hasCrawler) { log.error('scrape', '--paths required for html targets (or add crawl:list-targets to the pipeline)'); process.exit(1); }
+      await ScrapeOrchestrator.scrapeHtml({ target: opts.target, paths: opts.paths ?? [], outDir, configDir, config });
       return;
     }
     if (wikiTarget !== undefined) {
