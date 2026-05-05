@@ -98,3 +98,6 @@ ripperoni.config*.json
 # Target-specific plugin source — shipped as examples in v1, not the beta
 plugins/
 docs/.vitepress/dist/
+
+# Plans are local-only working documents; not published
+docs/plans/

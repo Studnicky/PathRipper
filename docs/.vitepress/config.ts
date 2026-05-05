@@ -6,29 +6,28 @@ const sidebar = [
     text: 'Introduction',
     items: [
       { link: '/getting-started', text: 'Getting Started' },
-      { link: '/usage',           text: 'Walk-through' },
-      { link: '/',                text: 'What it does' }
+      { link: '/walk-through',    text: 'Walk-through' },
     ]
   },
   {
-    text: 'Architecture',
+    text: 'Usage',
     items: [
-      { link: '/architecture', text: 'Architecture' }
+      { link: '/usage/configuration', text: 'Configuration' },
+      { link: '/usage/pipeline',      text: 'Pipeline' },
+      { link: '/usage/scrapers',      text: 'Scrapers' },
+      { link: '/usage/mediawiki',     text: 'MediaWiki' },
+      { link: '/usage/crawler',       text: 'Crawler' },
+      { link: '/usage/cache',         text: 'Cache' },
+      { link: '/usage/plugins',       text: 'Plugins' },
     ]
   },
   {
     text: 'Reference',
     items: [
-      { link: '/roadmap', text: 'Roadmap' }
+      { link: '/architecture', text: 'Architecture' },
+      { link: '/roadmap',      text: 'Roadmap' },
     ]
   },
-  {
-    text: 'Plans',
-    items: [
-      { link: '/plans/README', text: 'Plans overview' },
-      { link: '/plans/00-current-state', text: 'Current state' }
-    ]
-  }
 ];
 
 export default defineConfig({
@@ -36,13 +35,14 @@ export default defineConfig({
   base: '/PathRipper/',
   description: 'Web ingestion engine — slices wikis, sites, and URL lists into structured JSON records.',
   srcDir: '.',
+  srcExclude: ['plans/**', 'plans/*.md'],
   themeConfig: {
     ...themeConfig,
     logo: '/ripperoni.png',
     siteTitle: 'Ripperoni',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Walk-through', link: '/usage' },
+      { text: 'Walk-through', link: '/walk-through' },
       { text: 'Architecture', link: '/architecture' },
       { text: 'GitHub', link: 'https://github.com/Studnicky/PathRipper' }
     ],

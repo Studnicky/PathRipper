@@ -87,6 +87,5 @@ TaskRegistry.register('my-target:parse', async (next, state) => {
 
 ## Where to look next
 
-- [Architecture](./architecture.md) — pipeline, HTTP machinery, scrapers, source map
-- [Roadmap](./roadmap.md) — what shipped, what's planned
-- [Plans](./plans/README.md) — implementation plan log
+- [Architecture](./architecture) — pipeline, HTTP machinery, scrapers, source map
+- [Roadmap](./roadmap) — what shipped, what's planned
