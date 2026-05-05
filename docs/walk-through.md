@@ -234,4 +234,4 @@ See the full Pathfinder/AONPRD fixture rendered as an interactive cytoscape grap
 
 - [Architecture](./architecture) — pipeline phases, package boundaries, output contract
 - [Classifier engines](./classification-engines) — the six task classes, the predicate language
-- [Plans index](./plans/README) — implementation record and open work
+- [Architecture](./architecture) — implementation record and open work

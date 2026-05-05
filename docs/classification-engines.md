@@ -8,7 +8,7 @@ in the build path.
 
 The implemented engine surface is the deterministic classifier menu
 described in
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md#deterministic-classifier-menu).
+`src/schemas/predicate.schema.json` and `src/classification/tasks/`.
 This document covers the *why* behind those engine choices and the
 considered alternatives that did not ship.
 
@@ -69,7 +69,7 @@ Per-class entries carry `{ className, priority, validate }`.
 ## SHACL Validation
 
 SHACL validation runs through `src/shacl/ShaclGate.ts` (v0.x backed by
-`rdf-validate-shacl`; v1.x by `@semantics/shacl-validator`). It is a
+`rdf-validate-shacl`). It is a
 pre-write hook on `output.validate.shapes`: when configured, the gate
 validates the canonical dataset against the shapes graph before the
 output file is written. On non-conformance, `ShaclGate.formatReport` and

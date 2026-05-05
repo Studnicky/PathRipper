@@ -9,15 +9,13 @@ title: Squashage
   <p style="font-size:1.2rem;color:var(--vp-c-text-2);max-width:600px;margin:0 auto 1.5rem">Squashes JSON into graph sausage. Feed it structured JSON records. It classifies each one, reconstitutes the lot into a deterministic RDF graph, and squashes the result into a single file you can actually serve — Turtle, TriG, N-Triples, N-Quads, or JSON-LD.</p>
   <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
     <a href="/Squashage/getting-started" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Get started</a>
-    <a href="/Squashage/usage" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Walk-through</a>
+    <a href="/Squashage/walk-through" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Walk-through</a>
     <a href="/Squashage/examples/aonprd" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">Live demo</a>
     <a href="https://github.com/Studnicky/Squashage" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">GitHub</a>
   </div>
 </div>
 
-## What it does
-
-Squashage is a graph reconstitution pipeline. Give it structured JSON records; it classifies each one through a deterministic cascade, projects matched records into RDF/JS quads, and emits a single serialized RDF file per build.
+You feed it JSON. It hands you back a graph. The graph has edges where you'd expect edges and types where you'd expect types, and it ends up in a single file you can stick on a webserver.
 
 - **Same JSON in, same graph out.** No `Math.random`, no `Date.now`, no network after startup. Byte-identical across runs and machines.
 - **One file, no fan-out.** A single build produces one serialized RDF file. Auto-derived instance/graph/vocabulary IRIs from `_source.url`. Auto-built JSON-LD `@context` from the produced quad set.
@@ -33,7 +31,7 @@ npm run viz:demo    # produces docs/public/examples/aonprd/aonprd.html
 
 ## Where to look next
 
-- [Walk-through](./usage) — end-to-end example with a real Pathfinder record, config, plugin, and JSON-LD output
+- [Walk-through](./walk-through) — end-to-end example with a real Pathfinder record, config, plugin, and JSON-LD output
 - [Getting started](./getting-started) — install and run the demo
 - [Architecture](./architecture) — pipeline phases, package boundaries, output contract
 - [Classifier engines](./classification-engines) — the six task classes, the predicate language

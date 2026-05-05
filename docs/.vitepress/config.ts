@@ -6,20 +6,25 @@ const sidebar = [
     text: 'Introduction',
     items: [
       { link: '/getting-started', text: 'Getting Started' },
-      { link: '/usage',           text: 'Walk-through' },
-      { link: '/',                text: 'What it does' }
+      { link: '/walk-through',    text: 'Walk-through' },
     ]
   },
   {
-    text: 'Architecture',
+    text: 'Usage',
     items: [
-      { link: '/architecture', text: 'Architecture' }
+      { link: '/usage/configuration',      text: 'Configuration' },
+      { link: '/usage/pipeline',           text: 'Pipeline' },
+      { link: '/usage/classifier-cascade', text: 'Classifier cascade' },
+      { link: '/usage/output',             text: 'Output' },
+      { link: '/usage/viz',                text: 'Viz' },
+      { link: '/usage/plugins',            text: 'Plugins' },
     ]
   },
   {
-    text: 'Classifier Engines',
+    text: 'Reference',
     items: [
-      { link: '/classification-engines', text: 'Classifier engines' }
+      { link: '/architecture',           text: 'Architecture' },
+      { link: '/classification-engines', text: 'Classifier engines (deep dive)' },
     ]
   },
   {
@@ -28,15 +33,6 @@ const sidebar = [
       { link: '/examples/aonprd', text: 'Pathfinder/AONPRD graph' }
     ]
   },
-  {
-    text: 'Plans',
-    items: [
-      { link: '/plans/00-current-state', text: 'Current state' },
-      { link: '/plans/13-file-output-and-semantics-integration', text: 'Plan 13 — file output' },
-      { link: '/plans/15-graph-viz', text: 'Plan 15 — graph viz' },
-      { link: '/plans/README', text: 'Plans overview' }
-    ]
-  }
 ];
 
 export default defineConfig({
@@ -44,13 +40,17 @@ export default defineConfig({
   base: '/Squashage/',
   description: 'Graph reconstitution pipeline — classifies structured JSON records into a deterministic RDF graph and renders it as TriG, JSON-LD, or an interactive HTML view.',
   srcDir: '.',
+  srcExclude: ['plans/**', 'plans/*.md'],
+  head: [
+    ['link', { rel: 'icon', type: 'image/png', href: '/Squashage/squashage.png' }],
+  ],
   themeConfig: {
     ...themeConfig,
     logo: '/squashage.png',
     siteTitle: 'Squashage',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Walk-through', link: '/usage' },
+      { text: 'Walk-through', link: '/walk-through' },
       { text: 'Demo', link: '/examples/aonprd' },
       { text: 'GitHub', link: 'https://github.com/Studnicky/Squashage' }
     ],

@@ -6,8 +6,8 @@ records and ends with a single serialized RDF file produced by the build run.
 ```text
 Squashage
   JSON record -> classify -> normalize -> RDF/JS quads -> serialized file
-                                                          (v0.x: turtle | trig | nquads | ntriples | jsonld
-                                                           v1.x: adds rdfxml, n3)
+                                                          (turtle | trig | nquads | ntriples | jsonld
+                                                           rdfxml + n3: deferred; no maintained streaming serializer on npm)
 ```
 
 RDF/JS is the **internal canonical product** of the build — the shape every
@@ -22,9 +22,7 @@ permissive open-source RDF libraries (`@rdfjs/data-model`, `@rdfjs/dataset`,
 `@rdfjs/namespace`, `n3`, `jsonld`, `rdf-canonize`, `rdf-validate-shacl`)
 for every RDF/JS implementation detail. It does not vendor those
 implementations directly into application code, and it does not own
-graph-store loading. v1.x will swap the wrapper bodies to the unpublished
-`@semantics/*` workspace without changing the application surface — the
-boundary is the wrapper, not a specific package.
+graph-store loading. The boundary is the `src/rdf/*` / `src/shacl/*` wrapper, not a specific underlying package.
 
 | Package | Owns | Does Not Own |
 |---------|------|--------------|
@@ -94,9 +92,7 @@ the rationale and the `ClassificationProposalInterface` /
 ### File Output
 
 The output is a single serialized RDF file in one of the formats
-squashage's `src/rdf/Serializer.ts` supports. **v0.x**: Turtle, TriG,
-N-Triples, N-Quads, JSON-LD. **v1.x**: adds RDF/XML and N3 once the
-semantics workspace consumes. Format defaults from the file extension via
+squashage's `src/rdf/Serializer.ts` supports. Turtle, TriG, N-Triples, N-Quads, JSON-LD are supported now. RDF/XML and N3 output are deferred — no maintained streaming serializer exists on npm and that is not Squashage's problem to solve. Format defaults from the file extension via
 `src/rdf/Formats.ts`.
 
 A target must declare an `output` block. To produce more than one file,
@@ -104,9 +100,7 @@ re-run the build with a different `--out`. To translate between formats
 or load into a graph store, use any RDF format converter or graph-store
 loader of your choice on the produced file — neither is squashage's
 job. See
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md)
-for the output interface, configuration, failure policy, and dependency
-layout.
+`src/schemas/output.schema.json` and `src/rdf/Serializer.ts` define the output interface and configuration.
 
 Programmatic callers can additionally consume the in-process dataset directly
 through the build API; that is not an output, just the API return value.
@@ -158,5 +152,4 @@ was deleted during the initial bootstrap. `PipelineStateInterface` and
 for the graph-reconstitution domain. Built-in classification tasks live
 in `src/classification/tasks/`; the predicate engine in
 `src/classification/predicates/`; configuration in
-`src/schemas/*.json`. The full implementation record lives in
-[`plans/13-file-output-and-semantics-integration.md`](plans/13-file-output-and-semantics-integration.md).
+`src/schemas/*.json`. The full implementation record is in `src/classification/tasks/` and `src/schemas/`.

@@ -52,5 +52,5 @@ file is gitignored.
 
 - [Architecture](./architecture.md) — pipeline phases, package boundaries, output contract
 - [Classifier engines](./classification-engines.md) — the six task classes, the predicate language, what was considered and rejected
-- [Plan 13](./plans/13-file-output-and-semantics-integration.md) — file output and classifier cascade implementation record
-- [Current state](./plans/00-current-state.md) — component inventory
+- [Configuration](./usage/configuration) — full config schema walkthrough
+- [Classifier engines](./classification-engines) — the six task classes and the predicate language

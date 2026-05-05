@@ -104,3 +104,6 @@ plugins/
 # Demo build artifacts (graphs/ subdirectory from viz:demo script)
 docs/examples/aonprd/graphs/
 docs/.vitepress/dist/
+
+# Plans are local-only working documents; not published
+docs/plans/
