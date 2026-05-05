@@ -93,7 +93,7 @@ async function main(): Promise<void> {
   // Read the produced JSON-LD and render the HTML.
   const jsonldText = await readFile(JSON_LD_PATH, 'utf-8');
   const doc        = JSON.parse(jsonldText) as unknown;
-  const payload    = JsonLdGraph.fromCompactedJsonLd(doc);
+  const payload    = await JsonLdGraph.fromJsonLd(doc);
   const html       = GraphRenderer.render(payload, {
     title: 'Squashage — Pathfinder/AONPRD Demo',
   });

@@ -82,7 +82,7 @@ It is **not** the output the CLI produces. The CLI always serializes to a
 file. Embedded callers who only want the dataset call the programmatic API.
 
 ```ts
-const result = await Squashage.build({ target: 'bulbapedia', config });
+const result = await Squashage.build({ target: 'aonprd', config });
 // result.dataset      : DatasetCore   (the canonical product)
 // result.outputReport : OutputReport  (where the file landed)
 // result.quarantine   : QuarantineReport
@@ -97,7 +97,7 @@ the file extension via `@semantics/rdf-formats`.
 {
   "output": {
     "kind": "file",
-    "path": "./out/bulbapedia.trig"
+    "path": "./out/aonprd.jsonld"
   }
 }
 ```
@@ -176,16 +176,16 @@ without editing the config:
 
 ```bash
 # Use the configured output.
-squashage build --target bulbapedia --config squashage.config.torreya.example.json
+squashage build --target aonprd --config squashage.config.json
 
 # Override the path (format inferred from extension).
-squashage build --target bulbapedia --out ./graphs/bulbapedia.ttl
+squashage build --target aonprd --out ./graphs/aonprd.jsonld
 
 # Force a format explicitly.
-squashage build --target bulbapedia --out ./graphs/bulbapedia.out --format jsonld
+squashage build --target aonprd --out ./graphs/aonprd.out --format jsonld
 
 # Dry-run.
-squashage build --target bulbapedia --dry-run
+squashage build --target aonprd --dry-run
 ```
 
 ## Multi-Format And Store-Loading Workflows
@@ -515,11 +515,11 @@ import type { OutputConfigInterface } from '../config/OutputConfig.js';
  * @group Types
  */
 export interface InputSourceInterface {
-  /** Upstream target id this record came from (e.g. `"bulbapedia"`). */
+  /** Upstream target id this record came from (e.g. `"aonprd"`). */
   readonly target:    string;
   /** Filesystem path the record was loaded from, relative to the run's input root. */
   readonly path:      string;
-  /** Upstream plugin that produced the record (e.g. `"bulbapedia:parse"`). */
+  /** Upstream plugin that produced the record (e.g. `"aonprd:parse"`). */
   readonly plugin?:   string | undefined;
   /** Schema id the record was validated against upstream, if known. */
   readonly schemaId?: string | undefined;
@@ -538,7 +538,7 @@ export interface InputSourceInterface {
  * @group Types
  */
 export interface ClassificationEvidenceInterface {
-  /** Final ontology class id (e.g. `"pokemon"`). */
+  /** Final ontology class id (e.g. `"feat"`). */
   readonly type:        string;
   /** `0..1` confidence score from the cascade. */
   readonly confidence:  number;
@@ -562,14 +562,14 @@ export interface ClassificationEvidenceInterface {
  * @example
  * ```ts
  * const ctx: PipelineContextInterface = {
- *   target:  'bulbapedia',
+ *   target:  'aonprd',
  *   outDir:  './graphs',
- *   config:  { input: './output/bulbapedia' },
+ *   config:  { input: './output/aonprd' },
  *   factory: dataFactory,
  *   dataset: store.dataset(),
- *   builder: new GraphBuilder('https://pokemontology.dev/'),
- *   graphs:  { species: dataFactory.namedNode('https://pokemontology.dev/graph/universal/species') },
- *   iri:     new NamespaceBuilder('https://pokemontology.dev/'),
+ *   builder: new GraphBuilder('https://squashage.dev/vocabulary/aonprd#'),
+ *   graphs:  { feat: dataFactory.namedNode('https://squashage.dev/graph/aonprd/feat') },
+ *   iri:     new NamespaceBuilder('https://squashage.dev/vocabulary/aonprd#'),
  *   output:  outputConfig,
  * };
  * ```
@@ -613,9 +613,9 @@ export interface PipelineContextInterface {
  * @example
  * ```ts
  * const state: PipelineStateInterface = {
- *   targetId:       'bulbapedia',
- *   source:         { target: 'bulbapedia', path: 'bulbasaur.json' },
- *   input:          { _type: 'pokemon', name: 'Bulbasaur', ndex: 1 },
+ *   targetId:       'aonprd',
+ *   source:         { target: 'aonprd', path: 'feat-power-attack.json' },
+ *   input:          { _type: 'feat', name: 'Power Attack', level: 1 },
  *   classification: null,
  *   output:         null,
  * };
@@ -1227,7 +1227,7 @@ docs/classification-engines.md                     already corrected
 docs/plans/README.md                               already corrected
 docs/plans/00-current-state.md                     already corrected
 squashage.config.example.json                      already corrected
-squashage.config.torreya.example.json              already corrected
+squashage.config.example.json                      already corrected
 ```
 
 ### Delete (with importer evidence verified by ripgrep)
@@ -1257,7 +1257,7 @@ src/modules/http/                                   (entire dir)
 src/types/Http.ts
 src/types/ErrorClassifier.ts
 plugins/aonprd/                                     (entire dir; only consumers are deleted e2e tests)
-plugins/bulbapedia/parse.task.ts                    (only consumers are deleted e2e tests)
+plugins/aonprd/parse.task.ts                        (only consumers are deleted e2e tests)
 tests/e2e/                                          (entire dir: aonprd*, docs-html, wiki-docs — scraper-era; replaced by new e2e suite)
 tests/unit/scrapers/                                (entire dir)
 tests/unit/crawlers/LinkLister.test.ts
@@ -1354,7 +1354,7 @@ registry/builtinTasks → types/* → modules/cache → modules/http`.
    `time.ts`, plus `src/types/Http.ts` and `src/types/ErrorClassifier.ts`.
    Drop `./RateLimiter`, `./RetryExecutor`, `./ErrorClassifier`, `./Time`
    from `package.json` exports. Remove `bottleneck` from `dependencies`.
-10. **Delete `plugins/aonprd/`, `plugins/bulbapedia/`, all
+10. **Delete `plugins/aonprd/`, all
     `docs/*.html`, root-level `scrapers/*.js`, and stray `.js`
     compiled siblings under `src/`.** Confirm with user before deleting
     `examples/docs-scraper/` and `examples/wiki-docs/`.
@@ -1391,7 +1391,7 @@ registry/builtinTasks → types/* → modules/cache → modules/http`.
     end-to-end and produces a TriG file under `./graphs/<target>/`.
 18. **Add the classifier cascade** (AJV + decision table) plus unit
     tests.
-19. **Add Torreya example plugins** under a separate lane.
+19. **Add additional squasher plugins** under a separate lane.
 
 ### v1.x Swap (separate, later release)
 

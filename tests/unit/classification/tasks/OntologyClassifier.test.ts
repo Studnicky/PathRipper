@@ -46,8 +46,8 @@ function makeNext(): { called: boolean; fn: () => Promise<void> } {
 /** Minimal class map with two known classes. */
 const knownClassMap: OntologyConfigInterface = {
   classes: {
-    pokemon: 'https://pokemontology.dev/class/Pokemon',
-    trainer: 'https://pokemontology.dev/class/Trainer',
+    feat:  'https://squashage.dev/vocabulary/aonprd#Feat',
+    spell: 'https://squashage.dev/vocabulary/aonprd#Spell',
   },
 };
 
@@ -95,19 +95,19 @@ describe('OntologyClassifier — constructor', () => {
 describe('OntologyClassifier — known className', () => {
   it('emits no validation proposals when the proposal className is in the class map', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
-    const state = buildState([makeProposal('pokemon')]);
+    const state = buildState([makeProposal('feat')]);
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     // The existing proposal remains; no new validation proposals added.
     assert.strictEqual(state.classifications.length, 1);
-    assert.strictEqual(state.classifications[0]?.className, 'pokemon');
+    assert.strictEqual(state.classifications[0]?.className, 'feat');
   });
 
   it('calls next() when all proposals are known', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
-    const state = buildState([makeProposal('trainer')]);
+    const state = buildState([makeProposal('spell')]);
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -118,8 +118,8 @@ describe('OntologyClassifier — known className', () => {
   it('handles multiple known proposals without emitting validation proposals', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules'),
-      makeProposal('trainer', 'classify:structural'),
+      makeProposal('feat', 'classify:rules'),
+      makeProposal('spell', 'classify:structural'),
     ]);
     const next = makeNext();
 
@@ -138,7 +138,7 @@ describe('OntologyClassifier — known className', () => {
 describe('OntologyClassifier — unknown className', () => {
   it('emits one __validation__ proposal when the proposal className is not in the map', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
-    const state = buildState([makeProposal('legendary-pokemon')]);
+    const state = buildState([makeProposal('legendary-feat')]);
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -180,7 +180,7 @@ describe('OntologyClassifier — unknown className', () => {
 
   it('validation proposal reason includes the unknown className and originating source', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
-    const state = buildState([makeProposal('legendary-pokemon', 'classify:rules')]);
+    const state = buildState([makeProposal('legendary-feat', 'classify:rules')]);
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -192,7 +192,7 @@ describe('OntologyClassifier — unknown className', () => {
     assert.strictEqual(validationProposal.reasons.length, 1);
     assert.strictEqual(
       validationProposal.reasons[0],
-      'ontology-unknown: legendary-pokemon (from classify:rules)',
+      'ontology-unknown: legendary-feat (from classify:rules)',
     );
   });
 
@@ -253,7 +253,7 @@ describe('OntologyClassifier — multiple unknown classNames', () => {
   it('preserves known proposals alongside validation proposals', async () => {
     const classifier = new OntologyClassifier(knownClassMap);
     const state = buildState([
-      makeProposal('pokemon',  'classify:rules'),
+      makeProposal('feat',  'classify:rules'),
       makeProposal('item',     'classify:structural'),
     ]);
     const next = makeNext();
@@ -263,7 +263,7 @@ describe('OntologyClassifier — multiple unknown classNames', () => {
     // 2 original + 1 validation
     assert.strictEqual(state.classifications.length, 3);
     assert.ok(
-      state.classifications.some((p) => p.className === 'pokemon'),
+      state.classifications.some((p) => p.className === 'feat'),
       'known proposal preserved',
     );
     assert.ok(

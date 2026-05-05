@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-(no changes since 0.1.0-beta.1)
+### Added
+
+- `JsonLdGraph.fromJsonLd` (async): expands compacted JSON-LD via `jsonld.expand` before walking, so `@type: @id` CURIE-string references produce edges in the cytoscape demo. Fixes missing edges in `docs/public/examples/aonprd/aonprd.html`.
+- `docs/examples/aonprd.md`: VitePress page embedding the cytoscape demo in an iframe within the site chrome.
+- `docs/usage.md`: Walk-through — end-to-end example from `feat-power-attack.json` input to JSON-LD output via the Pathfinder/aonprd pipeline.
+- `docs/index.md` switched from `layout: home` to `layout: doc` so the sidebar is visible on the home page.
+- Sidebar "Demo" and "Walk-through" entries in `docs/.vitepress/config.ts`.
+- `@types/jsonld` stub extended with `expand()` method declaration.
+
+### Changed
+
+- All Bulbapedia/Torreya/Pokémon vocabulary references replaced with Pathfinder/aonprd vocabulary throughout source TSDoc examples, unit-test fixture class names, integration-test records, documentation prose, and config snippets. The canonical example is now the aonprd Pathfinder fixture.
+- `squashage.config.torreya.example.json` deleted.
+- `scripts/create-type-stubs.js`: `@types/jsonld` stub updated with `expand()` declaration.
 
 ## [0.1.0-beta.1] - 2026-05-04
 
@@ -72,7 +85,7 @@ The Squashage v0.x branch — graph reconstitution pipeline that consumes struct
 - Code standards: lint, tsc, AJV, hooks, CI, conventional commits, changelog gate, TSDoc density, logger discipline, module conventions.
 
 ### Removed
-- `squashage.config.example.json` and `squashage.config.torreya.example.json` added as config examples.
+- `squashage.config.example.json` added as config example.
 - `docs/assets/squashage.png` added as the package icon.
 - Scraper layer wholesale: `src/scrapers/`, `src/crawlers/`, `src/orchestrators/ScrapeOrchestrator.ts`, `src/modules/cache/`, `src/modules/http/`, related types and tests, all `docs/*.html`, root-level `scrapers/*.js`, `errors/*.js` stray compiled artifacts, `examples/{docs-scraper,wiki-docs}/`. Orphan deps dropped: `bottleneck`, `cheerio`, `domhandler`, `wtf_wikipedia`.
 

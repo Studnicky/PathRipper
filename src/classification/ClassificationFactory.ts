@@ -180,7 +180,7 @@ export interface ClassifierInstancesInterface {
  * const instances = ClassificationFactory.build(
  *   targetConfig.classification,
  *   './graphs',
- *   'bulbapedia',
+ *   'aonprd',
  *   path.dirname(configPath),
  * );
  * if (instances['classify:rules'] !== undefined) {

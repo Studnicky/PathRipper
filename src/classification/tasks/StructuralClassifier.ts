@@ -72,10 +72,10 @@ export interface StructuralRuleInterface {
  * ```ts
  * const rules: StructuralRuleInterface[] = [
  *   {
- *     className: 'pokemon',
+ *     className: 'feat',
  *     priority:  10,
- *     predicate: Predicate.compile({ path: '/_type', equals: 'pokemon' }),
- *     reasons:   ['_type=pokemon'],
+ *     predicate: Predicate.compile({ path: '/_type', equals: 'feat' }),
+ *     reasons:   ['_type=feat'],
  *   },
  * ];
  * const classifier = new StructuralClassifier(rules);

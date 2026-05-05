@@ -173,7 +173,7 @@ const _validate: ValidateFunction<object> = ajv.compile(ROOT_SCHEMA);
  * @example
  * ```ts
  * const cfg = SquashageConfig.loadFromFile('./squashage.config.json');
- * const target: TargetConfigInterface = cfg.targets['bulbapedia'];
+ * const target: TargetConfigInterface = cfg.targets['aonprd'];
  * ```
  *
  * @category Configuration
@@ -211,7 +211,7 @@ export interface TargetConfigInterface {
  * ```ts
  * const cfg: SquashageConfigInterface = SquashageConfig.loadFromFile('./squashage.config.json');
  * console.log(cfg.input.basePath);          // './output'
- * console.log(Object.keys(cfg.targets));    // ['bulbapedia']
+ * console.log(Object.keys(cfg.targets));    // ['aonprd']
  * ```
  *
  * @category Configuration
@@ -392,8 +392,8 @@ class SquashageConfigSchema {
  * @example
  * ```ts
  * const config = SquashageConfig.loadFromFile('./squashage.config.json');
- * const target = config.targets['bulbapedia'];
- * console.log(target.output.path);   // './graphs/bulbapedia.trig'
+ * const target = config.targets['aonprd'];
+ * console.log(target.output.path);   // './graphs/aonprd.jsonld'
  * ```
  *
  * @category Configuration

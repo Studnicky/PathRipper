@@ -113,7 +113,7 @@ const METADATA_SENTINELS = new Set<string>(['__source__', '__validation__', 'unk
  * const resolver = new ConflictResolver(
  *   { onConflict: 'quarantine', onUnknown: 'skip', evidence: true },
  *   './graphs',
- *   'bulbapedia',
+ *   'aonprd',
  * );
  * registry.register('classify:conflict', resolver.execute);
  * ```

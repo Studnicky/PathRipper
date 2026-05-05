@@ -250,7 +250,7 @@ export function buildCli(): Command {
         return;
       }
 
-      const payload = JsonLdGraph.fromCompactedJsonLd(doc);
+      const payload = await JsonLdGraph.fromJsonLd(doc);
       const html    = GraphRenderer.render(payload, { title });
 
       try {

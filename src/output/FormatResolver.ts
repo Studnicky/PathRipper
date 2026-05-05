@@ -68,7 +68,7 @@ export class FormatResolver {
    *
    * When `output.format` is absent, the path extension is matched against
    * {@link FILE_EXTENSIONS} via {@link Formats.formatFromExtension}.  For
-   * example, `"./out/bulbapedia.trig"` resolves to `"trig"`.
+   * example, `"./out/aonprd.jsonld"` resolves to `"jsonld"`.
    *
    * @param output - Validated output config from the squashage target.
    * @returns The resolved {@link RDFFormat}.
@@ -83,13 +83,13 @@ export class FormatResolver {
    *
    * @example Extension fallback
    * ```ts
-   * FormatResolver.resolve({ kind: 'file', path: './graphs/bulbapedia.jsonld' });
+   * FormatResolver.resolve({ kind: 'file', path: './graphs/aonprd.jsonld' });
    * // 'jsonld'
    * ```
    *
    * @example Error on missing
    * ```ts
-   * FormatResolver.resolve({ kind: 'file', path: './graphs/bulbapedia.csv' });
+   * FormatResolver.resolve({ kind: 'file', path: './graphs/aonprd.csv' });
    * // throws OutputConfigError
    * ```
    */

@@ -42,11 +42,11 @@ function assertCompileThrows(raw: unknown, pattern?: RegExp): void {
 
 describe('Predicate — equals', () => {
   it('matches a string value', () => {
-    assert.equal(check({ path: '/type', equals: 'pokemon' }, { type: 'pokemon' }), true);
+    assert.equal(check({ path: '/type', equals: 'feat' }, { type: 'feat' }), true);
   });
 
   it('does not match a different string value', () => {
-    assert.equal(check({ path: '/type', equals: 'pokemon' }, { type: 'trainer' }), false);
+    assert.equal(check({ path: '/type', equals: 'feat' }, { type: 'spell' }), false);
   });
 });
 
@@ -106,7 +106,7 @@ describe('Predicate — exists', () => {
   });
 
   it('does not match when the key is absent', () => {
-    assert.equal(check({ path: '/name', exists: true }, { ndex: 1 }), false);
+    assert.equal(check({ path: '/name', exists: true }, { level: 1 }), false);
   });
 });
 
@@ -134,7 +134,7 @@ describe('Predicate — type', () => {
   });
 
   it('matches number type', () => {
-    assert.equal(check({ path: '/ndex', type: 'number' }, { ndex: 6 }), true);
+    assert.equal(check({ path: '/level', type: 'number' }, { level: 6 }), true);
   });
 
   it('matches boolean type', () => {
@@ -190,7 +190,7 @@ describe('Predicate — regex', () => {
   });
 
   it('returns false for non-string values', () => {
-    assert.equal(check({ path: '/ndex', regex: '^\\d+$' }, { ndex: 42 }), false);
+    assert.equal(check({ path: '/level', regex: '^\\d+$' }, { level: 42 }), false);
   });
 });
 
@@ -218,7 +218,7 @@ describe('Predicate — length', () => {
   });
 
   it('returns false for a number (not string or array)', () => {
-    assert.equal(check({ path: '/ndex', length: { gte: 1 } }, { ndex: 42 }), false);
+    assert.equal(check({ path: '/level', length: { gte: 1 } }, { level: 42 }), false);
   });
 
   it('returns false for a plain object', () => {
@@ -242,8 +242,8 @@ describe('Predicate — range', () => {
   });
 
   it('matches the bounds of a closed interval (gte + lte)', () => {
-    assert.equal(check({ path: '/ndex', range: { gte: 1, lte: 151 } }, { ndex: 1 }), true);
-    assert.equal(check({ path: '/ndex', range: { gte: 1, lte: 151 } }, { ndex: 151 }), true);
+    assert.equal(check({ path: '/level', range: { gte: 1, lte: 151 } }, { level: 1 }), true);
+    assert.equal(check({ path: '/level', range: { gte: 1, lte: 151 } }, { level: 151 }), true);
   });
 
   it('returns false for a non-number', () => {
@@ -265,8 +265,8 @@ describe('Predicate — all', () => {
   it('returns true when all children match', () => {
     assert.equal(
       check(
-        { all: [{ path: '/type', equals: 'pokemon' }, { path: '/ndex', range: { gte: 1 } }] },
-        { type: 'pokemon', ndex: 25 },
+        { all: [{ path: '/type', equals: 'feat' }, { path: '/level', range: { gte: 1 } }] },
+        { type: 'feat', level: 25 },
       ),
       true,
     );
@@ -275,8 +275,8 @@ describe('Predicate — all', () => {
   it('returns false when any child does not match', () => {
     assert.equal(
       check(
-        { all: [{ path: '/type', equals: 'pokemon' }, { path: '/ndex', range: { gte: 200 } }] },
-        { type: 'pokemon', ndex: 25 },
+        { all: [{ path: '/type', equals: 'feat' }, { path: '/level', range: { gte: 200 } }] },
+        { type: 'feat', level: 25 },
       ),
       false,
     );
@@ -293,8 +293,8 @@ describe('Predicate — any', () => {
   it('returns true when at least one child matches', () => {
     assert.equal(
       check(
-        { any: [{ path: '/type', equals: 'trainer' }, { path: '/type', equals: 'pokemon' }] },
-        { type: 'pokemon' },
+        { any: [{ path: '/type', equals: 'spell' }, { path: '/type', equals: 'feat' }] },
+        { type: 'feat' },
       ),
       true,
     );
@@ -303,8 +303,8 @@ describe('Predicate — any', () => {
   it('returns false when no child matches', () => {
     assert.equal(
       check(
-        { any: [{ path: '/type', equals: 'trainer' }, { path: '/type', equals: 'item' }] },
-        { type: 'pokemon' },
+        { any: [{ path: '/type', equals: 'spell' }, { path: '/type', equals: 'item' }] },
+        { type: 'feat' },
       ),
       false,
     );
@@ -319,11 +319,11 @@ describe('Predicate — any', () => {
 
 describe('Predicate — not', () => {
   it('inverts a matching predicate to false', () => {
-    assert.equal(check({ not: { path: '/type', equals: 'pokemon' } }, { type: 'pokemon' }), false);
+    assert.equal(check({ not: { path: '/type', equals: 'feat' } }, { type: 'feat' }), false);
   });
 
   it('inverts a non-matching predicate to true', () => {
-    assert.equal(check({ not: { path: '/type', equals: 'trainer' } }, { type: 'pokemon' }), true);
+    assert.equal(check({ not: { path: '/type', equals: 'spell' } }, { type: 'feat' }), true);
   });
 });
 
@@ -477,47 +477,47 @@ describe('Predicate — multi-level composition', () => {
   it('3-level deep all/any/not returns true for matching record', () => {
     const raw: RawPredicate = {
       all: [
-        { path: '/type', equals: 'pokemon' },
+        { path: '/type', equals: 'feat' },
         {
           any: [
             { path: '/legendary', equals: true },
             {
               all: [
                 { not: { path: '/legendary', equals: true } },
-                { path: '/ndex', range: { gte: 1, lte: 151 } },
+                { path: '/level', range: { gte: 1, lte: 151 } },
               ],
             },
           ],
         },
       ],
     };
-    // Bulbasaur: not legendary, ndex 1 — inner all passes → any passes → outer all passes.
-    assert.equal(check(raw, { type: 'pokemon', legendary: false, ndex: 1 }), true);
+    // Power Attack: not legendary, level 1 — inner all passes → any passes → outer all passes.
+    assert.equal(check(raw, { type: 'feat', legendary: false, level: 1 }), true);
   });
 
   it('3-level deep all/any/not returns false for non-matching record', () => {
     const raw: RawPredicate = {
       all: [
-        { path: '/type', equals: 'pokemon' },
+        { path: '/type', equals: 'feat' },
         {
           any: [
             { path: '/legendary', equals: true },
             {
               all: [
                 { not: { path: '/legendary', equals: true } },
-                { path: '/ndex', range: { gte: 1, lte: 151 } },
+                { path: '/level', range: { gte: 1, lte: 151 } },
               ],
             },
           ],
         },
       ],
     };
-    // Mewtwo: not legendary, ndex 150 passes inner range — should still pass.
-    assert.equal(check(raw, { type: 'pokemon', legendary: false, ndex: 150 }), true);
-    // Gen 2 pokemon: ndex 152, not legendary → inner all fails → any only has legendary path → fails.
-    assert.equal(check(raw, { type: 'pokemon', legendary: false, ndex: 152 }), false);
+    // High level feat: level 150 passes inner range — should still pass.
+    assert.equal(check(raw, { type: 'feat', legendary: false, level: 150 }), true);
+    // High level feat: level 10, not legendary → inner all fails → any only has legendary path → fails.
+    assert.equal(check(raw, { type: 'feat', legendary: false, level: 152 }), false);
     // Wrong type → outer all fails.
-    assert.equal(check(raw, { type: 'trainer', legendary: false, ndex: 1 }), false);
+    assert.equal(check(raw, { type: 'spell', legendary: false, level: 1 }), false);
   });
 
   it('not wrapping an all wrapping multiple conditions', () => {

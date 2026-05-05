@@ -522,16 +522,16 @@ function evaluateNode(node: AstNodeType, record: unknown): boolean {
  * ```ts
  * const compiled = Predicate.compile({
  *   all: [
- *     { path: '/type', equals: 'pokemon' },
- *     { path: '/ndex', range: { gte: 1, lte: 151 } },
- *     { not: { path: '/legendary', equals: true } },
+ *     { path: '/_type', equals: 'feat' },
+ *     { path: '/level', type: 'number' },
+ *     { not: { path: '/rarity', equals: 'rare' } },
  *   ],
  * });
  *
  * const matches = Predicate.evaluate(compiled, {
- *   type: 'pokemon',
- *   ndex: 25,
- *   legendary: false,
+ *   _type: 'feat',
+ *   level: 1,
+ *   rarity: 'common',
  * });
  * // → true
  * ```

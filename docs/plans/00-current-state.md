@@ -94,7 +94,7 @@ not the signal.
   imports once that workspace publishes. Re-enable `rdfxml` and `n3`
   output formats. No application-code churn — the wrapper boundary is the
   swap point.
-- **Plugin examples**: Torreya/Bulbapedia squashers as a separate lane.
+- **Plugin examples**: Additional squasher plugins as a separate lane.
 - **Embedding-assisted advisory lane**: produces review proposals for
   quarantined records; never writes canonical RDF/JS.
 

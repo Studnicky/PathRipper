@@ -91,8 +91,8 @@ describe('json:read', () => {
 
   describe('single-file JSON', () => {
     it('populates state.input from a plain JSON file and calls next()', async () => {
-      const recordPath = join(testDir, 'bulbasaur.json');
-      const record     = { _type: 'pokemon', name: 'Bulbasaur', ndex: 1 };
+      const recordPath = join(testDir, 'power-attack.json');
+      const record     = { _type: 'feat', name: 'Power Attack', level: 1 };
       await writeFile(recordPath, JSON.stringify(record), 'utf8');
 
       let nextCalled = false;
@@ -103,9 +103,9 @@ describe('json:read', () => {
       await task(trackNext, state);
 
       assert.ok(nextCalled,              'next() should have been called');
-      assert.equal(state.input['name'],  'Bulbasaur');
-      assert.equal(state.input['ndex'],  1);
-      assert.equal(state.input['_type'], 'pokemon');
+      assert.equal(state.input['name'],  'Power Attack');
+      assert.equal(state.input['level'], 1);
+      assert.equal(state.input['_type'], 'feat');
     });
 
     it('does not write any quarantine file on a valid object record', async () => {
@@ -130,9 +130,9 @@ describe('json:read', () => {
     it('reads the record at recordLine:1 from a JSONL file', async () => {
       const recordPath = join(testDir, 'records.jsonl');
       const lines = [
-        JSON.stringify({ ndex: 1, name: 'Bulbasaur' }),
-        JSON.stringify({ ndex: 2, name: 'Ivysaur'   }),
-        JSON.stringify({ ndex: 3, name: 'Venusaur'  }),
+        JSON.stringify({ level: 1, name: 'Power Attack' }),
+        JSON.stringify({ level: 2, name: 'Quick Draw'  }),
+        JSON.stringify({ level: 3, name: 'Toughness'   }),
       ].join('\n');
       await writeFile(recordPath, lines, 'utf8');
 
@@ -144,15 +144,15 @@ describe('json:read', () => {
       await task(trackNext, state);
 
       assert.ok(nextCalled,            'next() should have been called for valid JSONL record');
-      assert.equal(state.input['ndex'], 2);
-      assert.equal(state.input['name'], 'Ivysaur');
+      assert.equal(state.input['level'], 2);
+      assert.equal(state.input['name'], 'Quick Draw');
     });
 
     it('defaults to line 0 when recordLine is not specified', async () => {
       const recordPath = join(testDir, 'records-default.jsonl');
       const lines = [
-        JSON.stringify({ ndex: 1, name: 'Bulbasaur' }),
-        JSON.stringify({ ndex: 2, name: 'Ivysaur'   }),
+        JSON.stringify({ level: 1, name: 'Power Attack' }),
+        JSON.stringify({ level: 2, name: 'Quick Draw'   }),
       ].join('\n');
       await writeFile(recordPath, lines, 'utf8');
 
@@ -164,8 +164,8 @@ describe('json:read', () => {
       await task(trackNext, state);
 
       assert.ok(nextCalled,            'next() should have been called');
-      assert.equal(state.input['ndex'], 1);
-      assert.equal(state.input['name'], 'Bulbasaur');
+      assert.equal(state.input['level'], 1);
+      assert.equal(state.input['name'], 'Power Attack');
     });
   });
 
@@ -270,12 +270,12 @@ describe('json:read', () => {
       let nextCalled = false;
       const trackNext = async (): Promise<void> => { nextCalled = true; };
 
-      const state = buildState(testDir, {}, { input: { _type: 'pokemon', name: 'Mewtwo' } });
+      const state = buildState(testDir, {}, { input: { _type: 'feat', name: 'Power Attack' } });
       const task  = TaskRegistry.get(TASK_NAME);
       await task(trackNext, state);
 
       assert.ok(nextCalled,                    'next() should be called in pass-through mode');
-      assert.equal(state.input['name'], 'Mewtwo');
+      assert.equal(state.input['name'], 'Power Attack');
     });
   });
 
@@ -287,9 +287,9 @@ describe('json:read', () => {
     it('merges plugin and schemaId from _source into state.source', async () => {
       const recordPath = join(testDir, 'with-source.json');
       const record = {
-        _type:   'pokemon',
-        name:    'Charizard',
-        _source: { target: 'unit-target', plugin: 'bulbapedia:parse', schemaId: 'pokemon-v1' },
+        _type:   'feat',
+        name:    'Power Attack',
+        _source: { target: 'unit-target', plugin: 'aonprd:parse', schemaId: 'feat-v1' },
       };
       await writeFile(recordPath, JSON.stringify(record), 'utf8');
 
@@ -301,8 +301,8 @@ describe('json:read', () => {
       await task(trackNext, state);
 
       assert.ok(nextCalled,                        'next() should be called');
-      assert.equal(state.source.plugin,   'bulbapedia:parse');
-      assert.equal(state.source.schemaId, 'pokemon-v1');
+      assert.equal(state.source.plugin,   'aonprd:parse');
+      assert.equal(state.source.schemaId, 'feat-v1');
     });
 
     it('quarantines when _source.target mismatches state.source.target', async () => {

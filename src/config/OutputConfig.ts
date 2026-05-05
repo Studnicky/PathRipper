@@ -88,7 +88,7 @@ export const OUTPUT_SCHEMA = {
  * ```ts
  * const output: OutputConfigInterface = {
  *   kind:   'file',
- *   path:   './graphs/bulbapedia.trig',
+ *   path:   './graphs/aonprd.jsonld',
  *   mode:   'dataset',
  * };
  * ```

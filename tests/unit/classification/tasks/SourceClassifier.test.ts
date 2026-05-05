@@ -100,7 +100,7 @@ describe('SourceClassifier — present _source block', () => {
   it('emits one proposal with className __source__ when _source is present', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia', plugin: 'bulbapedia:parse', schemaId: 'pokemon-v1' },
+      _source: { target: 'aonprd', plugin: 'aonprd:parse', schemaId: 'feat-v1' },
     });
     const next = makeNext();
 
@@ -113,7 +113,7 @@ describe('SourceClassifier — present _source block', () => {
   it('emits proposal with source classify:source', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia' },
+      _source: { target: 'aonprd' },
     });
     const next = makeNext();
 
@@ -125,7 +125,7 @@ describe('SourceClassifier — present _source block', () => {
   it('emits proposal with priority 0 and confidence 1', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia', plugin: 'bulbapedia:parse' },
+      _source: { target: 'aonprd', plugin: 'aonprd:parse' },
     });
     const next = makeNext();
 
@@ -140,29 +140,29 @@ describe('SourceClassifier — present _source block', () => {
   it('includes all three source fields in reasons when all are present', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia', plugin: 'bulbapedia:parse', schemaId: 'pokemon-v1' },
+      _source: { target: 'aonprd', plugin: 'aonprd:parse', schemaId: 'feat-v1' },
     });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     const reasons = state.classifications[0]?.reasons ?? [];
-    assert.ok(reasons.includes('source.target=bulbapedia'), 'should include target');
-    assert.ok(reasons.includes('source.plugin=bulbapedia:parse'), 'should include plugin');
-    assert.ok(reasons.includes('source.schemaId=pokemon-v1'), 'should include schemaId');
+    assert.ok(reasons.includes('source.target=aonprd'), 'should include target');
+    assert.ok(reasons.includes('source.plugin=aonprd:parse'), 'should include plugin');
+    assert.ok(reasons.includes('source.schemaId=feat-v1'), 'should include schemaId');
   });
 
   it('omits plugin and schemaId from reasons when absent', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia' },
+      _source: { target: 'aonprd' },
     });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     const reasons = state.classifications[0]?.reasons ?? [];
-    assert.ok(reasons.includes('source.target=bulbapedia'), 'should include target');
+    assert.ok(reasons.includes('source.target=aonprd'), 'should include target');
     assert.strictEqual(reasons.filter((r) => r.startsWith('source.plugin=')).length, 0);
     assert.strictEqual(reasons.filter((r) => r.startsWith('source.schemaId=')).length, 0);
   });
@@ -170,7 +170,7 @@ describe('SourceClassifier — present _source block', () => {
   it('calls next() after emitting a proposal', async () => {
     const classifier = new SourceClassifier();
     const state = buildState({
-      _source: { target: 'bulbapedia', plugin: 'bulbapedia:parse' },
+      _source: { target: 'aonprd', plugin: 'aonprd:parse' },
     });
     const next = makeNext();
 
@@ -186,14 +186,14 @@ describe('SourceClassifier — additive accumulation', () => {
 
     const existingProposal: ClassificationProposalInterface = {
       source:     'classify:structural',
-      className:  'pokemon',
+      className:  'feat',
       priority:   10,
       confidence: 1,
-      reasons:    ['_type=pokemon'],
+      reasons:    ['_type=feat'],
     };
 
     const state = buildState(
-      { _source: { target: 'bulbapedia' } },
+      { _source: { target: 'aonprd' } },
       [existingProposal],
     );
     const next = makeNext();

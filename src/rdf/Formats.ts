@@ -123,7 +123,7 @@ export const RDF_FORMATS: ReadonlyArray<RDFFormat> = Object.freeze([
  *
  * @example
  * ```ts
- * const fmt = Formats.formatFromExtension('bulbapedia.trig'); // 'trig'
+ * const fmt = Formats.formatFromExtension('aonprd.jsonld'); // 'trig'
  * const ext  = Formats.extensionForFormat('jsonld');          // '.jsonld'
  * const mime = Formats.mimeForFormat('nquads');               // 'application/n-quads'
  * const ok   = Formats.supportsQuads('trig');                 // true
@@ -152,7 +152,7 @@ export class Formats {
    *
    * @example
    * ```ts
-   * Formats.formatFromExtension('bulbapedia.trig'); // 'trig'
+   * Formats.formatFromExtension('aonprd.jsonld'); // 'trig'
    * Formats.formatFromExtension('data.TTL');        // 'turtle'
    * Formats.formatFromExtension('data.csv');        // undefined
    * ```

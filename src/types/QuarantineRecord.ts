@@ -34,10 +34,10 @@ export type QuarantineBucket = 'unknown' | 'conflicts' | 'projection' | 'output'
  * ```ts
  * const record: QuarantineRecordInterface = {
  *   id: 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3',
- *   target: 'bulbapedia',
+ *   target: 'aonprd',
  *   bucket: 'unknown',
- *   source: { target: 'bulbapedia', path: 'bulbasaur.json' },
- *   input: { name: 'Bulbasaur' },
+ *   source: { target: 'aonprd', path: 'feat-power-attack.json' },
+ *   input: { name: 'Power Attack' },
  *   classification: null,
  *   timestamp: new Date().toISOString(),
  * };

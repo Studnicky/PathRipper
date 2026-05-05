@@ -254,18 +254,18 @@ describe('ConflictResolver — empty proposals + onUnknown: quarantine', () => {
 describe('ConflictResolver — single proposal', () => {
   it('sets state.classification with the proposal className', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
-    const state = buildState([makeProposal('pokemon', 'classify:rules')]);
+    const state = buildState([makeProposal('feat', 'classify:rules')]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
 
     assert.ok(state.classification !== null);
-    assert.strictEqual(state.classification.type, 'pokemon');
+    assert.strictEqual(state.classification.type, 'feat');
   });
 
   it('engine is the source of the single proposal', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
-    const state = buildState([makeProposal('pokemon', 'classify:rules')]);
+    const state = buildState([makeProposal('feat', 'classify:rules')]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
@@ -275,7 +275,7 @@ describe('ConflictResolver — single proposal', () => {
 
   it('calls next()', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
-    const state = buildState([makeProposal('pokemon', 'classify:rules')]);
+    const state = buildState([makeProposal('feat', 'classify:rules')]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
@@ -285,7 +285,7 @@ describe('ConflictResolver — single proposal', () => {
 
   it('candidates is undefined for single-class resolution', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
-    const state = buildState([makeProposal('pokemon', 'classify:rules')]);
+    const state = buildState([makeProposal('feat', 'classify:rules')]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
@@ -300,21 +300,21 @@ describe('ConflictResolver — multiple proposals same className', () => {
   it('sets state.classification with the corroborated className', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      10, ['rules matched']),
-      makeProposal('pokemon', 'classify:structural', 5,  ['structural matched']),
+      makeProposal('feat', 'classify:rules',      10, ['rules matched']),
+      makeProposal('feat', 'classify:structural', 5,  ['structural matched']),
     ]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
 
-    assert.strictEqual(state.classification?.type, 'pokemon');
+    assert.strictEqual(state.classification?.type, 'feat');
   });
 
   it('engine is comma-joined unique sources', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      10, ['rules matched']),
-      makeProposal('pokemon', 'classify:structural', 5,  ['structural matched']),
+      makeProposal('feat', 'classify:rules',      10, ['rules matched']),
+      makeProposal('feat', 'classify:structural', 5,  ['structural matched']),
     ]);
     const next = makeNext();
 
@@ -332,8 +332,8 @@ describe('ConflictResolver — multiple proposals same className', () => {
       'test-target',
     );
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      10, ['rules matched']),
-      makeProposal('pokemon', 'classify:structural', 5,  ['structural matched']),
+      makeProposal('feat', 'classify:rules',      10, ['rules matched']),
+      makeProposal('feat', 'classify:structural', 5,  ['structural matched']),
     ]);
     const next = makeNext();
 
@@ -351,8 +351,8 @@ describe('ConflictResolver — multiple proposals same className', () => {
       'test-target',
     );
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      10, ['rules matched', 'extra reason']),
-      makeProposal('pokemon', 'classify:structural', 5,  ['structural matched']),
+      makeProposal('feat', 'classify:rules',      10, ['rules matched', 'extra reason']),
+      makeProposal('feat', 'classify:structural', 5,  ['structural matched']),
     ]);
     const next = makeNext();
 
@@ -371,21 +371,21 @@ describe('ConflictResolver — multi-class proposals with clear priority winner'
   it('picks the class with the highest priority', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      20),
-      makeProposal('trainer', 'classify:structural', 5),
+      makeProposal('feat', 'classify:rules',      20),
+      makeProposal('spell', 'classify:structural', 5),
     ]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
 
-    assert.strictEqual(state.classification?.type, 'pokemon');
+    assert.strictEqual(state.classification?.type, 'feat');
   });
 
   it('candidates is undefined when there is a clear winner', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      20),
-      makeProposal('trainer', 'classify:structural', 5),
+      makeProposal('feat', 'classify:rules',      20),
+      makeProposal('spell', 'classify:structural', 5),
     ]);
     const next = makeNext();
 
@@ -397,8 +397,8 @@ describe('ConflictResolver — multi-class proposals with clear priority winner'
   it('calls next() after priority resolution', async () => {
     const resolver = new ConflictResolver(defaultConfig, tmpDir, 'test-target');
     const state = buildState([
-      makeProposal('pokemon', 'classify:rules',      20),
-      makeProposal('trainer', 'classify:structural', 5),
+      makeProposal('feat', 'classify:rules',      20),
+      makeProposal('spell', 'classify:structural', 5),
     ]);
     const next = makeNext();
 
@@ -418,15 +418,15 @@ describe('ConflictResolver — multi-class tie + onConflict: pickPriority', () =
       'test-target',
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
 
-    // 'pokemon' sorts before 'trainer' lexicographically.
-    assert.strictEqual(state.classification?.type, 'pokemon');
+    // 'feat' sorts before 'spell' lexicographically.
+    assert.strictEqual(state.classification?.type, 'feat');
   });
 
   it('candidates lists all tied classNames lexicographically sorted', async () => {
@@ -436,15 +436,15 @@ describe('ConflictResolver — multi-class tie + onConflict: pickPriority', () =
       'test-target',
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
     await resolver.execute(next.fn, state);
 
     const candidates = state.classification?.candidates ?? [];
-    assert.deepStrictEqual([...candidates], ['pokemon', 'trainer']);
+    assert.deepStrictEqual([...candidates], ['feat', 'spell']);
   });
 
   it('calls next() after lex tiebreak', async () => {
@@ -454,8 +454,8 @@ describe('ConflictResolver — multi-class tie + onConflict: pickPriority', () =
       'test-target',
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
@@ -476,8 +476,8 @@ describe('ConflictResolver — multi-class tie + onConflict: quarantine', () => 
       targetId,
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
@@ -497,8 +497,8 @@ describe('ConflictResolver — multi-class tie + onConflict: quarantine', () => 
       targetId,
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
@@ -514,7 +514,7 @@ describe('ConflictResolver — multi-class tie + onConflict: quarantine', () => 
     const candidates = record['candidates'] as Array<{ type: string }>;
     assert.ok(Array.isArray(candidates), 'candidates should be an array');
     const types = candidates.map((c) => c.type).sort();
-    assert.deepStrictEqual(types, ['pokemon', 'trainer']);
+    assert.deepStrictEqual(types, ['feat', 'spell']);
   });
 
   it('leaves state.classification null on conflict quarantine', async () => {
@@ -525,8 +525,8 @@ describe('ConflictResolver — multi-class tie + onConflict: quarantine', () => 
       targetId,
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 
@@ -543,8 +543,8 @@ describe('ConflictResolver — multi-class tie + onConflict: quarantine', () => 
       targetId,
     );
     const state = buildState([
-      makeProposal('trainer', 'classify:rules',      10),
-      makeProposal('pokemon', 'classify:structural', 10),
+      makeProposal('spell', 'classify:rules',      10),
+      makeProposal('feat', 'classify:structural', 10),
     ]);
     const next = makeNext();
 

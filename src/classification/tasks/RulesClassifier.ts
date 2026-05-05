@@ -78,15 +78,15 @@ export interface RuleEntryInterface {
  * ```ts
  * const rules: RuleEntryInterface[] = [
  *   {
- *     className: 'pokemon',
+ *     className: 'feat',
  *     priority:  20,
  *     predicate: Predicate.compile({
  *       all: [
- *         { path: '/_type', equals: 'pokemon' },
- *         { path: '/ndex', range: { gte: 1 } },
+ *         { path: '/_type', equals: 'feat' },
+ *         { path: '/level', type: 'number' },
  *       ],
  *     }),
- *     reasons: ['_type=pokemon', 'ndex>=1'],
+ *     reasons: ['_type=feat', 'level present'],
  *   },
  * ];
  * const classifier = new RulesClassifier(rules);

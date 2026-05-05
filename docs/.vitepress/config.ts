@@ -6,7 +6,8 @@ const sidebar = [
     text: 'Introduction',
     items: [
       { link: '/getting-started', text: 'Getting Started' },
-      { link: '/', text: 'What it does' }
+      { link: '/usage',           text: 'Walk-through' },
+      { link: '/',                text: 'What it does' }
     ]
   },
   {
@@ -19,6 +20,12 @@ const sidebar = [
     text: 'Classifier Engines',
     items: [
       { link: '/classification-engines', text: 'Classifier engines' }
+    ]
+  },
+  {
+    text: 'Demo',
+    items: [
+      { link: '/examples/aonprd', text: 'Pathfinder/AONPRD graph' }
     ]
   },
   {
@@ -43,7 +50,8 @@ export default defineConfig({
     siteTitle: 'Squashage',
     nav: [
       { text: 'Home', link: '/' },
-      { text: 'Demo', link: '/examples/aonprd/aonprd.html', target: '_blank' },
+      { text: 'Walk-through', link: '/usage' },
+      { text: 'Demo', link: '/examples/aonprd' },
       { text: 'GitHub', link: 'https://github.com/Studnicky/Squashage' }
     ],
     sidebar,

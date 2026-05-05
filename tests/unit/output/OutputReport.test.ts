@@ -9,7 +9,7 @@ import type { OutputReportInterface }            from '../../../src/output/Outpu
 // ---------------------------------------------------------------------------
 
 const MINIMAL_REPORT: OutputReportInterface = {
-  path:         './graphs/bulbapedia.ttl',
+  path:         './graphs/aonprd.jsonld',
   format:       'turtle',
   quadCount:    0,
   graphCount:   0,
@@ -19,7 +19,7 @@ const MINIMAL_REPORT: OutputReportInterface = {
 };
 
 const FULL_REPORT: OutputReportInterface = {
-  path:         './graphs/bulbapedia.trig',
+  path:         './graphs/aonprd.jsonld',
   format:       'trig',
   quadCount:    1234,
   graphCount:   3,

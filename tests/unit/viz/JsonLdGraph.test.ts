@@ -1,5 +1,6 @@
 /**
- * @fileoverview Unit tests for `JsonLdGraph.fromCompactedJsonLd`.
+ * @fileoverview Unit tests for `JsonLdGraph.fromCompactedJsonLd` and
+ * `JsonLdGraph.fromJsonLd`.
  *
  * @module tests/unit/viz/JsonLdGraph
  * @category Unit
@@ -404,5 +405,106 @@ describe('JsonLdGraph.fromCompactedJsonLd — single top-level resource', () => 
 
   it('node has no graphIri', () => {
     assert.equal(payload.nodes[0]?.graphIri, undefined);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test 12: fromJsonLd — compacted CURIE-string reference produces an edge
+//
+// Root cause of the missing-edges bug in the cytoscape demo: compacted JSON-LD
+// with `@type: @id` term definitions writes object-property references as bare
+// CURIE strings (e.g. `"rarity": "aonprd:Rarity-common"`). The old
+// `fromCompactedJsonLd` treated these as literal properties, not edges.
+// `fromJsonLd` expands the document first so every reference becomes a
+// canonical `{ "@id": "..." }` object, and the walker emits edges correctly.
+// ---------------------------------------------------------------------------
+
+describe('JsonLdGraph.fromJsonLd — compacted CURIE-string reference produces an edge', () => {
+  // A compacted document where `rarity` is declared as `@type: @id` in the context.
+  // The compacted value `"aonprd:Rarity-common"` is a CURIE that should expand to
+  // `{ "@id": "https://squashage.dev/vocabulary/aonprd#Rarity-common" }` when
+  // the document is expanded.
+  const doc = {
+    '@context': {
+      'aonprd': 'https://squashage.dev/vocabulary/aonprd#',
+      'aonprd:rarity': { '@id': 'aonprd:rarity', '@type': '@id' },
+    },
+    '@graph': [
+      {
+        '@id':          'https://squashage.dev/instance/aonprd/Feats.aspx?ID=750',
+        '@type':        'aonprd:Feat',
+        'aonprd:rarity': 'aonprd:Rarity-common',
+      },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('produces nodes for the feat entity and the rarity reference target', () => {
+    // The feat entity produces one typed node; the rarity reference target
+    // (aonprd:Rarity-common) produces a stub node because it is an edge target.
+    assert.equal(payload.nodes.length, 2);
+  });
+
+  it('produces one edge for the rarity reference', () => {
+    assert.equal(payload.edges.length, 1);
+  });
+
+  it('edge source is the feat IRI', () => {
+    assert.equal(
+      payload.edges[0]?.source,
+      'https://squashage.dev/instance/aonprd/Feats.aspx?ID=750',
+    );
+  });
+
+  it('edge target is the expanded rarity IRI', () => {
+    assert.equal(
+      payload.edges[0]?.target,
+      'https://squashage.dev/vocabulary/aonprd#Rarity-common',
+    );
+  });
+
+  it('node classIri is the Feat class IRI', () => {
+    assert.equal(
+      payload.nodes[0]?.classIri,
+      'https://squashage.dev/vocabulary/aonprd#Feat',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Test 13: fromJsonLd — explicit @id reference produces an edge
+// ---------------------------------------------------------------------------
+
+describe('JsonLdGraph.fromJsonLd — explicit @id reference in compacted doc', () => {
+  const doc = {
+    '@context': { ex: 'https://example.org/' },
+    '@graph': [
+      {
+        '@id':              'https://example.org/a',
+        'https://example.org/knows': { '@id': 'https://example.org/b' },
+      },
+      { '@id': 'https://example.org/b' },
+    ],
+  };
+
+  let payload: VizPayloadInterface;
+  before(async () => { payload = await JsonLdGraph.fromJsonLd(doc); });
+
+  it('produces two nodes', () => {
+    assert.equal(payload.nodes.length, 2);
+  });
+
+  it('produces exactly one edge', () => {
+    assert.equal(payload.edges.length, 1);
+  });
+
+  it('edge source is entity a', () => {
+    assert.equal(payload.edges[0]?.source, 'https://example.org/a');
+  });
+
+  it('edge target is entity b', () => {
+    assert.equal(payload.edges[0]?.target, 'https://example.org/b');
   });
 });

@@ -136,8 +136,15 @@ export interface ToRdfOptions {
   base?:   string;
 }
 
+export interface ExpandOptions {
+  base?:             string;
+  expandContext?:    unknown;
+  keepFreeFloatingNodes?: boolean;
+}
+
 export interface JsonLdApi {
   toRDF(input: unknown, options?: ToRdfOptions): Promise<string>;
+  expand(input: unknown, options?: ExpandOptions): Promise<unknown[]>;
 }
 
 declare const jsonld: JsonLdApi;

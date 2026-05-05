@@ -60,23 +60,23 @@ describe('FormatResolver.resolve — explicit format wins', () => {
 
 describe('FormatResolver.resolve — extension fallback', () => {
   it('resolves .ttl to turtle', () => {
-    assert.equal(FormatResolver.resolve(cfg('./graphs/bulbapedia.ttl')), 'turtle');
+    assert.equal(FormatResolver.resolve(cfg('./graphs/aonprd.ttl')), 'turtle');
   });
 
   it('resolves .trig to trig', () => {
-    assert.equal(FormatResolver.resolve(cfg('./graphs/bulbapedia.trig')), 'trig');
+    assert.equal(FormatResolver.resolve(cfg('./graphs/aonprd.trig')), 'trig');
   });
 
   it('resolves .nt to ntriples', () => {
-    assert.equal(FormatResolver.resolve(cfg('./graphs/bulbapedia.nt')), 'ntriples');
+    assert.equal(FormatResolver.resolve(cfg('./graphs/aonprd.nt')), 'ntriples');
   });
 
   it('resolves .nq to nquads', () => {
-    assert.equal(FormatResolver.resolve(cfg('./graphs/bulbapedia.nq')), 'nquads');
+    assert.equal(FormatResolver.resolve(cfg('./graphs/aonprd.nq')), 'nquads');
   });
 
   it('resolves .jsonld to jsonld', () => {
-    assert.equal(FormatResolver.resolve(cfg('./graphs/bulbapedia.jsonld')), 'jsonld');
+    assert.equal(FormatResolver.resolve(cfg('./graphs/aonprd.jsonld')), 'jsonld');
   });
 
   it('resolves uppercase extension (.TTL)', () => {

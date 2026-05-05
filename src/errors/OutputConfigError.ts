@@ -14,7 +14,7 @@ import type { BaseErrorOptionsInterface } from './BaseError.js';
  * @example
  * ```ts
  * throw OutputConfigError.create('stream mode is incompatible with canonicalize', {
- *   metadata: { path: './graphs/bulbapedia.trig', mode: 'stream' },
+ *   metadata: { path: './graphs/aonprd.jsonld', mode: 'stream' },
  * });
  * ```
  *

@@ -494,10 +494,10 @@ export class PrefixResolver {
    *
    * @remarks
    * Used to infer a vocabulary prefix from `targetConfig.ontology.baseIri`.
-   * For example `https://pokemontology.dev/ontology/` yields `'ontology'`.
+   * For example `https://squashage.dev/vocabulary/aonprd#` yields `'aonprd'`.
    * Returns `undefined` when no usable segment is found.
    *
-   * @param iri - IRI string (e.g. `'https://pokemontology.dev/ontology/'`).
+   * @param iri - IRI string (e.g. `'https://squashage.dev/vocabulary/aonprd#'`).
    * @returns Lowercase path-segment label, or `undefined`.
    */
   static #prefixFromIriPath(iri: string): string | undefined {

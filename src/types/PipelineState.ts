@@ -19,11 +19,11 @@ import type { PrefixResolutionInterface } from '../classification/PrefixResolver
  * @group Types
  */
 export interface InputSourceInterface {
-  /** Upstream target id this record came from (e.g. `"bulbapedia"`). */
+  /** Upstream target id this record came from (e.g. `"aonprd"`). */
   readonly target:    string;
   /** Filesystem path the record was loaded from, relative to the run's input root. */
   readonly path:      string;
-  /** Upstream plugin that produced the record (e.g. `"bulbapedia:parse"`). */
+  /** Upstream plugin that produced the record (e.g. `"aonprd:parse"`). */
   readonly plugin?:   string | undefined;
   /** Schema id the record was validated against upstream, if known. */
   readonly schemaId?: string | undefined;
@@ -65,7 +65,7 @@ export interface ClassificationProposalInterface {
  * @group Types
  */
 export interface ClassificationEvidenceInterface {
-  /** Final ontology class id (e.g. `"pokemon"`). */
+  /** Final ontology class id (e.g. `"feat"`). */
   readonly type:        string;
   /** `0..1` confidence score from the cascade. */
   readonly confidence:  number;
@@ -89,14 +89,14 @@ export interface ClassificationEvidenceInterface {
  * @example
  * ```ts
  * const ctx: PipelineContextInterface = {
- *   target:  'bulbapedia',
+ *   target:  'aonprd',
  *   outDir:  './graphs',
- *   config:  { input: './output/bulbapedia' },
+ *   config:  { input: './output/aonprd' },
  *   factory: dataFactory,
  *   dataset: store.dataset(),
- *   builder: new GraphBuilder('https://pokemontology.dev/'),
- *   graphs:  { species: dataFactory.namedNode('https://pokemontology.dev/graph/universal/species') },
- *   iri:     new NamespaceBuilder('https://pokemontology.dev/'),
+ *   builder: new GraphBuilder('https://squashage.dev/vocabulary/aonprd#'),
+ *   graphs:  { feat: dataFactory.namedNode('https://squashage.dev/graph/aonprd/feat') },
+ *   iri:     new NamespaceBuilder('https://squashage.dev/vocabulary/aonprd#'),
  *   output:  outputConfig,
  * };
  * ```
@@ -142,9 +142,9 @@ export interface PipelineContextInterface {
  * @example
  * ```ts
  * const state: PipelineStateInterface = {
- *   targetId:       'bulbapedia',
- *   source:         { target: 'bulbapedia', path: 'bulbasaur.json' },
- *   input:          { _type: 'pokemon', name: 'Bulbasaur', ndex: 1 },
+ *   targetId:       'aonprd',
+ *   source:         { target: 'aonprd', path: 'feat-power-attack.json' },
+ *   input:          { _type: 'feat', name: 'Power Attack', level: 1 },
  *   classification: null,
  *   output:         null,
  * };

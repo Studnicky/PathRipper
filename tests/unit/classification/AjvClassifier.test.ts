@@ -3,8 +3,8 @@
  *
  * @remarks
  * Tests the engine in isolation using two inline AJV schemas: one for objects
- * with a required `_type: 'pokemon'` property, and one for objects with a
- * required `_type: 'trainer'` property.
+ * with a required `_type: 'feat'` property, and one for objects with a
+ * required `_type: 'spell'` property.
  *
  * Covers: no-match → empty array, single match → one proposal, both schemas
  * match → two proposals with priority preserved, invalid (non-object) record
@@ -35,32 +35,32 @@ addFormats(ajv);
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 
-const pokemonSchema = {
+const featSchema = {
   type: 'object',
   required: ['_type'],
-  properties: { _type: { const: 'pokemon' } },
+  properties: { _type: { const: 'feat' } },
   additionalProperties: true,
 } as const;
 
-const trainerSchema = {
+const spellSchema = {
   type: 'object',
   required: ['_type'],
-  properties: { _type: { const: 'trainer' } },
+  properties: { _type: { const: 'spell' } },
   additionalProperties: true,
 } as const;
 
 // ── Entries ───────────────────────────────────────────────────────────────────
 
-const pokemonEntry: AjvClassEntryInterface = {
-  className: 'pokemon',
+const featEntry: AjvClassEntryInterface = {
+  className: 'feat',
   priority:  10,
-  validate:  ajv.compile(pokemonSchema),
+  validate:  ajv.compile(featSchema),
 };
 
-const trainerEntry: AjvClassEntryInterface = {
-  className: 'trainer',
+const spellEntry: AjvClassEntryInterface = {
+  className: 'spell',
   priority:  5,
-  validate:  ajv.compile(trainerSchema),
+  validate:  ajv.compile(spellSchema),
 };
 
 // ── empty entries ─────────────────────────────────────────────────────────────
@@ -82,19 +82,19 @@ describe('AjvClassifier — constructor', () => {
 
 describe('AjvClassifier — no match', () => {
   it('returns empty array when no validator matches', () => {
-    const engine = new AjvClassifier([pokemonEntry, trainerEntry]);
-    const proposals = engine.classify({ _type: 'item', name: 'Potion' });
+    const engine = new AjvClassifier([featEntry, spellEntry]);
+    const proposals = engine.classify({ _type: 'action', name: 'Stride' });
     assert.deepStrictEqual(proposals, []);
   });
 
   it('returns empty array for a non-object record', () => {
-    const engine = new AjvClassifier([pokemonEntry, trainerEntry]);
+    const engine = new AjvClassifier([featEntry, spellEntry]);
     const proposals = engine.classify('a string, not an object');
     assert.deepStrictEqual(proposals, []);
   });
 
   it('returns empty array for null', () => {
-    const engine = new AjvClassifier([pokemonEntry]);
+    const engine = new AjvClassifier([featEntry]);
     assert.deepStrictEqual(engine.classify(null), []);
   });
 });
@@ -102,28 +102,28 @@ describe('AjvClassifier — no match', () => {
 // ── single match ──────────────────────────────────────────────────────────────
 
 describe('AjvClassifier — single match', () => {
-  it('returns one proposal when only the pokemon schema matches', () => {
-    const engine = new AjvClassifier([pokemonEntry, trainerEntry]);
-    const proposals = engine.classify({ _type: 'pokemon', ndex: 1, name: 'Bulbasaur' });
+  it('returns one proposal when only the feat schema matches', () => {
+    const engine = new AjvClassifier([featEntry, spellEntry]);
+    const proposals = engine.classify({ _type: 'feat', level: 1, name: 'Power Attack' });
 
     assert.strictEqual(proposals.length, 1);
     const [p] = proposals;
     assert.ok(p !== undefined);
     assert.strictEqual(p.source,     'classify:schema');
-    assert.strictEqual(p.className,  'pokemon');
+    assert.strictEqual(p.className,  'feat');
     assert.strictEqual(p.priority,   10);
     assert.strictEqual(p.confidence, 1);
-    assert.deepStrictEqual(p.reasons, ['schema:pokemon matched']);
+    assert.deepStrictEqual(p.reasons, ['schema:feat matched']);
   });
 
-  it('returns one proposal when only the trainer schema matches', () => {
-    const engine = new AjvClassifier([pokemonEntry, trainerEntry]);
-    const proposals = engine.classify({ _type: 'trainer', name: 'Ash' });
+  it('returns one proposal when only the spell schema matches', () => {
+    const engine = new AjvClassifier([featEntry, spellEntry]);
+    const proposals = engine.classify({ _type: 'spell', name: 'Fireball' });
 
     assert.strictEqual(proposals.length, 1);
     const [p] = proposals;
     assert.ok(p !== undefined);
-    assert.strictEqual(p.className, 'trainer');
+    assert.strictEqual(p.className, 'spell');
     assert.strictEqual(p.priority,  5);
   });
 });
@@ -139,19 +139,19 @@ describe('AjvClassifier — multiple matches', () => {
   };
 
   it('returns two proposals when both schemas match, preserving entry order', () => {
-    const engine = new AjvClassifier([pokemonEntry, anyObjectEntry]);
-    const proposals = engine.classify({ _type: 'pokemon', ndex: 25 });
+    const engine = new AjvClassifier([featEntry, anyObjectEntry]);
+    const proposals = engine.classify({ _type: 'feat', level: 1 });
 
     assert.strictEqual(proposals.length, 2);
-    assert.strictEqual(proposals[0]?.className, 'pokemon');
+    assert.strictEqual(proposals[0]?.className, 'feat');
     assert.strictEqual(proposals[0]?.priority,  10);
     assert.strictEqual(proposals[1]?.className, 'any-object');
     assert.strictEqual(proposals[1]?.priority,  0);
   });
 
   it('preserves priority values from entries without modification', () => {
-    const engine = new AjvClassifier([pokemonEntry, anyObjectEntry]);
-    const proposals = engine.classify({ _type: 'pokemon' });
+    const engine = new AjvClassifier([featEntry, anyObjectEntry]);
+    const proposals = engine.classify({ _type: 'feat' });
 
     const priorities = proposals.map(p => p.priority);
     assert.deepStrictEqual(priorities, [10, 0]);

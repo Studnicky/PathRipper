@@ -16,7 +16,7 @@ import type { BaseErrorOptionsInterface } from './BaseError.js';
  * @example
  * ```ts
  * throw FileOutputError.create('SHACL validation failed', {
- *   metadata: { stage: 'validate', path: './graphs/bulbapedia.trig' },
+ *   metadata: { stage: 'validate', path: './graphs/aonprd.jsonld' },
  * });
  * ```
  *

@@ -67,7 +67,7 @@ export interface OutputErrorInterface {
  * @example
  * ```ts
  * const report: OutputReportInterface = {
- *   path:         './graphs/bulbapedia.trig',
+ *   path:         './graphs/aonprd.jsonld',
  *   format:       'trig',
  *   quadCount:    1234,
  *   graphCount:   3,

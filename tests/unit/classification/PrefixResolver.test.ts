@@ -59,21 +59,21 @@ function buildSource(path: string, target = 'test'): InputSourceInterface {
 describe('PrefixResolver — config wins', () => {
   it('returns source === config when all three pairs come from ontology.prefixes + baseIri', () => {
     const cfg = buildTargetConfig({
-      baseIri:  'https://pokemontology.dev/ontology/',
+      baseIri:  'https://2e.aonprd.com/ontology/',
       prefixes: {
-        poke:   'https://bulbapedia.bulbagarden.net/',
-        pokeg:  'https://squashage.dev/graph/poke/',
+        aon:   'https://2e.aonprd.com/',
+        aong:  'https://squashage.dev/graph/aonprd/',
       },
     });
 
-    const result = PrefixResolver.resolve('poke', cfg, undefined);
+    const result = PrefixResolver.resolve('aon', cfg, undefined);
 
     assert.equal(result.source, 'config');
-    assert.equal(result.instances.base,  'https://bulbapedia.bulbagarden.net/');
-    assert.equal(result.instances.prefix, 'poke');
-    assert.equal(result.graphs.base,     'https://squashage.dev/graph/poke/');
-    assert.equal(result.graphs.prefix,   'pokeg');
-    assert.equal(result.vocabulary.base, 'https://pokemontology.dev/ontology/');
+    assert.equal(result.instances.base,  'https://2e.aonprd.com/');
+    assert.equal(result.instances.prefix, 'aon');
+    assert.equal(result.graphs.base,     'https://squashage.dev/graph/aonprd/');
+    assert.equal(result.graphs.prefix,   'aong');
+    assert.equal(result.vocabulary.base, 'https://2e.aonprd.com/ontology/');
     // prefix derived from last path segment of baseIri → 'ontology'
     assert.equal(result.vocabulary.prefix, 'ontology');
   });
@@ -166,15 +166,15 @@ describe('PrefixResolver — derived from _source.path URL', () => {
 describe('PrefixResolver — fallback', () => {
   it('falls back to all synthetic namespaces when no config and no sampleSource', () => {
     const cfg    = buildTargetConfig();
-    const result = PrefixResolver.resolve('bulbapedia', cfg, undefined);
+    const result = PrefixResolver.resolve('aonprd', cfg, undefined);
 
     assert.equal(result.source, 'fallback');
-    assert.equal(result.instances.base,    'https://squashage.dev/instance/bulbapedia/');
-    assert.equal(result.instances.prefix,  'bulbapedia');
-    assert.equal(result.graphs.base,       'https://squashage.dev/graph/bulbapedia/');
-    assert.equal(result.graphs.prefix,     'bulbapediag');
-    assert.equal(result.vocabulary.base,   'https://squashage.dev/vocabulary/bulbapedia#');
-    assert.equal(result.vocabulary.prefix, 'bulbapedia');
+    assert.equal(result.instances.base,    'https://squashage.dev/instance/aonprd/');
+    assert.equal(result.instances.prefix,  'aonprd');
+    assert.equal(result.graphs.base,       'https://squashage.dev/graph/aonprd/');
+    assert.equal(result.graphs.prefix,     'aonprdg');
+    assert.equal(result.vocabulary.base,   'https://squashage.dev/vocabulary/aonprd#');
+    assert.equal(result.vocabulary.prefix, 'aonprd');
   });
 
   it('falls back when sampleSource path is a filesystem path, not a URL', () => {
@@ -206,8 +206,8 @@ describe('PrefixResolver — determinism', () => {
   it('returns deep-equal results with undefined sampleSource called twice', () => {
     const cfg = buildTargetConfig();
 
-    const r1 = PrefixResolver.resolve('bulbapedia', cfg, undefined);
-    const r2 = PrefixResolver.resolve('bulbapedia', cfg, undefined);
+    const r1 = PrefixResolver.resolve('aonprd', cfg, undefined);
+    const r2 = PrefixResolver.resolve('aonprd', cfg, undefined);
 
     assert.deepEqual(r1, r2);
   });

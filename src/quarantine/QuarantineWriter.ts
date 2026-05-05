@@ -30,8 +30,8 @@ const OUTPUT_REPORT_FILENAME = 'validation.report.json';
  *
  * @example
  * ```ts
- * const qw = QuarantineWriter.forRun('./graphs', 'bulbapedia');
- * await qw.write({ id: sha1, target: 'bulbapedia', bucket: 'unknown', ... });
+ * const qw = QuarantineWriter.forRun('./graphs', 'aonprd');
+ * await qw.write({ id: sha1, target: 'aonprd', bucket: 'unknown', ... });
  * const summary = qw.summary();
  * process.exitCode = QuarantineWriter.exitCodeFor(summary, false);
  * ```
@@ -53,7 +53,7 @@ export class QuarantineWriter {
 
   /**
    * @param rootDir - Output base directory (e.g. `"./graphs"`).
-   * @param target  - Target identifier (e.g. `"bulbapedia"`).
+   * @param target  - Target identifier (e.g. `"aonprd"`).
    */
   private constructor(rootDir: string, target: string) {
     this.#rootDir = rootDir;

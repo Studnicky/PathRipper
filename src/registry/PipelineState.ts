@@ -12,7 +12,7 @@ export type { PipelineStateInterface };
  *
  * @example
  * ```ts
- * const state = PipelineState.fromInput('bulbapedia', source, record);
+ * const state = PipelineState.fromInput('aonprd', source, record);
  * await pipeline.execute(state);
  * ```
  *

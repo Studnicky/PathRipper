@@ -30,7 +30,7 @@ boundary is the wrapper, not a specific package.
 |---------|------|--------------|
 | Squashage | classification, normalization, projection of records into RDF/JS, pipeline + task registry, single-file output and quarantine reports | RDF/JS implementations (factory, dataset), parser/serializer code, graph-store loading, format → format translation |
 | Semantics | RDF/JS factories and datasets, parse/serialize for all supported formats, store adapters (in-memory, embedded, remote), canonicalization, validation, vocabulary, IRI utilities, reasoning, format and store CLIs | source extraction, source-specific classification |
-| Torreya | ontology conventions and runtime graph usage that consumes squashage output | source extraction, generic classification framework |
+| aonprd plugin | ontology conventions and runtime graph usage that consumes squashage output | source extraction, generic classification framework |
 
 ## Core Concepts
 
@@ -41,15 +41,16 @@ metadata to make classification reproducible and attribution tractable:
 
 ```json
 {
-  "_type": "pokemon",
-  "title": "Bulbasaur",
-  "name": "Bulbasaur",
-  "ndex": 1,
-  "types": ["Grass", "Poison"],
+  "_type": "feat",
+  "name": "Power Attack",
+  "level": 1,
+  "rarity": "common",
+  "traits": ["flourish"],
   "_source": {
-    "target": "bulbapedia",
-    "path": "bulbasaur.json",
-    "plugin": "bulbapedia:parse"
+    "target": "aonprd",
+    "path": "feat-power-attack.json",
+    "url": "https://2e.aonprd.com/Feats.aspx?ID=750",
+    "plugin": "aonprd:parse"
   }
 }
 ```
@@ -61,13 +62,13 @@ record. It is not just a label; it is a decision with evidence.
 
 ```json
 {
-  "type": "pokemon",
+  "type": "feat",
   "confidence": 1,
   "engine": "schema+rules",
   "reasons": [
-    "input._type == pokemon",
-    "required keys present: ndex, types",
-    "target graph: universal/species"
+    "_type=feat",
+    "level present",
+    "schema:feat matched"
   ]
 }
 ```

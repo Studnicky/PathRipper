@@ -70,14 +70,14 @@ import { IRIUtils } from './Namespaces.js';
  * import { GraphBuilder } from './GraphBuilder.js';
  *
  * const dataset = Dataset.empty();
- * const g = dataFactory.namedNode('https://pokemontology.dev/graph/species');
+ * const g = dataFactory.namedNode('https://squashage.dev/graph/aonprd/feat');
  *
- * const count = new GraphBuilder('https://pokemontology.dev/')
+ * const count = new GraphBuilder('https://squashage.dev/vocabulary/aonprd#')
  *   .addTo(dataset)
  *   .graph(g)
- *   .subject('bulbasaur')
- *   .add('https://schema.org/name', 'Bulbasaur')
- *   .add('https://schema.org/identifier', dataFactory.literal('1'))
+ *   .subject('power-attack')
+ *   .add('https://schema.org/name', 'Power Attack')
+ *   .add('https://schema.org/identifier', dataFactory.literal('750'))
  *   .build();
  *
  * console.log(count); // 2
@@ -114,7 +114,7 @@ export class GraphBuilder {
    * @example
    * ```ts
    * // Valid — trailing slash
-   * const b1 = new GraphBuilder('https://pokemontology.dev/');
+   * const b1 = new GraphBuilder('https://squashage.dev/instance/aonprd/');
    *
    * // Valid — trailing hash
    * const b2 = new GraphBuilder('https://example.org/ontology#');

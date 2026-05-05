@@ -349,8 +349,8 @@ describe('GraphBuilder', () => {
     it('subject().add().addTo(dataset).build() — quad lands in the passed dataset', () => {
       const ds = Dataset.empty();
 
-      const count = new GraphBuilder('https://pokemontology.dev/')
-        .subject('bulbasaur')
+      const count = new GraphBuilder('https://squashage.dev/instance/aonprd/')
+        .subject('power-attack')
         .add('http://example.org/p', 'bar')
         .addTo(ds)
         .build();
@@ -360,7 +360,7 @@ describe('GraphBuilder', () => {
 
       const [quad] = [...ds];
       assert.ok(quad, 'quad should exist');
-      assert.equal(quad.subject.value, 'https://pokemontology.dev/bulbasaur');
+      assert.equal(quad.subject.value, 'https://squashage.dev/instance/aonprd/power-attack');
     });
 
     it('multiple subjects and predicates produce the correct quad set', () => {

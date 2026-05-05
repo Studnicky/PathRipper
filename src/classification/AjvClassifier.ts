@@ -35,9 +35,9 @@ const logger = Logger.forComponent('AjvClassifier');
  * @example
  * ```ts
  * const entry: AjvClassEntryInterface = {
- *   className: 'pokemon',
+ *   className: 'feat',
  *   priority:  10,
- *   validate:  ajv.compile({ type: 'object', required: ['ndex'] }),
+ *   validate:  ajv.compile({ type: 'object', required: ['level'] }),
  * };
  * ```
  *
@@ -47,7 +47,7 @@ const logger = Logger.forComponent('AjvClassifier');
  * @group Types
  */
 export interface AjvClassEntryInterface {
-  /** Ontology class id proposed when `validate` returns `true` (e.g. `"pokemon"`). */
+  /** Ontology class id proposed when `validate` returns `true` (e.g. `"feat"`). */
   readonly className: string;
   /** Ordering hint forwarded verbatim into the emitted proposal. */
   readonly priority:  number;
@@ -78,11 +78,11 @@ export interface AjvClassEntryInterface {
  * @example
  * ```ts
  * const engine = new AjvClassifier([
- *   { className: 'pokemon', priority: 10, validate: ajv.compile(pokemonSchema) },
- *   { className: 'trainer', priority:  5, validate: ajv.compile(trainerSchema) },
+ *   { className: 'feat',  priority: 10, validate: ajv.compile(featSchema) },
+ *   { className: 'spell', priority:  5, validate: ajv.compile(spellSchema) },
  * ]);
- * const proposals = engine.classify({ _type: 'pokemon', ndex: 1 });
- * // → [{ source: 'classify:schema', className: 'pokemon', priority: 10, confidence: 1, reasons: ['schema:pokemon matched'] }]
+ * const proposals = engine.classify({ _type: 'feat', level: 1 });
+ * // → [{ source: 'classify:schema', className: 'feat', priority: 10, confidence: 1, reasons: ['schema:feat matched'] }]
  * ```
  *
  * @category Classification

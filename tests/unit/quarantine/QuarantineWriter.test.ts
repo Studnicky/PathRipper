@@ -15,9 +15,9 @@ import type { QuarantineRecordInterface, QuarantineSummaryInterface } from '../.
 function makeRecord(overrides: Partial<QuarantineRecordInterface> = {}): QuarantineRecordInterface {
   return {
     id:             'abc123def456',
-    target:         'bulbapedia',
+    target:         'aonprd',
     bucket:         'unknown',
-    source:         { target: 'bulbapedia', path: 'bulbasaur.json' },
+    source:         { target: 'aonprd', path: 'feat-power-attack.json' },
     input:          { name: 'Bulbasaur', ndex: 1 },
     classification: null,
     timestamp:      '2026-05-03T00:00:00.000Z',
@@ -41,7 +41,7 @@ describe('QuarantineWriter', () => {
 
   describe('forRun()', () => {
     it('returns a QuarantineWriter instance', () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       assert.ok(qw instanceof QuarantineWriter);
     });
   });
@@ -52,12 +52,12 @@ describe('QuarantineWriter', () => {
 
   describe('write() — unknown bucket', () => {
     it('writes the JSON file and increments the unknown counter', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const record = makeRecord({ bucket: 'unknown', id: 'u001' });
 
       await qw.write(record);
 
-      const expectedPath = join(tmpDir, 'bulbapedia', 'quarantine', 'unknown', 'u001.json');
+      const expectedPath = join(tmpDir, 'aonprd', 'quarantine', 'unknown', 'u001.json');
       const raw = await readFile(expectedPath, 'utf8');
       const parsed = JSON.parse(raw) as QuarantineRecordInterface;
 
@@ -67,7 +67,7 @@ describe('QuarantineWriter', () => {
     });
 
     it('accumulates multiple unknown records', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
 
       await qw.write(makeRecord({ bucket: 'unknown', id: 'u-multi-1' }));
       await qw.write(makeRecord({ bucket: 'unknown', id: 'u-multi-2' }));
@@ -83,12 +83,12 @@ describe('QuarantineWriter', () => {
 
   describe('write() — conflicts bucket', () => {
     it('writes to quarantine/conflicts/ directory', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const record = makeRecord({ bucket: 'conflicts', id: 'c001' });
 
       await qw.write(record);
 
-      const expectedPath = join(tmpDir, 'bulbapedia', 'quarantine', 'conflicts', 'c001.json');
+      const expectedPath = join(tmpDir, 'aonprd', 'quarantine', 'conflicts', 'c001.json');
       const raw = await readFile(expectedPath, 'utf8');
       const parsed = JSON.parse(raw) as QuarantineRecordInterface;
 
@@ -103,12 +103,12 @@ describe('QuarantineWriter', () => {
 
   describe('write() — projection bucket', () => {
     it('writes to quarantine/projection/ directory', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const record = makeRecord({ bucket: 'projection', id: 'p001' });
 
       await qw.write(record);
 
-      const expectedPath = join(tmpDir, 'bulbapedia', 'quarantine', 'projection', 'p001.json');
+      const expectedPath = join(tmpDir, 'aonprd', 'quarantine', 'projection', 'p001.json');
       const raw = await readFile(expectedPath, 'utf8');
       const parsed = JSON.parse(raw) as QuarantineRecordInterface;
 
@@ -123,12 +123,12 @@ describe('QuarantineWriter', () => {
 
   describe('write() — output bucket', () => {
     it('writes validation.report.json regardless of record id', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const record = makeRecord({ bucket: 'output', id: 'some-sha-that-is-ignored' });
 
       await qw.write(record);
 
-      const expectedPath = join(tmpDir, 'bulbapedia', 'quarantine', 'output', 'validation.report.json');
+      const expectedPath = join(tmpDir, 'aonprd', 'quarantine', 'output', 'validation.report.json');
       const raw = await readFile(expectedPath, 'utf8');
       const parsed = JSON.parse(raw) as QuarantineRecordInterface;
 
@@ -137,14 +137,14 @@ describe('QuarantineWriter', () => {
     });
 
     it('overwrites validation.report.json on a second write', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const first  = makeRecord({ bucket: 'output', id: 'first',  timestamp: '2026-05-03T00:00:00.000Z' });
       const second = makeRecord({ bucket: 'output', id: 'second', timestamp: '2026-05-03T01:00:00.000Z' });
 
       await qw.write(first);
       await qw.write(second);
 
-      const expectedPath = join(tmpDir, 'bulbapedia', 'quarantine', 'output', 'validation.report.json');
+      const expectedPath = join(tmpDir, 'aonprd', 'quarantine', 'output', 'validation.report.json');
       const raw = await readFile(expectedPath, 'utf8');
       const parsed = JSON.parse(raw) as QuarantineRecordInterface;
 
@@ -159,7 +159,7 @@ describe('QuarantineWriter', () => {
 
   describe('summary()', () => {
     it('returns all-zero counts for a fresh instance', () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       const s = qw.summary();
       assert.equal(s.unknown,    0);
       assert.equal(s.conflicts,  0);
@@ -168,7 +168,7 @@ describe('QuarantineWriter', () => {
     });
 
     it('reflects mixed bucket writes', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
 
       await qw.write(makeRecord({ bucket: 'unknown',    id: 'mix-u' }));
       await qw.write(makeRecord({ bucket: 'conflicts',  id: 'mix-c' }));
@@ -188,7 +188,7 @@ describe('QuarantineWriter', () => {
 
   describe('hasFailures()', () => {
     it('returns false when only unknown records exist', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       for (let i = 0; i < 5; i++) {
         await qw.write(makeRecord({ bucket: 'unknown', id: `hf-u-${i.toString()}` }));
       }
@@ -196,24 +196,24 @@ describe('QuarantineWriter', () => {
     });
 
     it('returns false for a completely empty instance', () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       assert.equal(qw.hasFailures(), false);
     });
 
     it('returns true when conflicts > 0', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       await qw.write(makeRecord({ bucket: 'conflicts', id: 'hf-c001' }));
       assert.equal(qw.hasFailures(), true);
     });
 
     it('returns true when projection > 0', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       await qw.write(makeRecord({ bucket: 'projection', id: 'hf-p001' }));
       assert.equal(qw.hasFailures(), true);
     });
 
     it('returns true when output > 0', async () => {
-      const qw = QuarantineWriter.forRun(tmpDir, 'bulbapedia');
+      const qw = QuarantineWriter.forRun(tmpDir, 'aonprd');
       await qw.write(makeRecord({ bucket: 'output', id: 'hf-o001' }));
       assert.equal(qw.hasFailures(), true);
     });
@@ -271,7 +271,7 @@ describe('QuarantineWriter', () => {
 
   describe('write() — I/O failure', () => {
     it('throws QuarantineError when the target path is a file, not a directory', async () => {
-      const qw = QuarantineWriter.forRun('/dev/null', 'bulbapedia');
+      const qw = QuarantineWriter.forRun('/dev/null', 'aonprd');
       const record = makeRecord({ bucket: 'unknown', id: 'io-fail' });
 
       await assert.rejects(

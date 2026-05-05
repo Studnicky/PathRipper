@@ -43,7 +43,7 @@ const logger = Logger.forComponent('SchemaClassifier');
  * @example
  * ```ts
  * const classifier = new SchemaClassifier([
- *   { className: 'pokemon', priority: 10, validate: ajv.compile(pokemonSchema) },
+ *   { className: 'feat', priority: 10, validate: ajv.compile(featSchema) },
  * ]);
  * pipeline.use(classifier.execute);
  * ```

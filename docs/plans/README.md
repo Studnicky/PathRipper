@@ -25,7 +25,7 @@ initial bootstrap that no longer apply — those files have been removed.
 
 | Plan | What |
 |------|------|
-| _none_ | The next outstanding work (Torreya/Bulbapedia plugin examples; embedding-assisted advisory lane; v1.x swap to the published `@semantics/*` workspace) does not yet have a written plan. Add one here before starting. |
+| _none_ | The next outstanding work (additional plugin examples; embedding-assisted advisory lane; v1.x swap to the published `@semantics/*` workspace) does not yet have a written plan. Add one here before starting. |
 
 ## Out Of Scope
 

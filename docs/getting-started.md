@@ -40,9 +40,9 @@ squashage viz \
 
 ```bash
 squashage build \
-  --target bulbapedia \
+  --target aonprd \
   --config squashage.config.json \
-  --in ./output/bulbapedia
+  --in ./output/aonprd
 ```
 
 Copy `squashage.config.example.json` as a starting point. The unprefixed

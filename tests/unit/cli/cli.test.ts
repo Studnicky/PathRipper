@@ -62,11 +62,11 @@ describe('buildCli() — build subcommand', () => {
 
     await cli.parseAsync([
       'node', 'squashage', 'build',
-      '--target', 'bulbapedia',
+      '--target', 'aonprd',
       '--config', '/tmp/sq.json',
     ]);
 
-    assert.equal(capturedOpts['target'], 'bulbapedia');
+    assert.equal(capturedOpts['target'], 'aonprd');
     assert.equal(capturedOpts['config'], '/tmp/sq.json');
   });
 
@@ -193,12 +193,12 @@ describe('buildCli() — classify subcommand', () => {
 
     await cli.parseAsync([
       'node', 'squashage', 'classify',
-      '--target', 'bulbapedia',
+      '--target', 'aonprd',
       '--config', '/tmp/sq.json',
       '--in', '/data/records',
     ]);
 
-    assert.equal(capturedOpts['target'], 'bulbapedia');
+    assert.equal(capturedOpts['target'], 'aonprd');
     assert.equal(capturedOpts['config'], '/tmp/sq.json');
     assert.equal(capturedOpts['in'], '/data/records');
   });

@@ -7,8 +7,6 @@
 
 Graph reconstitution pipeline. Feed it structured JSON records. It classifies each one, reconstitutes the lot into a deterministic RDF graph, and squashes the result into a single file you can actually serve.
 
-The joke lives in the project language and iconography: squashage, squash/eggplant visuals. The exported TypeScript contracts stay boring and stable so downstream graph code does not inherit the bit.
-
 **[Documentation](https://studnicky.github.io/Squashage/)** · **[Architecture](https://studnicky.github.io/Squashage/architecture)** · **[Classifier engines](https://studnicky.github.io/Squashage/classification-engines)** · **[Demo](https://studnicky.github.io/Squashage/examples/aonprd/aonprd.html)** · **[Releases](https://github.com/Studnicky/Squashage/releases)**
 
 ---
@@ -35,12 +33,12 @@ npm run viz:demo
 
 # Build from a config
 squashage build \
-  --target bulbapedia \
+  --target aonprd \
   --config squashage.config.json \
-  --in ./output/bulbapedia
+  --in ./output/aonprd
 
 # Override output path/format for a one-off run
-squashage build --target bulbapedia --out ./graphs/bulbapedia.ttl
+squashage build --target aonprd --out ./graphs/aonprd.jsonld
 
 # Render any squashage JSON-LD output as an offline HTML graph
 squashage viz --in ./graphs/aonprd.jsonld --out aonprd.html --title "My Graph"
@@ -81,8 +79,8 @@ npm run viz:demo      # rebuild the Pathfinder/AONPRD demo
 ```jsonc
 {
   "targets": {
-    "bulbapedia": {
-      "input": "./output/bulbapedia",
+    "aonprd": {
+      "input": "./output/aonprd",
       "pipeline": [
         "json:read",
         "classify:source",
@@ -90,12 +88,12 @@ npm run viz:demo      # rebuild the Pathfinder/AONPRD demo
         "classify:rules",
         "classify:ontology",
         "classify:conflict",
-        "bulbapedia:squash-pokemon",
+        "aonprd:squash",
         "rdfjs:finalize"
       ],
       "output": {
         "kind": "file",
-        "path": "./graphs/bulbapedia.trig"
+        "path": "./graphs/aonprd.jsonld"
       }
     }
   }
@@ -111,16 +109,19 @@ Custom squash tasks register themselves with `TaskRegistry`:
 ```ts
 import { TaskRegistry } from 'squashage/registry/TaskRegistry';
 
-TaskRegistry.register('bulbapedia:squash-pokemon', async (next, state) => {
-  if (state.classification?.type !== 'pokemon') { await next(); return; }
+TaskRegistry.register('aonprd:squash', async (next, state) => {
+  if (state.classification?.type !== 'feat') { await next(); return; }
 
-  const ctx  = state.context!;
-  const slug = ctx.iri.slug(String(state.input['name'] ?? ''));
+  const ctx      = state.context!;
+  const prefixes = ctx.prefixes;
+  const subject  = ctx.factory.namedNode(
+    `${prefixes.instances.base}${String(state.input['url'] ?? 'unknown')}`
+  );
   ctx.dataset.add(ctx.factory.quad(
-    ctx.factory.namedNode(`https://pokemontology.dev/species/${slug}`),
+    subject,
     ctx.factory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-    ctx.factory.namedNode('https://pokemontology.dev/ontology#Species'),
-    ctx.graphs['pokemon'] ?? ctx.factory.defaultGraph(),
+    ctx.factory.namedNode(`${prefixes.vocabulary.base}Feat`),
+    ctx.factory.namedNode(`${prefixes.graphs.base}feat`),
   ));
   await next();
 });

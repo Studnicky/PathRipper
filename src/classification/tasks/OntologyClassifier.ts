@@ -80,8 +80,8 @@ const METADATA_SENTINELS = new Set<string>(['__source__', '__validation__', 'unk
  * ```ts
  * const classifier = new OntologyClassifier({
  *   classes: {
- *     pokemon: 'https://pokemontology.dev/class/Pokemon',
- *     trainer: 'https://pokemontology.dev/class/Trainer',
+ *     feat:  'https://squashage.dev/vocabulary/aonprd#Feat',
+ *     spell: 'https://squashage.dev/vocabulary/aonprd#Spell',
  *   },
  * });
  * registry.register('classify:ontology', classifier.execute);

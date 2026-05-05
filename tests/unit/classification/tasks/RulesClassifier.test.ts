@@ -47,42 +47,42 @@ function makeNext(): { called: boolean; fn: () => Promise<void> } {
 }
 
 /**
- * A compound rule: matches records where `_type` is `'pokemon'` AND `ndex`
- * is in the range [1, 151].
+ * A compound rule: matches records where `_type` is `'feat'` AND `level`
+ * is a number.
  */
-const gen1PokemonRule: RuleEntryInterface = {
-  className: 'gen1-pokemon',
+const gen1FeatRule: RuleEntryInterface = {
+  className: 'gen1-feat',
   priority:  20,
   predicate: Predicate.compile({
     all: [
-      { path: '/_type', equals: 'pokemon' },
-      { path: '/ndex', range: { gte: 1, lte: 151 } },
+      { path: '/_type', equals: 'feat' },
+      { path: '/level', type: 'number' },
     ],
   }),
-  reasons: ['_type=pokemon', 'ndex in [1,151]'],
+  reasons: ['_type=feat', 'level present'],
 };
 
-/** Matches any record where `_type` is `'pokemon'`. */
-const anyPokemonRule: RuleEntryInterface = {
-  className: 'pokemon',
+/** Matches any record where `_type` is `'feat'`. */
+const anyFeatRule: RuleEntryInterface = {
+  className: 'feat',
   priority:  10,
-  predicate: Predicate.compile({ path: '/_type', equals: 'pokemon' }),
-  reasons:   ['_type=pokemon'],
+  predicate: Predicate.compile({ path: '/_type', equals: 'feat' }),
+  reasons:   ['_type=feat'],
 };
 
-/** Matches records where `_type` is `'trainer'`. */
-const trainerRule: RuleEntryInterface = {
-  className: 'trainer',
+/** Matches records where `_type` is `'monster'`. */
+const monsterRule: RuleEntryInterface = {
+  className: 'monster',
   priority:  10,
-  predicate: Predicate.compile({ path: '/_type', equals: 'trainer' }),
-  reasons:   ['_type=trainer'],
+  predicate: Predicate.compile({ path: '/_type', equals: 'monster' }),
+  reasons:   ['_type=monster'],
 };
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('RulesClassifier — constructor', () => {
   it('constructs successfully with at least one rule', () => {
-    const classifier = new RulesClassifier([anyPokemonRule]);
+    const classifier = new RulesClassifier([anyFeatRule]);
     assert.ok(classifier instanceof RulesClassifier);
   });
 
@@ -98,33 +98,33 @@ describe('RulesClassifier — constructor', () => {
   });
 
   it('exposes a bound execute function', () => {
-    const classifier = new RulesClassifier([anyPokemonRule]);
+    const classifier = new RulesClassifier([anyFeatRule]);
     assert.strictEqual(typeof classifier.execute, 'function');
   });
 
   it('frozen-rules invariant: mutating the input array after construction has no effect', async () => {
-    const mutableRules: RuleEntryInterface[] = [anyPokemonRule];
+    const mutableRules: RuleEntryInterface[] = [anyFeatRule];
     const classifier = new RulesClassifier(mutableRules);
 
-    // Push a trainer rule into the original array after construction.
-    mutableRules.push(trainerRule);
+    // Push a monster rule into the original array after construction.
+    mutableRules.push(monsterRule);
 
-    // A trainer record should NOT match anyPokemonRule; if the internal array
-    // referenced the mutable original it would now also evaluate trainerRule.
-    const state = buildState({ _type: 'trainer' });
+    // A monster record should NOT match anyFeatRule; if the internal array
+    // referenced the mutable original it would now also evaluate monsterRule.
+    const state = buildState({ _type: 'monster' });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
-    // Only anyPokemonRule is in the frozen internal copy; it does not match
-    // { _type: 'trainer' }, so zero proposals should be emitted.
+    // Only anyFeatRule is in the frozen internal copy; it does not match
+    // { _type: 'monster' }, so zero proposals should be emitted.
     assert.strictEqual(state.classifications.length, 0);
   });
 });
 
 describe('RulesClassifier — no match', () => {
   it('emits no proposals when no rule matches', async () => {
-    const classifier = new RulesClassifier([anyPokemonRule, trainerRule]);
+    const classifier = new RulesClassifier([anyFeatRule, monsterRule]);
     const state = buildState({ _type: 'item' });
     const next = makeNext();
 
@@ -134,7 +134,7 @@ describe('RulesClassifier — no match', () => {
   });
 
   it('calls next() even when no rule matches', async () => {
-    const classifier = new RulesClassifier([anyPokemonRule]);
+    const classifier = new RulesClassifier([anyFeatRule]);
     const state = buildState({ _type: 'item' });
     const next = makeNext();
 
@@ -146,8 +146,8 @@ describe('RulesClassifier — no match', () => {
 
 describe('RulesClassifier — single match', () => {
   it('emits one proposal when exactly one rule matches', async () => {
-    const classifier = new RulesClassifier([anyPokemonRule, trainerRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 999 });
+    const classifier = new RulesClassifier([anyFeatRule, monsterRule]);
+    const state = buildState({ _type: 'feat', rarity: 'common' });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -156,8 +156,8 @@ describe('RulesClassifier — single match', () => {
   });
 
   it('emitted proposal carries source classify:rules', async () => {
-    const classifier = new RulesClassifier([anyPokemonRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 25 });
+    const classifier = new RulesClassifier([anyFeatRule]);
+    const state = buildState({ _type: 'feat', level: 1 });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -166,23 +166,23 @@ describe('RulesClassifier — single match', () => {
   });
 
   it('emitted proposal carries correct className, priority, confidence, and reasons', async () => {
-    const classifier = new RulesClassifier([gen1PokemonRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 25 });
+    const classifier = new RulesClassifier([gen1FeatRule]);
+    const state = buildState({ _type: 'feat', level: 1 });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     const proposal = state.classifications[0];
     assert.ok(proposal !== undefined);
-    assert.strictEqual(proposal.className,  'gen1-pokemon');
+    assert.strictEqual(proposal.className,  'gen1-feat');
     assert.strictEqual(proposal.priority,   20);
     assert.strictEqual(proposal.confidence, 1);
-    assert.deepStrictEqual(proposal.reasons, ['_type=pokemon', 'ndex in [1,151]']);
+    assert.deepStrictEqual(proposal.reasons, ['_type=feat', 'level present']);
   });
 
   it('calls next() after emitting a proposal', async () => {
-    const classifier = new RulesClassifier([anyPokemonRule]);
-    const state = buildState({ _type: 'pokemon' });
+    const classifier = new RulesClassifier([anyFeatRule]);
+    const state = buildState({ _type: 'feat' });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -193,9 +193,9 @@ describe('RulesClassifier — single match', () => {
 
 describe('RulesClassifier — multi match', () => {
   it('emits one proposal per matching rule when both rules match the same record', async () => {
-    // gen1PokemonRule (ndex 1-151) AND anyPokemonRule (_type=pokemon) both match.
-    const classifier = new RulesClassifier([gen1PokemonRule, anyPokemonRule, trainerRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 1 });
+    // gen1FeatRule (level present) AND anyFeatRule (_type=feat) both match.
+    const classifier = new RulesClassifier([gen1FeatRule, anyFeatRule, monsterRule]);
+    const state = buildState({ _type: 'feat', level: 1 });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -204,15 +204,15 @@ describe('RulesClassifier — multi match', () => {
   });
 
   it('proposals in a multi-match carry distinct rule metadata', async () => {
-    const classifier = new RulesClassifier([gen1PokemonRule, anyPokemonRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 25 });
+    const classifier = new RulesClassifier([gen1FeatRule, anyFeatRule]);
+    const state = buildState({ _type: 'feat', level: 1 });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     const classNames = state.classifications.map((p) => p.className);
-    assert.ok(classNames.includes('gen1-pokemon'), 'should include gen1-pokemon');
-    assert.ok(classNames.includes('pokemon'),      'should include pokemon');
+    assert.ok(classNames.includes('gen1-feat'), 'should include gen1-feat');
+    assert.ok(classNames.includes('feat'),      'should include feat');
 
     const priorities = state.classifications.map((p) => p.priority);
     assert.ok(priorities.includes(20), 'should include priority 20');
@@ -220,8 +220,8 @@ describe('RulesClassifier — multi match', () => {
   });
 
   it('calls next() after multi-match', async () => {
-    const classifier = new RulesClassifier([gen1PokemonRule, anyPokemonRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 1 });
+    const classifier = new RulesClassifier([gen1FeatRule, anyFeatRule]);
+    const state = buildState({ _type: 'feat', level: 1 });
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
@@ -234,20 +234,20 @@ describe('RulesClassifier — additive accumulation', () => {
   it('appends to pre-existing classifications rather than replacing them', async () => {
     const existing: ClassificationProposalInterface = {
       source:     'classify:structural',
-      className:  'pokemon',
+      className:  'feat',
       priority:   10,
       confidence: 1,
-      reasons:    ['_type=pokemon'],
+      reasons:    ['_type=feat'],
     };
 
-    const classifier = new RulesClassifier([gen1PokemonRule]);
-    const state = buildState({ _type: 'pokemon', ndex: 25 }, [existing]);
+    const classifier = new RulesClassifier([gen1FeatRule]);
+    const state = buildState({ _type: 'feat', level: 1 }, [existing]);
     const next = makeNext();
 
     await classifier.execute(next.fn, state);
 
     assert.strictEqual(state.classifications.length, 2);
     assert.strictEqual(state.classifications[0], existing);
-    assert.strictEqual(state.classifications[1]?.className, 'gen1-pokemon');
+    assert.strictEqual(state.classifications[1]?.className, 'gen1-feat');
   });
 });

@@ -2,14 +2,26 @@
  * @fileoverview `JsonLdGraph` — pure JSON-LD to graph payload adapter.
  *
  * @remarks
- * Converts a compacted JSON-LD document (with `@context`) into a
- * `VizPayloadInterface` suitable for rendering. No DOM, no library imports.
- * All compaction uses the document's own `@context`.
+ * Converts a JSON-LD document into a `VizPayloadInterface` suitable for
+ * rendering. Expands the document via the `jsonld` library first so that
+ * compacted forms (bare CURIE strings for `@type: @id` predicates, prefixed
+ * IRIs, etc.) are resolved to canonical `{ "@id": "..." }` objects before
+ * the walker runs. No DOM; no library imports beyond `jsonld`.
  *
  * @module viz/JsonLdGraph
  * @category Viz
  * @since 0.2.0
  */
+
+// eslint-disable-next-line no-restricted-imports
+import jsonldDefault from 'jsonld';
+
+// jsonld v9 ships no TypeScript declarations; the local @types/jsonld stub
+// covers toRDF and expand. The default import is typed via the stub as
+// JsonLdApi, but NodeNext CJS interop may widen it — cast to any once here
+// so call sites stay clean without per-call suppressions.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const jsonld = jsonldDefault as any as { expand: (doc: unknown, opts?: { base?: string }) => Promise<unknown[]> };
 
 // ---------------------------------------------------------------------------
 // Public interfaces
@@ -108,15 +120,21 @@ interface WorkingNodeInterface {
 // ---------------------------------------------------------------------------
 
 /**
- * Static-only adapter that converts a compacted JSON-LD document to a
+ * Static-only adapter that converts a JSON-LD document to a
  * `VizPayloadInterface`.
  *
  * @remarks
  * All methods are static; the class cannot be instantiated.
  *
+ * The document is expanded via `jsonld.expand()` before walking so that
+ * compacted CURIE-string references (produced by `@type: @id` term
+ * definitions) are resolved to unambiguous `{ "@id": "..." }` objects.
+ * The prefix map extracted from the original document's `@context` is used
+ * for compaction labelling of IRIs in the output payload.
+ *
  * @example
  * ```ts
- * const payload = JsonLdGraph.fromCompactedJsonLd(doc);
+ * const payload = await JsonLdGraph.fromJsonLd(doc);
  * ```
  *
  * @category Viz
@@ -131,64 +149,95 @@ export class JsonLdGraph {
   // ---------------------------------------------------------------------------
 
   /**
-   * Converts a compacted JSON-LD document to a `VizPayloadInterface`.
+   * Converts a JSON-LD document to a `VizPayloadInterface`.
    *
    * @remarks
-   * Handles two shapes:
-   * - Object with top-level `@graph` (squashage shape): walks named-graph
-   *   wrappers `{ "@id": graphIRI, "@graph": [...entities] }`.
-   * - Single resource object with `@id`.
+   * Expands the document via `jsonld.expand()` so that every reference is
+   * `{ "@id": "..." }` and every literal is `{ "@value": "...", "@type"?: "..." }`.
+   * Walks the expanded form to produce nodes and edges.
    *
-   * For each entity (object with `@id`):
-   * - One `VizNodeInterface` is produced.
-   * - Object-property values (objects with `@id`) produce `VizEdgeInterface` entries.
-   * - Literal values (`@value` or primitive string/number) accumulate in
-   *   `node.properties[predicate]`.
+   * The original document's `@context` is used to extract prefix labels for
+   * compaction in the returned payload (node labels, class labels, graph labels,
+   * edge labels).
    *
-   * Compaction uses longest-prefix match against the document's `@context`.
+   * Handles two expanded shapes:
+   * - Named-graph wrappers: `{ "@id": graphIRI, "@graph": [...entities] }`.
+   * - Top-level entity objects with `@id`.
+   *
    * Output is deterministic: edges sorted by `(source, label, target)`, node
    * property keys sorted lexicographically.
    *
-   * @param doc - Parsed JSON-LD document (any shape).
+   * @param doc - Parsed JSON-LD document (any compacted or expanded form).
    * @returns A `VizPayloadInterface` ready for rendering.
    */
-  static fromCompactedJsonLd(doc: unknown): VizPayloadInterface {
+  static async fromJsonLd(doc: unknown): Promise<VizPayloadInterface> {
     if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
       return { nodes: [], edges: [], graphs: [], prefixes: {} };
     }
 
     const docObj = doc as Record<string, unknown>;
 
-    // Extract prefix map from @context.
+    // Extract prefix map from the original @context (for compaction labelling).
     const prefixes = JsonLdGraph.#extractPrefixes(docObj['@context']);
 
-    // Collect nodes and edges.
-    const nodeMap = new Map<string, WorkingNodeInterface>();
+    // Expand the document to get a canonical form where all references are
+    // { "@id": "..." } objects and literals are { "@value": ..., "@type"?: ... }.
+    let expanded: unknown[];
+    try {
+      expanded = await jsonld.expand(doc as Parameters<typeof jsonld.expand>[0]);
+    } catch {
+      return { nodes: [], edges: [], graphs: [], prefixes };
+    }
+
+    // Collect nodes and edges from the expanded form.
+    const nodeMap  = new Map<string, WorkingNodeInterface>();
     const edges: VizEdgeInterface[] = [];
     const graphIris = new Set<string>();
 
-    const topGraph = docObj['@graph'];
-    if (Array.isArray(topGraph)) {
-      for (const item of topGraph) {
-        if (item === null || typeof item !== 'object' || Array.isArray(item)) continue;
-        const itemObj = item as Record<string, unknown>;
+    for (const item of expanded) {
+      if (item === null || typeof item !== 'object' || Array.isArray(item)) continue;
+      const itemObj = item as Record<string, unknown>;
 
-        // Named-graph wrapper: { "@id": graphIRI, "@graph": [...entities] }
-        if (Array.isArray(itemObj['@graph'])) {
-          const graphIri = typeof itemObj['@id'] === 'string' ? itemObj['@id'] : undefined;
-          if (graphIri !== undefined) graphIris.add(graphIri);
+      // Named-graph wrapper: { "@id": graphIRI, "@graph": [...entities] }
+      const graphArr = itemObj['@graph'];
+      if (Array.isArray(graphArr)) {
+        const graphIri = typeof itemObj['@id'] === 'string' ? itemObj['@id'] : undefined;
+        if (graphIri !== undefined) graphIris.add(graphIri);
 
-          for (const entity of itemObj['@graph'] as unknown[]) {
-            JsonLdGraph.#walkEntity(entity, prefixes, graphIri, nodeMap, edges);
-          }
-        } else {
-          // Top-level entity (no named-graph wrapper).
-          JsonLdGraph.#walkEntity(itemObj, prefixes, undefined, nodeMap, edges);
+        for (const entity of graphArr) {
+          JsonLdGraph.#walkExpandedEntity(entity, prefixes, graphIri, nodeMap, edges);
         }
+      } else {
+        // Top-level entity (no named-graph wrapper).
+        JsonLdGraph.#walkExpandedEntity(itemObj, prefixes, undefined, nodeMap, edges);
       }
-    } else if (typeof docObj['@id'] === 'string') {
-      // Single resource object.
-      JsonLdGraph.#walkEntity(docObj, prefixes, undefined, nodeMap, edges);
+    }
+
+    // Ensure every edge target has a node entry (JSON-LD expand may elide
+    // entities that have no properties beyond @id).
+    for (const edge of edges) {
+      if (!nodeMap.has(edge.target)) {
+        const label = JsonLdGraph.#compactIri(edge.target, prefixes);
+        nodeMap.set(edge.target, {
+          id:         edge.target,
+          label,
+          classIri:   undefined,
+          classLabel: undefined,
+          graphIri:   edge.graphIri,
+          properties: {},
+        });
+      }
+      if (!nodeMap.has(edge.source)) {
+        const label = JsonLdGraph.#compactIri(edge.source, prefixes);
+        nodeMap.set(edge.source, {
+          id:         edge.source,
+          label,
+          classIri:   undefined,
+          classLabel: undefined,
+          graphIri:   edge.graphIri,
+          properties: {},
+        });
+      }
     }
 
     // Build sorted node list.
@@ -209,6 +258,70 @@ export class JsonLdGraph {
     });
 
     // Build graph descriptors.
+    const graphs: VizGraphDescriptorInterface[] = [...graphIris]
+      .sort()
+      .map(iri => ({ id: iri, label: JsonLdGraph.#compactIri(iri, prefixes) }));
+
+    return { nodes, edges, graphs, prefixes };
+  }
+
+  /**
+   * Synchronous compatibility shim — converts a compacted JSON-LD document
+   * without calling `jsonld.expand()`. References must already be
+   * `{ "@id": "..." }` objects for edges to be detected.
+   *
+   * @deprecated Use {@link fromJsonLd} for correct edge detection with compacted documents.
+   * @param doc - Parsed JSON-LD document (compacted or expanded).
+   * @returns A `VizPayloadInterface`; CURIE-string references produce no edges.
+   */
+  static fromCompactedJsonLd(doc: unknown): VizPayloadInterface {
+    if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
+      return { nodes: [], edges: [], graphs: [], prefixes: {} };
+    }
+
+    const docObj = doc as Record<string, unknown>;
+    const prefixes = JsonLdGraph.#extractPrefixes(docObj['@context']);
+
+    const nodeMap  = new Map<string, WorkingNodeInterface>();
+    const edges: VizEdgeInterface[] = [];
+    const graphIris = new Set<string>();
+
+    const topGraph = docObj['@graph'];
+    if (Array.isArray(topGraph)) {
+      for (const item of topGraph) {
+        if (item === null || typeof item !== 'object' || Array.isArray(item)) continue;
+        const itemObj = item as Record<string, unknown>;
+
+        if (Array.isArray(itemObj['@graph'])) {
+          const graphIri = typeof itemObj['@id'] === 'string' ? itemObj['@id'] : undefined;
+          if (graphIri !== undefined) graphIris.add(graphIri);
+
+          for (const entity of itemObj['@graph'] as unknown[]) {
+            JsonLdGraph.#walkEntity(entity, prefixes, graphIri, nodeMap, edges);
+          }
+        } else {
+          JsonLdGraph.#walkEntity(itemObj, prefixes, undefined, nodeMap, edges);
+        }
+      }
+    } else if (typeof docObj['@id'] === 'string') {
+      JsonLdGraph.#walkEntity(docObj, prefixes, undefined, nodeMap, edges);
+    }
+
+    const nodes: VizNodeInterface[] = [...nodeMap.values()].map(n => ({
+      id:         n.id,
+      label:      n.label,
+      classIri:   n.classIri,
+      classLabel: n.classLabel,
+      graphIri:   n.graphIri,
+      properties: JsonLdGraph.#sortedProperties(n.properties),
+    }));
+
+    edges.sort((a, b) => {
+      const sa = `${a.source}\x00${a.label}\x00${a.target}`;
+      const sb = `${b.source}\x00${b.label}\x00${b.target}`;
+      return sa < sb ? -1 : sa > sb ? 1 : 0;
+    });
+
     const graphs: VizGraphDescriptorInterface[] = [...graphIris]
       .sort()
       .map(iri => ({ id: iri, label: JsonLdGraph.#compactIri(iri, prefixes) }));
@@ -271,16 +384,23 @@ export class JsonLdGraph {
   }
 
   /**
-   * Walks a single entity object, creating or updating a `WorkingNodeInterface`
-   * in `nodeMap` and appending edges.
+   * Walks a single expanded entity object, creating or updating a
+   * `WorkingNodeInterface` in `nodeMap` and appending edges.
    *
-   * @param entity   - Raw entity object (must have `@id`).
+   * @remarks
+   * In the expanded form:
+   * - `@id` is always a full IRI string.
+   * - `@type` is always an array of full IRI strings.
+   * - Object references are always `[{ "@id": "..." }]`.
+   * - Literals are always `[{ "@value": ..., "@type"?: "..." }]`.
+   *
+   * @param entity   - Raw expanded entity object.
    * @param prefixes - Prefix map for compaction.
    * @param graphIri - Named graph IRI, if the entity lives in one.
    * @param nodeMap  - Mutable node accumulator.
    * @param edges    - Mutable edge accumulator.
    */
-  static #walkEntity(
+  static #walkExpandedEntity(
     entity:   unknown,
     prefixes: Record<string, string>,
     graphIri: string | undefined,
@@ -297,7 +417,11 @@ export class JsonLdGraph {
     let node = nodeMap.get(id);
     if (node === undefined) {
       const label      = JsonLdGraph.#compactIri(id, prefixes);
-      const classIri   = JsonLdGraph.#extractFirstType(obj['@type']);
+      // In expanded form @type is an array of full IRIs.
+      const typeArr    = obj['@type'];
+      const classIri   = Array.isArray(typeArr) && typeof typeArr[0] === 'string'
+        ? typeArr[0]
+        : undefined;
       const classLabel = classIri !== undefined
         ? JsonLdGraph.#compactIri(classIri, prefixes)
         : undefined;
@@ -305,20 +429,18 @@ export class JsonLdGraph {
       node = { id, label, classIri, classLabel, graphIri, properties: {} };
       nodeMap.set(id, node);
     } else {
-      // Update graphIri if not set yet.
       if (node.graphIri === undefined && graphIri !== undefined) {
         node.graphIri = graphIri;
       }
     }
 
-    // Walk properties.
+    // Walk properties (all values are arrays in expanded form).
     for (const [key, value] of Object.entries(obj)) {
       if (key.startsWith('@')) continue;
 
+      // In expanded form the predicate key is always a full IRI.
       const predLabel = JsonLdGraph.#compactIri(key, prefixes);
-
-      // Normalize value to an array.
-      const values = Array.isArray(value) ? value : [value];
+      const values    = Array.isArray(value) ? value : [value];
 
       for (const val of values) {
         if (val === null || val === undefined) continue;
@@ -341,11 +463,81 @@ export class JsonLdGraph {
             // Literal with @value.
             const str = String(valObj['@value'] ?? '');
             JsonLdGraph.#addProperty(node.properties, predLabel, str);
-          } else {
-            // Unknown object shape — skip.
           }
         } else if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
-          // Plain primitive literal.
+          // Plain primitive literal (should not appear in expanded form, but
+          // handle defensively).
+          JsonLdGraph.#addProperty(node.properties, predLabel, String(val));
+        }
+      }
+    }
+  }
+
+  /**
+   * Walks a single entity object in compacted form (legacy path).
+   *
+   * @param entity   - Raw entity object (must have `@id`).
+   * @param prefixes - Prefix map for compaction.
+   * @param graphIri - Named graph IRI, if the entity lives in one.
+   * @param nodeMap  - Mutable node accumulator.
+   * @param edges    - Mutable edge accumulator.
+   */
+  static #walkEntity(
+    entity:   unknown,
+    prefixes: Record<string, string>,
+    graphIri: string | undefined,
+    nodeMap:  Map<string, WorkingNodeInterface>,
+    edges:    VizEdgeInterface[],
+  ): void {
+    if (entity === null || typeof entity !== 'object' || Array.isArray(entity)) return;
+
+    const obj = entity as Record<string, unknown>;
+    const id  = obj['@id'];
+    if (typeof id !== 'string' || id.length === 0) return;
+
+    let node = nodeMap.get(id);
+    if (node === undefined) {
+      const label      = JsonLdGraph.#compactIri(id, prefixes);
+      const classIri   = JsonLdGraph.#extractFirstType(obj['@type']);
+      const classLabel = classIri !== undefined
+        ? JsonLdGraph.#compactIri(classIri, prefixes)
+        : undefined;
+
+      node = { id, label, classIri, classLabel, graphIri, properties: {} };
+      nodeMap.set(id, node);
+    } else {
+      if (node.graphIri === undefined && graphIri !== undefined) {
+        node.graphIri = graphIri;
+      }
+    }
+
+    for (const [key, value] of Object.entries(obj)) {
+      if (key.startsWith('@')) continue;
+
+      const predLabel = JsonLdGraph.#compactIri(key, prefixes);
+      const values = Array.isArray(value) ? value : [value];
+
+      for (const val of values) {
+        if (val === null || val === undefined) continue;
+
+        if (typeof val === 'object' && !Array.isArray(val)) {
+          const valObj = val as Record<string, unknown>;
+
+          if (typeof valObj['@id'] === 'string') {
+            const targetId = valObj['@id'] as string;
+            const edgeId   = `${id}--${predLabel}->>${targetId}`;
+            edges.push({
+              id:       edgeId,
+              source:   id,
+              target:   targetId,
+              label:    predLabel,
+              graphIri,
+            });
+          } else if ('@value' in valObj) {
+            const str = String(valObj['@value'] ?? '');
+            JsonLdGraph.#addProperty(node.properties, predLabel, str);
+          }
+        } else if (typeof val === 'string' || typeof val === 'number' || typeof val === 'boolean') {
           JsonLdGraph.#addProperty(node.properties, predLabel, String(val));
         }
       }

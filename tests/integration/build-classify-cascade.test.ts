@@ -11,10 +11,10 @@
  * fixture:squash → rdfjs:finalize`
  *
  * Two records are processed:
- * 1. **Matched record** (`{ _type: 'pokemon', id: 'bulbasaur', ndex: 1 }`) —
- *    matches the structural rule (`_type equals 'pokemon'`) and the rules
- *    entry (`_type equals 'pokemon' AND ndex >= 1`). `classify:conflict`
- *    resolves to `className: 'pokemon'`. `fixture:squash` emits one quad.
+ * 1. **Matched record** (`{ _type: 'feat', id: 'power-attack', level: 1 }`) —
+ *    matches the structural rule (`_type equals 'feat'`) and the rules
+ *    entry (`_type equals 'feat' AND level is number`). `classify:conflict`
+ *    resolves to `className: 'feat'`. `fixture:squash` emits one quad.
  *    The produced TriG file contains exactly one quad.
  *
  * 2. **Unmatched record** (`{ _type: 'unknown_entity', id: 'missingno' }`) —
@@ -28,7 +28,7 @@
  * **Determinism assertions:**
  * - The TriG output contains exactly one quad (from the matched record only).
  * - The quarantine `unknown/` bucket contains exactly one file.
- * - The quad subject is `https://example.org/pokemon/bulbasaur`.
+ * - The quad subject is `https://example.org/feat/power-attack`.
  *
  * @module tests/integration/build-classify-cascade
  * @category Integration
@@ -100,28 +100,28 @@ const buildConfig = (
         source: true,
         structural: [
           {
-            className: 'pokemon',
+            className: 'feat',
             priority:  10,
-            predicate: { path: '/_type', equals: 'pokemon' },
-            reasons:   ['_type=pokemon (structural)'],
+            predicate: { path: '/_type', equals: 'feat' },
+            reasons:   ['_type=feat (structural)'],
           },
         ],
         rules: [
           {
-            className: 'pokemon',
+            className: 'feat',
             priority:  20,
             predicate: {
               all: [
-                { path: '/_type', equals: 'pokemon' },
-                { path: '/ndex', range: { gte: 1 } },
+                { path: '/_type', equals: 'feat' },
+                { path: '/level', type: 'number' },
               ],
             },
-            reasons:   ['_type=pokemon', 'ndex>=1'],
+            reasons:   ['_type=feat', 'level present'],
           },
         ],
         ontology: {
           classes: {
-            pokemon: 'https://example.org/class/Pokemon',
+            feat: 'https://example.org/class/Feat',
           },
         },
         conflict: {
@@ -138,15 +138,15 @@ const buildConfig = (
 // Fixture records
 // ---------------------------------------------------------------------------
 
-/** Record that matches structural + rules → classified as 'pokemon'. */
+/** Record that matches structural + rules → classified as 'feat'. */
 const MATCHED_RECORD = {
-  _type:  'pokemon',
-  id:     'bulbasaur',
-  ndex:   1,
+  _type:  'feat',
+  id:     'power-attack',
+  level:  1,
   _source: {
     target:   'cascade',
     plugin:   'cascade:parse',
-    schemaId: 'pokemon',
+    schemaId: 'feat',
   },
 };
 
@@ -191,7 +191,7 @@ describe('build-classify-cascade integration — full cascade pipeline', () => {
     await mkdir(join(base, 'output'), { recursive: true });
 
     await writeFile(
-      join(inputDir, 'bulbasaur.json'),
+      join(inputDir, 'power-attack.json'),
       JSON.stringify(MATCHED_RECORD),
       'utf8',
     );
@@ -253,7 +253,7 @@ describe('build-classify-cascade integration — full cascade pipeline', () => {
       `Expected exactly 1 quad in the TriG output; got ${quads.length.toString()}`);
   });
 
-  it('the quad subject is <https://example.org/pokemon/bulbasaur> (matched record only)', async () => {
+  it('the quad subject is <https://example.org/feat/power-attack> (matched record only)', async () => {
     const trigP  = join(rootDir, 'cascade', 'output', `${TARGET}-subject.trig`);
     const config = buildConfig(inputDir, trigP);
     await SquashageOrchestrator.run(config, TARGET, { outDir });
@@ -263,11 +263,11 @@ describe('build-classify-cascade integration — full cascade pipeline', () => {
 
     const subjects = new Set(quads.map((q) => q.subject.value));
     assert.ok(
-      subjects.has('https://example.org/pokemon/bulbasaur'),
-      `Expected subject https://example.org/pokemon/bulbasaur; got: ${[...subjects].join(', ')}`,
+      subjects.has('https://example.org/feat/power-attack'),
+      `Expected subject https://example.org/feat/power-attack; got: ${[...subjects].join(', ')}`,
     );
     assert.ok(
-      !subjects.has('https://example.org/unknown_entity/missingno'),
+      !subjects.has('https://example.org/feat/missingno'),
       'Unmatched record should produce no quads',
     );
   });

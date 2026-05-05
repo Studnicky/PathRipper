@@ -173,8 +173,8 @@ interface RecordLocatorInterface {
  * @example
  * ```ts
  * const config = SquashageConfig.loadFromFile('./squashage.config.json');
- * const result = await SquashageOrchestrator.run(config, 'bulbapedia', {
- *   outOverride: './graphs/bulbapedia.trig',
+ * const result = await SquashageOrchestrator.run(config, 'aonprd', {
+ *   outOverride: './graphs/aonprd.jsonld',
  *   outDir:      './graphs',
  *   configPath:  './squashage.config.json',
  * });
