@@ -15,17 +15,37 @@ type TaskFnType<TState> = (next: () => Promise<void>, state: TState) => Promise<
 
 The task receives `next` (call it when you're done) and `state` (the pipeline state for the current page). Call `await next()` at the end.
 
-## What state provides
+Error handling: If your plugin throws an error, the error bubbles out of the pipeline and halts the orchestrator. There's no error recovery — the run fails. If you want to skip a malformed page gracefully, don't throw; instead, skip `await next()` or set a flag on state. The write task downstream can check the flag and decide whether to write.
+
+Plugin-load timing: Plugins are loaded by `TaskRegistry.load()` which imports the plugin file as an ES module. The module's top-level `TaskRegistry.register()` calls fire immediately. This happens before the orchestrator starts scraping, during the config parsing phase. If you have a syntax error in your plugin, you'll see it before any pages are scraped.
+
+## State shape per scraper
+
+For HTML targets, state.input is populated by `html:fetch`:
 
 ```ts
-state.targetId           // the target or mediawiki block name
+state.targetId           // the target block name (from config)
 state.source.url         // the URL being processed
-state.input.html         // raw HTML (set by html:fetch for HTML targets)
-state.input.wikitext     // raw wikitext (set by wiki fetch for mediawiki targets)
-state.input.parsedPage   // WikitextParser output (for mediawiki targets)
+state.input.html         // raw HTML string
 state.input.url          // the URL fetched
 state.output             // null until your plugin sets it; json:write reads this
 ```
+
+For MediaWiki targets, the orchestrator populates state.input before your plugin runs:
+
+```ts
+state.targetId           // the mediawiki block name (from config)
+state.source.url         // the canonical wiki page URL
+state.input.url          // the canonical wiki page URL
+state.input.title        // page title
+state.input.wikitext     // raw wikitext string
+state.input.parsedPage   // WikitextParser output (infobox, sections, categories)
+state.output             // null until your plugin sets it; json:write reads this
+```
+
+Inter-plugin state coordination: If you have multiple tasks in your pipeline (e.g. a pre-parse task that enriches state), they share the same state object. Task 1 can set arbitrary fields on state, and Task 2 sees them. This is how data flows between tasks without tight coupling. Tasks can attach extra keys using the `Record<string, unknown>` index signature.
+
+Plugin isolation: Plugins run serially within the pipeline for a single page, but the orchestrator runs multiple pages in parallel (via concurrency setting). Two pages never share state; they each get their own state object. Your plugin can't have global side effects that affect other pages (no shared counters, no global state mutations). If you need to coordinate across pages, use the file system or an external service.
 
 ## HTML plugin
 
@@ -117,7 +137,7 @@ _source: {
 
 ## Loading plugins
 
-Declare plugin paths in your config or load them programmatically:
+Plugins are declared in the target config under `plugins` (array of paths relative to the config file):
 
 ```json
 {
@@ -130,13 +150,15 @@ Declare plugin paths in your config or load them programmatically:
 }
 ```
 
-Or load manually:
+Plugins are loaded in array order. If two plugins register the same task name, the second one wins (overwrites the first). This allows test plugins to shadow production ones if you load them after.
+
+Or load manually in code:
 
 ```ts
 await TaskRegistry.load('./plugins/mysite.js');
 ```
 
-The module's top-level `TaskRegistry.register(...)` calls fire on import.
+The module's top-level `TaskRegistry.register(...)` calls fire on import. Plugin file paths are resolved relative to `process.cwd()`, not relative to the config file.
 
 ## Testing a plugin in isolation
 
