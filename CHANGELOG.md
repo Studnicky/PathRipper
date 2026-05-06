@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-05-06
+
+### Fixed
+
+- VitePress `base` and all internal `/PathRipper/...` URL references corrected to `/Ripperoni/`. The deployed docs site at https://studnicky.github.io/Ripperoni/ was 404-ing every asset because the build still pointed at the pre-rename path. README clone URL, walk-through `User-Agent` example, edit-this-page link, and the live-docs e2e test target all updated to the canonical Ripperoni URL.
+
 ## [2.2.1] - 2026-05-06
 
 ### Added
