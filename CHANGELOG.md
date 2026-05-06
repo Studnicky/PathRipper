@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-05-06
+
 ### Added
 
 - `.github/dependabot.yml`: canonical dependabot configuration with npm + github-actions update groups. NPM updates split into eslint-ecosystem (major + minor + patch) and minor-and-patch (all others).
