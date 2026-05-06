@@ -33,7 +33,7 @@ const sidebar = [
 export default defineConfig({
   appearance: themeConfig.appearance,
   base: '/PathRipper/',
-  description: 'Web ingestion engine — slices wikis, sites, and URL lists into structured JSON records.',
+  description: 'Web ingestion engine — slices wikis, sites, and URL lists into JSON records. Feed them into Squashage for graph reconstitution.',
   srcDir: '.',
   srcExclude: ['plans/**', 'plans/*.md'],
   themeConfig: {
