@@ -5,15 +5,17 @@ title: Scrapers
 
 # Scrapers
 
-Two scraper classes. One for HTML, one for MediaWiki. Neither knows about the pipeline. You don't use them directly — the orchestrator does — but knowing what they hand back tells you what your plugin receives.
+Two scraper classes. One for HTML, one for MediaWiki. Neither knows about the pipeline. You don't use them directly; the orchestrator does; but knowing what they hand back tells you what your plugin receives.
 
 ## HtmlScraper
 
 Native `fetch` + cheerio. No JSDOM. No headless browser. No JavaScript execution.
 
+Fetch state machine: When you call `HtmlScraper.fetch(url)`, this sequence runs: (1) rate limiter delays if needed, (2) cache is checked; if hit, return immediately (skip steps 3–5); (3) HTTP GET is issued with configured headers and timeout; (4) on error, ErrorClassifier decides if it's retryable; if yes, RetryExecutor waits and retries; if no, error is thrown; (5) on success (200), the response body is stored in cache and returned to the pipeline.
+
 What it does:
 1. Applies rate limiting and jitter from the target config.
-2. Checks the cache — returns the cached body on a hit.
+2. Checks the cache; returns the cached body on a hit.
 3. On a miss: sends the HTTP request. On error: retries with exponential backoff.
 4. On success: stores the body in cache, returns the page.
 
@@ -40,17 +42,17 @@ For JS-rendered pages (single-page apps, lazy-loaded content): fetch via a headl
 
 Errors are classified into seven categories. Only four are retryable:
 
-| Category | Trigger | Retryable |
-|----------|---------|-----------|
-| `NETWORK` | `ECONNREFUSED`, `ECONNRESET`, `ENOTFOUND` | yes |
-| `TIMEOUT` | `ETIMEDOUT`, `ESOCKETTIMEDOUT` | yes |
-| `THROTTLED` | HTTP 429 (reads `Retry-After`) | yes |
-| `TRANSIENT` | HTTP 5xx | yes |
-| `PERMANENT` | HTTP 4xx (except 429) | no |
-| `VALIDATION` | `TypeError`, `SyntaxError` | no |
-| `RESOURCE` | `ENOMEM`, `ENOSPC` | no |
+| Category | Trigger | Retryable | Rationale |
+|----------|---------|-----------|-----------|
+| `NETWORK` | `ECONNREFUSED`, `ECONNRESET`, `ENOTFOUND` | yes | Network layer is transient; the server might be back up |
+| `TIMEOUT` | `ETIMEDOUT`, `ESOCKETTIMEDOUT` | yes | Timeout means the request got no response; server might recover |
+| `THROTTLED` | HTTP 429 (reads `Retry-After`) | yes | Server is asking you to wait and retry; honoring this prevents IP bans |
+| `TRANSIENT` | HTTP 5xx | yes | Server errors are temporary; the instance might recover or failover |
+| `PERMANENT` | HTTP 4xx (except 429) | no | 400, 403, 404, 410 mean the request is malformed or resource doesn't exist; retrying won't help |
+| `VALIDATION` | `TypeError`, `SyntaxError` | no | Your code (or the server's response parsing) is broken; retrying won't fix it |
+| `RESOURCE` | `ENOMEM`, `ENOSPC` | no | Your machine is out of memory or disk; retrying will just fail again |
 
-On `THROTTLED`: if the server sends a `Retry-After` header, that value overrides the configured backoff delay.
+On `THROTTLED`: if the server sends a `Retry-After` header, that value overrides the configured backoff delay. If the header is malformed (e.g. an unparseable date), the exponential backoff curve is used as a fallback.
 
 Retry config per target:
 
@@ -60,7 +62,7 @@ Retry config per target:
 "retryMaxDelayMs":  30000
 ```
 
-Delay formula: `min(baseDelay * 2^attempt, maxDelay) ± 10% jitter` to avoid thundering herd.
+Worst-case latency: With `maxRetries: 3, baseDelayMs: 500, multiplier: 2, maxDelayMs: 30000`, a single URL can take: initial attempt + 500ms + attempt + 1000ms + attempt + 2000ms + attempt = ~3.5 seconds in the best case (all retries fail). If the server throttles with a high `Retry-After`, you're waiting longer. Concurrency (from the target config) runs multiple URLs in parallel, so total time for N URLs is roughly `(N / concurrency) * maxLatency`.
 
 ---
 
@@ -112,7 +114,7 @@ Use `MediaWikiScraper` (`mediawiki` block in config) when:
 
 ## Related
 
-- [Configuration](./configuration) — how to declare targets and mediawiki blocks
-- [MediaWiki](./mediawiki) — enumeration modes, infobox helpers
-- [Cache](./cache) — how caching integrates with both scrapers
-- [Pipeline](./pipeline) — what state.input looks like inside a parse task
+- [Configuration](./configuration); how to declare targets and mediawiki blocks
+- [MediaWiki](./mediawiki); enumeration modes, infobox helpers
+- [Cache](./cache); how caching integrates with both scrapers
+- [Pipeline](./pipeline); what state.input looks like inside a parse task
