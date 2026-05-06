@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-06
+
+### Changed
+
+- Dependency baseline refresh:
+  - `typescript` 5.9.3 → 6.0.3
+  - `@types/node` 22.19.17 → 25.6.0
+  - `commander` 12.1.0 → 14.0.3
+  - `globals` 15.15.0 → 17.6.0
+  - `typescript-eslint` 8.59.0 → 8.59.2 (minor-and-patch group)
+  - `eslint-ecosystem` group: 2 patch updates
+- GitHub Actions baseline:
+  - `actions/deploy-pages` 4 → 5
+  - `actions/github-script` 7 → 9
+  - `actions/upload-artifact` 4 → 7
+
+
 ## [0.2.1] - 2026-05-06
 
 ### Added
