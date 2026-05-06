@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-05-05
+
+### Added
+
+- Docs site favicon: VitePress `head` block now declares the salami logo as the page icon, parallel to Squashage.
+
+### Changed
+
+- Dependency baseline refresh:
+  - `typescript` 5.9.3 → 6.0.3
+  - `@types/node` 22.19.17 → 25.6.0
+  - `commander` 12.1.0 → 14.0.3
+  - `globals` 15.15.0 → 17.6.0
+  - `typescript-eslint` 8.59.0 → 8.59.2 (minor-and-patch group)
+  - `eslint-ecosystem` group: 2 patch updates
+- GitHub Actions baseline:
+  - `actions/setup-node` 4 → 6
+
+
 ### Added
 
 - Docs site favicon — VitePress `head` block now includes `<link rel="icon" href="/Ripperoni/ripperoni.png">`. Tab icon now matches the navbar logo, parallel to Squashage's setup.
