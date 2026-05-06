@@ -61,7 +61,7 @@
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "eslint": "^10.3.0",
-    "globals": "^15.0.0",
+    "globals": "^17.6.0",
     "tsx": "^4.0.0",
     "typescript": "^5.7.0",
     "typescript-eslint": "8.59.0",
