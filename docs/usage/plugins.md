@@ -7,6 +7,8 @@ title: Plugins
 
 A squasher plugin is a file that calls `TaskRegistry.register` at module load time. The orchestrator loads the file, the registration fires as a side effect, and the task is available under its name.
 
+**Plugin discovery**: Config lists plugin paths (glob patterns, absolute, or relative to the config file). The orchestrator loads each plugin module; the `TaskRegistry.register` call happens as the module evaluates. If a plugin throws during load, the orchestrator exits with code `2` before any record is processed. If a plugin throws during per-record execution, that record is quarantined under `quarantine/projection/` and the build continues (exit code stays `0`).
+
 ## Squasher plugin signature
 
 ```ts
@@ -18,14 +20,14 @@ The task receives `next` (call it when you're done) and `state` (the pipeline st
 ## What state.context provides
 
 ```ts
-state.context.factory   // RDF/JS DataFactory — namedNode, literal, quad, blankNode
-state.context.dataset   // DatasetCore — the shared dataset; add quads here
-state.context.builder   // GraphBuilder — helpers for common quad patterns
-state.context.iri       // NamespaceBuilder — Proxy; ctx.iri.MyClass → NamedNode
-state.context.prefixes  // PrefixResolutionInterface — instances/graphs/vocabulary bases
-state.context.graphs    // Record<string, NamedNode> — named-graph nodes by lane key
-state.context.output    // OutputConfigInterface — the resolved output config
-state.context.config    // Record<string, unknown> — the full target config object
+state.context.factory   // RDF/JS DataFactory; namedNode, literal, quad, blankNode
+state.context.dataset   // DatasetCore; the shared dataset; add quads here
+state.context.builder   // GraphBuilder; helpers for common quad patterns
+state.context.iri       // NamespaceBuilder; Proxy; ctx.iri.MyClass → NamedNode
+state.context.prefixes  // PrefixResolutionInterface; instances/graphs/vocabulary bases
+state.context.graphs    // Record<string, NamedNode>; named-graph nodes by lane key
+state.context.output    // OutputConfigInterface; the resolved output config
+state.context.config    // Record<string, unknown>; the full target config object
 ```
 
 `state.classification` gives you the winning class: `.type` (className string), `.confidence`, `.engine`, `.reasons`.
@@ -39,9 +41,9 @@ state.context.config    // Record<string, unknown> — the full target config ob
 
 ```ts
 const { builder, prefixes } = ctx;
-// builder.triple(s, p, o) — adds to default graph
-// builder.quad(s, p, o, g) — adds to named graph
-// builder.literal(value, datatype?) — literal with optional datatype IRI
+// builder.triple(s, p, o); adds to default graph
+// builder.quad(s, p, o, g); adds to named graph
+// builder.literal(value, datatype?); literal with optional datatype IRI
 ```
 
 ## Using NamespaceBuilder
@@ -52,6 +54,8 @@ const { builder, prefixes } = ctx;
 const featClass = ctx.iri.Feat;           // NamedNode('https://squashage.dev/vocabulary/aonprd#Feat')
 const namePred  = ctx.iri['aonprd-name']; // NamedNode('https://squashage.dev/vocabulary/aonprd#aonprd-name')
 ```
+
+**Why a Proxy**: Prevents typos and invalid IRIs. Direct string concatenation lets you construct `https://example.com/MyClass` and `https://example.com/my-class` as distinct IRIs; the Proxy forces consistent casing and structure. It also prevents off-by-one slash errors and missing fragment identifiers.
 
 ## Using PrefixResolver
 
@@ -120,11 +124,13 @@ TaskRegistry.register('myproject:squash', async (next, state: PipelineStateInter
 
 Save this to `plugins/myproject/squash.ts`, build it with your tsconfig, and declare the compiled path in your config's `plugins[]` array.
 
+**Quad generation patterns**: Emit quads using `dataset.add(factory.quad(...))` or `builder.quad(...)`. Generator functions (`function* emit()`) and accumulation arrays work equally; emit each quad independently rather than batching or buffering. If a quad is malformed (invalid IRI, mismatched term types), the builder catches it immediately; silent buffering can hide mistakes until serialization.
+
 ## Classifier plugins
 
 A classifier plugin registers a task under a `classify:*` name and emits `ClassificationProposalInterface` objects onto `state.classifications`.
 
-When to write one: you have a classification source that doesn't fit the built-in operators — an external lookup table, a flag file, a custom field format — and you want it to participate in the standard conflict resolution.
+When to write one: you have a classification source that doesn't fit the built-in operators; an external lookup table, a flag file, a custom field format; and you want it to participate in the standard conflict resolution.
 
 Shape your proposals emit:
 
@@ -164,10 +170,10 @@ List `classify:myproject` in the pipeline after the other classifiers and before
 
 ## Guards
 
-Check both `ctx` and `state.classification` before using them. `ctx` is set by the orchestrator but not by unit tests that run tasks in isolation. `state.classification` is `null` until `classify:conflict` runs — your squasher task runs after it, but defensive checks are cheaper than debugging a null dereference.
+Check both `ctx` and `state.classification` before using them. `ctx` is set by the orchestrator but not by unit tests that run tasks in isolation. `state.classification` is `null` until `classify:conflict` runs; your squasher task runs after it, but defensive checks are cheaper than debugging a null dereference.
 
 ## Related
 
-- [Pipeline](./pipeline) — how tasks are registered and run
-- [Configuration](./configuration) — declaring plugins in the config
-- [Classifier cascade](./classifier-cascade) — built-in classify:* tasks and the proposal shape
+- [Pipeline](./pipeline); how tasks are registered and run
+- [Configuration](./configuration); declaring plugins in the config
+- [Classifier cascade](./classifier-cascade); built-in classify:* tasks and the proposal shape
