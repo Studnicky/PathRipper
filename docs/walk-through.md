@@ -33,7 +33,7 @@ The `targets.aonprd` block from `tests/e2e/fixtures/pathripper-legacy.config.jso
       "retryBaseDelayMs": 500,
       "retryMaxDelayMs":  30000,
       "headers": {
-        "User-Agent": "ripperoni/2.0 (+https://github.com/Studnicky/PathRipper)"
+        "User-Agent": "ripperoni/2.0 (+https://github.com/Studnicky/Ripperoni)"
       },
       "pipeline": [
         "html:fetch",

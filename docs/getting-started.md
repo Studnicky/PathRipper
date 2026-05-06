@@ -5,8 +5,8 @@ Ripperoni is not on npm yet. Clone the repo, install, and build.
 ## Install
 
 ```bash
-git clone https://github.com/Studnicky/PathRipper.git
-cd PathRipper
+git clone https://github.com/Studnicky/Ripperoni.git
+cd Ripperoni
 npm install
 npm run build
 ```

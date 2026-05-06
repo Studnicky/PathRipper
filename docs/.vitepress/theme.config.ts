@@ -6,7 +6,7 @@ export const themeConfig = {
   search: { provider: 'local' as const },
   footer: { copyright: 'MIT License, © Andrew Studnicky', message: 'Released under the MIT License.' },
   editLink: {
-    pattern: 'https://github.com/Studnicky/PathRipper/edit/develop/:path',
+    pattern: 'https://github.com/Studnicky/Ripperoni/edit/develop/:path',
     text: 'Edit this page on GitHub'
   },
   docFooter: { next: 'Next', prev: 'Previous' }

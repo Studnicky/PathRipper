@@ -8,10 +8,10 @@ title: Ripperoni
   <h1 style="font-size:2.5rem;font-weight:700;margin:0.5rem 0">Ripperoni</h1>
   <p style="font-size:1.2rem;color:var(--vp-c-text-2);max-width:600px;margin:0 auto 1.5rem">Web ingestion engine — slices wikis, sites, and URL lists into JSON records, one page at a time. Point it at a wiki, a site, or a list of URLs and it hands you the meat.</p>
   <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem">
-    <a href="/PathRipper/getting-started" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Get started</a>
-    <a href="/PathRipper/walk-through" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Walk-through</a>
-    <a href="/PathRipper/architecture" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">Architecture</a>
-    <a href="https://github.com/Studnicky/PathRipper" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">GitHub</a>
+    <a href="/Ripperoni/getting-started" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Get started</a>
+    <a href="/Ripperoni/walk-through" class="VPButton medium brand" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-brand-bg);color:var(--vp-button-brand-text);font-weight:500">Walk-through</a>
+    <a href="/Ripperoni/architecture" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">Architecture</a>
+    <a href="https://github.com/Studnicky/Ripperoni" class="VPButton medium alt" style="text-decoration:none;padding:0.5rem 1.25rem;border-radius:4px;background:var(--vp-button-alt-bg);color:var(--vp-button-alt-text);font-weight:500">GitHub</a>
   </div>
 </div>
 
@@ -26,8 +26,8 @@ Point it at a domain. Hand it a plugin. It fetches pages, runs your plugin again
 ## Quick install
 
 ```bash
-git clone https://github.com/Studnicky/PathRipper.git
-cd PathRipper && npm install && npm run build
+git clone https://github.com/Studnicky/Ripperoni.git
+cd Ripperoni && npm install && npm run build
 ```
 
 ## Where to look next
