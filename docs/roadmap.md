@@ -17,7 +17,7 @@ v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML sc
 | Concurrent pipeline | live | `ConcurrentPipeline.create(pipeline, concurrency)` fans N pages through the same pipeline simultaneously with a semaphore cap. |
 | Task registry | live | `TaskRegistry.register(name, fn)` + dynamic plugin loading via `pipeline: ["my-target:parse"]` in config. Plugins are `.js` files loaded at runtime. |
 | Checkpoint + resume | live | Already-written slugs are detected at run start and skipped. Failed pages are written to `failures.json`; pass `--resume-failures` to retry only those. |
-| Config schema validation | live | AJV validates the config at load time. `RipperConfig.load(path)` throws with the exact field path on any violation — malformed configs fail fast and loudly. |
+| Config schema validation | live | AJV validates the config at load time. `RipperConfig.load(path)` throws with the exact field path on any violation; malformed configs fail fast and loudly. |
 
 ## Planned
 

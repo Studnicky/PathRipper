@@ -15,7 +15,7 @@ type TaskFnType<TState> = (next: () => Promise<void>, state: TState) => Promise<
 
 The task receives `next` (call it when you're done) and `state` (the pipeline state for the current page). Call `await next()` at the end.
 
-Error handling: If your plugin throws an error, the error bubbles out of the pipeline and halts the orchestrator. There's no error recovery — the run fails. If you want to skip a malformed page gracefully, don't throw; instead, skip `await next()` or set a flag on state. The write task downstream can check the flag and decide whether to write.
+Error handling: If your plugin throws an error, the error bubbles out of the pipeline and halts the orchestrator. There's no error recovery; the run fails. If you want to skip a malformed page gracefully, don't throw; instead, skip `await next()` or set a flag on state. The write task downstream can check the flag and decide whether to write.
 
 Plugin-load timing: Plugins are loaded by `TaskRegistry.load()` which imports the plugin file as an ES module. The module's top-level `TaskRegistry.register()` calls fire immediately. This happens before the orchestrator starts scraping, during the config parsing phase. If you have a syntax error in your plugin, you'll see it before any pages are scraped.
 
@@ -79,7 +79,7 @@ TaskRegistry.register('mysite:parse', async (next, state) => {
 });
 ```
 
-No HTTP in the plugin. No file I/O. No cheerio initialization — `html:fetch` has already fetched; you load the string into cheerio yourself. The pipeline handles the I/O, you handle the extraction.
+No HTTP in the plugin. No file I/O. No cheerio initialization; `html:fetch` has already fetched; you load the string into cheerio yourself. The pipeline handles the I/O, you handle the extraction.
 
 ## MediaWiki plugin
 
@@ -125,7 +125,7 @@ Every record should have `_type`. It's the field downstream tools (like Squashag
 
 ## The _source block
 
-Every record should have `_source`. Include at minimum `target`, `url`, and `plugin`. Squashage reads `_source.url` to derive graph IRIs — if it's missing, IRI derivation falls back to a default.
+Every record should have `_source`. Include at minimum `target`, `url`, and `plugin`. Squashage reads `_source.url` to derive graph IRIs; if it's missing, IRI derivation falls back to a default.
 
 ```ts
 _source: {
@@ -185,7 +185,7 @@ No HTTP, no file system, no network. Just the extraction logic.
 
 ## Related
 
-- [Pipeline](./pipeline) — how the task queue works
-- [Scrapers](./scrapers) — what state.input looks like per scraper type
-- [MediaWiki](./mediawiki) — infobox helpers and wiki-specific state
-- [Configuration](./configuration) — how to declare plugins in config
+- [Pipeline](./pipeline); how the task queue works
+- [Scrapers](./scrapers); what state.input looks like per scraper type
+- [MediaWiki](./mediawiki); infobox helpers and wiki-specific state
+- [Configuration](./configuration); how to declare plugins in config

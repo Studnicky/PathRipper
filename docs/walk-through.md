@@ -1,10 +1,10 @@
 # Walk-through
 
-One concrete end-to-end example from URL to structured JSON record. The target is the [Archives of Nethys](https://2e.aonprd.com/) (aonprd) — the Pathfinder Second Edition rules reference. All of this is in `tests/e2e/fixtures/` and `plugins/aonprd/`.
+One concrete end-to-end example from URL to structured JSON record. The target is the [Archives of Nethys](https://2e.aonprd.com/) (aonprd): the Pathfinder Second Edition rules reference. All of this is in `tests/e2e/fixtures/` and `plugins/aonprd/`.
 
 ---
 
-## Before — the input
+## Before: the input
 
 Point Ripperoni at a detail page:
 
@@ -12,7 +12,7 @@ Point Ripperoni at a detail page:
 https://2e.aonprd.com/Feats.aspx?ID=750
 ```
 
-That URL resolves to the Power Attack feat page — a standard AON HTML page with a structured `<h1>`, a header field table, a body block, and inline links to other rules entries.
+That URL resolves to the Power Attack feat page: a standard AON HTML page with a structured `<h1>`, a header field table, a body block, and inline links to other rules entries.
 
 Ripperoni fetches the raw HTML, hands it to the configured plugin, and the plugin extracts a typed record. You never see raw HTML in your output.
 
@@ -54,7 +54,7 @@ Pipeline step breakdown:
 | Step | What it does |
 |------|-------------|
 | `html:fetch` | Rate-limited fetch with retry + backoff. Respects `Retry-After`. Reads from cache on hits. |
-| `aonprd:parse` | Plugin — loads the HTML into cheerio, extracts structured fields, writes `state.output`. |
+| `aonprd:parse` | Plugin: loads the HTML into cheerio, extracts structured fields, writes `state.output`. |
 | `json:write` | Writes `state.output` to `./output/aonprd/<slug>.json`. |
 
 ---
@@ -101,11 +101,11 @@ export function extractFeat($: CheerioAPI, url: string): FeatOutput {
 }
 ```
 
-This is the only domain-specific code. `getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance — no HTTP, no I/O, no side effects.
+This is the only domain-specific code. `getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
 
 ---
 
-## After — the JSON record
+## After: the JSON record
 
 ```json
 {
@@ -131,16 +131,16 @@ The `_source` block makes the record traceable back to its origin page. Downstre
 
 ## What ran in between
 
-1. **Rate-limited fetch** — waited `rateLimitMs` (1000ms) + up to `jitterMs` (250ms) random jitter before the request.
-2. **Cache check** — first run: cache miss, HTTP GET. Subsequent runs: cache hit, no network request.
-3. **Retry logic** — on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
-4. **Plugin executed** — `aonprd:parse` called with `(next, state)`. `state.input.html` contained the raw page HTML; the extractor ran cheerio selectors against it.
-5. **Record written** — `json:write` serialized `state.output` to `./output/aonprd/feats-750.json`.
+1. **Rate-limited fetch**: waited `rateLimitMs` (1000ms) + up to `jitterMs` (250ms) random jitter before the request.
+2. **Cache check**: first run: cache miss, HTTP GET. Subsequent runs: cache hit, no network request.
+3. **Retry logic**: on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
+4. **Plugin executed**: `aonprd:parse` called with `(next, state)`. `state.input.html` contained the raw page HTML; the extractor ran cheerio selectors against it.
+5. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/feats-750.json`.
 
 ---
 
 ## Where to look next
 
-- [Architecture](./architecture) — pipeline phases, scraper contracts, extension points
-- [Getting started](./getting-started) — install, config, and first run
-- [Roadmap](./roadmap) — planned and shipped features
+- [Architecture](./architecture); pipeline phases, scraper contracts, extension points
+- [Getting started](./getting-started); install, config, and first run
+- [Roadmap](./roadmap); planned and shipped features
