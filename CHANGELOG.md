@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Docs site favicon — VitePress `head` block now includes `<link rel="icon" href="/Ripperoni/ripperoni.png">`. Tab icon now matches the navbar logo, parallel to Squashage's setup.
+
 ## [2.2.2] - 2026-05-06
 
 ### Fixed
