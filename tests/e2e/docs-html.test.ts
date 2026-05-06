@@ -1,7 +1,7 @@
-// HTML scraper e2e test against the live PathRipper docs site.
+// HTML scraper e2e test against the live Ripperoni docs site.
 // Exercises the docs-scraper example plugin against real structured content.
 //
-// Requires network access to https://studnicky.github.io/PathRipper/
+// Requires network access to https://studnicky.github.io/Ripperoni/
 //
 // Run: npm run test:e2e
 
@@ -18,7 +18,7 @@ import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
 import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_URL  = 'https://studnicky.github.io/PathRipper';
+const BASE_URL  = 'https://studnicky.github.io/Ripperoni';
 const OUT_DIR   = resolve(__dirname, '../../examples/docs-scraper/output');
 
 interface DocsSectionOutput {
@@ -29,7 +29,7 @@ interface DocsSectionOutput {
   url: string;
 }
 
-describe('docs-html e2e — HTML scraper against live PathRipper docs', () => {
+describe('docs-html e2e — HTML scraper against live Ripperoni docs', () => {
   before(async () => {
     // Load the example plugin — it self-registers `docs:parse`
     await import('../../examples/docs-scraper/plugin.js');

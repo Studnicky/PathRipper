@@ -32,7 +32,7 @@ const sidebar = [
 
 export default defineConfig({
   appearance: themeConfig.appearance,
-  base: '/PathRipper/',
+  base: '/Ripperoni/',
   description: 'Web ingestion engine — slices wikis, sites, and URL lists into JSON records. Feed them into Squashage for graph reconstitution.',
   srcDir: '.',
   srcExclude: ['plans/**', 'plans/*.md'],
@@ -44,10 +44,10 @@ export default defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Walk-through', link: '/walk-through' },
       { text: 'Architecture', link: '/architecture' },
-      { text: 'GitHub', link: 'https://github.com/Studnicky/PathRipper' }
+      { text: 'GitHub', link: 'https://github.com/Studnicky/Ripperoni' }
     ],
     sidebar,
-    socialLinks: [{ icon: 'github', link: 'https://github.com/Studnicky/PathRipper' }]
+    socialLinks: [{ icon: 'github', link: 'https://github.com/Studnicky/Ripperoni' }]
   },
   title: 'Ripperoni'
 });
