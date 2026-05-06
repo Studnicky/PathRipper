@@ -2,7 +2,7 @@ name: Changelog Check
 
 on:
   pull_request:
-    branches: [main]
+    branches: [master, develop]
     types: [opened, synchronize, reopened]
 
 jobs:
