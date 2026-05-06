@@ -34,6 +34,9 @@ export default defineConfig({
   appearance: themeConfig.appearance,
   base: '/Ripperoni/',
   description: 'Web ingestion engine — slices wikis, sites, and URL lists into JSON records. Feed them into Squashage for graph reconstitution.',
+  head: [
+    ['link', { rel: 'icon', type: 'image/png', href: '/Ripperoni/ripperoni.png' }],
+  ],
   srcDir: '.',
   srcExclude: ['plans/**', 'plans/*.md'],
   themeConfig: {
