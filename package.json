@@ -1,6 +1,6 @@
 {
   "name": "ripperoni",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Web ingestion engine — slices wikis, sites, and URL lists into JSON records, one page at a time. Pairs with Squashage for RDF graph reconstitution.",
   "type": "module",
   "bin": {
