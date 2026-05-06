@@ -14,7 +14,7 @@ npm run build
 ## Create a config
 
 Copy `ripperoni.config.example.json` to `ripperoni.config.json` and edit.
-The unprefixed file is gitignored — it holds your real targets.
+The unprefixed file is gitignored; it holds your real targets.
 
 ```json
 {
@@ -87,5 +87,5 @@ TaskRegistry.register('my-target:parse', async (next, state) => {
 
 ## Where to look next
 
-- [Architecture](./architecture) — pipeline, HTTP machinery, scrapers, source map
-- [Roadmap](./roadmap) — what shipped, what's planned
+- [Architecture](./architecture): pipeline, HTTP machinery, scrapers, source map
+- [Roadmap](./roadmap): what shipped, what's planned

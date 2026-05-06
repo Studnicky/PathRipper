@@ -47,19 +47,19 @@ Each key is a target name (e.g. `"aonprd"`). Value is a target config.
 
 | Key | Type | Default | Notes |
 |-----|------|---------|-------|
-| `rateLimitMs` | integer ≥ 0 | — | Minimum milliseconds between requests. |
-| `jitterMs` | integer ≥ 0 | — | Random jitter added on top of `rateLimitMs`. Applied per request. |
-| `maxRetries` | integer 0–10 | — | Retry attempts on transient errors. |
-| `retryBaseDelayMs` | integer ≥ 100 | — | Base delay for retry backoff. |
-| `retryMaxDelayMs` | integer ≥ 1000 | — | Backoff ceiling. |
+| `rateLimitMs` | integer ≥ 0 |  | Minimum milliseconds between requests. |
+| `jitterMs` | integer ≥ 0 |  | Random jitter added on top of `rateLimitMs`. Applied per request. |
+| `maxRetries` | integer 0–10 |  | Retry attempts on transient errors. |
+| `retryBaseDelayMs` | integer ≥ 100 |  | Base delay for retry backoff. |
+| `retryMaxDelayMs` | integer ≥ 1000 |  | Backoff ceiling. |
 | `concurrency` | integer 1–32 | `1` | Parallel fetch/process slots. |
-| `maxPages` | integer ≥ 0 | — | Stop after processing this many pages. |
-| `headers` | object | — | Additional HTTP headers. Include `User-Agent`. |
-| `outputSchema` | string | — | Path to a JSON Schema file. Records that fail validation are handled per `onSchemaError`. |
-| `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` | — | What to do when a record fails schema validation. |
-| `mapping` | object | — | Field-rename map applied after plugin output. |
-| `cache` | CacheConfig | — | See [Cache](./cache). |
-| `crawler` | CrawlerConfig | — | Inline crawler config for this target. |
+| `maxPages` | integer ≥ 0 |  | Stop after processing this many pages. |
+| `headers` | object |  | Additional HTTP headers. Include `User-Agent`. |
+| `outputSchema` | string |  | Path to a JSON Schema file. Records that fail validation are handled per `onSchemaError`. |
+| `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` |  | What to do when a record fails schema validation. |
+| `mapping` | object |  | Field-rename map applied after plugin output. |
+| `cache` | CacheConfig |  | See [Cache](./cache). |
+| `crawler` | CrawlerConfig |  | Inline crawler config for this target. |
 
 Concurrency bound rationale: Concurrency is clamped to 1–32 to prevent runaway parallelism. At concurrency 32, you can have 32 HTTP requests in flight simultaneously. This is usually enough to saturate downstream bandwidth and quickly hit many servers' rate limits. Beyond 32, the marginal benefit drops and the risk of getting blocked increases. If you need more parallelism, run multiple Ripperoni instances.
 
@@ -170,8 +170,8 @@ See [Cache](./cache) for sharding, eviction, and TTL behavior.
 
 ## Related
 
-- [Pipeline](./pipeline) — task registration and state shape
-- [Scrapers](./scrapers) — HtmlScraper vs MediaWikiScraper
-- [MediaWiki](./mediawiki) — three enumeration modes
-- [Crawler](./crawler) — LinkLister behavior
-- [Cache](./cache) — read/write modes, TTL, eviction
+- [Pipeline](./pipeline); task registration and state shape
+- [Scrapers](./scrapers); HtmlScraper vs MediaWikiScraper
+- [MediaWiki](./mediawiki); three enumeration modes
+- [Crawler](./crawler); LinkLister behavior
+- [Cache](./cache); read/write modes, TTL, eviction

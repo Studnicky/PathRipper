@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Em-dashes (`—`) replaced with plain punctuation (`: ` for list/definition items, `; ` for clause joins, `, ` mid-sentence) across `README.md`, `docs/**/*.md`, `package.json`, and `docs/.vitepress/config.ts`. ~95 occurrences total. CHANGELOG history left untouched.
+
 ### Added
 
 - Mechanism-depth expansions across user-facing docs (architecture, pipeline, cache, scrapers, configuration, crawler, mediawiki, plugins) following the yamete-fidelity bar: problem framing, state machines, error propagation, parameter rationale, edge cases.

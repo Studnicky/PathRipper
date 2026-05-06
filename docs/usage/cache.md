@@ -32,12 +32,12 @@ The key is derived from the request: HTTP method + URL, hashed to a fixed-length
 
 | Mode | Reads | Writes | When to use |
 |------|-------|--------|-------------|
-| `read-write` | yes | yes | Normal development — skip the network on subsequent runs. |
+| `read-write` | yes | yes | Normal development; skip the network on subsequent runs. |
 | `read-only` | yes | no | Replay from cache only. Fails if a URL is not cached. Useful for offline reproduction. |
 | `write-only` | no | yes | Always fetch; always cache. Refreshes stale entries. |
 | `off` | no | no | No caching. Every run hits the network. |
 
-Cache hit and rate limiting: On a cache hit, the cached body is returned directly without entering the rate limiter. This is intentional: rate limiting protects the remote server, not your disk. Reading from disk is free and fast. However, cache hits still enter the pipeline — your parse task runs, extraction happens, and files are written.
+Cache hit and rate limiting: On a cache hit, the cached body is returned directly without entering the rate limiter. This is intentional: rate limiting protects the remote server, not your disk. Reading from disk is free and fast. However, cache hits still enter the pipeline; your parse task runs, extraction happens, and files are written.
 
 Concurrent write semantics: If two tasks attempt to cache the same URL simultaneously, the last write wins (second task's body overwrites the first). There's no lock or transaction around cache writes. For a single orchestrator run this isn't an issue because each URL is processed once per concurrency slot. If you run multiple Ripperoni instances against the same cache directory, they'll interfere with each other; use separate cache directories per instance or disable the cache for concurrent runners.
 
@@ -51,7 +51,7 @@ Concurrent write semantics: If two tasks attempt to cache the same URL simultane
 }
 ```
 
-`ttlMs` is in milliseconds. An entry older than `ttlMs` is treated as a miss on read — the fetcher goes to the network and overwrites the entry. Omit `ttlMs` for no expiration.
+`ttlMs` is in milliseconds. An entry older than `ttlMs` is treated as a miss on read; the fetcher goes to the network and overwrites the entry. Omit `ttlMs` for no expiration.
 
 `86400000` = 24 hours. `604800000` = 7 days.
 
@@ -59,11 +59,11 @@ Stale-entry behavior: When you read a cached entry, its timestamp is checked aga
 
 ## LRU eviction
 
-When `maxEntries` is set (programmatic use only — not in the JSON config schema), the cache evicts the oldest entries by `fetchedAt` on write. The JSON config only exposes `dir`, `mode`, and `ttlMs`.
+When `maxEntries` is set (programmatic use only; not in the JSON config schema), the cache evicts the oldest entries by `fetchedAt` on write. The JSON config only exposes `dir`, `mode`, and `ttlMs`.
 
 ## Cache key
 
-The key is derived from `{ method, url }` — the same URL always maps to the same key. Ripperoni only GETs, so in practice the key is the URL hash.
+The key is derived from `{ method, url }`; the same URL always maps to the same key. Ripperoni only GETs, so in practice the key is the URL hash.
 
 ```ts
 const key = ScraperCache.keyFor({ method: 'GET', url });
@@ -71,19 +71,19 @@ const key = ScraperCache.keyFor({ method: 'GET', url });
 
 ## Workflow
 
-First run — cache cold:
+First run; cache cold:
 
 ```
 html:fetch → cache miss → HTTP GET → store in cache → hand HTML to parse task
 ```
 
-Subsequent runs — cache warm:
+Subsequent runs; cache warm:
 
 ```
 html:fetch → cache hit → return cached HTML → hand HTML to parse task
 ```
 
-Network is never touched on a cache hit. This makes iterating on your parse plugin fast — change the plugin, rerun, no waiting.
+Network is never touched on a cache hit. This makes iterating on your parse plugin fast; change the plugin, rerun, no waiting.
 
 ## Cache directory structure
 
@@ -101,7 +101,7 @@ The shard prefix keeps each subdirectory small enough that `readdir()` stays fas
 
 ## Read-only mode failure modes
 
-When `mode: "read-only"` is set, the cache will not write new entries. If a fetch request for a URL that isn't in the cache occurs, the fetcher throws an error immediately — there's no fallback to the network. This is useful for offline development where you've pre-cached a known set of URLs and want to catch typos in your config (a new URL will surface the error immediately, not silently hit the network).
+When `mode: "read-only"` is set, the cache will not write new entries. If a fetch request for a URL that isn't in the cache occurs, the fetcher throws an error immediately; there's no fallback to the network. This is useful for offline development where you've pre-cached a known set of URLs and want to catch typos in your config (a new URL will surface the error immediately, not silently hit the network).
 
 ## Clearing the cache
 
@@ -115,5 +115,5 @@ Or switch `mode` to `write-only` for one run to refresh all entries. In `write-o
 
 ## Related
 
-- [Scrapers](./scrapers) — how HtmlScraper uses the cache
-- [Configuration](./configuration) — cache config schema
+- [Scrapers](./scrapers); how HtmlScraper uses the cache
+- [Configuration](./configuration); cache config schema
