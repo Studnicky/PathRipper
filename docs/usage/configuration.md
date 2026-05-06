@@ -61,6 +61,32 @@ Each key is a target name (e.g. `"aonprd"`). Value is a target config.
 | `cache` | CacheConfig | — | See [Cache](./cache). |
 | `crawler` | CrawlerConfig | — | Inline crawler config for this target. |
 
+Concurrency bound rationale: Concurrency is clamped to 1–32 to prevent runaway parallelism. At concurrency 32, you can have 32 HTTP requests in flight simultaneously. This is usually enough to saturate downstream bandwidth and quickly hit many servers' rate limits. Beyond 32, the marginal benefit drops and the risk of getting blocked increases. If you need more parallelism, run multiple Ripperoni instances.
+
+Validation timing: When validation errors surface depends on your schema. If your `outputSchema` has required fields and your plugin sets `output: {}`, the validation fails when `json:write` tries to serialize the record. The error is handled per `onSchemaError`: `"halt"` throws and stops the run, `"skip"` logs a warning and skips the file, `"warn"` logs and writes anyway.
+
+Retry × concurrency worst-case: If every fetch in a batch of `concurrency` tasks encounters a transient error and retries to `maxDelayMs` (30 seconds), the batch duration could be 30+ seconds. Total run time is `ceil(N / concurrency) * maxRetryTime`. For 1000 URLs with concurrency 10: `ceil(1000/10) * 30s = 100 * 30 = 50 minutes` in the absolute worst case (every fetch fails and retries max times). In practice, cache hits and successful first attempts keep this much lower.
+
+Field mapping worked example: After your plugin extracts a record, `mapping` renames fields without touching your code:
+
+```json
+"targets": {
+  "aonprd": {
+    "pipeline": ["html:fetch", "aonprd:parse", "json:write"],
+    "mapping": {
+      "name": "title",
+      "description": "desc"
+    }
+  }
+}
+```
+
+If your plugin sets `state.output = { name: "Fireball", description: "Conjures..." }`, the written file gets `{ title: "Fireball", desc: "Conjures...", ... }`. The original fields are gone; only the mapped names appear in the JSON.
+
+Cache and retry interaction: The cache sits upstream of retry logic. A cache hit means no retry-executor is invoked (no exponential backoff). A cache miss triggers the full HTTP stack: rate limiter, retry executor with backoff, then cache write on success. The first fetch of a URL can take up to `maxRetryTime`; the second hit takes microseconds (cache read).
+
+Validation errors surface at first write. If your plugin produces invalid output, the first file write detects it. All subsequent pages from the same target go through the same validator, so you'll see the full picture of validation failures quickly (don't run all 1000 pages to find out your schema is wrong).
+
 ### Example
 
 ```json

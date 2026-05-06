@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Mechanism-depth expansions across user-facing docs (architecture, pipeline, cache, scrapers, configuration, crawler, mediawiki, plugins) following the yamete-fidelity bar: problem framing, state machines, error propagation, parameter rationale, edge cases.
+
+### Changed
+
+- GitHub Actions baseline: `actions/upload-artifact` 4 → 7, `actions/upload-pages-artifact` 3 → 5, `actions/deploy-pages` 4 → 5, `actions/github-script` 7 → 9.
+
 ## [2.3.0] - 2026-05-05
 
 ### Added
