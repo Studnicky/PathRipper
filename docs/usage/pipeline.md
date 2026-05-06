@@ -7,15 +7,15 @@ title: Pipeline
 
 The pipeline is a typed async middleware queue. Tasks receive `(next, state)`. Call `next()` to hand off; skip it to terminate the chain early.
 
-Problem: Ripperoni needs to fetch a page, parse it with domain-specific logic (your plugin), and write it to disk — three separate concerns. The pipeline lets you plug in custom extraction logic (your parse task) without touching the HTTP or I/O machinery. Each task sees the state that previous tasks wrote and can add to it or skip execution.
+Problem: Ripperoni needs to fetch a page, parse it with domain-specific logic (your plugin), and write it to disk; three separate concerns. The pipeline lets you plug in custom extraction logic (your parse task) without touching the HTTP or I/O machinery. Each task sees the state that previous tasks wrote and can add to it or skip execution.
 
-State machine: Each task either calls `await next()` to advance the queue or returns without calling it to terminate. There's no error handling middleware — if your parse task encounters invalid HTML, it just doesn't set `state.output` and skips `next()`. The write task sees `output === null` and decides (per config) whether to fail, warn, or skip the file. This gives you local control without exception bubbling.
+State machine: Each task either calls `await next()` to advance the queue or returns without calling it to terminate. There's no error handling middleware; if your parse task encounters invalid HTML, it just doesn't set `state.output` and skips `next()`. The write task sees `output === null` and decides (per config) whether to fail, warn, or skip the file. This gives you local control without exception bubbling.
 
 ```ts
 type TaskFnType<TState> = (next: () => Promise<void>, state: TState) => Promise<void>
 ```
 
-`TState` extends `Record<string, unknown>`. Tasks mutate state directly — the same reference flows through the whole chain.
+`TState` extends `Record<string, unknown>`. Tasks mutate state directly; the same reference flows through the whole chain.
 
 ```mermaid
 flowchart TD
@@ -70,11 +70,11 @@ interface PipelineStateInterface {
 }
 ```
 
-`state.input.html` — raw HTML string, set by `html:fetch`.
-`state.input.wikitext` — raw wikitext string, set by wiki fetch.
-`state.input.url` — the URL fetched.
+`state.input.html`; raw HTML string, set by `html:fetch`.
+`state.input.wikitext`; raw wikitext string, set by wiki fetch.
+`state.input.url`; the URL fetched.
 
-`state.output` — set by your parse task. `json:write` serializes this to disk.
+`state.output`; set by your parse task. `json:write` serializes this to disk.
 
 Tasks can attach extra keys using the `Record<string, unknown>` index signature. This is how tasks pass data to each other without coupling to canonical fields.
 
@@ -120,17 +120,17 @@ html:fetch  →  mysite:parse  →  json:write
 
 `html:fetch` must come first. `json:write` must come last. Your parse task goes in between.
 
-Early termination: If `html:fetch` encounters a permanent HTTP error (e.g. 404) it throws, halting the pipeline. If your parse task finds malformed HTML it can skip `await next()` to prevent `json:write` from running. There's no explicit error handling middleware — control flow is implicit: a task either advances the queue or halts it.
+Early termination: If `html:fetch` encounters a permanent HTTP error (e.g. 404) it throws, halting the pipeline. If your parse task finds malformed HTML it can skip `await next()` to prevent `json:write` from running. There's no explicit error handling middleware; control flow is implicit: a task either advances the queue or halts it.
 
 Unregistered task error: If your config names a pipeline task that doesn't exist (e.g. `["html:fetch", "nonexistent:parse", "json:write"]`), the error surfaces at orchestration time (when building the pipeline), not at runtime. The orchestrator calls `TaskRegistry.get()` which throws if the task is not registered. This means typos in your config fail fast before the scrape starts.
 
-For wiki targets, the orchestrator handles the fetch — your task receives a pre-populated `state.input` and sets `state.output`. The write task is always added last by the orchestrator.
+For wiki targets, the orchestrator handles the fetch; your task receives a pre-populated `state.input` and sets `state.output`. The write task is always added last by the orchestrator.
 
-Task-name collision: If two tasks register the same name (e.g. two plugins both call `TaskRegistry.register('aonprd:parse', ...)`), the second registration overwrites the first. There's no warning or error. The last-loaded plugin wins. This is by design — your test plugins can shadow the production ones. If you're seeing the wrong task execute, check plugin load order in your config.
+Task-name collision: If two tasks register the same name (e.g. two plugins both call `TaskRegistry.register('aonprd:parse', ...)`), the second registration overwrites the first. There's no warning or error. The last-loaded plugin wins. This is by design; your test plugins can shadow the production ones. If you're seeing the wrong task execute, check plugin load order in your config.
 
 ## ScrapeOrchestrator
 
-You don't build the pipeline directly — the `ScrapeOrchestrator` builds it per page from the target config. It:
+You don't build the pipeline directly; the `ScrapeOrchestrator` builds it per page from the target config. It:
 
 1. Resolves the target's `pipeline` array against the registry.
 2. Optionally prepends the fetch task.
@@ -170,7 +170,7 @@ state.output = {
 
 ## Related
 
-- [Configuration](./configuration) — pipeline declaration in config
-- [Scrapers](./scrapers) — what html:fetch hands your plugin
-- [MediaWiki](./mediawiki) — wiki-specific state shape
-- [Plugins](./plugins) — full plugin authoring guide
+- [Configuration](./configuration); pipeline declaration in config
+- [Scrapers](./scrapers); what html:fetch hands your plugin
+- [MediaWiki](./mediawiki); wiki-specific state shape
+- [Plugins](./plugins); full plugin authoring guide

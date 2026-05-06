@@ -5,7 +5,7 @@ title: Crawler
 
 # Crawler
 
-`LinkLister` recursively follows links from one or more starting URLs and returns the set of URLs that match your target pattern. It doesn't scrape content — it builds a URL list. You hand that list to a scraper.
+`LinkLister` recursively follows links from one or more starting URLs and returns the set of URLs that match your target pattern. It doesn't scrape content; it builds a URL list. You hand that list to a scraper.
 
 ## Three regexes
 
@@ -39,8 +39,8 @@ Three-regex decision tree: For each link the crawler finds, it applies three fil
 
 In the example above:
 - Any link to a different domain is ignored.
-- Links to `Feats.aspx` (without query string) are traversed — they're list pages.
-- Links to `Feats.aspx?ID=\d+` are collected — they're detail pages.
+- Links to `Feats.aspx` (without query string) are traversed: they're list pages.
+- Links to `Feats.aspx?ID=\d+` are collected; they're detail pages.
 - The starting URL itself is traversed first.
 
 Note: Every link must match `domain` to be considered. If a link doesn't match `domain`, it's not evaluated against `delimiter` or `target` at all. This keeps crawls confined to their target site.
@@ -48,8 +48,8 @@ Note: Every link must match `domain` to be considered. If a link doesn't match `
 ## Visited and collected sets
 
 Two internal sets track state:
-- `#visited` — URLs already traversed (prevents loops).
-- `#collected` — URLs matched as results.
+- `#visited`: URLs already traversed (prevents loops).
+- `#collected`: URLs matched as results.
 
 A URL can be traversed without being collected. The crawler follows list pages but only hands back detail pages.
 
@@ -61,7 +61,7 @@ Traversal is breadth-first, not depth-first. All URLs at a given frontier depth 
 
 ## Revisit semantics
 
-The crawler tracks `#visited` (URLs already traversed) and `#collected` (URLs in results). Once a URL is added to `visited`, revisiting it from another depth is skipped — no duplicate fetches. This prevents infinite loops if your site has bidirectional links. A URL can be traversed without being collected (list pages are traversed but not returned). A URL is collected only if it matches all three regexes.
+The crawler tracks `#visited` (URLs already traversed) and `#collected` (URLs in results). Once a URL is added to `visited`, revisiting it from another depth is skipped; no duplicate fetches. This prevents infinite loops if your site has bidirectional links. A URL can be traversed without being collected (list pages are traversed but not returned). A URL is collected only if it matches all three regexes.
 
 ## maxPages
 
@@ -73,9 +73,9 @@ Hard ceiling on collected results. The crawl stops as soon as this many URLs hav
 
 ## Deduplication and sorting
 
-Results are deduplicated automatically — the same URL appearing at multiple traversal depths is collected once. The dedupe happens at collection time: if URL A matches `target` at depth 0 and again at depth 2, it's added to results on the first match; the second match sees it's already in `collected` and skips it.
+Results are deduplicated automatically; the same URL appearing at multiple traversal depths is collected once. The dedupe happens at collection time: if URL A matches `target` at depth 0 and again at depth 2, it's added to results on the first match; the second match sees it's already in `collected` and skips it.
 
-Numeric collation rationale: By default, `Item-10` sorts before `Item-2` because string comparison is lexicographic (`"1" < "2"`). Numeric-aware collation sorts by the numeric value of each segment, so `Item-2` then `Item-10`. This makes URL lists sortable and diff-able across runs — you can `diff before.json after.json` and see only actual changes, not reordering artifacts.
+Numeric collation rationale: By default, `Item-10` sorts before `Item-2` because string comparison is lexicographic (`"1" < "2"`). Numeric-aware collation sorts by the numeric value of each segment, so `Item-2` then `Item-10`. This makes URL lists sortable and diff-able across runs; you can `diff before.json after.json` and see only actual changes, not reordering artifacts.
 
 Sorting uses a numeric-aware collator: `Item-10` sorts after `Item-9`, not between `Item-1` and `Item-2`. Consistent ordering makes the output list diff-able.
 
@@ -83,7 +83,7 @@ Sorting uses a numeric-aware collator: `Item-10` sorts after `Item-9`, not betwe
 
 Two ways to configure a crawler:
 
-**Top-level** (`crawlers` block) — runs as a standalone job, produces a URL list:
+**Top-level** (`crawlers` block); runs as a standalone job, produces a URL list:
 
 ```json
 {
@@ -99,7 +99,7 @@ Two ways to configure a crawler:
 }
 ```
 
-**Inline** (`targets[].crawler`) — the scrape target crawls before it fetches:
+**Inline** (`targets[].crawler`); the scrape target crawls before it fetches:
 
 ```json
 {
@@ -123,6 +123,6 @@ In the inline case, the orchestrator runs the crawler first, then scrapes each c
 
 ## Related
 
-- [Configuration](./configuration) — crawler config schema
-- [Scrapers](./scrapers) — what happens after the crawler hands back URLs
-- [Cache](./cache) — crawler requests go through the rate limiter but not the cache
+- [Configuration](./configuration); crawler config schema
+- [Scrapers](./scrapers); what happens after the crawler hands back URLs
+- [Cache](./cache); crawler requests go through the rate limiter but not the cache

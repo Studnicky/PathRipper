@@ -30,7 +30,7 @@ npm run build
 ## Quickstart
 
 ```bash
-# Scrape a MediaWiki target — one category
+# Scrape a MediaWiki target: one category
 ripperoni scrape \
   --target <your-wiki-target> \
   --category "Example Category Name" \
@@ -55,7 +55,7 @@ ripperoni crawl \
   --delimiter "category"
 ```
 
-Copy `ripperoni.config.example.json` to `ripperoni.config.json` and edit. The unprefixed file is gitignored — it holds your real targets.
+Copy `ripperoni.config.example.json` to `ripperoni.config.json` and edit. The unprefixed file is gitignored; it holds your real targets.
 
 ## Scripts
 
@@ -93,7 +93,7 @@ All scraper targets live in `ripperoni.config.json` (the project itself names no
 }
 ```
 
-`categories` is optional — omit it to scrape every article in the wiki via the allpages API. `tasks` points at user-written parse plugins that run through the pipeline before each page is written.
+`categories` is optional; omit it to scrape every article in the wiki via the allpages API. `tasks` points at user-written parse plugins that run through the pipeline before each page is written.
 
 The config is validated on load against the internal JSON Schema; malformed files fail fast with a precise field-path error message.
 

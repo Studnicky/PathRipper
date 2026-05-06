@@ -5,17 +5,17 @@ title: Scrapers
 
 # Scrapers
 
-Two scraper classes. One for HTML, one for MediaWiki. Neither knows about the pipeline. You don't use them directly — the orchestrator does — but knowing what they hand back tells you what your plugin receives.
+Two scraper classes. One for HTML, one for MediaWiki. Neither knows about the pipeline. You don't use them directly; the orchestrator does; but knowing what they hand back tells you what your plugin receives.
 
 ## HtmlScraper
 
 Native `fetch` + cheerio. No JSDOM. No headless browser. No JavaScript execution.
 
-Fetch state machine: When you call `HtmlScraper.fetch(url)`, this sequence runs: (1) rate limiter delays if needed, (2) cache is checked — if hit, return immediately (skip steps 3–5); (3) HTTP GET is issued with configured headers and timeout; (4) on error, ErrorClassifier decides if it's retryable — if yes, RetryExecutor waits and retries; if no, error is thrown; (5) on success (200), the response body is stored in cache and returned to the pipeline.
+Fetch state machine: When you call `HtmlScraper.fetch(url)`, this sequence runs: (1) rate limiter delays if needed, (2) cache is checked; if hit, return immediately (skip steps 3–5); (3) HTTP GET is issued with configured headers and timeout; (4) on error, ErrorClassifier decides if it's retryable; if yes, RetryExecutor waits and retries; if no, error is thrown; (5) on success (200), the response body is stored in cache and returned to the pipeline.
 
 What it does:
 1. Applies rate limiting and jitter from the target config.
-2. Checks the cache — returns the cached body on a hit.
+2. Checks the cache; returns the cached body on a hit.
 3. On a miss: sends the HTTP request. On error: retries with exponential backoff.
 4. On success: stores the body in cache, returns the page.
 
@@ -114,7 +114,7 @@ Use `MediaWikiScraper` (`mediawiki` block in config) when:
 
 ## Related
 
-- [Configuration](./configuration) — how to declare targets and mediawiki blocks
-- [MediaWiki](./mediawiki) — enumeration modes, infobox helpers
-- [Cache](./cache) — how caching integrates with both scrapers
-- [Pipeline](./pipeline) — what state.input looks like inside a parse task
+- [Configuration](./configuration); how to declare targets and mediawiki blocks
+- [MediaWiki](./mediawiki); enumeration modes, infobox helpers
+- [Cache](./cache); how caching integrates with both scrapers
+- [Pipeline](./pipeline); what state.input looks like inside a parse task
