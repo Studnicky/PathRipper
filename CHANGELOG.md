@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- CI + dependabot alignment with json-tology canonical pattern: `changelog-check.yml`, `license-check.yml`, `security.yml`, `stale.yml`, and `publish.yml` (npm publish disabled by default via `vars.NPM_PUBLISH_ENABLED`). Dependabot auto-update config for dependencies, npm, and GitHub Actions.
+- Cross-reference in `README.md` and package description linking to Squashage for RDF graph reconstitution.
+
 ### Changed
 
+- `.gitattributes`: merged json-tology's line-ending and export-ignore rules; preserved Ripperoni's linguist vendoring hints for test fixtures.
+- Package description: now emphasizes ingestion → RDF pipeline with Squashage.
+- VitePress `config.ts` description field updated to reflect Squashage integration.
 - `.gitattributes`: scraped AON HTML test fixtures (`tests/{e2e,unit}/plugins/fixtures/**/*.html`) marked `linguist-vendored=true` so GitHub's language detector reports the repo as the TypeScript ingestion engine it is, not majority-HTML.
 
 ## [2.2.0] - 2026-05-05
