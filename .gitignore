@@ -95,8 +95,8 @@ ripperoni.config*.json
 .orchestration/
 .env
 
-# Target-specific plugin source — shipped as examples in v1, not the beta
-plugins/
+# Target-specific plugin source is now tracked under plugins/
+# Compiled outputs (*.js, *.d.ts, *.js.map) stay ignored (see rules above).
 docs/.vitepress/dist/
 
 # Plans are local-only working documents; not published
