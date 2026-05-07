@@ -33,6 +33,7 @@ const sidebar = [
     text: 'Reference',
     items: [
       { link: '/architecture',           text: 'Architecture' },
+      { link: '/context-silo',           text: 'Context silo (plugin contract)' },
       { link: '/classification-engines', text: 'Classifier engines (deep dive)' },
     ]
   },
