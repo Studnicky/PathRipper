@@ -59,12 +59,19 @@ import { GraphBuilder }            from '../rdf/GraphBuilder.js';
 import { Namespaces }              from '../rdf/Namespaces.js';
 import { QuarantineWriter }        from '../quarantine/QuarantineWriter.js';
 import { Logger }                  from '../modules/logger/logger.js';
+import AjvModule                   from 'ajv';
+import addFormatsModule             from 'ajv-formats';
+import type { AjvCtorType, AddFormatsFnInterface } from '../types/AjvInterop.js';
 import { JsonTologyOntology }      from '../ontology/JsonTologyOntology.js';
 import type { JsonTologySchemaInputInterface } from '../ontology/JsonTologyOntology.js';
 import { EntityLinkTask }          from '../tasks/entityLink.js';
 import type { EntityLinkConfigInterface } from '../tasks/entityLink.js';
 
 const logger = Logger.forComponent('SquashageOrchestrator');
+
+// AJV 8.x dual-CJS/ESM; NodeNext resolves default on `.default`.
+const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
+const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInterface }).default ?? (addFormatsModule as unknown as AddFormatsFnInterface);
 
 // ---------------------------------------------------------------------------
 // Public interfaces
@@ -576,6 +583,9 @@ export class SquashageOrchestrator {
       Object.entries(targetConfig.graphs ?? {}).map(([k, v]) => [k, dataFactory.namedNode(v)]),
     );
 
+    const ajv = new Ajv({ allErrors: true, strict: true, useDefaults: false });
+    addFormats(ajv);
+
     const ctx: PipelineContextInterface = {
       target,
       outDir,
@@ -587,6 +597,8 @@ export class SquashageOrchestrator {
       iri:     Namespaces.for(baseIri),
       output:  outputConfig,
       prefixes,
+      logger:  Logger,
+      ajv,
       ...(jt !== undefined ? { jt } : {}),
       ...(runStartTime !== undefined ? { runStartTime } : {}),
     };

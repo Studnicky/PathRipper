@@ -3,9 +3,73 @@ import { resolve } from 'node:path';
 import type { TaskFnInterface } from '../types/Pipeline.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger } from '../modules/logger/logger.js';
-import type { PipelineStateInterface } from '../types/PipelineState.js';
+import type { PipelineContextInterface, PipelineStateInterface } from '../types/PipelineState.js';
 
 const logger = Logger.forComponent('TaskRegistry');
+
+/**
+ * Lifecycle phase a task hook participates in.
+ *
+ * @remarks
+ * - `onRunStart` — runs once per target run, before any per-record dispatch.
+ *   Used by `src/context/*` lifecycle plugins to populate `ctx.logger`,
+ *   `ctx.ajv`, `ctx.dataset`, `ctx.prefixes`, etc.
+ * - `onRunEnd` — runs once per target run, after the per-record batch settles
+ *   (after enrichment + finalize task drains).
+ *
+ * Per-record tasks omit `phase` (or set it to `undefined`) and register via
+ * the standard `register(name, fn)` path.
+ *
+ * @category Registry
+ * @since 0.7.0
+ * @group Types
+ */
+export type LifecyclePhaseType = 'onRunStart' | 'onRunEnd';
+
+/**
+ * Function signature for a lifecycle hook (`onRunStart` / `onRunEnd`).
+ *
+ * @remarks
+ * Hooks receive a mutable view of the run-wide context; the orchestrator passes
+ * the in-progress context through every `onRunStart` hook in registration order
+ * before the per-record pipeline executes. Hooks may both READ already-populated
+ * silo keys (e.g. `ctx.logger` in any hook past `context:logger`) and WRITE
+ * their own slot.
+ *
+ * @category Registry
+ * @since 0.7.0
+ * @see {@link TaskRegistry.registerHook}
+ * @group Types
+ */
+export interface HookFnInterface {
+  (ctx: PipelineContextInterface): Promise<void> | void;
+}
+
+/**
+ * Registration manifest carrying optional metadata about a registered task or
+ * lifecycle hook.
+ *
+ * @remarks
+ * The orchestrator uses manifests to count `proposesClass: true` plugins for
+ * the `classify:conflict`-required check. Lifecycle hooks set `phase` to
+ * `'onRunStart'` or `'onRunEnd'`; per-record proposers leave `phase` undefined.
+ *
+ * @category Registry
+ * @since 0.7.0
+ * @group Types
+ */
+export interface TaskManifestInterface {
+  /** Registered task or hook name (e.g. `"classify:rules"`, `"context:ajv"`). */
+  readonly name:           string;
+  /** Lifecycle phase; absent for per-record tasks. */
+  readonly phase?:         LifecyclePhaseType | undefined;
+  /**
+   * `true` when this task contributes a class proposal to
+   * `state.classifications`. The orchestrator counts these to enforce the
+   * "≥2 proposers requires `classify:conflict`" rule.
+   */
+  readonly proposesClass?: boolean | undefined;
+}
 
 /**
  * Registry mapping task names to pipeline task functions.
@@ -27,6 +91,11 @@ const logger = Logger.forComponent('TaskRegistry');
  * Tasks are registered by name and looked up by the pipeline runner at execution
  * time. Plugins self-register by calling {@link TaskRegistry.register} on import.
  *
+ * Lifecycle hooks (`onRunStart` / `onRunEnd`) are registered separately via
+ * {@link TaskRegistry.registerHook} and queried via
+ * {@link TaskRegistry.onRunStartHooks} / {@link TaskRegistry.onRunEndHooks}.
+ * Hooks live in their own ordered maps so per-record dispatch never sees them.
+ *
  * @example Static usage (back-compat):
  * ```ts
  * TaskRegistry.register('monsters:transform', async (next, state) => { await next(); });
@@ -38,6 +107,13 @@ const logger = Logger.forComponent('TaskRegistry');
  * const registry = new TaskRegistry();
  * registry.register('classify:rules', classifyRulesTask);
  * const pipeline = new Pipeline({ name: 'my-run', registry });
+ * ```
+ *
+ * @example Lifecycle hook registration:
+ * ```ts
+ * TaskRegistry.registerHook('context:ajv', 'onRunStart', async (ctx) => {
+ *   (ctx as { ajv: Ajv }).ajv = new Ajv();
+ * });
  * ```
  *
  * @category Registry
@@ -53,6 +129,15 @@ export class TaskRegistry {
   /** Per-instance task name → TaskFnInterface map. */
   readonly #tasks = new Map<string, TaskFnInterface<PipelineStateInterface>>();
 
+  /** Per-instance manifest map keyed by task or hook name. Insertion-ordered. */
+  readonly #manifests = new Map<string, TaskManifestInterface>();
+
+  /** Per-instance `onRunStart` hook map keyed by hook name. Insertion-ordered. */
+  readonly #onRunStart = new Map<string, HookFnInterface>();
+
+  /** Per-instance `onRunEnd` hook map keyed by hook name. Insertion-ordered. */
+  readonly #onRunEnd = new Map<string, HookFnInterface>();
+
   // ---------------------------------------------------------------------------
   // Constructor
   // ---------------------------------------------------------------------------
@@ -64,24 +149,66 @@ export class TaskRegistry {
    * The instance has its own private task map. Registrations on it do not affect
    * the static default registry or any other instance.
    */
-  public constructor() { /* intentionally empty — #tasks initialised above */ }
+  public constructor() { /* intentionally empty — maps initialised above */ }
 
   // ---------------------------------------------------------------------------
   // Instance methods
   // ---------------------------------------------------------------------------
 
   /**
-   * Registers a named task on this instance, overwriting any existing task
-   * with the same name.
+   * Registers a named per-record task on this instance, overwriting any
+   * existing task with the same name.
    *
-   * @param name - Unique task name (conventionally `"target:operation"`).
-   * @param task - Task function to register.
+   * @param name     - Unique task name (conventionally `"target:operation"`).
+   * @param task     - Task function to register.
+   * @param manifest - Optional registration metadata (e.g. `proposesClass: true`).
    */
-  public register(name: string, task: TaskFnInterface<PipelineStateInterface>): void {
+  public register(
+    name:     string,
+    task:     TaskFnInterface<PipelineStateInterface>,
+    manifest?: Omit<TaskManifestInterface, 'name' | 'phase'>,
+  ): void {
     if (this.#tasks.has(name)) {
       logger.warn('register', `Overwriting existing task: ${name}`, { name });
     }
     this.#tasks.set(name, task);
+    this.#manifests.set(name, {
+      name,
+      ...(manifest?.proposesClass !== undefined ? { proposesClass: manifest.proposesClass } : {}),
+    });
+  }
+
+  /**
+   * Registers a lifecycle hook (`onRunStart` or `onRunEnd`) on this instance.
+   *
+   * @remarks
+   * Hooks are kept in insertion order on a Map separate from the per-record
+   * task map. The orchestrator runs `onRunStart` hooks once per target run
+   * before per-record dispatch, and `onRunEnd` hooks once after the per-record
+   * batch settles, in registration order. Re-registering a name overwrites
+   * silently with a warn-level log.
+   *
+   * @param name     - Unique hook name (conventionally `"context:<key>"`).
+   * @param phase    - `'onRunStart'` or `'onRunEnd'`.
+   * @param fn       - Hook function `(ctx) => Promise<void> | void`.
+   * @param manifest - Optional registration metadata.
+   */
+  public registerHook(
+    name:     string,
+    phase:    LifecyclePhaseType,
+    fn:       HookFnInterface,
+    manifest?: Omit<TaskManifestInterface, 'name' | 'phase'>,
+  ): void {
+    const bucket = phase === 'onRunStart' ? this.#onRunStart : this.#onRunEnd;
+    if (bucket.has(name)) {
+      logger.warn('registerHook', `Overwriting existing hook: ${name}`, { name, phase });
+    }
+    bucket.set(name, fn);
+    this.#manifests.set(name, {
+      name,
+      phase,
+      ...(manifest?.proposesClass !== undefined ? { proposesClass: manifest.proposesClass } : {}),
+    });
   }
 
   /**
@@ -112,15 +239,49 @@ export class TaskRegistry {
   }
 
   /**
-   * Clears all tasks registered on this instance.
+   * Returns the registered `onRunStart` hooks in registration (insertion) order.
+   *
+   * @returns Array of `[name, fn]` tuples.
+   */
+  public onRunStartHooks(): ReadonlyArray<readonly [string, HookFnInterface]> {
+    return Array.from(this.#onRunStart.entries());
+  }
+
+  /**
+   * Returns the registered `onRunEnd` hooks in registration (insertion) order.
+   *
+   * @returns Array of `[name, fn]` tuples.
+   */
+  public onRunEndHooks(): ReadonlyArray<readonly [string, HookFnInterface]> {
+    return Array.from(this.#onRunEnd.entries());
+  }
+
+  /**
+   * Returns the manifests of every registered task and hook on this instance,
+   * in registration order.
+   */
+  public manifests(): ReadonlyArray<TaskManifestInterface> {
+    return Array.from(this.#manifests.values());
+  }
+
+  /**
+   * Clears all tasks, hooks, and manifests registered on this instance.
    *
    * @remarks
    * Intended for use in tests. Does not affect the static default registry.
    */
   public reset(): void {
-    const count = this.#tasks.size;
+    const taskCount  = this.#tasks.size;
+    const hookCount  = this.#onRunStart.size + this.#onRunEnd.size;
     this.#tasks.clear();
-    logger.debug('reset', `Cleared ${count.toString()} registered tasks`, { count });
+    this.#onRunStart.clear();
+    this.#onRunEnd.clear();
+    this.#manifests.clear();
+    logger.debug(
+      'reset',
+      `Cleared ${taskCount.toString()} tasks and ${hookCount.toString()} hooks`,
+      { taskCount, hookCount },
+    );
   }
 
   /**
@@ -170,17 +331,39 @@ export class TaskRegistry {
   // ---------------------------------------------------------------------------
 
   /**
-   * Registers a named task on the global default registry.
+   * Registers a named per-record task on the global default registry.
    *
    * @remarks
    * Back-compat wrapper — delegates to `defaultRegistry.register(...)`.
    * Plugins self-register by calling this at module load time.
    *
-   * @param name - Unique task name.
-   * @param task - Task function to register.
+   * @param name     - Unique task name.
+   * @param task     - Task function to register.
+   * @param manifest - Optional registration metadata (e.g. `proposesClass: true`).
    */
-  public static register(name: string, task: TaskFnInterface<PipelineStateInterface>): void {
-    defaultRegistry.register(name, task);
+  public static register(
+    name:     string,
+    task:     TaskFnInterface<PipelineStateInterface>,
+    manifest?: Omit<TaskManifestInterface, 'name' | 'phase'>,
+  ): void {
+    defaultRegistry.register(name, task, manifest);
+  }
+
+  /**
+   * Registers a lifecycle hook on the global default registry.
+   *
+   * @param name     - Unique hook name.
+   * @param phase    - `'onRunStart'` or `'onRunEnd'`.
+   * @param fn       - Hook function `(ctx) => Promise<void> | void`.
+   * @param manifest - Optional registration metadata.
+   */
+  public static registerHook(
+    name:     string,
+    phase:    LifecyclePhaseType,
+    fn:       HookFnInterface,
+    manifest?: Omit<TaskManifestInterface, 'name' | 'phase'>,
+  ): void {
+    defaultRegistry.registerHook(name, phase, fn, manifest);
   }
 
   /**
@@ -205,7 +388,32 @@ export class TaskRegistry {
   }
 
   /**
-   * Clears all tasks registered in the global default registry.
+   * Returns the `onRunStart` hooks registered on the global default registry,
+   * in registration order.
+   */
+  public static onRunStartHooks(): ReadonlyArray<readonly [string, HookFnInterface]> {
+    return defaultRegistry.onRunStartHooks();
+  }
+
+  /**
+   * Returns the `onRunEnd` hooks registered on the global default registry,
+   * in registration order.
+   */
+  public static onRunEndHooks(): ReadonlyArray<readonly [string, HookFnInterface]> {
+    return defaultRegistry.onRunEndHooks();
+  }
+
+  /**
+   * Returns manifests of every registered task and hook on the global default
+   * registry, in registration order.
+   */
+  public static manifests(): ReadonlyArray<TaskManifestInterface> {
+    return defaultRegistry.manifests();
+  }
+
+  /**
+   * Clears all tasks, hooks, and manifests registered in the global default
+   * registry.
    *
    * @remarks
    * Intended for use in tests.

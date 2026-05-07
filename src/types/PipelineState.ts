@@ -4,6 +4,8 @@ import type { NamespaceBuilder }     from '../rdf/Namespaces.js';
 import type { OutputConfigInterface } from '../config/OutputConfig.js';
 import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
 import type { JsonTologyOntology }   from '../ontology/JsonTologyOntology.js';
+import type { LoggerFactoryInterface } from './Logger.js';
+import type { AjvCtorType }          from './AjvInterop.js';
 
 /**
  * Source metadata for a single input JSON record flowing through the pipeline.
@@ -99,6 +101,8 @@ export interface ClassificationEvidenceInterface {
  *   graphs:  { feat: dataFactory.namedNode('https://squashage.dev/graph/aonprd/feat') },
  *   iri:     new NamespaceBuilder('https://squashage.dev/vocabulary/aonprd#'),
  *   output:  outputConfig,
+ *   logger:  Logger,
+ *   ajv:     new Ajv(),
  * };
  * ```
  *
@@ -128,6 +132,34 @@ export interface PipelineContextInterface {
   readonly output:  OutputConfigInterface;
   /** Resolved prefix→base pairs (instances, graphs, vocabulary) for this run. */
   readonly prefixes: PrefixResolutionInterface;
+  /**
+   * Run-wide logger factory.
+   *
+   * @remarks
+   * Producer: `context:logger` lifecycle plugin (populated during `onRunStart`).
+   * Consumers: every plugin — call `ctx.logger.forComponent('MyPlugin')` to
+   * obtain a component-scoped logger. The concrete `Logger` class in
+   * `src/modules/logger/logger.ts` satisfies this shape via its static
+   * `forComponent`, so the plugin assigns the class itself as the factory.
+   *
+   * @since 0.7.0
+   */
+  readonly logger: LoggerFactoryInterface;
+  /**
+   * Run-wide shared AJV instance.
+   *
+   * @remarks
+   * Producer: `context:ajv` lifecycle plugin (populated during `onRunStart`).
+   * One AJV per run with `addFormats` applied, `strict: true`,
+   * `useDefaults: false`.
+   * Consumers: any plugin that compiles a JSON Schema for config validation or
+   * per-record schema validation (e.g. `classify:schema`, future custom keyword
+   * registrants). Plugins MUST reuse this instance rather than constructing
+   * their own; sharing one AJV keeps custom keywords consistent across the run.
+   *
+   * @since 0.7.0
+   */
+  readonly ajv: InstanceType<AjvCtorType>;
   /**
    * Optional json-tology ontology instance for the current target.
    *
