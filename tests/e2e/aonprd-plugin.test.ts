@@ -178,19 +178,23 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
         config:    fx,
       });
 
-      const targetDir = resolve(outDir, 'aonprd');
-      const files     = await readdir(targetDir);
+      // Plugin output now lives in <targetDir>/<pluginTaskName>/ subfolder.
+      // The pipeline task is 'aonprd:parse', so folder = <targetDir>/aonprd:parse/
+      const targetDir  = resolve(outDir, 'aonprd');
+      const pluginDir  = resolve(targetDir, 'aonprd:parse');
+      const files      = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
       assert.ok(files.length === sample.length,
-        `expected ${sample.length.toString()} JSON files, got ${files.length.toString()}`);
+        `expected ${sample.length.toString()} JSON files in aonprd:parse/, got ${files.length.toString()}`);
       for (const f of files) {
-        const json = JSON.parse(await readFile(resolve(targetDir, f), 'utf-8')) as {
-          _type: string; name?: string; source?: { book: string | null };
+        const json = JSON.parse(await readFile(resolve(pluginDir, f), 'utf-8')) as {
+          _type: string; name?: string; source?: { book: string | null }; _raw?: unknown;
         };
         process.stdout.write(`    • ${f}  →  _type=${json._type}  name=${json.name ?? '?'}\n`);
         assert.ok(json._type !== undefined, `${f}: missing _type discriminator`);
         assert.ok(json.name !== undefined && json.name !== '', `${f}: missing name`);
         assert.ok(json.source !== undefined && json.source.book !== null,
           `${f}: missing source.book`);
+        assert.equal(json._raw, undefined, `${f}: _raw must NOT be embedded in plugin JSON`);
       }
     } finally {
       await rm(outDir, { recursive: true, force: true });
