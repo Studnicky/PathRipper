@@ -1,12 +1,14 @@
-// Integration test: fixture-based scrape with includeRawContent: true
-// verifies that _raw.content in the output JSON matches the input HTML byte-for-byte.
+// Integration test: fixture-based scrape with the new folder-split output layout.
+//
+// Raw content (html) goes to <outDir>/<target>/raw/<slug>.html
+// Plugin JSON goes to <outDir>/<target>/<pluginTaskName>/<slug>.json  (no _raw embed)
 //
 // Uses a fake fetch to serve a known HTML fixture and the full
 // ScrapeOrchestrator + builtinTasks pipeline.  No network calls.
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +27,6 @@ import {
 } from '../../src/registry/builtinTasks.js';
 import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
 import type { TaskFnInterface } from '../../src/types/Pipeline.js';
-import type { RawContentInterface } from '../../src/types/PipelineState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -38,7 +39,7 @@ const stubParseTask: TaskFnInterface<PipelineStateInterface> = async (next, stat
   await next();
 };
 
-describe('rawContent integration', () => {
+describe('rawContent integration (folder-split layout)', () => {
   let outDir:      string;
   let fixtureHtml: string;
   const realFetch = globalThis.fetch;
@@ -56,8 +57,6 @@ describe('rawContent integration', () => {
     ) as typeof fetch;
 
     // Reset registry and re-register all builtins + the stub plugin.
-    // We cannot rely on ESM module re-execution for side-effects, so we
-    // import the task functions directly and register them here.
     TaskRegistry.reset();
     TaskRegistry.register('html:fetch',         htmlFetchTask);
     TaskRegistry.register('wiki:fetch',         wikiFetchTask);
@@ -75,7 +74,9 @@ describe('rawContent integration', () => {
     await rm(outDir, { recursive: true, force: true });
   });
 
-  it('output JSON includes _raw.content by default (no flag set)', async () => {
+  it('plugin pipeline writes JSON to <target>/<pluginTaskName>/ and does NOT embed _raw', async () => {
+    // Pipeline: html:fetch -> stub:parse -> json:write
+    // stub:parse is the pluginTaskName; orchestrator injects it into context.
     const config = {
       output: { basePath: outDir },
       targets: {
@@ -94,57 +95,86 @@ describe('rawContent integration', () => {
       config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
     });
 
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-default'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
-    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+    // Plugin JSON should be in <target>/stub:parse/ subfolder
+    const pluginDir = join(outDir, 'raw-default', 'stub:parse');
+    const files     = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    assert.ok(files.length === 1, `expected 1 plugin JSON file, got ${files.length.toString()}`);
 
     const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-default', names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: RawContentInterface };
+      await readFile(join(pluginDir, files[0]!), 'utf8'),
+    ) as { _type: string; name: string; _raw?: unknown };
 
     assert.equal(parsed._type, 'stub');
-    assert.ok(parsed._raw !== undefined, '_raw should be present by default');
-    assert.equal(parsed._raw.contentType, 'text/html');
-    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match the fixture HTML byte-for-byte');
-    assert.ok(typeof parsed._raw.fetchedAt === 'string' && parsed._raw.fetchedAt.length > 0, 'fetchedAt must be an ISO string');
+    assert.equal(parsed.name, 'fixture-page');
+    assert.equal(parsed._raw, undefined, '_raw must NOT be embedded in plugin JSON');
   });
 
-  it('output JSON includes _raw.content equal to the fetched HTML when includeRawContent is explicitly true', async () => {
+  it('raw HTML is written to <target>/raw/<slug>.html when html:write-raw is in pipeline', async () => {
     const config = {
       output: { basePath: outDir },
       targets: {
-        'raw-test': {
-          baseUrl:           'https://fixture.test',
-          pipeline:          ['html:fetch', 'stub:parse', 'json:write'],
-          includeRawContent: true,
+        'raw-html': {
+          baseUrl:  'https://fixture.test',
+          pipeline: ['html:fetch', 'html:write-raw', 'stub:parse', 'json:write'],
         },
       },
     };
 
     await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-test',
+      target:    'raw-html',
       paths:     ['https://fixture.test/condition-blinded'],
       outDir,
       configDir: __dirname,
       config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
     });
 
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-test'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
-    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+    // Raw HTML should be in <target>/raw/ subfolder
+    const rawDir  = join(outDir, 'raw-html', 'raw');
+    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
 
-    const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-test', names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: RawContentInterface };
+    const rawContent = await readFile(join(rawDir, rawFiles[0]!), 'utf8');
+    assert.equal(rawContent, fixtureHtml, 'raw HTML must match fixture byte-for-byte');
 
-    assert.equal(parsed._type, 'stub');
-    assert.ok(parsed._raw !== undefined, '_raw should be present when explicitly opted in');
-    assert.equal(parsed._raw.contentType, 'text/html');
-    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match the fixture HTML byte-for-byte');
-    assert.ok(typeof parsed._raw.fetchedAt === 'string' && parsed._raw.fetchedAt.length > 0, 'fetchedAt must be an ISO string');
+    // Plugin JSON in stub:parse subfolder
+    const pluginDir  = join(outDir, 'raw-html', 'stub:parse');
+    const jsonFiles  = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json'));
+    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in stub:parse/, got ${jsonFiles.length.toString()}`);
   });
 
-  it('output JSON does NOT include _raw when includeRawContent is false (opt-out)', async () => {
+  it('no-plugin pipeline (raw-only): only raw/ folder is populated, no plugin subfolder', async () => {
+    // Pipeline: html:fetch -> html:write-raw (no json:write or plugin)
+    const config = {
+      output: { basePath: outDir },
+      targets: {
+        'raw-only': {
+          baseUrl:  'https://fixture.test',
+          pipeline: ['html:fetch', 'html:write-raw'],
+        },
+      },
+    };
+
+    await ScrapeOrchestrator.scrapeHtml({
+      target:    'raw-only',
+      paths:     ['https://fixture.test/condition-blinded'],
+      outDir,
+      configDir: __dirname,
+      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
+    });
+
+    // Raw HTML should exist
+    const rawDir   = join(outDir, 'raw-only', 'raw');
+    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
+
+    // No plugin JSON should exist at the target root
+    const targetDir   = join(outDir, 'raw-only');
+    const targetFiles = await readdir(targetDir);
+    const jsonFiles   = targetFiles.filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    assert.equal(jsonFiles.length, 0, 'no JSON output expected without a plugin step');
+  });
+
+  it('includeRawContent: false — no raw embed and _raw absent from state.page', async () => {
     const config = {
       output: { basePath: outDir },
       targets: {
@@ -164,59 +194,54 @@ describe('rawContent integration', () => {
       config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
     });
 
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-off'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const pluginDir = join(outDir, 'raw-off', 'stub:parse');
+    const names     = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
     assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
 
     const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-off', names[0]!), 'utf8'),
+      await readFile(join(pluginDir, names[0]!), 'utf8'),
     ) as { _type: string; _raw?: unknown };
 
     assert.equal(parsed._type, 'stub');
     assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false is set');
   });
 
-  it('pipeline with no plugin step produces _raw dump without plugin-specific fields', async () => {
-    // Validates Item I: a pipeline of ["html:fetch", "json:write"] with no plugin
-    // should produce output with _raw populated and no plugin-specific keys.
-    // json:write skips when output is null, so we use jsonl:append via a stub that
-    // leaves output populated — but here we test the raw fetch side only via
-    // a minimal stub that sets a bare output without plugin fields.
-    const bareStubTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
-      state.output = {};
-      await next();
-    };
-    TaskRegistry.register('bare:stub', bareStubTask);
-
+  it('AONPRD-like full pipeline produces raw/ and stub:parse/ sibling folders', async () => {
+    // Simulates: output/aonprd/raw/Conditions.aspx-ID-1.html + output/aonprd/stub:parse/Conditions.aspx-ID-1.json
     const config = {
       output: { basePath: outDir },
       targets: {
-        'raw-no-plugin': {
-          baseUrl:  'https://fixture.test',
-          pipeline: ['html:fetch', 'bare:stub', 'json:write'],
+        'aonprd': {
+          baseUrl:  'https://2e.aonprd.com',
+          pipeline: ['html:fetch', 'html:write-raw', 'stub:parse', 'json:write'],
         },
       },
     };
 
     await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-no-plugin',
-      paths:     ['https://fixture.test/condition-blinded'],
+      target:    'aonprd',
+      paths:     ['https://2e.aonprd.com/Conditions.aspx?ID=1'],
       outDir,
       configDir: __dirname,
       config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
     });
 
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-no-plugin'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
-    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+    // raw/ folder: Conditions.aspx-ID-1.html
+    const rawDir   = join(outDir, 'aonprd', 'raw');
+    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
+    assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html', `expected Conditions.aspx-ID-1.html, got ${rawFiles[0] ?? '?'}`);
+
+    // stub:parse/ folder: Conditions.aspx-ID-1.json
+    const pluginDir  = join(outDir, 'aonprd', 'stub:parse');
+    const jsonFiles  = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json'));
+    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file, got ${jsonFiles.length.toString()}`);
+    assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json', `expected Conditions.aspx-ID-1.json, got ${jsonFiles[0] ?? '?'}`);
 
     const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-no-plugin', names[0]!), 'utf8'),
-    ) as { _raw?: RawContentInterface; _type?: unknown };
-
-    assert.ok(parsed._raw !== undefined, '_raw must be present even with no plugin');
-    assert.equal(parsed._raw.contentType, 'text/html');
-    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match fixture HTML');
-    assert.equal(parsed._type, undefined, 'no plugin-specific _type field should be present');
+      await readFile(join(pluginDir, jsonFiles[0]!), 'utf8'),
+    ) as { _type: string; _raw?: unknown };
+    assert.equal(parsed._type, 'stub');
+    assert.equal(parsed._raw, undefined, '_raw must NOT appear in plugin JSON');
   });
 });

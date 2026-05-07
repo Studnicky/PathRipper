@@ -23,9 +23,12 @@ const SCHEMA = {
       additionalProperties: false,
       required: ['basePath'],
       properties: {
-        basePath: { type: 'string', minLength: 1 },
-        format:   { type: 'string', enum: ['json', 'html', 'text'] },
-        pretty:   { type: 'boolean' },
+        basePath:         { type: 'string', minLength: 1 },
+        format:           { type: 'string', enum: ['json', 'html', 'text'] },
+        pretty:           { type: 'boolean' },
+        rawSubdir:        { type: 'string', minLength: 1 },
+        rawExt:           { type: 'string', minLength: 1 },
+        splitByTaskName:  { type: 'boolean' },
       },
     },
     targets: {
