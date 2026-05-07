@@ -7,18 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-05-07
+
 ### Changed
 
 - **Behaviour change vs PR #47 (same develop cycle, no released version affected):** `includeRawContent` default inverted from `false` to `true`. Raw content is now written to every output record by default; set `includeRawContent: false` to opt out and strip `_raw`. Rationale: parsing throws information away; the cheapest, most lossless default is to preserve the raw input. Plugins and downstream consumers can always rely on `_raw` being present without explicit config. The opt-out exists for storage-constrained production scrapes (~1.2 GB overhead for 15K AONPRD records at ~80 KB each).
+- **Output folder layout:** plugin JSON output now writes to `output/<target>/<pluginTaskName>/<filename>.json` (a subfolder named after the plugin task, e.g. `aonprd:parse/`); raw HTML/wikitext writes to `output/<target>/raw/<filename>.html` (always populated when a fetch happens). Filename derivation is URL-based (`Feats.aspx?ID=750` -> `Feats.aspx-ID-750`), preserving the path extension for content-type identification at a glance. The legacy single-folder layout is opt-out via `output.splitByTaskName: false`.
 - AONPRD e2e fixture config (`tests/e2e/fixtures/pathripper-legacy.config.json`): removed now-redundant `includeRawContent: true` (the default fires).
 - Unit tests updated: assertions inverted to match new default-on semantics. Added test for explicit opt-in and for opt-out (`includeRawContent: false`). Added test asserting `_raw` is populated even when no plugin task runs (raw-dump-only pipeline).
 - Integration tests updated: default-absent test now asserts `_raw` IS present. Added test for `includeRawContent: false` opt-out. Added test for a no-plugin pipeline producing a valid raw dump.
-- Documentation (`docs/usage/configuration.md`): Raw Content section rewritten to reflect new default-on model; documents opt-out path with rationale; documents raw-dump-only pipelines (no plugin step) as a first-class supported use case.
+- Documentation (`docs/usage/configuration.md`): Raw Content section rewritten to reflect new default-on model; documents opt-out path with rationale; documents raw-dump-only pipelines (no plugin step) as a first-class supported use case. Output Layout section rewritten with directory tree, filename derivation table, and `splitByTaskName` escape hatch.
 
 ### Added
 
 - `includeRawContent` boolean flag on `targets` and `mediawiki` target configs (default now `true`). Each output record gains a `_raw` field: `{ contentType: string, content: string, fetchedAt: string }` carrying the raw fetched response body byte-for-byte unless explicitly opted out. Downstream consumers (e.g. Squashage v0.6.0 max-extraction) can always rely on `_raw` being present.
 - Raw-dump-only pipelines: a pipeline of `["html:fetch", "json:write"]` with no plugin task is now a fully supported and documented use case. Output records contain `_raw` with the full fetched HTML; `output` fields are empty (no plugin ran). Useful for archiving or deferred parsing.
+- `output.rawSubdir`, `output.rawExt`, `output.splitByTaskName` config keys for tuning the raw/plugin folder split.
+- `html:write-raw` and `wiki:write-raw` built-in tasks: write raw fetched bytes to `raw/` subfolder independently of the plugin task.
 - AONPRD plugin: comprehensive cache-driven extraction enhancement. All per-type
   extractors now capture additional structured fields discovered by sampling the
   14,933-page AON HTML cache.
