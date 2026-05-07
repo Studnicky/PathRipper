@@ -124,7 +124,7 @@ export const htmlFetchTask: TaskFnInterface<PipelineStateInterface> = async (nex
 
   const result: ScrapedPageInterface = await ctx.scraper.fetchPage(state.page.url);
 
-  const includeRaw = ctx.config['includeRawContent'] === true;
+  const includeRaw = ctx.config['includeRawContent'] !== false;
   const raw: RawContentInterface | undefined = includeRaw
     ? { contentType: 'text/html', content: result.html, fetchedAt: new Date().toISOString() }
     : undefined;

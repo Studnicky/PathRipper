@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Behaviour change vs PR #47 (same develop cycle, no released version affected):** `includeRawContent` default inverted from `false` to `true`. Raw content is now written to every output record by default; set `includeRawContent: false` to opt out and strip `_raw`. Rationale: parsing throws information away; the cheapest, most lossless default is to preserve the raw input. Plugins and downstream consumers can always rely on `_raw` being present without explicit config. The opt-out exists for storage-constrained production scrapes (~1.2 GB overhead for 15K AONPRD records at ~80 KB each).
+- AONPRD e2e fixture config (`tests/e2e/fixtures/pathripper-legacy.config.json`): removed now-redundant `includeRawContent: true` (the default fires).
+- Unit tests updated: assertions inverted to match new default-on semantics. Added test for explicit opt-in and for opt-out (`includeRawContent: false`). Added test asserting `_raw` is populated even when no plugin task runs (raw-dump-only pipeline).
+- Integration tests updated: default-absent test now asserts `_raw` IS present. Added test for `includeRawContent: false` opt-out. Added test for a no-plugin pipeline producing a valid raw dump.
+- Documentation (`docs/usage/configuration.md`): Raw Content section rewritten to reflect new default-on model; documents opt-out path with rationale; documents raw-dump-only pipelines (no plugin step) as a first-class supported use case.
+
 ### Added
 
-- `includeRawContent` boolean flag on `targets` and `mediawiki` target configs (default `false`). When `true`, each output record gains a `_raw` field: `{ contentType: string, content: string, fetchedAt: string }` carrying the raw fetched response body byte-for-byte. Downstream consumers (e.g. Squashage v0.6.0 max-extraction) can re-parse historical Ripperoni output without depending on Ripperoni's cache infrastructure. Storage tradeoff: opt-in because always-on at AONPRD scale (~15K records x ~80 KB HTML) adds ~1.2 GB per run.
-- AONPRD e2e fixture config (`tests/e2e/fixtures/pathripper-legacy.config.json`) sets `includeRawContent: true` so the canonical AONPRD scrape always carries raw HTML for downstream re-parsing.
-- Unit tests: `html:fetch` writes `_raw` to `state.page` when flag is on; `json:write` and `jsonl:append` include/strip `_raw` per flag.
-- Integration test (`tests/integration/rawContent.test.ts`): fixture-based pipeline with `includeRawContent: true` produces output where `_raw.content` matches the input HTML byte-for-byte.
-- Documentation: `docs/usage/configuration.md` describes the flag, the `_raw` shape, storage tradeoff, plugin contract, and example config.
+- `includeRawContent` boolean flag on `targets` and `mediawiki` target configs (default now `true`). Each output record gains a `_raw` field: `{ contentType: string, content: string, fetchedAt: string }` carrying the raw fetched response body byte-for-byte unless explicitly opted out. Downstream consumers (e.g. Squashage v0.6.0 max-extraction) can always rely on `_raw` being present.
+- Raw-dump-only pipelines: a pipeline of `["html:fetch", "json:write"]` with no plugin task is now a fully supported and documented use case. Output records contain `_raw` with the full fetched HTML; `output` fields are empty (no plugin ran). Useful for archiving or deferred parsing.
 
 ## [2.4.0] - 2026-05-06
 

@@ -159,8 +159,29 @@ describe('builtinTasks', () => {
   });
 
   describe('html:fetch + includeRawContent', () => {
-    it('sets _raw on state.page when includeRawContent is true', async () => {
+    it('sets _raw on state.page by default (includeRawContent absent)', async () => {
       const HTML = '<html><body>raw test</body></html>';
+      const scraper = new FakeHtmlScraper({
+        url:  'https://example.test/page-resolved',
+        html: HTML,
+        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+      });
+      const state = buildState({
+        context: { target: TARGET, outDir, scraper: scraper as unknown as never, config: {} },
+      });
+
+      const task = TaskRegistry.get('html:fetch');
+      await task(noopNext, state);
+
+      assert.ok(state.page._raw !== undefined, '_raw should be set by default');
+      const raw = state.page._raw as RawContentInterface;
+      assert.equal(raw.contentType, 'text/html');
+      assert.equal(raw.content, HTML);
+      assert.ok(typeof raw.fetchedAt === 'string' && raw.fetchedAt.length > 0);
+    });
+
+    it('sets _raw on state.page when includeRawContent is explicitly true', async () => {
+      const HTML = '<html><body>raw explicit</body></html>';
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
         html: HTML,
@@ -173,14 +194,13 @@ describe('builtinTasks', () => {
       const task = TaskRegistry.get('html:fetch');
       await task(noopNext, state);
 
-      assert.ok(state.page._raw !== undefined, '_raw should be set');
+      assert.ok(state.page._raw !== undefined, '_raw should be set when explicitly opted in');
       const raw = state.page._raw as RawContentInterface;
       assert.equal(raw.contentType, 'text/html');
       assert.equal(raw.content, HTML);
-      assert.ok(typeof raw.fetchedAt === 'string' && raw.fetchedAt.length > 0);
     });
 
-    it('does NOT set _raw on state.page when includeRawContent is false', async () => {
+    it('does NOT set _raw on state.page when includeRawContent is false (opt-out)', async () => {
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
         html: '<html><body>no raw</body></html>',
@@ -193,23 +213,30 @@ describe('builtinTasks', () => {
       const task = TaskRegistry.get('html:fetch');
       await task(noopNext, state);
 
-      assert.equal(state.page._raw, undefined);
+      assert.equal(state.page._raw, undefined, '_raw must be absent when opt-out is set');
     });
+  });
 
-    it('does NOT set _raw on state.page when includeRawContent is absent', async () => {
+  describe('html:fetch — no plugin step (raw dump only)', () => {
+    it('produces _raw.content on state.page without any plugin task running', async () => {
+      const HTML = '<html><body>no plugin</body></html>';
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
-        html: '<html><body>no raw</body></html>',
+        html: HTML,
         $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
       });
       const state = buildState({
         context: { target: TARGET, outDir, scraper: scraper as unknown as never, config: {} },
+        output:  null,
       });
 
+      // Only html:fetch runs — no plugin parse task.
       const task = TaskRegistry.get('html:fetch');
       await task(noopNext, state);
 
-      assert.equal(state.page._raw, undefined);
+      assert.ok(state.page._raw !== undefined, '_raw must be populated even with no plugin');
+      assert.equal((state.page._raw as RawContentInterface).content, HTML);
+      assert.equal(state.output, null, 'output stays null — no plugin ran to populate it');
     });
   });
 
