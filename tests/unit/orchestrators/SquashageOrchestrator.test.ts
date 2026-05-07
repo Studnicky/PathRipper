@@ -429,4 +429,96 @@ describe('SquashageOrchestrator', () => {
       assert.equal(resultB.failed,      0, 'run B: failed');
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Amendment A2: proposer-count check
+  //
+  // Asserts that the orchestrator throws SquashageConfigError when the pipeline
+  // includes ≥2 plugins whose registration manifest declares `proposesClass:
+  // true` AND `classify:conflict` is missing from the pipeline. Uses fictional
+  // stub plugin names registered explicitly with `proposesClass: true` so the
+  // assertion is independent of which real classifiers happen to be loaded
+  // into the global registry.
+  //
+  // Each test registers stub names, asserts orchestrator behavior, and then
+  // unregisters by overwriting the slots with no-op manifests (TaskRegistry
+  // does not expose a per-name unregister; overwriting with a non-proposing
+  // manifest is the documented mechanism). Real classifier plugins remain
+  // unaffected because they use distinct names (`classify:rules`,
+  // `classify:structural`, …).
+  // ---------------------------------------------------------------------------
+  describe('run — proposer-count check (Amendment A2)', () => {
+    const STUB_A = 'stub:proposer-a';
+    const STUB_B = 'stub:proposer-b';
+
+    /** No-op task body shared by both stubs; just chains. */
+    const noopTask = async (next: NextFnInterface, _state: PipelineStateInterface): Promise<void> => {
+      await next();
+    };
+
+    /** Registers stub:proposer-a + stub:proposer-b on the global registry with proposesClass: true. */
+    function registerStubProposers(): void {
+      TaskRegistry.register(STUB_A, noopTask, { proposesClass: true });
+      TaskRegistry.register(STUB_B, noopTask, { proposesClass: true });
+    }
+
+    /**
+     * Re-registers the stub names with `proposesClass: false` so subsequent
+     * tests in this file (which share the global registry) start clean.
+     */
+    function deregisterStubProposers(): void {
+      TaskRegistry.register(STUB_A, noopTask, { proposesClass: false });
+      TaskRegistry.register(STUB_B, noopTask, { proposesClass: false });
+    }
+
+    it('throws SquashageConfigError when ≥2 proposers are pipelined and classify:conflict is missing', async () => {
+      const inputDir = join(workDir, 'a2-throw-in');
+      const outDir   = join(workDir, 'a2-throw-out');
+      await mkdir(inputDir, { recursive: true });
+      await mkdir(outDir,   { recursive: true });
+      await writeFile(join(inputDir, 'r1.json'), JSON.stringify({ name: 'one' }), 'utf8');
+
+      registerStubProposers();
+      try {
+        const config = buildConfig(
+          inputDir,
+          join(outDir, 'out.ttl'),
+          ['json:read', STUB_A, STUB_B, FIXTURE_TASK_NAME, 'rdfjs:finalize'],
+        );
+
+        await assert.rejects(
+          () => SquashageOrchestrator.run(config, 'target1', { outDir }),
+          (err: unknown) =>
+            err instanceof SquashageConfigError
+            && /class-proposing classifiers/.test((err as Error).message)
+            && /classify:conflict/.test((err as Error).message),
+        );
+      } finally {
+        deregisterStubProposers();
+      }
+    });
+
+    it('does NOT throw when ≥2 proposers are pipelined AND classify:conflict is present', async () => {
+      const inputDir = join(workDir, 'a2-pass-in');
+      const outDir   = join(workDir, 'a2-pass-out');
+      await mkdir(inputDir, { recursive: true });
+      await mkdir(outDir,   { recursive: true });
+      await writeFile(join(inputDir, 'r1.json'), JSON.stringify({ name: 'one' }), 'utf8');
+
+      registerStubProposers();
+      try {
+        const config = buildConfig(
+          inputDir,
+          join(outDir, 'out.ttl'),
+          ['json:read', STUB_A, STUB_B, 'classify:conflict', FIXTURE_TASK_NAME, 'rdfjs:finalize'],
+        );
+
+        const result = await SquashageOrchestrator.run(config, 'target1', { outDir });
+        assert.equal(result.recordCount, 1);
+        assert.equal(result.failed,      0);
+      } finally {
+        deregisterStubProposers();
+      }
+    });
+  });
 });

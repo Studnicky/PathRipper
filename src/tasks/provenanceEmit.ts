@@ -314,9 +314,17 @@ const provenanceEmitTask: TaskFnInterface<PipelineStateInterface> = async (
   } else {
     // Named-graph mode (default): emit PROV-O sidecar quads into a dedicated named graph.
 
-    // Determine record locator from context config (populated by orchestrator per-record).
-    const recordPath = typeof ctx.config['recordPath'] === 'string' ? ctx.config['recordPath'] : state.source.path;
-    const recordLine = typeof ctx.config['recordLine'] === 'number' ? ctx.config['recordLine'] : 0;
+    // Determine record locator. Silo path: orchestrator attaches per-record
+    // recordPath/recordLine on `state`. Legacy path: per-record ctx wrapper
+    // carries them on `ctx.config`. Final fallback: `state.source.path`.
+    const stateRecordPath = (state as Record<string, unknown>)['recordPath'];
+    const stateRecordLine = (state as Record<string, unknown>)['recordLine'];
+    const recordPath = typeof stateRecordPath === 'string'
+      ? stateRecordPath
+      : typeof ctx.config['recordPath'] === 'string' ? ctx.config['recordPath'] : state.source.path;
+    const recordLine = typeof stateRecordLine === 'number'
+      ? stateRecordLine
+      : typeof ctx.config['recordLine'] === 'number' ? ctx.config['recordLine'] : 0;
 
     // Derive run base from the instances prefix (deterministic, from PrefixResolver).
     const runBase = ctx.prefixes.instances.base;
