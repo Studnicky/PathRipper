@@ -75,74 +75,7 @@ describe('rawContent integration', () => {
     await rm(outDir, { recursive: true, force: true });
   });
 
-  it('output JSON includes _raw.content equal to the fetched HTML when includeRawContent is true', async () => {
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-test': {
-          baseUrl:          'https://fixture.test',
-          pipeline:         ['html:fetch', 'stub:parse', 'json:write'],
-          includeRawContent: true,
-        },
-      },
-    };
-
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-test',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
-
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-test'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
-    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
-
-    const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-test', names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: RawContentInterface };
-
-    assert.equal(parsed._type, 'stub');
-    assert.ok(parsed._raw !== undefined, '_raw should be present in output');
-    assert.equal(parsed._raw.contentType, 'text/html');
-    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match the fixture HTML byte-for-byte');
-    assert.ok(typeof parsed._raw.fetchedAt === 'string' && parsed._raw.fetchedAt.length > 0, 'fetchedAt must be an ISO string');
-  });
-
-  it('output JSON does NOT include _raw when includeRawContent is false', async () => {
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-off': {
-          baseUrl:          'https://fixture.test',
-          pipeline:         ['html:fetch', 'stub:parse', 'json:write'],
-          includeRawContent: false,
-        },
-      },
-    };
-
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-off',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
-
-    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-off'));
-    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
-    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
-
-    const parsed = JSON.parse(
-      await readFile(join(outDir, 'raw-off', names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: unknown };
-
-    assert.equal(parsed._type, 'stub');
-    assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent is false');
-  });
-
-  it('output JSON does NOT include _raw when includeRawContent is absent', async () => {
+  it('output JSON includes _raw.content by default (no flag set)', async () => {
     const config = {
       output: { basePath: outDir },
       targets: {
@@ -167,9 +100,123 @@ describe('rawContent integration', () => {
 
     const parsed = JSON.parse(
       await readFile(join(outDir, 'raw-default', names[0]!), 'utf8'),
+    ) as { _type: string; _raw?: RawContentInterface };
+
+    assert.equal(parsed._type, 'stub');
+    assert.ok(parsed._raw !== undefined, '_raw should be present by default');
+    assert.equal(parsed._raw.contentType, 'text/html');
+    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match the fixture HTML byte-for-byte');
+    assert.ok(typeof parsed._raw.fetchedAt === 'string' && parsed._raw.fetchedAt.length > 0, 'fetchedAt must be an ISO string');
+  });
+
+  it('output JSON includes _raw.content equal to the fetched HTML when includeRawContent is explicitly true', async () => {
+    const config = {
+      output: { basePath: outDir },
+      targets: {
+        'raw-test': {
+          baseUrl:           'https://fixture.test',
+          pipeline:          ['html:fetch', 'stub:parse', 'json:write'],
+          includeRawContent: true,
+        },
+      },
+    };
+
+    await ScrapeOrchestrator.scrapeHtml({
+      target:    'raw-test',
+      paths:     ['https://fixture.test/condition-blinded'],
+      outDir,
+      configDir: __dirname,
+      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
+    });
+
+    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-test'));
+    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+
+    const parsed = JSON.parse(
+      await readFile(join(outDir, 'raw-test', names[0]!), 'utf8'),
+    ) as { _type: string; _raw?: RawContentInterface };
+
+    assert.equal(parsed._type, 'stub');
+    assert.ok(parsed._raw !== undefined, '_raw should be present when explicitly opted in');
+    assert.equal(parsed._raw.contentType, 'text/html');
+    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match the fixture HTML byte-for-byte');
+    assert.ok(typeof parsed._raw.fetchedAt === 'string' && parsed._raw.fetchedAt.length > 0, 'fetchedAt must be an ISO string');
+  });
+
+  it('output JSON does NOT include _raw when includeRawContent is false (opt-out)', async () => {
+    const config = {
+      output: { basePath: outDir },
+      targets: {
+        'raw-off': {
+          baseUrl:           'https://fixture.test',
+          pipeline:          ['html:fetch', 'stub:parse', 'json:write'],
+          includeRawContent: false,
+        },
+      },
+    };
+
+    await ScrapeOrchestrator.scrapeHtml({
+      target:    'raw-off',
+      paths:     ['https://fixture.test/condition-blinded'],
+      outDir,
+      configDir: __dirname,
+      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
+    });
+
+    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-off'));
+    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+
+    const parsed = JSON.parse(
+      await readFile(join(outDir, 'raw-off', names[0]!), 'utf8'),
     ) as { _type: string; _raw?: unknown };
 
     assert.equal(parsed._type, 'stub');
-    assert.equal(parsed._raw, undefined, '_raw must be absent by default');
+    assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false is set');
+  });
+
+  it('pipeline with no plugin step produces _raw dump without plugin-specific fields', async () => {
+    // Validates Item I: a pipeline of ["html:fetch", "json:write"] with no plugin
+    // should produce output with _raw populated and no plugin-specific keys.
+    // json:write skips when output is null, so we use jsonl:append via a stub that
+    // leaves output populated — but here we test the raw fetch side only via
+    // a minimal stub that sets a bare output without plugin fields.
+    const bareStubTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
+      state.output = {};
+      await next();
+    };
+    TaskRegistry.register('bare:stub', bareStubTask);
+
+    const config = {
+      output: { basePath: outDir },
+      targets: {
+        'raw-no-plugin': {
+          baseUrl:  'https://fixture.test',
+          pipeline: ['html:fetch', 'bare:stub', 'json:write'],
+        },
+      },
+    };
+
+    await ScrapeOrchestrator.scrapeHtml({
+      target:    'raw-no-plugin',
+      paths:     ['https://fixture.test/condition-blinded'],
+      outDir,
+      configDir: __dirname,
+      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
+    });
+
+    const files  = (await import('node:fs/promises')).readdir(join(outDir, 'raw-no-plugin'));
+    const names  = (await files).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
+
+    const parsed = JSON.parse(
+      await readFile(join(outDir, 'raw-no-plugin', names[0]!), 'utf8'),
+    ) as { _raw?: RawContentInterface; _type?: unknown };
+
+    assert.ok(parsed._raw !== undefined, '_raw must be present even with no plugin');
+    assert.equal(parsed._raw.contentType, 'text/html');
+    assert.equal(parsed._raw.content, fixtureHtml, '_raw.content must match fixture HTML');
+    assert.equal(parsed._type, undefined, 'no plugin-specific _type field should be present');
   });
 });
