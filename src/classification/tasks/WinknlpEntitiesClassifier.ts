@@ -27,9 +27,14 @@ import winkNlpModule from 'wink-nlp';
 import modelModule   from 'wink-eng-lite-web-model';
 
 import type { NextFnInterface, TaskFnInterface } from '../../types/Pipeline.js';
-import type { PipelineStateInterface, ClassificationProposalInterface } from '../../types/PipelineState.js';
+import type {
+  PipelineContextInterface,
+  PipelineStateInterface,
+  ClassificationProposalInterface,
+} from '../../types/PipelineState.js';
 import { OutputConfigError } from '../../errors/OutputConfigError.js';
 import { Logger }            from '../../modules/logger/logger.js';
+import { TaskRegistry }      from '../../registry/TaskRegistry.js';
 
 // CJS default interop (same pattern as AJV / ajv-formats throughout the codebase).
 const winkNlp = (winkNlpModule as unknown as { default?: typeof winkNlpModule }).default
@@ -311,3 +316,223 @@ export class WinknlpEntitiesClassifier {
     await next();
   }
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// `classify:winknlp-entities` self-registering plugin (silo migration, task #22)
+// ──────────────────────────────────────────────────────────────────────────────
+
+/** Plugin name shared by the lifecycle hook and the per-record task. */
+export const WINKNLP_ENTITIES_PLUGIN_NAME = 'classify:winknlp-entities' as const;
+
+/** Default priority emitted on proposals when a pattern entry omits `priority`. */
+const WINKNLP_DEFAULT_PRIORITY = 28;
+
+/**
+ * AJV schema fragment for the `winknlpEntities` config namespace.
+ *
+ * @remarks
+ * Compiled against `ctx.ajv` during the plugin's `onRunStart` hook. Mirrors
+ * the legacy `target.schema.json` fragment for `classification.winknlpEntities`,
+ * lifted to the new flat namespace used by the silo contract.
+ *
+ * @category Classification
+ * @since 0.7.0
+ */
+export const winknlpEntitiesConfigSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['patterns'],
+  properties: {
+    patterns: {
+      type: 'array',
+      minItems: 1,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'patterns', 'className'],
+        properties: {
+          name:      { type: 'string', minLength: 1 },
+          patterns:  { type: 'array', minItems: 1, items: { type: 'string', minLength: 1 } },
+          className: { type: 'string', minLength: 1 },
+          priority:  { type: 'integer', minimum: 0 },
+        },
+      },
+    },
+    fields: { type: 'array', items: { type: 'string', minLength: 1 } },
+  },
+} as const;
+
+/**
+ * Per-context cache populated at `onRunStart` and consumed on every
+ * per-record dispatch. A `WeakMap` key keeps the cache scoped to a single
+ * run-wide context; concurrent runs with separate contexts each carry their
+ * own compiled state without collision.
+ *
+ * @internal
+ */
+interface CompiledWinknlpStateInterface {
+  readonly nlp:    WinkMethods;
+  readonly meta:   Readonly<Record<string, CompiledPatternMetaInterface>>;
+  readonly fields: ReadonlyArray<string>;
+}
+
+const compiledByContext = new WeakMap<PipelineContextInterface, CompiledWinknlpStateInterface>();
+
+type MutableContext = { -readonly [K in keyof PipelineContextInterface]: PipelineContextInterface[K] };
+
+/**
+ * Validates `ctx.config.winknlpEntities` against the AJV schema fragment, then
+ * loads the winkNLP model and registers all configured patterns once. Caches
+ * the compiled state in `compiledByContext`.
+ *
+ * @internal
+ */
+TaskRegistry.registerHook(WINKNLP_ENTITIES_PLUGIN_NAME, 'onRunStart', (ctx) => {
+  const raw = (ctx.config as Readonly<Record<string, unknown>>)['winknlpEntities'];
+  if (raw === undefined) {
+    logger.debug('onRunStart', 'no winknlpEntities config; classify:winknlp-entities will be silent');
+    return;
+  }
+
+  // Validate via the run-wide shared AJV instance per the silo contract.
+  const validate = ctx.ajv.compile<WinknlpEntitiesConfigInterface>(winknlpEntitiesConfigSchema);
+  if (!validate(raw)) {
+    const errs = validate.errors !== null && validate.errors !== undefined
+      ? validate.errors.map((e) => `${e.instancePath} ${e.message ?? ''}`.trim()).join('; ')
+      : 'unknown';
+    throw OutputConfigError.create(
+      `classify:winknlp-entities: config validation failed: ${errs}`,
+      { metadata: { errors: validate.errors ?? [] } },
+    );
+  }
+
+  const config = raw;
+
+  const nlp = winkNlp(model);
+
+  // Build the CustomEntityExample array for learnCustomEntities.
+  const examples: CustomEntityExample[] = config.patterns.map((entry) => ({
+    name:     entry.name,
+    patterns: entry.patterns as string[],
+  }));
+
+  // Build the name -> { className, priority } lookup (used per-record).
+  const meta: Record<string, CompiledPatternMetaInterface> = {};
+  for (const entry of config.patterns) {
+    meta[entry.name] = {
+      className: entry.className,
+      priority:  entry.priority ?? WINKNLP_DEFAULT_PRIORITY,
+    };
+  }
+
+  // learnCustomEntities throws on malformed patterns; we catch and re-throw
+  // as OutputConfigError naming the offending entry(ies).
+  try {
+    nlp.learnCustomEntities(examples, { matchValue: false, usePOS: false, useEntity: false });
+  } catch (err) {
+    const cause = err instanceof Error ? err : undefined;
+    const nameList = config.patterns.map((p) => `"${p.name}"`).join(', ');
+    throw OutputConfigError.create(
+      `classify:winknlp-entities: learnCustomEntities failed for pattern(s) ${nameList}: ${cause?.message ?? String(err)}`,
+      { cause, metadata: { patterns: config.patterns.map((p) => p.name) } },
+    );
+  }
+
+  const fields = config.fields !== undefined && config.fields.length > 0
+    ? Object.freeze([...config.fields])
+    : Object.freeze(['description']);
+
+  compiledByContext.set(ctx as MutableContext, {
+    nlp,
+    meta:   Object.freeze(meta),
+    fields,
+  });
+
+  logger.debug('onRunStart', 'classify:winknlp-entities compiled', {
+    patternCount: examples.length,
+    fields,
+  });
+});
+
+/**
+ * Per-record task body for `classify:winknlp-entities` (plugin form).
+ *
+ * @internal
+ */
+const classifyWinknlpEntitiesTask: TaskFnInterface<PipelineStateInterface> = async (
+  next:  NextFnInterface,
+  state: PipelineStateInterface,
+): Promise<void> => {
+  const ctx = state.context;
+  const compiled = ctx !== undefined ? compiledByContext.get(ctx) : undefined;
+  if (compiled === undefined) {
+    // Plugin not configured for this run; clean no-op.
+    await next();
+    return;
+  }
+
+  logger.debug('execute', 'classify:winknlp-entities invoked', {
+    targetId:   state.targetId,
+    fieldCount: compiled.fields.length,
+  });
+
+  const newProposals: ClassificationProposalInterface[] = [];
+
+  for (const fieldName of compiled.fields) {
+    const raw = state.input[fieldName];
+    if (typeof raw !== 'string' || raw.length === 0) {
+      continue;
+    }
+
+    const doc     = compiled.nlp.readDoc(raw);
+    const its     = compiled.nlp.its;
+    const details = doc.customEntities().out(its.detail) as Detail[];
+
+    for (const detail of details) {
+      const patternMeta = compiled.meta[detail.type];
+      if (patternMeta === undefined) {
+        logger.warn('execute', 'Unknown custom entity type from winkNLP', {
+          targetId: state.targetId,
+          type:     detail.type,
+        });
+        continue;
+      }
+
+      const snippet = detail.value.length > MAX_SNIPPET_LENGTH
+        ? detail.value.slice(0, MAX_SNIPPET_LENGTH)
+        : detail.value;
+
+      newProposals.push({
+        source:     WINKNLP_ENTITIES_PLUGIN_NAME,
+        className:  patternMeta.className,
+        priority:   patternMeta.priority,
+        confidence: 1,
+        reasons: [
+          `winknlp:pattern=${detail.type}`,
+          `winknlp:matched=${snippet}`,
+          `winknlp:field=${fieldName}`,
+        ],
+      });
+    }
+  }
+
+  if (newProposals.length > 0) {
+    (state as unknown as { classifications: ReadonlyArray<ClassificationProposalInterface> })
+      .classifications = [...state.classifications, ...newProposals];
+
+    logger.info('execute', 'winkNLP entity proposals emitted', {
+      targetId:      state.targetId,
+      proposalCount: newProposals.length,
+    });
+  } else {
+    logger.debug('execute', 'No winkNLP custom entities matched', {
+      targetId: state.targetId,
+    });
+  }
+
+  await next();
+};
+
+TaskRegistry.register(WINKNLP_ENTITIES_PLUGIN_NAME, classifyWinknlpEntitiesTask, {
+  proposesClass: true,
+});

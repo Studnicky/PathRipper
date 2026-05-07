@@ -18,12 +18,24 @@
  * @since 0.6.0
  */
 
-import { describe, it } from 'node:test';
+import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { WinknlpEntitiesClassifier } from '../../../../src/classification/tasks/WinknlpEntitiesClassifier.js';
+// Side-effect import (FIRST): registers context lifecycle plugins (ctx.ajv,
+// etc.). Must precede the classifier import so `context:ajv` lands on the
+// onRunStart hook list before any `classify:*` hook — when plugin tests run
+// the full hook chain against a stub, `context:ajv` must populate `ctx.ajv`
+// before the plugin's hook tries to compile its config schema against it.
+import '../../../../src/context/index.js';
+
+import {
+  WinknlpEntitiesClassifier,
+  WINKNLP_ENTITIES_PLUGIN_NAME,
+} from '../../../../src/classification/tasks/WinknlpEntitiesClassifier.js';
 import { OutputConfigError }          from '../../../../src/errors/OutputConfigError.js';
+import { TaskRegistry } from '../../../../src/registry/TaskRegistry.js';
 import type {
+  PipelineContextInterface,
   PipelineStateInterface,
   ClassificationProposalInterface,
 } from '../../../../src/types/PipelineState.js';
@@ -292,5 +304,216 @@ describe('WinknlpEntitiesClassifier -- model loaded once in constructor', () => 
     }
     // Stable proposals across 3 separate calls confirm the winkNLP instance
     // and its registered custom entities are preserved across execute calls.
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// classify:winknlp-entities — self-registering plugin tests
+// ──────────────────────────────────────────────────────────────────────────────
+
+type PluginStub = Partial<PipelineContextInterface> & {
+  target: string;
+  outDir: string;
+  config: Record<string, unknown>;
+};
+
+async function runPluginOnRunStart(stub: PluginStub): Promise<void> {
+  for (const [, fn] of TaskRegistry.onRunStartHooks()) {
+    await fn(stub as unknown as PipelineContextInterface);
+  }
+}
+
+function buildPluginState(
+  ctx: PipelineContextInterface,
+  input: Record<string, unknown>,
+): PipelineStateInterface {
+  return {
+    targetId:        'unit-target',
+    source:          { target: 'unit-target', path: 'fixture.json' },
+    input,
+    classification:  null,
+    classifications: [],
+    output:          null,
+    context:         ctx,
+  };
+}
+
+describe('classify:winknlp-entities — self-registration', () => {
+  it('registers an onRunStart hook on the TaskRegistry', () => {
+    const names = TaskRegistry.onRunStartHooks().map(([n]) => n);
+    assert.ok(names.includes(WINKNLP_ENTITIES_PLUGIN_NAME),
+      `${WINKNLP_ENTITIES_PLUGIN_NAME} onRunStart hook must be registered`);
+  });
+
+  it('registers a per-record task on the TaskRegistry with proposesClass: true', () => {
+    assert.ok(TaskRegistry.has(WINKNLP_ENTITIES_PLUGIN_NAME),
+      `${WINKNLP_ENTITIES_PLUGIN_NAME} task must be registered`);
+    const manifest = TaskRegistry.manifests().find(m => m.name === WINKNLP_ENTITIES_PLUGIN_NAME && m.phase === undefined);
+    assert.ok(manifest, 'per-record manifest must be present');
+    assert.equal(manifest.proposesClass, true, 'must declare proposesClass: true');
+  });
+});
+
+describe('classify:winknlp-entities — onRunStart + per-record', () => {
+  let pluginStub: PluginStub;
+
+  before(async () => {
+    pluginStub = {
+      target: 'unit-target',
+      outDir: './graphs',
+      config: {
+        winknlpEntities: {
+          patterns: [
+            {
+              name:      'feat-action-cost',
+              patterns:  ['two actions'],
+              className: 'feat',
+              priority:  28,
+            },
+            {
+              name:      'spell-somatic',
+              patterns:  ['somatic component'],
+              className: 'spell',
+              priority:  30,
+            },
+          ],
+          fields: ['description', 'summary'],
+        },
+      },
+    };
+    await runPluginOnRunStart(pluginStub);
+  });
+
+  it('per-record task emits a proposal when a configured pattern matches', async () => {
+    const ctx = pluginStub as unknown as PipelineContextInterface;
+    const state = buildPluginState(ctx, {
+      description: 'This feat costs two actions to activate.',
+    });
+
+    const task = TaskRegistry.get(WINKNLP_ENTITIES_PLUGIN_NAME);
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+
+    assert.ok(nextCalled, 'next() must be called');
+    assert.equal(state.classifications.length, 1);
+    const [p] = state.classifications;
+    assert.ok(p !== undefined);
+    assert.equal(p.source,     WINKNLP_ENTITIES_PLUGIN_NAME);
+    assert.equal(p.className,  'feat');
+    assert.equal(p.priority,   28);
+    assert.equal(p.confidence, 1);
+    assert.ok(p.reasons.includes('winknlp:pattern=feat-action-cost'));
+    assert.ok(p.reasons.includes('winknlp:field=description'));
+    assert.ok(p.reasons.some(r => r.startsWith('winknlp:matched=')));
+  });
+
+  it('multiple patterns + multiple fields each yield a proposal', async () => {
+    const ctx = pluginStub as unknown as PipelineContextInterface;
+    const state = buildPluginState(ctx, {
+      description: 'This feat costs two actions to activate.',
+      summary:     'Casting requires a somatic component.',
+    });
+
+    const task = TaskRegistry.get(WINKNLP_ENTITIES_PLUGIN_NAME);
+    await task(async () => {}, state);
+
+    assert.equal(state.classifications.length, 2);
+    const sources = state.classifications.map(p => p.className).sort();
+    assert.deepEqual(sources, ['feat', 'spell']);
+    const fields = state.classifications.flatMap(p => p.reasons.filter(r => r.startsWith('winknlp:field='))).sort();
+    assert.deepEqual(fields, ['winknlp:field=description', 'winknlp:field=summary']);
+  });
+
+  it('record without configured field produces no proposal', async () => {
+    const ctx = pluginStub as unknown as PipelineContextInterface;
+    const state = buildPluginState(ctx, { name: 'no-prose-here' });
+
+    const task = TaskRegistry.get(WINKNLP_ENTITIES_PLUGIN_NAME);
+    await task(async () => {}, state);
+
+    assert.equal(state.classifications.length, 0);
+  });
+
+  it('empty prose value produces no proposal', async () => {
+    const ctx = pluginStub as unknown as PipelineContextInterface;
+    const state = buildPluginState(ctx, { description: '' });
+
+    const task = TaskRegistry.get(WINKNLP_ENTITIES_PLUGIN_NAME);
+    await task(async () => {}, state);
+
+    assert.equal(state.classifications.length, 0);
+  });
+});
+
+describe('classify:winknlp-entities — optional-config silence', () => {
+  it('onRunStart no-ops when ctx.config.winknlpEntities is absent', async () => {
+    const stub: PluginStub = {
+      target: 'no-config-target',
+      outDir: './graphs',
+      config: {},
+    };
+    // Should not throw.
+    await runPluginOnRunStart(stub);
+
+    // Per-record task still runs but emits nothing.
+    const ctx = stub as unknown as PipelineContextInterface;
+    const state = buildPluginState(ctx, { description: 'two actions of effort.' });
+    const task = TaskRegistry.get(WINKNLP_ENTITIES_PLUGIN_NAME);
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+
+    assert.ok(nextCalled);
+    assert.equal(state.classifications.length, 0);
+  });
+});
+
+describe('classify:winknlp-entities — malformed config', () => {
+  it('throws OutputConfigError on schema-validation failure', async () => {
+    const stub: PluginStub = {
+      target: 'bad-config-target',
+      outDir: './graphs',
+      config: {
+        winknlpEntities: {
+          // patterns required + minItems:1; this violates the schema.
+          patterns: [],
+        },
+      },
+    };
+
+    await assert.rejects(
+      runPluginOnRunStart(stub),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, 'must be OutputConfigError');
+        assert.match((err as Error).message, /classify:winknlp-entities/);
+        return true;
+      },
+    );
+  });
+
+  it('schema-validation error message names the classifier source', async () => {
+    const stub: PluginStub = {
+      target: 'attribution-target',
+      outDir: './graphs',
+      config: {
+        winknlpEntities: {
+          patterns: [
+            {
+              name:      'bad-pattern',
+              patterns:  [''], // violates minLength:1
+              className: 'feat',
+            },
+          ],
+        },
+      },
+    };
+
+    await assert.rejects(
+      runPluginOnRunStart(stub),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, 'must be OutputConfigError');
+        assert.match((err as Error).message, /classify:winknlp-entities/);
+        return true;
+      },
+    );
   });
 });
