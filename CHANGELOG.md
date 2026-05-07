@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **v0.7.0 silo migration task #21: `classify:property-fingerprint` is now a self-registering plugin module.** `src/classification/tasks/PropertyFingerprintClassifier.ts` now self-registers on the global `TaskRegistry` at module-load time: a per-record task (`TaskRegistry.register('classify:property-fingerprint', task, { proposesClass: true })`) and an `onRunStart` lifecycle hook (`TaskRegistry.registerHook('classify:property-fingerprint', 'onRunStart', hook, { proposesClass: true })`). The hook validates `ctx.config.propertyFingerprint` against the new exported `propertyFingerprintConfigSchema` AJV fragment via `ctx.ajv.compile`, resolves the fingerprints JSON file relative to the silo's `__schemasBase` bridge key (falling back to `process.cwd()`), parses + pre-computes each entry into a frozen `Set<string>` for O(1) Jaccard intersection, and writes the compiled set into a module-level cache keyed by `ctx.target` so concurrent runs with disjoint targets stay isolated. The per-record task reads the cache by `state.context?.target ?? state.targetId` and fails fast with `OutputConfigError` when no entry exists. The legacy `PropertyFingerprintClassifier.create(config, configDir)` factory path is preserved unchanged so `ClassificationFactory` and `SquashageOrchestrator` wiring continues working without modification during the silo migration. Compile and scoring helpers (`compileFingerprints`, `runFingerprintScoring`, `jaccard`, `intersectionSize`) are shared between both registration paths to avoid duplication. New unit-test file `tests/unit/classification/tasks/PropertyFingerprintClassifier.plugin.test.ts` covers the silo path: registration assertions, AJV config validation (malformed config rejected, absent config skipped), cache population + per-record proposal emission, missing-cache fail-fast, and cross-target cache isolation. Existing legacy unit, integration, and e2e tests continue to pass unchanged.
+
 ## [0.6.0] - 2026-05-07
 
 ### Added
