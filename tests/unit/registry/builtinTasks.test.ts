@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import type { RawContentInterface } from '../../../src/types/PipelineState.js';
 
 import { TaskRegistry } from '../../../src/registry/TaskRegistry.js';
 import { ExternalSchemaError } from '../../../src/errors/ExternalSchemaError.js';
@@ -154,6 +155,129 @@ describe('builtinTasks', () => {
       const expected = join(outDir, TARGET, 'all.jsonl');
       const body     = await readFile(expected, 'utf8');
       assert.equal(body, '{"n":1}\n{"n":2}\n{"n":3}\n');
+    });
+  });
+
+  describe('html:fetch + includeRawContent', () => {
+    it('sets _raw on state.page when includeRawContent is true', async () => {
+      const HTML = '<html><body>raw test</body></html>';
+      const scraper = new FakeHtmlScraper({
+        url:  'https://example.test/page-resolved',
+        html: HTML,
+        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+      });
+      const state = buildState({
+        context: { target: TARGET, outDir, scraper: scraper as unknown as never, config: { includeRawContent: true } },
+      });
+
+      const task = TaskRegistry.get('html:fetch');
+      await task(noopNext, state);
+
+      assert.ok(state.page._raw !== undefined, '_raw should be set');
+      const raw = state.page._raw as RawContentInterface;
+      assert.equal(raw.contentType, 'text/html');
+      assert.equal(raw.content, HTML);
+      assert.ok(typeof raw.fetchedAt === 'string' && raw.fetchedAt.length > 0);
+    });
+
+    it('does NOT set _raw on state.page when includeRawContent is false', async () => {
+      const scraper = new FakeHtmlScraper({
+        url:  'https://example.test/page-resolved',
+        html: '<html><body>no raw</body></html>',
+        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+      });
+      const state = buildState({
+        context: { target: TARGET, outDir, scraper: scraper as unknown as never, config: { includeRawContent: false } },
+      });
+
+      const task = TaskRegistry.get('html:fetch');
+      await task(noopNext, state);
+
+      assert.equal(state.page._raw, undefined);
+    });
+
+    it('does NOT set _raw on state.page when includeRawContent is absent', async () => {
+      const scraper = new FakeHtmlScraper({
+        url:  'https://example.test/page-resolved',
+        html: '<html><body>no raw</body></html>',
+        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+      });
+      const state = buildState({
+        context: { target: TARGET, outDir, scraper: scraper as unknown as never, config: {} },
+      });
+
+      const task = TaskRegistry.get('html:fetch');
+      await task(noopNext, state);
+
+      assert.equal(state.page._raw, undefined);
+    });
+  });
+
+  describe('json:write + _raw injection', () => {
+    it('includes _raw in written JSON when page._raw is set', async () => {
+      const raw: RawContentInterface = { contentType: 'text/html', content: '<p>hello</p>', fetchedAt: '2026-01-01T00:00:00.000Z' };
+      const state = buildState({
+        page:    { targetId: TARGET, title: 'Raw Page', url: 'https://example.test/raw', html: '<p>hello</p>', _raw: raw },
+        context: { target: TARGET, outDir, config: { includeRawContent: true } },
+        output:  { name: 'Raw Page' },
+      });
+      const task = TaskRegistry.get('json:write');
+      await task(noopNext, state);
+
+      const expected = join(outDir, TARGET, 'raw-page.json');
+      const parsed   = JSON.parse(await readFile(expected, 'utf8')) as { name: string; _raw?: RawContentInterface };
+      assert.equal(parsed.name, 'Raw Page');
+      assert.ok(parsed._raw !== undefined, '_raw should appear in output');
+      assert.equal(parsed._raw.contentType, 'text/html');
+      assert.equal(parsed._raw.content, '<p>hello</p>');
+    });
+
+    it('does not include _raw in written JSON when page._raw is absent', async () => {
+      const state = buildState({
+        context: { target: TARGET, outDir, config: {} },
+        output:  { name: 'Plain Page' },
+      });
+      const task = TaskRegistry.get('json:write');
+      await task(noopNext, state);
+
+      const expected = join(outDir, TARGET, 'my-page.json');
+      const parsed   = JSON.parse(await readFile(expected, 'utf8')) as { name: string; _raw?: unknown };
+      assert.equal(parsed.name, 'Plain Page');
+      assert.equal(parsed._raw, undefined);
+    });
+  });
+
+  describe('jsonl:append + _raw injection', () => {
+    it('includes _raw in appended JSONL rows when page._raw is set', async () => {
+      const raw: RawContentInterface = { contentType: 'text/html', content: '<b>bold</b>', fetchedAt: '2026-06-01T00:00:00.000Z' };
+      const ctx  = { target: TARGET, outDir, config: { includeRawContent: true } };
+      const task = TaskRegistry.get('jsonl:append');
+
+      await task(noopNext, buildState({
+        page:    { targetId: TARGET, title: 'A', url: 'https://x.test/a', _raw: raw },
+        context: ctx,
+        output:  { n: 1 },
+      }));
+
+      const outFile = join(outDir, TARGET, 'all.jsonl');
+      const body    = await readFile(outFile, 'utf8');
+      const row     = JSON.parse(body.split('\n')[0]!) as { n: number; _raw?: RawContentInterface };
+      assert.equal(row.n, 1);
+      assert.ok(row._raw !== undefined, '_raw should appear in JSONL row');
+      assert.equal(row._raw.content, '<b>bold</b>');
+    });
+
+    it('does not include _raw in appended JSONL rows when page._raw is absent', async () => {
+      const ctx  = { target: TARGET, outDir, config: {} };
+      const task = TaskRegistry.get('jsonl:append');
+
+      await task(noopNext, buildState({ context: ctx, output: { n: 99 } }));
+
+      const outFile = join(outDir, TARGET, 'all.jsonl');
+      const body    = await readFile(outFile, 'utf8');
+      const row     = JSON.parse(body.split('\n')[0]!) as { n: number; _raw?: unknown };
+      assert.equal(row.n, 99);
+      assert.equal(row._raw, undefined);
     });
   });
 

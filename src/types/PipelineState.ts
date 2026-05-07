@@ -42,6 +42,29 @@ export interface PipelineContextInterface {
 }
 
 /**
+ * Raw fetched content captured when `includeRawContent` is enabled on the target config.
+ *
+ * @remarks
+ * Populated by the fetch task (`html:fetch` or `wiki:fetch`) when `config.includeRawContent` is
+ * `true`. Carried on `PipelinePageInterface._raw` through the pipeline and injected into the
+ * serialized output by the write tasks (`json:write`, `jsonl:append`) just before disk write.
+ * Plugins must not read or write this field; it is managed entirely by built-in tasks.
+ *
+ * @category Pipeline
+ * @since 2.5.0
+ * @see {@link PipelinePageInterface}
+ * @group Types
+ */
+export interface RawContentInterface {
+  /** MIME content type of the fetched response (e.g. `"text/html"`, `"application/json"`). */
+  readonly contentType: string;
+  /** Raw response body string, byte-for-byte as received (HTML or JSON). */
+  readonly content:     string;
+  /** ISO-8601 timestamp at which the content was fetched. */
+  readonly fetchedAt:   string;
+}
+
+/**
  * Normalized page data carried through the pipeline for both HTML and wiki sources.
  *
  * @remarks
@@ -75,6 +98,11 @@ export interface PipelinePageInterface {
   readonly wikitext?: string | undefined;
   /** Raw HTML, present for HTML-sourced pages. */
   readonly html?:     string | undefined;
+  /**
+   * Raw fetched content; present only when `includeRawContent: true` is set on the target config.
+   * Set by the fetch task; consumed by write tasks. Plugins must not touch this field.
+   */
+  readonly _raw?:     RawContentInterface | undefined;
 }
 
 /**

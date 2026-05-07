@@ -18,6 +18,7 @@ import type {
 import type { HtmlScraper, ScrapedPageInterface } from '../scrapers/HtmlScraper.js';
 import type { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { WikiPageInterface } from '../types/MediaWikiScraper.js';
+import type { RawContentInterface } from '../types/PipelineState.js';
 
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default
                   ?? (AjvModule      as unknown as AjvCtorType);
@@ -122,7 +123,13 @@ export const htmlFetchTask: TaskFnInterface<PipelineStateInterface> = async (nex
   }
 
   const result: ScrapedPageInterface = await ctx.scraper.fetchPage(state.page.url);
-  replacePage(state, { ...state.page, url: result.url, html: result.html });
+
+  const includeRaw = ctx.config['includeRawContent'] === true;
+  const raw: RawContentInterface | undefined = includeRaw
+    ? { contentType: 'text/html', content: result.html, fetchedAt: new Date().toISOString() }
+    : undefined;
+
+  replacePage(state, { ...state.page, url: result.url, html: result.html, ...(raw !== undefined ? { _raw: raw } : {}) });
 
   await next();
 };
@@ -196,7 +203,10 @@ export const jsonWriteTask: TaskFnInterface<PipelineStateInterface> = async (nex
   const slug    = pageSlug(state.page);
   const outFile = join(ctx.outDir, ctx.target, `${slug}.json`);
   await mkdir(dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify(state.output, null, 2), 'utf8');
+  const payload: Record<string, unknown> = state.page._raw !== undefined
+    ? { ...state.output, _raw: state.page._raw }
+    : { ...state.output };
+  await writeFile(outFile, JSON.stringify(payload, null, 2), 'utf8');
   logger.debug('json:write', `Wrote JSON: ${outFile}`, { task: 'json:write', outFile });
   await next();
 };
@@ -211,7 +221,10 @@ export const jsonlAppendTask: TaskFnInterface<PipelineStateInterface> = async (n
   }
   const outFile = join(ctx.outDir, ctx.target, 'all.jsonl');
   await mkdir(dirname(outFile), { recursive: true });
-  await appendFile(outFile, `${JSON.stringify(state.output)}\n`, 'utf8');
+  const payload: Record<string, unknown> = state.page._raw !== undefined
+    ? { ...state.output, _raw: state.page._raw }
+    : { ...state.output };
+  await appendFile(outFile, `${JSON.stringify(payload)}\n`, 'utf8');
   logger.debug('jsonl:append', `Appended JSONL row: ${outFile}`, { task: 'jsonl:append', outFile });
   await next();
 };
