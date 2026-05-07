@@ -116,18 +116,21 @@ describe('AONPRD snapshot e2e (local only)', () => {
       assert.equal(fetchCalls.length, 0,
         `phase 2 must not hit the network; saw: ${fetchCalls.join(', ')}`);
 
-      const phase2Files = (await readdir(targetDir)).filter((f: string): boolean =>
+      // Plugin output now lives in <targetDir>/aonprd:parse/ subfolder.
+      const pluginDir   = resolve(targetDir, 'aonprd:parse');
+      const phase2Files = (await readdir(pluginDir)).filter((f: string): boolean =>
         f.endsWith('.json') && f !== 'failures.json',
       );
       assert.ok(phase2Files.length === PROBES.length,
-        `phase 2: expected ${PROBES.length.toString()} JSON files, got ${phase2Files.length.toString()}`);
+        `phase 2: expected ${PROBES.length.toString()} JSON files in aonprd:parse/, got ${phase2Files.length.toString()}`);
       for (const f of phase2Files) {
-        const json = JSON.parse(await readFile(resolve(targetDir, f), 'utf-8')) as {
-          _type?: string; name?: string; source?: { book: string | null };
+        const json = JSON.parse(await readFile(resolve(pluginDir, f), 'utf-8')) as {
+          _type?: string; name?: string; source?: { book: string | null }; _raw?: unknown;
         };
         assert.ok(json._type !== undefined && json._type !== '', `${f}: missing _type`);
         assert.ok(json.name  !== undefined && json.name  !== '', `${f}: missing name`);
         assert.ok(json.source !== undefined && json.source.book !== null, `${f}: missing source.book`);
+        assert.equal(json._raw, undefined, `${f}: _raw must NOT be embedded in plugin JSON`);
       }
     } finally {
       await rm(outDir, { recursive: true, force: true });

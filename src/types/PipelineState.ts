@@ -28,17 +28,52 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  */
 export interface PipelineContextInterface {
   /** Scrape target identifier from the config. */
-  readonly target:   string;
+  readonly target:          string;
   /** Output base directory; tasks write under `<outDir>/<target>/...`. */
-  readonly outDir:   string;
+  readonly outDir:          string;
   /** Scraper instance used by fetch tasks; absent when not required. */
-  readonly scraper?: HtmlScraper | MediaWikiScraper | undefined;
+  readonly scraper?:        HtmlScraper | MediaWikiScraper | undefined;
   /** Per-target configuration object as supplied by the loaded ripper config. */
-  readonly config:   Record<string, unknown>;
+  readonly config:          Record<string, unknown>;
   /** Optional shared content store; used by `crawl:list-targets` and any task that needs the same cache the scraper sees. */
-  readonly cache?:   ScraperCache | undefined;
+  readonly cache?:          ScraperCache | undefined;
+  /**
+   * Name of the first non-built-in pipeline task (the plugin step), if any.
+   * Used by write tasks to determine the plugin output subfolder.
+   * Absent when no plugin step is present in the pipeline.
+   */
+  readonly pluginTaskName?: string | undefined;
+  /**
+   * When `false`, plugin output is written to a single file (`<plugin-task-name>.jsonl`-style)
+   * rather than a subfolder per record. Mirrors `output.splitByTaskName` from the global config.
+   * Defaults to `true` when absent.
+   */
+  readonly splitByTaskName?: boolean | undefined;
   /** Discovered target URLs (populated by `crawl:list-targets`); orchestrator iterates this when set. */
   targets?: ReadonlyArray<string>;
+}
+
+/**
+ * Raw fetched content captured when `includeRawContent` is enabled on the target config.
+ *
+ * @remarks
+ * Populated by the fetch task (`html:fetch` or `wiki:fetch`) unless `config.includeRawContent` is
+ * explicitly `false`. Carried on `PipelinePageInterface._raw` through the pipeline and injected
+ * into the serialized output by the write tasks (`json:write`, `jsonl:append`) just before disk
+ * write. Plugins must not read or write this field; it is managed entirely by built-in tasks.
+ *
+ * @category Pipeline
+ * @since 2.5.0
+ * @see {@link PipelinePageInterface}
+ * @group Types
+ */
+export interface RawContentInterface {
+  /** MIME content type of the fetched response (e.g. `"text/html"`, `"application/json"`). */
+  readonly contentType: string;
+  /** Raw response body string, byte-for-byte as received (HTML or JSON). */
+  readonly content:     string;
+  /** ISO-8601 timestamp at which the content was fetched. */
+  readonly fetchedAt:   string;
 }
 
 /**
@@ -75,6 +110,11 @@ export interface PipelinePageInterface {
   readonly wikitext?: string | undefined;
   /** Raw HTML, present for HTML-sourced pages. */
   readonly html?:     string | undefined;
+  /**
+   * Raw fetched content; present by default. Absent only when `includeRawContent: false` is set on the target config.
+   * Set by the fetch task; consumed by write tasks. Plugins must not touch this field.
+   */
+  readonly _raw?:     RawContentInterface | undefined;
 }
 
 /**

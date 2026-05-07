@@ -57,6 +57,7 @@ Each key is a target name (e.g. `"aonprd"`). Value is a target config.
 | `headers` | object |  | Additional HTTP headers. Include `User-Agent`. |
 | `outputSchema` | string |  | Path to a JSON Schema file. Records that fail validation are handled per `onSchemaError`. |
 | `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` |  | What to do when a record fails schema validation. |
+| `includeRawContent` | boolean | `true` | When `false`, raw content is not populated on `state.page._raw` at all during the pipeline run. No raw file is written to `raw/`. See [Output folder layout](#output-folder-layout) below. |
 | `mapping` | object |  | Field-rename map applied after plugin output. |
 | `cache` | CacheConfig |  | See [Cache](./cache). |
 | `crawler` | CrawlerConfig |  | Inline crawler config for this target. |
@@ -111,6 +112,84 @@ Validation errors surface at first write. If your plugin produces invalid output
   }
 }
 ```
+
+---
+
+## Raw content output
+
+Every output record carries a `_raw` field by default. This field is injected just before the record is written to disk and holds the raw fetched bytes alongside the parsed fields. Downstream consumers can re-parse historical Ripperoni output without depending on Ripperoni's cache infrastructure.
+
+### Default behaviour
+
+Raw content is always written. No configuration is required to get `_raw` in output. Parsing and enrichment are additive layers on top — plugins set `state.output` fields that appear alongside `_raw`, not instead of it.
+
+A pipeline with no plugin step (`["html:fetch", "json:write"]`) is a valid and complete pipeline: it produces a raw dump per page with no further extraction. This is useful for archiving, debugging, or when you want to defer parsing to a downstream tool.
+
+### Shape
+
+```json
+{
+  "_raw": {
+    "contentType": "text/html",
+    "content":     "<html>...</html>",
+    "fetchedAt":   "2026-05-07T04:00:00.000Z"
+  }
+}
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `contentType` | string | MIME type of the response (`text/html` for HTML targets). |
+| `content` | string | Full raw response body, byte-for-byte. |
+| `fetchedAt` | ISO-8601 string | Timestamp at which the content was fetched. |
+
+### Opting out (storage savings)
+
+Set `includeRawContent: false` to strip `_raw` from output. Use this for production scrapes where storage is a concern. Rough estimate: 15,000 AONPRD records x 80 KB of HTML = roughly 1.2 GB of additional output. If you do not need to re-parse output offline, opt out to keep file sizes small.
+
+```json
+{
+  "targets": {
+    "aonprd": {
+      "baseUrl":           "https://2e.aonprd.com",
+      "pipeline":          ["html:fetch", "aonprd:parse", "json:write"],
+      "includeRawContent": false,
+      "cache": { "dir": "./output/.cache/aonprd", "mode": "read-write" }
+    }
+  }
+}
+```
+
+### Raw-dump-only pipeline (no plugin)
+
+A pipeline without a plugin task is fully supported and produces one JSON file per page:
+
+```json
+{
+  "targets": {
+    "archive": {
+      "baseUrl":  "https://example.com",
+      "pipeline": ["html:fetch", "json:write"]
+    }
+  }
+}
+```
+
+Output shape per record (output is empty object because no plugin ran, `_raw` carries the content):
+
+```json
+{
+  "_raw": {
+    "contentType": "text/html",
+    "content":     "<html>...</html>",
+    "fetchedAt":   "2026-05-07T04:00:00.000Z"
+  }
+}
+```
+
+### Plugin contract
+
+Plugins must not read or write the `_raw` field. It is set by `html:fetch` and consumed by `json:write` / `jsonl:append`. Plugins interact with `state.page.html` and `state.output` as usual; `_raw` is injected transparently into the serialized file just before the disk write.
 
 ---
 

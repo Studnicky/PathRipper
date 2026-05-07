@@ -207,3 +207,202 @@ describe('aonprd plugin — page-type detection', () => {
     assert.equal(r._type, 'unknown');
   });
 });
+
+// ─── New field: entity IDs from URL ─────────────────────────────────────────
+
+describe('aonprd plugin — entity IDs from URL', () => {
+  it('extracts spell_id from URL query string', async () => {
+    const html = await load('spell-abyssal-plague.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=42');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.equal(r.spell_id, 42);
+  });
+
+  it('extracts feat_id from URL query string', async () => {
+    const html = await load('feat-dwarven-lore.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=123');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.equal(r.feat_id, 123);
+  });
+
+  it('extracts monster_id from URL query string', async () => {
+    const html = await load('monster-phantasmal-minion.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=99');
+    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
+    assert.equal(r.monster_id, 99);
+  });
+
+  it('extracts equipment_id from URL query string', async () => {
+    const html = await load('equipment-adventurers-pack.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Equipment.aspx?ID=15');
+    if (r._type !== 'equipment') throw new Error(`expected equipment, got ${r._type}`);
+    assert.equal(r.equipment_id, 15);
+  });
+
+  it('extracts weapon_id from URL query string', async () => {
+    const html = await load('weapon-longsword.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Weapons.aspx?ID=300');
+    if (r._type !== 'weapon') throw new Error(`expected weapon, got ${r._type}`);
+    assert.equal(r.weapon_id, 300);
+  });
+});
+
+// ─── New field: meta_keywords + meta_description ─────────────────────────────
+
+describe('aonprd plugin — meta tags', () => {
+  it('captures meta_keywords from feat page', async () => {
+    const html = await load('feat-hedge-prison.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=7623');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(r.meta_keywords !== null, 'meta_keywords should be present');
+    assert.ok(r.meta_keywords.includes('Nethys'), `meta_keywords: ${r.meta_keywords}`);
+  });
+
+  it('captures meta_description from feat page', async () => {
+    const html = await load('feat-hedge-prison.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=7623');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(r.meta_description !== null, 'meta_description should be present');
+    assert.ok(r.meta_description.length > 5, `meta_description too short: ${r.meta_description ?? ''}`);
+  });
+
+  it('captures meta_keywords from spell page', async () => {
+    const html = await load('spell-abyssal-plague.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=1');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.ok(r.meta_keywords !== null, 'meta_keywords should be present');
+  });
+
+  it('captures meta_description from weapon page', async () => {
+    const html = await load('weapon-longsword.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Weapons.aspx?ID=300');
+    if (r._type !== 'weapon') throw new Error(`expected weapon, got ${r._type}`);
+    assert.ok(r.meta_description !== null, 'weapon meta_description should be present');
+  });
+});
+
+// ─── New field: trait_ids promoted to output types ───────────────────────────
+
+describe('aonprd plugin — trait_ids in output types', () => {
+  it('feat output exposes trait_ids keyed by trait name', async () => {
+    const html = await load('feat-dwarven-lore.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=1');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(typeof r.trait_ids === 'object', 'trait_ids should be an object');
+    // Dwarven Lore has the Dwarf trait; its Traits.aspx ID should be present.
+    const hasDwarfId = Object.keys(r.trait_ids).some((k) => k.toLowerCase().includes('dwarf'));
+    assert.ok(hasDwarfId, `expected Dwarf trait_id, got keys: ${Object.keys(r.trait_ids).join(',')}`);
+  });
+
+  it('spell output exposes trait_ids', async () => {
+    const html = await load('spell-abyssal-plague.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=1');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.ok(typeof r.trait_ids === 'object');
+    assert.ok(Object.keys(r.trait_ids).length > 0, 'trait_ids should be non-empty');
+  });
+
+  it('monster output exposes trait_ids', async () => {
+    const html = await load('monster-phantasmal-minion.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=1');
+    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
+    assert.ok(typeof r.trait_ids === 'object');
+  });
+});
+
+// ─── New field: sources[] promoted to output types ────────────────────────────
+
+describe('aonprd plugin — sources[] in output types', () => {
+  it('feat output includes sources array with at least one entry', async () => {
+    const html = await load('feat-dwarven-lore.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=1');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(Array.isArray(r.sources), 'sources should be an array');
+    assert.ok(r.sources.length >= 1, `expected ≥1 source, got ${r.sources.length.toString()}`);
+    assert.ok(r.sources[0]?.book !== null, 'first source book should be non-null');
+  });
+
+  it('spell output includes sources array', async () => {
+    const html = await load('spell-abyssal-plague.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=1');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.ok(Array.isArray(r.sources));
+    assert.ok(r.sources.length >= 1);
+  });
+});
+
+// ─── New field: spell Defense (remaster) ─────────────────────────────────────
+
+describe('aonprd plugin — spell Defense field (remaster)', () => {
+  it('captures Defense field from remaster spell page', async () => {
+    const html = await load('spell-with-defense.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=1546');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.ok(r.defense !== null, 'defense field should be present on remaster spell');
+    // Defense on this spell is "AC" (attack roll against AC).
+    assert.ok(r.defense.length > 0, `defense should be non-empty: ${r.defense ?? ''}`);
+  });
+
+  it('captures Deities links from spell page', async () => {
+    const html = await load('spell-with-deities.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Spells.aspx?ID=1722');
+    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
+    assert.ok(r.deities.length >= 1, `expected ≥1 deity, got ${r.deities.length.toString()}`);
+    assert.ok(r.deities[0]?.deity_id !== null, 'deity should have an ID');
+    assert.ok(typeof r.deities[0]?.name === 'string');
+  });
+});
+
+// ─── New field: feat related_feats ───────────────────────────────────────────
+
+describe('aonprd plugin — feat related_feats', () => {
+  it('captures related_feats from the inline Related Feats field', async () => {
+    const html = await load('feat-with-related-feats.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=1245');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(r.related_feats.length >= 1, `expected ≥1 related feat, got ${r.related_feats.length.toString()}`);
+    assert.ok(r.related_feats[0]?.feat_id !== null, 'related feat should have an ID');
+    assert.ok(typeof r.related_feats[0]?.name === 'string');
+  });
+
+  it('returns empty related_feats for feat without the field', async () => {
+    const html = await load('feat-dwarven-lore.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Feats.aspx?ID=1');
+    if (r._type !== 'feat') throw new Error(`expected feat, got ${r._type}`);
+    assert.ok(Array.isArray(r.related_feats), 'related_feats should always be an array');
+  });
+});
+
+// ─── New field: monster family_links ─────────────────────────────────────────
+
+describe('aonprd plugin — monster family_links', () => {
+  it('captures family_links from Related Groups field', async () => {
+    const html = await load('monster-with-family.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=654');
+    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
+    assert.ok(r.family_links.length >= 1, `expected ≥1 family link, got ${r.family_links.length.toString()}`);
+    assert.ok(r.family_links[0]?.family_id !== null, 'family link should have an ID');
+    assert.ok(typeof r.family_links[0]?.name === 'string');
+  });
+
+  it('returns empty family_links for monster without Related Groups', async () => {
+    const html = await load('monster-phantasmal-minion.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=1');
+    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
+    assert.ok(Array.isArray(r.family_links), 'family_links should always be an array');
+  });
+});
+
+// ─── New field: weapon/armor/equipment IDs and sources ───────────────────────
+
+describe('aonprd plugin — weapon new fields', () => {
+  it('weapon output includes weapon_id, trait_ids, sources, meta fields', async () => {
+    const html = await load('weapon-longsword.html');
+    const r = parseAonHtml(html, 'https://2e.aonprd.com/Weapons.aspx?ID=300');
+    if (r._type !== 'weapon') throw new Error(`expected weapon, got ${r._type}`);
+    assert.equal(r.weapon_id, 300);
+    assert.ok(typeof r.trait_ids === 'object');
+    assert.ok(Array.isArray(r.sources));
+    assert.ok(r.meta_keywords !== null, 'meta_keywords should be present');
+  });
+});

@@ -1,6 +1,6 @@
 {
   "name": "ripperoni",
-  "version": "2.4.0",
+  "version": "2.5.0",
   "description": "Web ingestion engine; slices wikis, sites, and URL lists into JSON records, one page at a time. Pairs with Squashage for RDF graph reconstitution.",
   "type": "module",
   "bin": {
@@ -41,7 +41,7 @@
     "dev": "node --watch dist/cli/cli.js",
     "postinstall": "bash scripts/install-hooks.sh",
     "prepare": "bash scripts/install-hooks.sh",
-    "test:integration": "node --test tests/integration/**/*.test.ts",
+    "test:integration": "node --import tsx --test 'tests/integration/**/*.test.ts'",
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
