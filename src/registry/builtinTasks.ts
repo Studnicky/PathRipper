@@ -42,14 +42,50 @@ const isWikiScraper = (s: unknown): s is MediaWikiScraper => {
 
 /** Lower-cases the input and replaces non `[a-z0-9-]` runs with single hyphens. */
 const toSlug = (raw: string): string => {
-  const lower    = raw.toLowerCase();
-  const replaced = lower.replace(/[^a-z0-9-]+/g, '-');
+  const lower     = raw.toLowerCase();
+  const replaced  = lower.replace(/[^a-z0-9-]+/g, '-');
   const collapsed = replaced.replace(/-+/g, '-');
   return collapsed.replace(/^-|-$/g, '');
 };
 
-/** Returns the slug for a page, preferring `title` and falling back to `url`. */
+/**
+ * Derives a safe filename stem from a URL.
+ *
+ * Takes the path and query string, replaces `?`, `=`, `&`, `/`, `#` and other
+ * non-safe characters with hyphens, collapses repeats, and trims edge hyphens.
+ *
+ * Example: `https://2e.aonprd.com/Feats.aspx?ID=750` -> `Feats.aspx-ID-750`
+ */
+const urlToFilename = (url: string): string => {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    // Treat as a plain string slug if not a valid absolute URL.
+    return toSlug(url);
+  }
+  // Combine pathname (strip leading slash) and search (strip leading ?)
+  const path   = parsed.pathname.replace(/^\//, '');
+  const search = parsed.search.replace(/^\?/, '');
+  const raw    = search.length > 0 ? `${path}?${search}` : path;
+  // Replace URL separators with hyphens, then collapse and trim.
+  const slug   = raw.replace(/[/?=&#]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return slug.length > 0 ? slug : toSlug(url);
+};
+
+/** Returns the slug for a page, preferring URL-based derivation for absolute URLs and falling back to title. */
 const pageSlug = (page: PipelinePageInterface): string => {
+  // Prefer URL-derived filename when the URL is a valid absolute URL.
+  if (page.url.length > 0) {
+    try {
+      new URL(page.url);
+      const slug = urlToFilename(page.url);
+      if (slug.length > 0) return slug;
+    } catch {
+      // Fall through to title-based slug.
+    }
+  }
+  // Fall back to title-based slug (used for wiki pages and URL-less pages).
   const source = page.title.length > 0 ? page.title : page.url;
   const slug   = toSlug(source);
   if (slug.length === 0) {
@@ -192,7 +228,16 @@ export const wikiWriteRawTask: TaskFnInterface<PipelineStateInterface> = async (
   await next();
 };
 
-/** Writes `state.output` (or `{}` if null) as 2-space JSON to `<outDir>/<target>/<slug>.json`; skips when output is null. */
+/**
+ * Writes `state.output` as 2-space JSON to `<outDir>/<target>/<pluginTaskName>/<slug>.json`.
+ *
+ * When `ctx.pluginTaskName` is set (a plugin step exists in the pipeline), the file is written
+ * under a subfolder named after the plugin task. When absent (raw-dump-only pipeline), the file
+ * is written directly under `<outDir>/<target>/`. The `_raw` field is NOT embedded; raw content
+ * lives in the sibling `raw/` folder written by `html:write-raw` or `wiki:write-raw`.
+ *
+ * Skips when `state.output` is null.
+ */
 export const jsonWriteTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   const ctx = requireContext(state, 'json:write');
   if (state.output === null) {
@@ -200,18 +245,29 @@ export const jsonWriteTask: TaskFnInterface<PipelineStateInterface> = async (nex
     await next();
     return;
   }
-  const slug    = pageSlug(state.page);
-  const outFile = join(ctx.outDir, ctx.target, `${slug}.json`);
+  const slug            = pageSlug(state.page);
+  const splitByTaskName = ctx.splitByTaskName !== false;
+  const subdir          = (ctx.pluginTaskName !== undefined && splitByTaskName) ? ctx.pluginTaskName : '';
+  const outFile         = subdir.length > 0
+    ? join(ctx.outDir, ctx.target, subdir, `${slug}.json`)
+    : join(ctx.outDir, ctx.target, `${slug}.json`);
   await mkdir(dirname(outFile), { recursive: true });
-  const payload: Record<string, unknown> = state.page._raw !== undefined
-    ? { ...state.output, _raw: state.page._raw }
-    : { ...state.output };
+  // _raw is NOT embedded here — it lives in the sibling raw/ folder.
+  const payload: Record<string, unknown> = { ...state.output };
   await writeFile(outFile, JSON.stringify(payload, null, 2), 'utf8');
   logger.debug('json:write', `Wrote JSON: ${outFile}`, { task: 'json:write', outFile });
   await next();
 };
 
-/** Appends `JSON.stringify(state.output) + '\n'` to `<outDir>/<target>/all.jsonl`. */
+/**
+ * Appends `JSON.stringify(state.output) + '\n'` to `<outDir>/<target>/<pluginTaskName>/all.jsonl`.
+ *
+ * When `ctx.pluginTaskName` is set, the file is appended under the plugin subfolder.
+ * When absent, appends to `<outDir>/<target>/all.jsonl`. The `_raw` field is NOT embedded;
+ * raw content lives in the sibling `raw/` folder.
+ *
+ * Skips when `state.output` is null.
+ */
 export const jsonlAppendTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   const ctx = requireContext(state, 'jsonl:append');
   if (state.output === null) {
@@ -219,11 +275,14 @@ export const jsonlAppendTask: TaskFnInterface<PipelineStateInterface> = async (n
     await next();
     return;
   }
-  const outFile = join(ctx.outDir, ctx.target, 'all.jsonl');
+  const splitByTaskName = ctx.splitByTaskName !== false;
+  const subdir          = (ctx.pluginTaskName !== undefined && splitByTaskName) ? ctx.pluginTaskName : '';
+  const outFile         = subdir.length > 0
+    ? join(ctx.outDir, ctx.target, subdir, 'all.jsonl')
+    : join(ctx.outDir, ctx.target, 'all.jsonl');
   await mkdir(dirname(outFile), { recursive: true });
-  const payload: Record<string, unknown> = state.page._raw !== undefined
-    ? { ...state.output, _raw: state.page._raw }
-    : { ...state.output };
+  // _raw is NOT embedded here — it lives in the sibling raw/ folder.
+  const payload: Record<string, unknown> = { ...state.output };
   await appendFile(outFile, `${JSON.stringify(payload)}\n`, 'utf8');
   logger.debug('jsonl:append', `Appended JSONL row: ${outFile}`, { task: 'jsonl:append', outFile });
   await next();

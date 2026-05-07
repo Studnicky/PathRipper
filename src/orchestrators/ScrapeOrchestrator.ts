@@ -65,9 +65,13 @@ export class ScrapeOrchestrator {
 
     await import('../registry/builtinTasks.js');
 
-    const targetCfg     = htmlTarget as Record<string, unknown>;
-    const pipelineNames = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
-    const pluginPaths   = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    const targetCfg      = htmlTarget as Record<string, unknown>;
+    const pipelineNames  = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
+    const pluginPaths    = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    const pluginTaskName = ScrapeOrchestrator.derivePluginTaskName(pipelineNames);
+    const outputCfg      = opts.config.output as Record<string, unknown>;
+    const splitByTaskName: boolean | undefined =
+      typeof outputCfg['splitByTaskName'] === 'boolean' ? outputCfg['splitByTaskName'] as boolean : undefined;
     await TaskRegistry.loadAll(pluginPaths, opts.configDir);
 
     const cache       = ScrapeOrchestrator.buildCache(targetCfg);
@@ -106,6 +110,8 @@ export class ScrapeOrchestrator {
         scraper,
         config: targetCfg,
         ...(cache !== null ? { cache } : {}),
+        ...(pluginTaskName !== undefined ? { pluginTaskName } : {}),
+        ...(splitByTaskName !== undefined ? { splitByTaskName } : {}),
       };
       const pipeline = Pipeline.create<PipelineStateInterface>({ name: opts.target });
       for (const taskName of pipelineNames) {
@@ -149,9 +155,13 @@ export class ScrapeOrchestrator {
 
     await import('../registry/builtinTasks.js');
 
-    const targetCfg     = wikiTarget as Record<string, unknown>;
-    const pipelineNames = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
-    const pluginPaths   = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    const targetCfg      = wikiTarget as Record<string, unknown>;
+    const pipelineNames  = ScrapeOrchestrator.requirePipeline(targetCfg, opts.target);
+    const pluginPaths    = ScrapeOrchestrator.derivePluginPaths(pipelineNames);
+    const pluginTaskName = ScrapeOrchestrator.derivePluginTaskName(pipelineNames);
+    const outputCfgWiki  = opts.config.output as Record<string, unknown>;
+    const splitByTaskNameWiki: boolean | undefined =
+      typeof outputCfgWiki['splitByTaskName'] === 'boolean' ? outputCfgWiki['splitByTaskName'] as boolean : undefined;
     await TaskRegistry.loadAll(pluginPaths, opts.configDir);
 
     const cache       = ScrapeOrchestrator.buildCache(targetCfg);
@@ -211,6 +221,8 @@ export class ScrapeOrchestrator {
       resumeFailures: opts.resumeFailures === true,
       pipeline:       pipelineNames,
       targetConfig:   targetCfg,
+      ...(pluginTaskName !== undefined ? { pluginTaskName } : {}),
+      ...(splitByTaskNameWiki !== undefined ? { splitByTaskName: splitByTaskNameWiki } : {}),
     });
   }
 
@@ -226,6 +238,18 @@ export class ScrapeOrchestrator {
       }
     }
     return pipeline as string[];
+  }
+
+  /**
+   * Returns the name of the first non-built-in task in the pipeline, or `undefined`
+   * when no plugin step exists. Used to determine the plugin output subfolder.
+   */
+  private static derivePluginTaskName(pipeline: ReadonlyArray<string>): string | undefined {
+    for (const entry of pipeline) {
+      if (BUILTIN_PREFIXES.some((p: string): boolean => entry.startsWith(p))) continue;
+      return entry;
+    }
+    return undefined;
   }
 
   /**
@@ -326,7 +350,7 @@ export class ScrapeOrchestrator {
   }
 
   private static async runPipeline(opts: RunPipelineOptionsInterface): Promise<void> {
-    const { targetId, outDir, scraper, members, log, batchSize, concurrency, resumeFailures, pipeline: pipelineNames, targetConfig } = opts;
+    const { targetId, outDir, scraper, members, log, batchSize, concurrency, resumeFailures, pipeline: pipelineNames, targetConfig, pluginTaskName, splitByTaskName } = opts;
 
     // ── Resume: build set of already-written slugs ──────────────────────────
     const targetDir     = resolve(outDir, targetId);
@@ -376,6 +400,8 @@ export class ScrapeOrchestrator {
             outDir,
             scraper,
             config: targetConfig,
+            ...(pluginTaskName !== undefined ? { pluginTaskName } : {}),
+            ...(splitByTaskName !== undefined ? { splitByTaskName } : {}),
           },
         }),
       );

@@ -57,7 +57,7 @@ Each key is a target name (e.g. `"aonprd"`). Value is a target config.
 | `headers` | object |  | Additional HTTP headers. Include `User-Agent`. |
 | `outputSchema` | string |  | Path to a JSON Schema file. Records that fail validation are handled per `onSchemaError`. |
 | `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` |  | What to do when a record fails schema validation. |
-| `includeRawContent` | boolean | `true` | When `false`, the `_raw` field is stripped from output records. By default every record carries `_raw`. See [Raw content output](#raw-content-output) below. |
+| `includeRawContent` | boolean | `true` | When `false`, raw content is not populated on `state.page._raw` at all during the pipeline run. No raw file is written to `raw/`. See [Output folder layout](#output-folder-layout) below. |
 | `mapping` | object |  | Field-rename map applied after plugin output. |
 | `cache` | CacheConfig |  | See [Cache](./cache). |
 | `crawler` | CrawlerConfig |  | Inline crawler config for this target. |
