@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `includeRawContent` boolean flag on `targets` and `mediawiki` target configs (default `false`). When `true`, each output record gains a `_raw` field: `{ contentType: string, content: string, fetchedAt: string }` carrying the raw fetched response body byte-for-byte. Downstream consumers (e.g. Squashage v0.6.0 max-extraction) can re-parse historical Ripperoni output without depending on Ripperoni's cache infrastructure. Storage tradeoff: opt-in because always-on at AONPRD scale (~15K records x ~80 KB HTML) adds ~1.2 GB per run.
+- AONPRD e2e fixture config (`tests/e2e/fixtures/pathripper-legacy.config.json`) sets `includeRawContent: true` so the canonical AONPRD scrape always carries raw HTML for downstream re-parsing.
+- Unit tests: `html:fetch` writes `_raw` to `state.page` when flag is on; `json:write` and `jsonl:append` include/strip `_raw` per flag.
+- Integration test (`tests/integration/rawContent.test.ts`): fixture-based pipeline with `includeRawContent: true` produces output where `_raw.content` matches the input HTML byte-for-byte.
+- Documentation: `docs/usage/configuration.md` describes the flag, the `_raw` shape, storage tradeoff, plugin contract, and example config.
+
 ## [2.4.0] - 2026-05-06
 
 ### Changed

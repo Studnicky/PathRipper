@@ -47,8 +47,9 @@ const SCHEMA = {
             type: 'object',
             additionalProperties: { type: 'string' },
           },
-          outputSchema:  { type: 'string', minLength: 1 },
-          onSchemaError: { type: 'string', enum: ['halt', 'skip', 'warn'] },
+          outputSchema:     { type: 'string', minLength: 1 },
+          onSchemaError:    { type: 'string', enum: ['halt', 'skip', 'warn'] },
+          includeRawContent: { type: 'boolean' },
           mapping: {
             type: 'object',
             additionalProperties: { type: 'string', minLength: 1 },
@@ -105,8 +106,9 @@ const SCHEMA = {
           retryBaseDelayMs: { type: 'integer', minimum: 100 },
           retryMaxDelayMs:  { type: 'integer', minimum: 1000 },
           concurrency:      { type: 'integer', minimum: 1, maximum: 32 },
-          outputSchema:  { type: 'string', minLength: 1 },
-          onSchemaError: { type: 'string', enum: ['halt', 'skip', 'warn'] },
+          outputSchema:     { type: 'string', minLength: 1 },
+          onSchemaError:    { type: 'string', enum: ['halt', 'skip', 'warn'] },
+          includeRawContent: { type: 'boolean' },
           mapping: {
             type: 'object',
             additionalProperties: { type: 'string', minLength: 1 },
