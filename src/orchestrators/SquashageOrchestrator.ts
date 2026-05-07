@@ -34,10 +34,11 @@
  */
 
 import { readdir, stat, readFile } from 'node:fs/promises';
-import { join, extname, dirname }  from 'node:path';
+import { join, extname, dirname, resolve as resolvePath } from 'node:path';
 
-// Bootstrap built-in task registrations (json:read, rdfjs:finalize).
+// Bootstrap built-in task registrations (json:read, rdfjs:finalize, rdfjs:stream).
 import '../tasks/index.js';
+import { openStreamingOutput } from '../tasks/rdfjsStream.js';
 
 import type { SquashageConfigInterface, TargetConfigInterface } from '../config/SquashageConfig.js';
 import type { OutputConfigInterface }      from '../config/OutputConfig.js';
@@ -58,6 +59,10 @@ import { GraphBuilder }            from '../rdf/GraphBuilder.js';
 import { Namespaces }              from '../rdf/Namespaces.js';
 import { QuarantineWriter }        from '../quarantine/QuarantineWriter.js';
 import { Logger }                  from '../modules/logger/logger.js';
+import { JsonTologyOntology }      from '../ontology/JsonTologyOntology.js';
+import type { JsonTologySchemaInputInterface } from '../ontology/JsonTologyOntology.js';
+import { EntityLinkTask }          from '../tasks/entityLink.js';
+import type { EntityLinkConfigInterface } from '../tasks/entityLink.js';
 
 const logger = Logger.forComponent('SquashageOrchestrator');
 
@@ -233,9 +238,18 @@ export class SquashageOrchestrator {
     //           PrefixResolver.resolve() can peek at the first record's path.
     //           See Step 7b below.
 
-    // Step 4 — Strip rdfjs:finalize from per-record tasks; retain a reference.
-    const FINALIZE_NAME   = 'rdfjs:finalize';
-    const perRecordNames  = targetConfig.pipeline.filter(name => name !== FINALIZE_NAME);
+    // Step 4 — Strip end-of-run tasks (rdfjs:finalize, rdfjs:stream, enrich:entity-link) from per-record tasks; retain references.
+    //
+    // These are end-of-run tasks invoked by the orchestrator once after the
+    // per-record batch settles, not inside the per-record pipeline loop.
+    // enrich:entity-link runs BEFORE rdfjs:finalize so it can contribute quads
+    // to the dataset before serialization.
+    const FINALIZE_NAME    = 'rdfjs:finalize';
+    const STREAM_NAME      = 'rdfjs:stream';
+    const ENTITY_LINK_NAME = 'enrich:entity-link';
+    const perRecordNames   = targetConfig.pipeline.filter(
+      name => name !== FINALIZE_NAME && name !== STREAM_NAME && name !== ENTITY_LINK_NAME,
+    );
 
     // Step 5 — Build a per-run TaskRegistry and register classifier task instances.
     const registry = new TaskRegistry();
@@ -277,8 +291,35 @@ export class SquashageOrchestrator {
       if (pipelineSet.has('classify:conflict') && classifierInstances['classify:conflict'] !== undefined) {
         registry.register('classify:conflict', classifierInstances['classify:conflict'].execute);
       }
+      if (pipelineSet.has('classify:shacl-shape') && classifierInstances['classify:shacl-shape'] !== undefined) {
+        registry.register('classify:shacl-shape', classifierInstances['classify:shacl-shape'].execute);
+      }
+      if (pipelineSet.has('classify:taxonomic-narrowing') && classifierInstances['classify:taxonomic-narrowing'] !== undefined) {
+        registry.register('classify:taxonomic-narrowing', classifierInstances['classify:taxonomic-narrowing'].execute);
+      }
+      if (pipelineSet.has('classify:url-pattern') && classifierInstances['classify:url-pattern'] !== undefined) {
+        registry.register('classify:url-pattern', classifierInstances['classify:url-pattern'].execute);
+      }
+      if (pipelineSet.has('classify:property-fingerprint') && classifierInstances['classify:property-fingerprint'] !== undefined) {
+        registry.register('classify:property-fingerprint', classifierInstances['classify:property-fingerprint'].execute);
+      }
+      if (pipelineSet.has('classify:winknlp-entities') && classifierInstances['classify:winknlp-entities'] !== undefined) {
+        registry.register('classify:winknlp-entities', classifierInstances['classify:winknlp-entities'].execute);
+      }
 
       logger.info('run', 'Classifier tasks registered', { target, tasks: Object.keys(classifierInstances) });
+    }
+
+    // Register enrich:entity-link when configured and listed in the pipeline.
+    const pipelineSet = new Set(targetConfig.pipeline);
+    if (pipelineSet.has('enrich:entity-link')) {
+      const enrichment = targetConfig.enrichment as Record<string, unknown> | undefined;
+      const entityLinkCfg = enrichment?.['entityLink'] as EntityLinkConfigInterface | undefined;
+      if (entityLinkCfg !== undefined) {
+        const entityLinkTask = EntityLinkTask.create(entityLinkCfg);
+        registry.register('enrich:entity-link', entityLinkTask.execute);
+        logger.info('run', 'enrich:entity-link task registered', { target });
+      }
     }
 
     // Look up all per-record tasks eagerly; classifier tasks come from the per-run registry,
@@ -289,12 +330,19 @@ export class SquashageOrchestrator {
       }
       return TaskRegistry.get(name);
     });
-    const finalizeTask = TaskRegistry.get(FINALIZE_NAME);
+
+    // Resolve the finalize task based on output.encoding.
+    const isStreamingOutput = (outputConfig as Record<string, unknown>)['encoding'] === 'stream';
+    const activeFinalizeTask = isStreamingOutput
+      ? TaskRegistry.get(STREAM_NAME)
+      : TaskRegistry.get(FINALIZE_NAME);
+    const activeFinalizeTaskName = isStreamingOutput ? STREAM_NAME : FINALIZE_NAME;
 
     logger.debug('run', 'Pipeline tasks resolved', {
       target,
       perRecord: perRecordNames,
-      finalize:  FINALIZE_NAME,
+      finalize:  activeFinalizeTaskName,
+      streaming: isStreamingOutput,
     });
 
     // Step 6 — Build per-record Pipeline.
@@ -319,8 +367,17 @@ export class SquashageOrchestrator {
 
     const prefixes = PrefixResolver.resolve(target, targetConfig, sampleSource);
 
+    // Step 3a — Build optional json-tology ontology instance when engine === 'json-tology'.
+    const schemasBase = options.configPath !== undefined
+      ? dirname(options.configPath)
+      : process.cwd();
+
+    const jtInstance = await SquashageOrchestrator.#buildJtInstance(targetConfig, schemasBase);
+
     // Step 3 (deferred) — Construct run-wide PipelineContextInterface with resolved prefixes.
-    const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig, prefixes);
+    // Freeze the run-start time once here so provenance timestamps are deterministic.
+    const runStartTime = new Date().toISOString();
+    const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig, prefixes, jtInstance, runStartTime);
 
     logger.debug('run', 'Run-wide context constructed', {
       target,
@@ -329,6 +386,15 @@ export class SquashageOrchestrator {
       vocabularyBase: prefixes.vocabulary.base,
       prefixSource:   prefixes.source,
     });
+
+    // Step 8b — Open streaming output before building per-record states.
+    // IMPORTANT: must run BEFORE Step 8 so that the dataset proxy installed by
+    // openStreamingOutput is visible to the spread in Step 8.
+    if (isStreamingOutput) {
+      logger.debug('run', 'Opening streaming output before per-record dispatch', { target });
+      await openStreamingOutput(ctx);
+      logger.info('run', 'Streaming output opened', { target, path: outputConfig.path });
+    }
 
     // Step 8 — Build one state per record with per-record context augmentation.
     const states = locators.map(({ recordPath, recordLine }) => {
@@ -369,10 +435,13 @@ export class SquashageOrchestrator {
       failed:    failed.length,
     });
 
-    // Step 10 — Invoke finalize task once with a synthetic state carrying ctx.
-    const finalizeState: PipelineStateInterface = {
+    // Step 10 — Invoke end-of-run tasks once with a synthetic state carrying ctx.
+    //
+    // Order: enrich:entity-link (enrichment) -> rdfjs:finalize (serialization).
+    // Both receive the same synthetic state.
+    const endOfRunState: PipelineStateInterface = {
       targetId:        target,
-      source:          { target, path: '__finalize__' },
+      source:          { target, path: '__end-of-run__' },
       input:           {},
       classification:  null,
       classifications: [],
@@ -380,11 +449,24 @@ export class SquashageOrchestrator {
       context:         ctx,
     };
 
-    logger.debug('finalize', 'Invoking rdfjs:finalize', { target });
+    // Invoke enrich:entity-link when it was listed in the pipeline and is registered.
+    if (targetConfig.pipeline.includes(ENTITY_LINK_NAME)) {
+      const entityLinkTask = registry.has(ENTITY_LINK_NAME)
+        ? registry.get(ENTITY_LINK_NAME)
+        : undefined;
 
-    await finalizeTask(async (): Promise<void> => { /* no-op next */ }, finalizeState);
+      if (entityLinkTask !== undefined) {
+        logger.debug('enrich', 'Invoking enrich:entity-link', { target });
+        await entityLinkTask(async (): Promise<void> => { /* no-op next */ }, endOfRunState);
+        logger.info('enrich', 'enrich:entity-link completed', { target });
+      }
+    }
 
-    logger.info('finalize', 'rdfjs:finalize completed', { target });
+    logger.debug('finalize', `Invoking ${activeFinalizeTaskName}`, { target });
+
+    await activeFinalizeTask(async (): Promise<void> => { /* no-op next */ }, endOfRunState);
+
+    logger.info('finalize', `${activeFinalizeTaskName} completed`, { target });
 
     // Step 11 — Compute RunResultInterface.
     const qw         = QuarantineWriter.forRun(outDir, target);
@@ -473,14 +555,17 @@ export class SquashageOrchestrator {
    * @param targetConfig - Validated target config.
    * @param outputConfig - Synthesized output config (CLI overrides already applied).
    * @param prefixes     - Resolved prefix-base pairs from {@link PrefixResolver.resolve}.
+   * @param jt           - Optional json-tology ontology instance (present when engine === "json-tology").
    * @returns Fully populated `PipelineContextInterface`.
    */
   static #buildContext(
-    target:       string,
-    outDir:       string,
-    targetConfig: TargetConfigInterface,
-    outputConfig: OutputConfigInterface,
-    prefixes:     PrefixResolutionInterface,
+    target:        string,
+    outDir:        string,
+    targetConfig:  TargetConfigInterface,
+    outputConfig:  OutputConfigInterface,
+    prefixes:      PrefixResolutionInterface,
+    jt?:           JsonTologyOntology,
+    runStartTime?: string,
   ): PipelineContextInterface {
     const ontology = targetConfig.ontology;
     const baseIri  =
@@ -502,9 +587,50 @@ export class SquashageOrchestrator {
       iri:     Namespaces.for(baseIri),
       output:  outputConfig,
       prefixes,
+      ...(jt !== undefined ? { jt } : {}),
+      ...(runStartTime !== undefined ? { runStartTime } : {}),
     };
 
     return ctx;
+  }
+
+  /**
+   * Builds a {@link JsonTologyOntology} instance when
+   * `targetConfig.ontology.engine === "json-tology"`, otherwise returns `undefined`.
+   *
+   * @param targetConfig - Per-target config containing the optional ontology block.
+   * @param schemasBase  - Base directory for resolving relative schemaPath entries.
+   * @returns The constructed instance, or `undefined` when the engine is absent or "map".
+   */
+  static async #buildJtInstance(
+    targetConfig: TargetConfigInterface,
+    schemasBase:  string,
+  ): Promise<JsonTologyOntology | undefined> {
+    const ontologyBlock = targetConfig.ontology as Record<string, unknown> | undefined;
+    if (ontologyBlock === undefined) return undefined;
+
+    const engine = ontologyBlock['engine'];
+    if (engine !== 'json-tology') return undefined;
+
+    const baseIRI  = ontologyBlock['baseIRI'] as string;
+    const rawSchemas = ontologyBlock['schemas'] as ReadonlyArray<{ readonly schemaPath: string }> | undefined;
+    if (rawSchemas === undefined || rawSchemas.length === 0) return undefined;
+
+    const schemaInputs: JsonTologySchemaInputInterface[] = await Promise.all(
+      rawSchemas.map(async entry => {
+        const absPath = resolvePath(schemasBase, entry.schemaPath);
+        const text    = await readFile(absPath, 'utf8');
+        const schema  = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
+        return { schemaPath: entry.schemaPath, schema };
+      }),
+    );
+
+    logger.debug('run', 'Building JsonTologyOntology instance', {
+      baseIRI,
+      schemaCount: schemaInputs.length,
+    });
+
+    return JsonTologyOntology.create({ baseIRI, schemas: schemaInputs });
   }
 
   /**

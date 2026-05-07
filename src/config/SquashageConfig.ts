@@ -43,7 +43,50 @@ const TARGET_SCHEMA = {
     pipeline:       { type: 'array', items: { type: 'string', minLength: 1 }, minItems: 1 },
     output:         { $ref: 'https://squashage.dev/schemas/output.json' },
     graphs:         { type: 'object', additionalProperties: { type: 'string', format: 'uri' } },
-    ontology:       { type: 'object' },
+    ontology: {
+      type: 'object',
+      properties: {
+        engine:  { type: 'string', enum: ['map', 'json-tology'] as const },
+        baseIRI: { type: 'string' },
+        baseIri: { type: 'string' },
+        schemas: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['schemaPath'] as const,
+            properties: {
+              schemaPath: { type: 'string' },
+            },
+          },
+        },
+        emit: {
+          type: 'object',
+          properties: {
+            tbox:  { type: 'string' },
+            shacl: { type: 'string' },
+          },
+        },
+        classes: {
+          type: 'object',
+          additionalProperties: { type: 'string', format: 'uri' },
+        },
+        prefixes: { type: 'object' },
+      },
+      if:   {
+        properties: { engine: { const: 'json-tology' } },
+        required: ['engine'] as const,
+      },
+      then: {
+        properties: {
+          baseIRI: { type: 'string' },
+          schemas: {
+            type:  'array',
+            items: { type: 'object', required: ['schemaPath'] as const, properties: { schemaPath: { type: 'string' } } },
+          },
+        },
+        required: ['baseIRI', 'schemas'] as const,
+      },
+    },
     classification: {
       type: 'object',
       additionalProperties: false,
@@ -113,6 +156,130 @@ const TARGET_SCHEMA = {
             onConflict: { type: 'string', enum: ['quarantine', 'pickPriority'] as const },
             onUnknown:  { type: 'string', enum: ['quarantine', 'skip'] as const },
             evidence:   { type: 'boolean' },
+          },
+        },
+        shaclShape: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['shapesFrom'],
+          properties: {
+            shapesFrom: {
+              oneOf: [
+                { type: 'string', const: 'ontology' as const },
+                { type: 'string', minLength: 1 },
+              ],
+            },
+            priority: { type: 'integer', minimum: 0 },
+          },
+        },
+        taxonomicNarrowing: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['tboxFrom'],
+          properties: {
+            tboxFrom: {
+              oneOf: [
+                { type: 'string', const: 'ontology' as const },
+                { type: 'string', minLength: 1 },
+              ],
+            },
+            enabled: { type: 'boolean' },
+          },
+        },
+        urlPattern: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['patterns'],
+          properties: {
+            patterns: {
+              type: 'array',
+              minItems: 1,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['className', 'match'],
+                properties: {
+                  className: { type: 'string', minLength: 1 },
+                  match:     { type: 'string', minLength: 1 },
+                  priority:  { type: 'integer', minimum: 0 },
+                },
+              },
+            },
+          },
+        },
+        propertyFingerprint: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['fingerprintsFrom'],
+          properties: {
+            fingerprintsFrom: { type: 'string', minLength: 1 },
+            minMatchScore:    { type: 'number', minimum: 0, maximum: 1 },
+            priority:         { type: 'integer', minimum: 0 },
+          },
+        },
+        winknlpEntities: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['patterns'],
+          properties: {
+            patterns: {
+              type: 'array',
+              minItems: 1,
+              items: {
+                type: 'object',
+                additionalProperties: false,
+                required: ['name', 'patterns', 'className'],
+                properties: {
+                  name:      { type: 'string', minLength: 1 },
+                  patterns:  {
+                    type:     'array',
+                    minItems: 1,
+                    items:    { type: 'string', minLength: 1 },
+                  },
+                  className: { type: 'string', minLength: 1 },
+                  priority:  { type: 'integer', minimum: 0 },
+                },
+              },
+            },
+            fields: {
+              type:  'array',
+              items: { type: 'string', minLength: 1 },
+            },
+          },
+        },
+      },
+    },
+    enrichment: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        entityLink: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['engine', 'edgeIri', 'linkAgainst'],
+          properties: {
+            engine: {
+              type: 'string',
+              enum: ['winknlp'] as const,
+            },
+            fields: {
+              type:  'array',
+              items: { type: 'string', minLength: 1 },
+            },
+            edgeIri: {
+              type:      'string',
+              minLength: 1,
+            },
+            linkAgainst: {
+              type:     'array',
+              minItems: 1,
+              items:    { type: 'string', minLength: 1 },
+            },
+            minConfidence: {
+              type:    'number',
+              minimum: 0,
+              maximum: 1,
+            },
           },
         },
       },
@@ -194,6 +361,8 @@ export interface TargetConfigInterface {
   readonly ontology?: Readonly<Record<string, unknown>> | undefined;
   /** Classification cascade configuration (passed through to classifier). */
   readonly classification?: Readonly<Record<string, unknown>> | undefined;
+  /** Enrichment configuration (passed through to enrichment tasks). */
+  readonly enrichment?: Readonly<Record<string, unknown>> | undefined;
   /** Quarantine bucket configuration (passed through to QuarantineWriter). */
   readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
   /** Maximum concurrent pipeline executions (default 1). */
@@ -243,6 +412,10 @@ const CLASS_PROPOSERS = new Set<string>([
   'classify:structural',
   'classify:rules',
   'classify:schema',
+  'classify:shacl-shape',
+  'classify:url-pattern',
+  'classify:property-fingerprint',
+  'classify:winknlp-entities',
 ]);
 
 /**
@@ -252,12 +425,17 @@ const CLASS_PROPOSERS = new Set<string>([
  * @internal
  */
 const CLASSIFY_TASK_CONFIG_KEYS: Readonly<Record<string, string>> = {
-  'classify:source':     'source',
-  'classify:structural': 'structural',
-  'classify:rules':      'rules',
-  'classify:schema':     'schemas',
-  'classify:ontology':   'ontology',
-  'classify:conflict':   'conflict',
+  'classify:source':                'source',
+  'classify:structural':            'structural',
+  'classify:rules':                 'rules',
+  'classify:schema':                'schemas',
+  'classify:ontology':              'ontology',
+  'classify:conflict':              'conflict',
+  'classify:shacl-shape':           'shaclShape',
+  'classify:taxonomic-narrowing':   'taxonomicNarrowing',
+  'classify:url-pattern':           'urlPattern',
+  'classify:property-fingerprint':  'propertyFingerprint',
+  'classify:winknlp-entities':      'winknlpEntities',
 };
 
 /**
@@ -324,6 +502,25 @@ function crossValidateTarget(target: string, targetConfig: TargetConfigInterface
       `present in the pipeline to pick the winning class.`,
       { metadata: { target, distinctProposers: [...distinctProposers] } },
     );
+  }
+
+  // Validate enrich:entity-link task requirements.
+  if (pipeline.includes('enrich:entity-link')) {
+    const enrichment = targetConfig.enrichment as Record<string, unknown> | undefined;
+    const entityLink = enrichment?.['entityLink'] as Record<string, unknown> | undefined;
+    if (entityLink === undefined || entityLink === null) {
+      throw SquashageConfigError.create(
+        `Pipeline lists "enrich:entity-link" but enrichment.entityLink is missing`,
+        { metadata: { target, task: 'enrich:entity-link' } },
+      );
+    }
+    const engine = entityLink['engine'];
+    if (engine !== 'winknlp') {
+      throw SquashageConfigError.create(
+        `enrichment.entityLink.engine must be "winknlp"; got "${String(engine)}"`,
+        { metadata: { target, engine } },
+      );
+    }
   }
 
   // Enforce jsonldContext is only set when output format resolves to jsonld.

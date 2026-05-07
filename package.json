@@ -1,6 +1,6 @@
 {
   "name": "squashage",
-  "version": "0.4.0",
+  "version": "0.6.0",
   "description": "Graph reconstitution pipeline; squashes classified JSON records into deterministic RDF (Turtle, TriG, JSON-LD, N-Triples, N-Quads).",
   "type": "module",
   "bin": {
@@ -35,10 +35,12 @@
     "test:integration": "node --import tsx --test 'tests/integration/**/*.test.ts'",
     "test:e2e": "node --import tsx --test 'tests/e2e/**/*.test.ts'",
     "viz:demo": "node --import tsx scripts/build-aonprd-demo.ts",
+    "viz:fingerprints": "tsx scripts/build-fingerprints.ts",
     "viz:refresh-vendor": "node scripts/refresh-viz-vendor.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "test:perf": "node --import tsx --test 'tests/perf/**/*.test.ts'"
   },
   "dependencies": {
     "@rdfjs/data-model": "^2.1.1",
@@ -49,10 +51,13 @@
     "ajv-formats": "^3.0.1",
     "commander": "^14.0.3",
     "json-schema-to-ts": "^3.1.1",
+    "json-tology": "file:vendor/json-tology-0.3.3.tgz",
     "jsonld": "^9.0.0",
     "n3": "^2.0.3",
     "rdf-canonize": "^5.0.0",
-    "rdf-validate-shacl": "^0.6.5"
+    "rdf-validate-shacl": "^0.6.5",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-nlp": "^2.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

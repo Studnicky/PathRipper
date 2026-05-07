@@ -14,8 +14,17 @@ const sidebar = [
     items: [
       { link: '/usage/configuration',      text: 'Configuration' },
       { link: '/usage/pipeline',           text: 'Pipeline' },
-      { link: '/usage/classifier-cascade', text: 'Classifier cascade' },
+      { link: '/usage/classifier-cascade',      text: 'Classifier cascade' },
+      { link: '/usage/shacl-shape-classifier',  text: 'SHACL-shape classifier' },
+      { link: '/usage/url-pattern-classifier',           text: 'URL-pattern classifier' },
+      { link: '/usage/property-fingerprint-classifier', text: 'Property-fingerprint classifier' },
+      { link: '/usage/winknlp-entities',                text: 'winkNLP entities classifier' },
+      { link: '/usage/entity-link',                     text: 'Entity-link enrichment' },
+      { link: '/usage/taxonomic-narrowing',             text: 'Taxonomic narrowing' },
+      { link: '/usage/ontology',                text: 'Ontology (json-tology)' },
       { link: '/usage/output',             text: 'Output' },
+      { link: '/usage/streaming-output',    text: 'Streaming output' },
+      { link: '/usage/provenance',         text: 'Provenance (PROV-O sidecar)' },
       { link: '/usage/viz',                text: 'Viz' },
       { link: '/usage/plugins',            text: 'Plugins' },
     ]

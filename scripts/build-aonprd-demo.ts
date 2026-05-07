@@ -61,21 +61,25 @@ async function main(): Promise<void> {
   targets[TARGET]!['input'] = inputPath;
   (targets[TARGET]!['output'] as Record<string, string>)['path'] = JSON_LD_PATH;
 
-  const classification = targets[TARGET]!['classification'] as Record<string, unknown> | undefined;
-  if (classification !== undefined) {
-    const schemas = classification['schemas'];
-    if (Array.isArray(schemas)) {
-      classification['schemas'] = schemas.map((s: unknown) => {
-        if (s !== null && typeof s === 'object' && !Array.isArray(s)) {
-          const schemaObj = s as Record<string, unknown>;
-          if (typeof schemaObj['schemaPath'] === 'string') {
-            return { ...schemaObj, schemaPath: resolve(FIXTURE, schemaObj['schemaPath']) };
-          }
+  const resolveSchemaPaths = (block: unknown): unknown => {
+    if (block === null || typeof block !== 'object' || Array.isArray(block)) return block;
+    const obj = block as Record<string, unknown>;
+    const schemas = obj['schemas'];
+    if (!Array.isArray(schemas)) return obj;
+    obj['schemas'] = schemas.map((s: unknown): unknown => {
+      if (s !== null && typeof s === 'object' && !Array.isArray(s)) {
+        const schemaObj = s as Record<string, unknown>;
+        if (typeof schemaObj['schemaPath'] === 'string') {
+          return { ...schemaObj, schemaPath: resolve(FIXTURE, schemaObj['schemaPath']) };
         }
-        return s;
-      });
-    }
-  }
+      }
+      return s;
+    });
+    return obj;
+  };
+
+  resolveSchemaPaths(targets[TARGET]!['classification']);
+  resolveSchemaPaths(targets[TARGET]!['ontology']);
 
   const tmpCfgPath = resolve(OUT_DIR, '.squashage.config.tmp.json');
   await writeFile(tmpCfgPath, JSON.stringify(raw, null, 2), 'utf-8');

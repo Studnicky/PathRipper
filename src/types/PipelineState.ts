@@ -1,8 +1,9 @@
 import type { DataFactory, DatasetCore, NamedNode } from '@rdfjs/types';
-import type { GraphBuilder }     from '../rdf/GraphBuilder.js';
-import type { NamespaceBuilder } from '../rdf/Namespaces.js';
+import type { GraphBuilder }         from '../rdf/GraphBuilder.js';
+import type { NamespaceBuilder }     from '../rdf/Namespaces.js';
 import type { OutputConfigInterface } from '../config/OutputConfig.js';
 import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
+import type { JsonTologyOntology }   from '../ontology/JsonTologyOntology.js';
 
 /**
  * Source metadata for a single input JSON record flowing through the pipeline.
@@ -127,6 +128,30 @@ export interface PipelineContextInterface {
   readonly output:  OutputConfigInterface;
   /** Resolved prefix→base pairs (instances, graphs, vocabulary) for this run. */
   readonly prefixes: PrefixResolutionInterface;
+  /**
+   * Optional json-tology ontology instance for the current target.
+   *
+   * @remarks
+   * Present when `targets.<id>.ontology.engine === "json-tology"` is configured.
+   * Built by the orchestrator at context-construction time. Plugin tasks may use
+   * `ctx.jt.toQuads(schemaId, instance)` for typed ABox projection instead of
+   * hand-writing quads.
+   *
+   * @since 0.5.0
+   */
+  readonly jt?: JsonTologyOntology;
+  /**
+   * ISO 8601 timestamp frozen at the moment the orchestrator constructed this
+   * context (i.e. once per target run, not per record).
+   *
+   * @remarks
+   * Used by `output:provenance` to stamp all provenance quads with a single,
+   * deterministic run-start time. Preserving determinism across two identical
+   * runs requires that the timestamp is fixed before record processing begins.
+   *
+   * @since 0.5.0
+   */
+  readonly runStartTime?: string | undefined;
 }
 
 /**

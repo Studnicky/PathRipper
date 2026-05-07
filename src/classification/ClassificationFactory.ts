@@ -36,6 +36,16 @@ import type { AjvClassEntryInterface }             from './AjvClassifier.js';
 import { OntologyClassifier }                      from './tasks/OntologyClassifier.js';
 import { ConflictResolver }                        from './tasks/ConflictResolver.js';
 import type { ConflictResolverConfigInterface }    from './tasks/ConflictResolver.js';
+import { ShaclShapeClassifier }                    from './tasks/ShaclShapeClassifier.js';
+import type { ShaclShapeClassifierConfigInterface } from './tasks/ShaclShapeClassifier.js';
+import { TaxonomicNarrowingClassifier }                    from './tasks/TaxonomicNarrowingClassifier.js';
+import type { TaxonomicNarrowingConfigInterface }          from './tasks/TaxonomicNarrowingClassifier.js';
+import { UrlPatternClassifier }                            from './tasks/UrlPatternClassifier.js';
+import type { UrlPatternConfigInterface }                  from './tasks/UrlPatternClassifier.js';
+import { PropertyFingerprintClassifier }                   from './tasks/PropertyFingerprintClassifier.js';
+import type { PropertyFingerprintConfigInterface }         from './tasks/PropertyFingerprintClassifier.js';
+import { WinknlpEntitiesClassifier }                       from './tasks/WinknlpEntitiesClassifier.js';
+import type { WinknlpEntitiesConfigInterface }             from './tasks/WinknlpEntitiesClassifier.js';
 import { OutputConfigError }                       from '../errors/OutputConfigError.js';
 import { Logger }                                  from '../modules/logger/logger.js';
 
@@ -132,6 +142,35 @@ export interface ClassificationConfigInterface {
   readonly ontology?:   { readonly classes: Readonly<Record<string, string>> } | undefined;
   /** Config for `classify:conflict`. All three fields are required when present. */
   readonly conflict?:   ConflictResolverConfigInterface | undefined;
+  /**
+   * Config for `classify:shacl-shape`. Sits between structural (priority 30)
+   * and ontology (priority 50) in the cascade by default (priority 45).
+   */
+  readonly shaclShape?: ShaclShapeClassifierConfigInterface | undefined;
+  /**
+   * Config for `classify:taxonomic-narrowing`. Runs after all proposers but
+   * before ConflictResolver. Collapses supertype proposals when a more-specific
+   * subtype is also proposed, using the OWL subClassOf transitive closure.
+   */
+  readonly taxonomicNarrowing?: TaxonomicNarrowingConfigInterface | undefined;
+  /**
+   * Config for `classify:url-pattern`. Evaluates pre-compiled regexes against
+   * the record's `_source.url` (or fallback `url`) and emits one proposal per
+   * matching pattern.
+   */
+  readonly urlPattern?: UrlPatternConfigInterface | undefined;
+  /**
+   * Config for `classify:property-fingerprint`. Computes Jaccard similarity
+   * between the record's top-level key set and pre-loaded fingerprints; emits
+   * one proposal per fingerprint that meets `minMatchScore`.
+   */
+  readonly propertyFingerprint?: PropertyFingerprintConfigInterface | undefined;
+  /**
+   * Config for `classify:winknlp-entities`. Runs deterministic pattern-based
+   * NER on configured prose fields via winkNLP custom entities; emits one
+   * proposal per matched pattern per field.
+   */
+  readonly winknlpEntities?: WinknlpEntitiesConfigInterface | undefined;
 }
 
 /**
@@ -161,6 +200,16 @@ export interface ClassifierInstancesInterface {
   readonly 'classify:ontology'?:   OntologyClassifier   | undefined;
   /** Instantiated `classify:conflict` task, when `config.conflict` is present. */
   readonly 'classify:conflict'?:   ConflictResolver     | undefined;
+  /** Instantiated `classify:shacl-shape` task, when `config.shaclShape` is present. */
+  readonly 'classify:shacl-shape'?: ShaclShapeClassifier | undefined;
+  /** Instantiated `classify:taxonomic-narrowing` task, when `config.taxonomicNarrowing` is present. */
+  readonly 'classify:taxonomic-narrowing'?: TaxonomicNarrowingClassifier | undefined;
+  /** Instantiated `classify:url-pattern` task, when `config.urlPattern` is present. */
+  readonly 'classify:url-pattern'?: UrlPatternClassifier | undefined;
+  /** Instantiated `classify:property-fingerprint` task, when `config.propertyFingerprint` is present. */
+  readonly 'classify:property-fingerprint'?: PropertyFingerprintClassifier | undefined;
+  /** Instantiated `classify:winknlp-entities` task, when `config.winknlpEntities` is present. */
+  readonly 'classify:winknlp-entities'?: WinknlpEntitiesClassifier | undefined;
 }
 
 // ── ClassificationFactory ─────────────────────────────────────────────────────
@@ -319,6 +368,62 @@ export class ClassificationFactory {
         classCount: Object.keys(config.ontology.classes).length,
       });
       result['classify:ontology'] = new OntologyClassifier({ classes: config.ontology.classes });
+    }
+
+    // ── classify:shacl-shape ───────────────────────────────────────────────
+    if (config.shaclShape !== undefined) {
+      logger.debug('build', 'Instantiating ShaclShapeClassifier', {
+        targetId,
+        shapesFrom: config.shaclShape.shapesFrom,
+        priority:   config.shaclShape.priority ?? 45,
+      });
+      result['classify:shacl-shape'] = ShaclShapeClassifier.create(config.shaclShape, schemasBase);
+    }
+
+    // ── classify:taxonomic-narrowing ───────────────────────────────────────
+    if (config.taxonomicNarrowing !== undefined) {
+      logger.debug('build', 'Instantiating TaxonomicNarrowingClassifier', {
+        targetId,
+        tboxFrom: config.taxonomicNarrowing.tboxFrom,
+        enabled:  config.taxonomicNarrowing.enabled ?? false,
+      });
+      result['classify:taxonomic-narrowing'] = TaxonomicNarrowingClassifier.create(
+        config.taxonomicNarrowing,
+        schemasBase,
+      );
+    }
+
+    // ── classify:url-pattern ───────────────────────────────────────────────
+    if (config.urlPattern !== undefined) {
+      logger.debug('build', 'Instantiating UrlPatternClassifier', {
+        targetId,
+        patternCount: config.urlPattern.patterns.length,
+      });
+      result['classify:url-pattern'] = UrlPatternClassifier.create(config.urlPattern);
+    }
+
+    // ── classify:property-fingerprint ─────────────────────────────────────
+    if (config.propertyFingerprint !== undefined) {
+      logger.debug('build', 'Instantiating PropertyFingerprintClassifier', {
+        targetId,
+        fingerprintsFrom: config.propertyFingerprint.fingerprintsFrom,
+        minMatchScore:    config.propertyFingerprint.minMatchScore ?? 0.85,
+        priority:         config.propertyFingerprint.priority      ?? 32,
+      });
+      result['classify:property-fingerprint'] = PropertyFingerprintClassifier.create(
+        config.propertyFingerprint,
+        schemasBase,
+      );
+    }
+
+    // ── classify:winknlp-entities ──────────────────────────────────────────
+    if (config.winknlpEntities !== undefined) {
+      logger.debug('build', 'Instantiating WinknlpEntitiesClassifier', {
+        targetId,
+        patternCount: config.winknlpEntities.patterns.length,
+        fields:       config.winknlpEntities.fields ?? ['description'],
+      });
+      result['classify:winknlp-entities'] = WinknlpEntitiesClassifier.create(config.winknlpEntities);
     }
 
     // ── classify:conflict ──────────────────────────────────────────────────

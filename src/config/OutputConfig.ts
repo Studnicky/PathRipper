@@ -54,12 +54,54 @@ export const OUTPUT_SCHEMA = {
       },
     },
     dryRun: { type: 'boolean', default: false },
+    encoding: {
+      type: 'string',
+      enum: ['atomic', 'stream'] as const,
+      default: 'atomic',
+      description: 'Output write strategy. "atomic" (default) collects all quads in memory and writes a single file atomically. "stream" opens a file handle immediately and writes each quad as it arrives, eliminating OOM risk on large datasets.',
+    },
+    dropInMemory: {
+      type: 'boolean',
+      default: false,
+      description: 'When encoding=stream, drop quads from the in-memory dataset after streaming write. Saves memory but downstream tasks (provenance, ontology:emit) must not depend on dataset scans.',
+    },
     jsonldContext: {
       oneOf: [
         { type: 'string' },
         { type: 'object' },
       ] as const,
       description: 'Compaction context for JSON-LD output. Path string (resolved against config dir), inline object, or omit/auto to let squashage build one from the quad set + ctx.prefixes. Rejected when format is not jsonld.',
+    },
+    provenance: {
+      type: 'object',
+      additionalProperties: false,
+      description: 'PROV-O sidecar provenance graph configuration (Phase 6 and Phase 7).',
+      properties: {
+        enabled: {
+          type: 'boolean',
+          default: false,
+          description: 'When true, provenance quads are emitted into a separate named graph for each processed record.',
+        },
+        graph: {
+          type: 'string',
+          description: 'Named-graph IRI suffix (resolved against runBase) or a full IRI for the provenance graph.',
+        },
+        include: {
+          type: 'array',
+          items: {
+            type: 'string',
+            enum: ['classifier', 'confidence', 'reasons', 'timestamp'] as const,
+          },
+          description: 'Metadata categories to include in provenance output. Omit an item to suppress that metadata.',
+          default: ['classifier', 'confidence', 'reasons', 'timestamp'],
+        },
+        encoding: {
+          type: 'string',
+          enum: ['named-graph', 'rdf-star'] as const,
+          default: 'named-graph',
+          description: 'Provenance encoding strategy. "named-graph" (default) emits PROV-O quads into a sidecar named graph. "rdf-star" emits quoted-triple-subject quads where the rdf:type assertion for each record is the subject of provenance metadata.',
+        },
+      },
     },
   },
   allOf: [
@@ -70,6 +112,28 @@ export const OUTPUT_SCHEMA = {
           canonicalize: { const: false },
           validate:     { not: {} },
         },
+      },
+    },
+    {
+      // encoding:stream + canonicalize:true is forbidden
+      if:   { required: ['encoding'], properties: { encoding: { const: 'stream' } } },
+      then: {
+        properties: {
+          canonicalize: { const: false },
+        },
+      },
+    },
+    {
+      // encoding:stream + format:jsonld is forbidden
+      if: {
+        required: ['encoding', 'format'],
+        properties: {
+          encoding: { const: 'stream' },
+          format:   { const: 'jsonld' },
+        },
+      },
+      then: {
+        not: {},
       },
     },
   ],
