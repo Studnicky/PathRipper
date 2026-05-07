@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **v0.7.0 silo migration task #20: `classify:url-pattern` is now a self-registering plugin module.** `src/classification/tasks/UrlPatternClassifier.ts` now self-registers on the global `TaskRegistry` at module-load time: a per-record task (`TaskRegistry.register('classify:url-pattern', task, { proposesClass: true })`) and an `onRunStart` lifecycle hook (`TaskRegistry.registerHook('classify:url-pattern', 'onRunStart', hook, { proposesClass: true })`). The hook validates `ctx.config.urlPattern` against the new exported `urlPatternConfigSchema` AJV fragment via `ctx.ajv.compile`, compiles each `patterns[i].match` source string into a `RegExp`, and writes the compiled list into a module-level cache keyed by `ctx.target` so concurrent runs with disjoint targets stay isolated. Invalid regex source strings continue to fail fast with `OutputConfigError` naming the zero-based pattern index, mirroring the legacy semantics. The per-record task reads the cache by `state.context?.target ?? state.targetId` and fails fast with `OutputConfigError` when no entry exists. The legacy `UrlPatternClassifier.create(config)` factory API is preserved unchanged so `ClassificationFactory` and `SquashageOrchestrator` wiring continues working without modification during the silo migration. Compile, URL-extraction, and scoring helpers (`compilePatterns`, `extractUrl`, `runUrlPatternScoring`) are shared between both registration paths to avoid duplication. New unit-test file `tests/unit/classification/tasks/UrlPatternClassifier.plugin.test.ts` covers the silo path: registration assertions, AJV config validation (malformed config rejected, empty patterns rejected, invalid regex rejected with index, absent config skipped), cache population + per-record proposal emission (single-match, multi-match, top-level-`url` fallback, no-URL no-op), missing-cache fail-fast, and cross-target cache isolation. Existing legacy unit, integration, and e2e tests continue to pass unchanged.
+
 ## [0.6.0] - 2026-05-07
 
 ### Added
