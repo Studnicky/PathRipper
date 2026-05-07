@@ -19,6 +19,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `includeRawContent` boolean flag on `targets` and `mediawiki` target configs (default now `true`). Each output record gains a `_raw` field: `{ contentType: string, content: string, fetchedAt: string }` carrying the raw fetched response body byte-for-byte unless explicitly opted out. Downstream consumers (e.g. Squashage v0.6.0 max-extraction) can always rely on `_raw` being present.
 - Raw-dump-only pipelines: a pipeline of `["html:fetch", "json:write"]` with no plugin task is now a fully supported and documented use case. Output records contain `_raw` with the full fetched HTML; `output` fields are empty (no plugin ran). Useful for archiving or deferred parsing.
+- AONPRD plugin: comprehensive cache-driven extraction enhancement. All per-type
+  extractors now capture additional structured fields discovered by sampling the
+  14,933-page AON HTML cache.
+
+  **Common (all types):** `meta_description`, `meta_keywords` (from page `<meta>` tags).
+
+  **All per-type outputs:**
+  - `entity_id` / `feat_id` / `spell_id` / `monster_id` / `weapon_id` / `armor_id` /
+    `equipment_id` / `action_id` -- numeric AON ID extracted from the URL query string.
+  - `trait_ids` -- `Record<string, number>` mapping trait name to Traits.aspx ID;
+    promoted from the internal `TraitInventory` to every output shape.
+  - `sources` -- full `SourceRef[]` array (header + body footnotes) promoted to every
+    output shape (previously only `source` (first ref) was exposed).
+
+  **Feat:** `related_feats[]` (links from the `Related Feats` inline field),
+  `is_mythic` (detected from level_kind or Mythic trait).
+
+  **Spell:** `spell_id`, `defense` (remaster `<b>Defense</b>` field, e.g. "AC",
+  "basic Fortitude"), `deities[]`, `mysteries[]`, `patron_themes[]`, `catalysts[]`.
+
+  **Monster:** `monster_id`, `family_links[]` (from `Related Groups`, deduplicated by
+  name -- sourced from `c.links` to handle pages where the field is post-stat-block).
+
+  **Weapon:** `weapon_id`, `trait_ids`, `sources`.
+
+  **Armor:** `armor_id`, `trait_ids`, `sources`.
+
+  **Equipment:** `equipment_id`, `trait_ids`, `sources`.
+
+  **Background:** `related_sources[]` (Sources.aspx links from the `Related Sources`
+  field, present on ~80% of background pages).
+
+  **Action, Condition, Trait, Hazard, Ancestry, Class, Generic, Unknown:** all now
+  carry `entity_id`, `trait_ids`, `sources`, `meta_description`, `meta_keywords`.
+
+- New fixture HTML pages added under `tests/e2e/plugins/fixtures/aonprd/`:
+  `feat-hedge-prison.html`, `feat-with-related-feats.html`,
+  `spell-with-defense.html`, `spell-with-deities.html`,
+  `monster-with-family.html`, `weapon-longsword.html`.
+
+- 21 new test cases in `tests/e2e/plugins/aonprd.parse.test.ts` covering all new
+  fields (entity IDs, meta tags, trait_ids, sources[], spell defense/deities, feat
+  related_feats, monster family_links, weapon IDs).
 
 ## [2.4.0] - 2026-05-06
 

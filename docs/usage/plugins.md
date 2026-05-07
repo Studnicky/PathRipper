@@ -183,6 +183,85 @@ console.log(state.output); // your extracted record
 
 No HTTP, no file system, no network. Just the extraction logic.
 
+## AONPRD plugin (built-in example)
+
+The `plugins/aonprd/` directory ships a full-featured example plugin that parses
+Archives of Nethys (2e.aonprd.com) HTML. It demonstrates all major patterns: URL-based
+type dispatch, shared extraction utilities, per-type structured output, and fixture-based
+unit testing.
+
+### Output types
+
+Every AONPRD output carries a `_type` discriminator and the following common fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `url` | `string` | Source URL |
+| `entity_id` | `number \| null` | Numeric `?ID=N` from the URL |
+| `name` | `string` | Display name |
+| `source` | `SourceRef` | First source book reference |
+| `sources` | `SourceRef[]` | All source references on the page |
+| `traits` | `string[]` | Trait pill labels in source order |
+| `trait_ids` | `Record<string, number>` | Traits.aspx ID keyed by trait name |
+| `rarity` | `Rarity` | unique, rare, uncommon, or common |
+| `pfs` | `PfsLegality \| null` | PFS Standard, Limited, or Restricted |
+| `legacy` | `boolean` | Page carries a legacy-content-warning |
+| `alt_edition_url` | `string \| null` | Sibling page URL (legacy/remaster redirect) |
+| `meta_description` | `string \| null` | `<meta name="description">` content |
+| `meta_keywords` | `string \| null` | `<meta name="keywords">` content |
+| `raw_fields` | `Record<string, string>` | All header label/value pairs |
+| `links` | `LinkRef[]` | All internal cross-reference anchors |
+
+### Per-type additional fields
+
+**Spell** (`_type: 'spell'`): `spell_id`, `kind` (spell/cantrip/focus/ritual), `rank`,
+`traditions[]`, `cast`, `range`, `area`, `targets`, `defense` (remaster Defense field),
+`saving_throw`, `duration`, `bloodlines[]`, `domain[]`, `cult[]`, `deities[]`,
+`mysteries[]`, `patron_themes[]`, `catalysts[]`, `outcomes`, `affliction`, `heightened[]`.
+
+**Feat** (`_type: 'feat'`): `feat_id`, `level`, `action_cost`, `archetypes[]`,
+`prerequisites`, `frequency`, `trigger`, `requirements`, `is_mythic`, `leads_to[]`,
+`related_feats[]`, `trait_glossary[]`.
+
+**Monster** (`_type: 'monster'`): `monster_id`, `level`, `size`, `alignment`,
+`recall_knowledge`, `perception`, `languages`, `skills[]`, `abilities`, `ac`, `saves`,
+`hp`, `immunities[]`, `weaknesses[]`, `resistances[]`, `speed`, `strikes[]`,
+`spell_lists[]`, `top_abilities[]`, `defensive_abilities[]`, `offensive_abilities[]`,
+`variants[]`, `family_links[]`.
+
+**Weapon** (`_type: 'weapon'`): `weapon_id`, `price`, `damage`, `bulk`, `hands`, `reload`,
+`range`, `ammunition`, `weapon_type`, `category`, `group`, `favored_weapon[]`,
+`critical_specialization`, `specific_magic_weapons[]`, `trait_glossary[]`.
+
+**Armor** (`_type: 'armor'`): `armor_id`, `price`, `ac_bonus`, `dex_cap`, `check_penalty`,
+`speed_penalty`, `strength`, `bulk`, `category`, `group`.
+
+**Equipment** (`_type: 'equipment'`): `equipment_id`, `item_level`, `tiered_variants`,
+`price`, `bulk`, `usage`, `hands`, `activations[]`, `variants[]`.
+
+**Background** (`_type: 'background'`): `entity_id`, `attribute_boost_choice`,
+`trained_skills[]`, `lore_skills[]`, `granted_feat`, `flavor_text`, `related_sources[]`.
+
+**Ancestry** (`_type: 'ancestry'`): `entity_id`, `mechanics` (hit_points, size, speed,
+attribute_boosts, languages, vision, granted), `popular_edicts`, `popular_anathema`.
+
+**Class** (`_type: 'class'`): `entity_id`, `key_attribute`, `hp_per_level`,
+`initial_proficiencies`, `class_dc`, `subclasses[]`.
+
+**Condition** (`_type: 'condition'`): `entity_id`, `stages[]`, `related_conditions[]`.
+
+**Trait** (`_type: 'trait'`): `entity_id`, `category`.
+
+**Hazard** (`_type: 'hazard'`): `entity_id`, `level`, `complexity`, `stealth`,
+`disable[]`, `defenses`, `routines[]`, `reset`.
+
+### Testing the AONPRD plugin
+
+Fixture-based tests live in `tests/e2e/plugins/aonprd.parse.test.ts`. They load HTML
+files from `tests/e2e/plugins/fixtures/aonprd/` and verify extraction without any network.
+To add a new fixture, copy a body file from the pointer-store cache and assert specific
+field values against the known page.
+
 ## Related
 
 - [Pipeline](./pipeline); how the task queue works
