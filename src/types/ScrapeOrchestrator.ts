@@ -29,9 +29,13 @@ export interface RunPipelineOptionsInterface {
   /** When true, delete failures.json after a successful retry run. */
   readonly resumeFailures: boolean;
   /** Pipeline task names to run for each fetched wiki page. */
-  readonly pipeline:       ReadonlyArray<string>;
+  readonly pipeline:        ReadonlyArray<string>;
   /** Per-target config object for state.context.config. */
-  readonly targetConfig:   Record<string, unknown>;
+  readonly targetConfig:    Record<string, unknown>;
+  /** Name of the first non-built-in task (plugin step); absent when no plugin exists. */
+  readonly pluginTaskName?:  string | undefined;
+  /** When false, write plugin output to a single JSONL rather than per-record files in a subfolder. */
+  readonly splitByTaskName?: boolean | undefined;
 }
 
 /**

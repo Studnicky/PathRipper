@@ -28,15 +28,27 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  */
 export interface PipelineContextInterface {
   /** Scrape target identifier from the config. */
-  readonly target:   string;
+  readonly target:          string;
   /** Output base directory; tasks write under `<outDir>/<target>/...`. */
-  readonly outDir:   string;
+  readonly outDir:          string;
   /** Scraper instance used by fetch tasks; absent when not required. */
-  readonly scraper?: HtmlScraper | MediaWikiScraper | undefined;
+  readonly scraper?:        HtmlScraper | MediaWikiScraper | undefined;
   /** Per-target configuration object as supplied by the loaded ripper config. */
-  readonly config:   Record<string, unknown>;
+  readonly config:          Record<string, unknown>;
   /** Optional shared content store; used by `crawl:list-targets` and any task that needs the same cache the scraper sees. */
-  readonly cache?:   ScraperCache | undefined;
+  readonly cache?:          ScraperCache | undefined;
+  /**
+   * Name of the first non-built-in pipeline task (the plugin step), if any.
+   * Used by write tasks to determine the plugin output subfolder.
+   * Absent when no plugin step is present in the pipeline.
+   */
+  readonly pluginTaskName?: string | undefined;
+  /**
+   * When `false`, plugin output is written to a single file (`<plugin-task-name>.jsonl`-style)
+   * rather than a subfolder per record. Mirrors `output.splitByTaskName` from the global config.
+   * Defaults to `true` when absent.
+   */
+  readonly splitByTaskName?: boolean | undefined;
   /** Discovered target URLs (populated by `crawl:list-targets`); orchestrator iterates this when set. */
   targets?: ReadonlyArray<string>;
 }
