@@ -1,6 +1,6 @@
 {
-  "name": "squashage",
-  "version": "0.7.0",
+  "name": "@studnicky/squashage",
+  "version": "0.7.1",
   "description": "Graph reconstitution pipeline; squashes classified JSON records into deterministic RDF (Turtle, TriG, JSON-LD, N-Triples, N-Quads).",
   "type": "module",
   "bin": {
@@ -19,6 +19,24 @@
     "./errors/SquashageConfigError": "./dist/errors/SquashageConfigError.js",
     "./registry/TaskRegistry": "./dist/registry/TaskRegistry.js",
     "./registry/PipelineState": "./dist/registry/PipelineState.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Studnicky/Squashage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Studnicky/Squashage/issues"
+  },
+  "homepage": "https://studnicky.github.io/Squashage/",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
   },
   "scripts": {
     "prebuild": "rm -rf dist",
@@ -83,7 +101,6 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "private": true,
   "sideEffects": false,
   "author": "a.j.studnicky@gmail.com",
   "license": "MIT",

@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-05-18
+
+### Fixed
+
+- **Publish pipeline targets GitHub Packages and actually works.** The publish workflow had three pre-existing bugs preventing publication on every release since v0.4.0: (1) called `npm run type-check` but the script is named `typecheck`; (2) targeted `https://registry.npmjs.org` instead of GitHub Packages; (3) used `NPM_TOKEN` secret (never provisioned) instead of the auto-issued `GITHUB_TOKEN`. Workflow now points at `https://npm.pkg.github.com`, authenticates with `GITHUB_TOKEN`, declares `packages: write` permission, and uses the correct script name. `workflow_dispatch` trigger added so future republish runs can fire without a master push.
+- **`package.json` configured for publishing.** Name scoped to `@studnicky/squashage` (GitHub Packages requires scoped names). `private: true` removed. New `publishConfig.registry: https://npm.pkg.github.com`, `publishConfig.access: public`, `repository`, `bugs`, `homepage`, and `files` fields added. `files` limits the publish tarball to `dist/`, `README.md`, `LICENSE`, `CHANGELOG.md`. Consumers import as `@studnicky/squashage` from GitHub Packages registry.
+
 ## [0.7.0] - 2026-05-18
 
 ### Added
