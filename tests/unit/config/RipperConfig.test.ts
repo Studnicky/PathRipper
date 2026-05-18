@@ -4,7 +4,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { RipperConfig } from '../../../src/config/RipperConfig.js';
+import { RipperConfig, RAW_CACHE_OFF_ERROR } from '../../../src/config/RipperConfig.js';
+import { RipperConfigError } from '../../../src/errors/RipperConfigError.js';
 
 let tmpDir = '';
 
@@ -64,5 +65,183 @@ describe('RipperConfig.load()', () => {
   it('defaults() returns a valid config', () => {
     const d = RipperConfig.defaults();
     assert.equal(d.output.basePath, './output');
+  });
+
+  // ── Cache default-on ────────────────────────────────────────────────────────
+
+  describe('cache default-on (targets)', () => {
+    it('target with no cache block gets default cache dir and read-write mode', async () => {
+      const path = await writeFixture('no-cache-target.json', {
+        output: { basePath: './out' },
+        targets: {
+          mywiki: {
+            baseUrl:  'https://example.com',
+            pipeline: ['html:fetch', 'json:write'],
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      const cache = cfg.targets?.['mywiki']?.cache;
+      assert.equal(cache?.dir, 'output/.cache/mywiki');
+      assert.equal(cache?.mode, 'read-write');
+    });
+
+    it('target with explicit cache block retains explicit values', async () => {
+      const path = await writeFixture('explicit-cache-target.json', {
+        output: { basePath: './out' },
+        targets: {
+          mywiki: {
+            baseUrl:  'https://example.com',
+            pipeline: ['html:fetch', 'json:write'],
+            cache:    { dir: 'custom/dir', mode: 'read-only' },
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      const cache = cfg.targets?.['mywiki']?.cache;
+      assert.equal(cache?.dir, 'custom/dir');
+      assert.equal(cache?.mode, 'read-only');
+    });
+
+    it('target with cache.mode off and includeRawContent true (default) throws RipperConfigError', async () => {
+      const path = await writeFixture('cache-off-raw-on-target.json', {
+        output: { basePath: './out' },
+        targets: {
+          mywiki: {
+            baseUrl:  'https://example.com',
+            pipeline: ['html:fetch', 'json:write'],
+            cache:    { dir: '.cache', mode: 'off' },
+            // includeRawContent absent → defaults to true
+          },
+        },
+      });
+      await assert.rejects(
+        RipperConfig.load(path),
+        (err: unknown) => {
+          assert.ok(err instanceof RipperConfigError, `Expected RipperConfigError, got ${String(err)}`);
+          assert.ok(
+            err.message.includes(RAW_CACHE_OFF_ERROR),
+            `Expected error message to contain invariant text, got: ${err.message}`,
+          );
+          return true;
+        },
+      );
+    });
+
+    it('target with cache.mode off and includeRawContent false loads successfully', async () => {
+      const path = await writeFixture('cache-off-raw-off-target.json', {
+        output: { basePath: './out' },
+        targets: {
+          mywiki: {
+            baseUrl:           'https://example.com',
+            pipeline:          ['html:fetch', 'json:write'],
+            cache:             { dir: '.cache', mode: 'off' },
+            includeRawContent: false,
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      assert.equal(cfg.targets?.['mywiki']?.cache.mode, 'off');
+      assert.equal(cfg.targets?.['mywiki']?.includeRawContent, false);
+    });
+
+    it('target with cache.mode off and explicit includeRawContent true throws RipperConfigError', async () => {
+      const path = await writeFixture('cache-off-raw-explicit-on-target.json', {
+        output: { basePath: './out' },
+        targets: {
+          mywiki: {
+            baseUrl:           'https://example.com',
+            pipeline:          ['html:fetch', 'json:write'],
+            cache:             { dir: '.cache', mode: 'off' },
+            includeRawContent: true,
+          },
+        },
+      });
+      await assert.rejects(
+        RipperConfig.load(path),
+        (err: unknown) => {
+          assert.ok(err instanceof RipperConfigError);
+          assert.ok(err.message.includes(RAW_CACHE_OFF_ERROR));
+          return true;
+        },
+      );
+    });
+  });
+
+  // ── Cache default-on (mediawiki) ────────────────────────────────────────────
+
+  describe('cache default-on (mediawiki)', () => {
+    it('mediawiki target with no cache block gets default cache dir and read-write mode', async () => {
+      const path = await writeFixture('no-cache-mediawiki.json', {
+        output: { basePath: './out' },
+        mediawiki: {
+          bulbapedia: {
+            apiUrl:   'https://bulbapedia.bulbagarden.net/w/api.php',
+            pipeline: ['wiki:fetch', 'json:write'],
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      const cache = cfg.mediawiki?.['bulbapedia']?.cache;
+      assert.equal(cache?.dir, 'output/.cache/bulbapedia');
+      assert.equal(cache?.mode, 'read-write');
+    });
+
+    it('mediawiki target with explicit cache block retains explicit values', async () => {
+      const path = await writeFixture('explicit-cache-mediawiki.json', {
+        output: { basePath: './out' },
+        mediawiki: {
+          bulbapedia: {
+            apiUrl:   'https://bulbapedia.bulbagarden.net/w/api.php',
+            pipeline: ['wiki:fetch', 'json:write'],
+            cache:    { dir: 'wiki/cache', mode: 'write-only', ttlMs: 3600000 },
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      const cache = cfg.mediawiki?.['bulbapedia']?.cache;
+      assert.equal(cache?.dir, 'wiki/cache');
+      assert.equal(cache?.mode, 'write-only');
+      assert.equal(cache?.ttlMs, 3600000);
+    });
+
+    it('mediawiki target with cache.mode off and includeRawContent true (default) throws RipperConfigError', async () => {
+      const path = await writeFixture('cache-off-raw-on-mediawiki.json', {
+        output: { basePath: './out' },
+        mediawiki: {
+          bulbapedia: {
+            apiUrl:   'https://bulbapedia.bulbagarden.net/w/api.php',
+            pipeline: ['wiki:fetch', 'json:write'],
+            cache:    { dir: '.cache', mode: 'off' },
+          },
+        },
+      });
+      await assert.rejects(
+        RipperConfig.load(path),
+        (err: unknown) => {
+          assert.ok(err instanceof RipperConfigError);
+          assert.ok(err.message.includes(RAW_CACHE_OFF_ERROR));
+          assert.ok(err.message.includes('mediawiki.bulbapedia'));
+          return true;
+        },
+      );
+    });
+
+    it('mediawiki target with cache.mode off and includeRawContent false loads successfully', async () => {
+      const path = await writeFixture('cache-off-raw-off-mediawiki.json', {
+        output: { basePath: './out' },
+        mediawiki: {
+          bulbapedia: {
+            apiUrl:            'https://bulbapedia.bulbagarden.net/w/api.php',
+            pipeline:          ['wiki:fetch', 'json:write'],
+            cache:             { dir: '.cache', mode: 'off' },
+            includeRawContent: false,
+          },
+        },
+      });
+      const cfg = await RipperConfig.load(path);
+      assert.equal(cfg.mediawiki?.['bulbapedia']?.cache.mode, 'off');
+      assert.equal(cfg.mediawiki?.['bulbapedia']?.includeRawContent, false);
+    });
   });
 });

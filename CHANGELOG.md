@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-05-08
+
+### Changed
+
+- **BREAKING: Cache defaults to on.** Targets and mediawiki entries that omit a `cache`
+  block now receive `{ dir: 'output/.cache/<targetId>', mode: 'read-write' }` automatically.
+  Combined with v2.5.0's `includeRawContent: true` default, raw content is always preserved
+  by default and never re-fetched on subsequent runs without explicit opt-out.
+
+- **BREAKING: Raw + cache-off rejected at config load.** Setting `cache.mode: 'off'`
+  while `includeRawContent` is true (or absent — the default is true) throws
+  `RipperConfigError` at `RipperConfig.load()`. Either set `includeRawContent: false`
+  or pick a write-capable cache mode (`'read-write'` or `'write-only'`). Raw output
+  without a cache exhausts disk on large scrapes — the loader catches the
+  misconfiguration before a single byte is fetched.
+
+- `RipperConfig.load()` return type narrowed from `Promise<RipperConfigInterface>` to
+  `Promise<NormalizedRipperConfigInterface>` — the resolved shape where every `cache`
+  block is guaranteed present. `ScrapeHtmlOptionsInterface.config` follows.
+
+### Added
+
+- `RipperConfig.normalize(config)` static method exposes the cache-default + invariant
+  pass for callers with an already-validated raw config.
+- `RAW_CACHE_OFF_ERROR` exported constant carrying the exact rejection message text.
+- Types: `ResolvedCacheConfigInterface`, `NormalizedTargetConfigInterface`,
+  `NormalizedWikiConfigInterface`, `NormalizedRipperConfigInterface`.
+
 ## [2.5.0] - 2026-05-07
 
 ### Changed

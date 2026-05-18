@@ -11,6 +11,35 @@ Problem being solved: Iterating on a parse plugin is slow if every run re-fetche
 
 Sharding rationale: Without sharding, a cache directory with 10,000 entries becomes a single flat directory where `readdir()` gets slow (hundreds of milliseconds per operation on some filesystems). By sharding into subdirectories using the first two hex characters of the cache key, each subdirectory holds ~256 entries. A `readdir()` of 256 files is fast; a `readdir()` of 10,000 is not. The two-character prefix is a sweet spot: enough entropy to spread load but not so granular that you end up with thousands of single-file directories.
 
+## Default-on
+
+Cache is on by default. Every `targets` and `mediawiki` entry that omits a `cache` block receives:
+
+```json
+{ "dir": "output/.cache/<targetId>", "mode": "read-write" }
+```
+
+where `<targetId>` is the key of the entry in the config (e.g. `"aonprd"` → `output/.cache/aonprd`). No explicit cache config is required for the default behavior.
+
+### Raw + cache-off invariant
+
+Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load with `RipperConfigError`. Raw content output without a write-capable cache will exhaust disk on large scrapes — the loader catches this misconfiguration before a single byte is fetched.
+
+To disable caching, set `includeRawContent: false` first (opt out of raw output), then set `cache.mode: "off"`:
+
+```json
+{
+  "targets": {
+    "aonprd": {
+      "baseUrl":           "https://2e.aonprd.com",
+      "pipeline":          ["html:fetch", "aonprd:parse", "json:write"],
+      "includeRawContent": false,
+      "cache":             { "dir": ".cache", "mode": "off" }
+    }
+  }
+}
+```
+
 ## How it works
 
 The cache stores two things per entry:
@@ -35,7 +64,7 @@ The key is derived from the request: HTTP method + URL, hashed to a fixed-length
 | `read-write` | yes | yes | Normal development; skip the network on subsequent runs. |
 | `read-only` | yes | no | Replay from cache only. Fails if a URL is not cached. Useful for offline reproduction. |
 | `write-only` | no | yes | Always fetch; always cache. Refreshes stale entries. |
-| `off` | no | no | No caching. Every run hits the network. |
+| `off` | no | no | No caching. Every run hits the network. Only valid when `includeRawContent: false`. |
 
 Cache hit and rate limiting: On a cache hit, the cached body is returned directly without entering the rate limiter. This is intentional: rate limiting protects the remote server, not your disk. Reading from disk is free and fast. However, cache hits still enter the pipeline; your parse task runs, extraction happens, and files are written.
 
