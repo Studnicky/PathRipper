@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-18
+
 ### Added
 
 - **Phase 11 silo migration: classifiers convert to self-registering plugins.** Each of the 11 classifier task modules under `src/classification/tasks/` self-registers on the global `TaskRegistry` at module-load time: a per-record task and an `onRunStart` lifecycle hook (declaring `proposesClass: true` on the seven class-proposers). Each hook validates its config namespace via `ctx.ajv.compile(<plugin>ConfigSchema)` using the run-wide shared AJV instance from `context:ajv`, compiles its own startup state (predicates, regexes, schemas, fingerprints, winkNLP model, etc.), and writes into a module-level cache keyed by `ctx.target` for concurrent-run isolation. Per-record tasks read from the cache and fail-fast with `OutputConfigError` on a cache miss. Hook-driven `SquashageOrchestrator` replaces the legacy `ScrapeOrchestrator`; `ClassificationFactory` removed (#25). Schema flip + fixture flatten (#27/#28) co-land in this release.
