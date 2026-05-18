@@ -98,13 +98,20 @@ squashage.config*.json
 .orchestration/
 .env
 
-# Target-specific plugin source — shipped as examples in v1, not the beta
-plugins/
+# Target-specific plugin source — shipped as examples in v1, not the beta.
+# Anchored to repo root so first-party silo plugins under
+# `src/classification/plugins/` (and their tests) stay tracked.
+/plugins/
 
 # Demo build artifacts (graphs/ subdirectory from viz:demo script)
 docs/examples/aonprd/graphs/
 docs/public/examples/aonprd/graphs/
 docs/.vitepress/dist/
+docs/.vitepress/cache/
 
 # Plans are local-only working documents; not published
 docs/plans/
+
+# Session triage / plan artifacts (working documents)
+.triage-*.md
+.plan-*.md

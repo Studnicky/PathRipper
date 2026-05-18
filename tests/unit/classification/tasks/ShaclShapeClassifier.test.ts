@@ -23,9 +23,24 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { JsonTologyOntology } from '../../../../src/ontology/JsonTologyOntology.js';
-import { ShaclShapeClassifier } from '../../../../src/classification/tasks/ShaclShapeClassifier.js';
+import {
+  ShaclShapeClassifier,
+  SHACL_SHAPE_PLUGIN_NAME,
+  SHACL_SHAPE_CONFIG_SCHEMA,
+} from '../../../../src/classification/tasks/ShaclShapeClassifier.js';
 import { OutputConfigError } from '../../../../src/errors/OutputConfigError.js';
-import type { PipelineStateInterface, ClassificationProposalInterface } from '../../../../src/types/PipelineState.js';
+import { SquashageConfigError } from '../../../../src/errors/SquashageConfigError.js';
+import { TaskRegistry } from '../../../../src/registry/TaskRegistry.js';
+import { Logger } from '../../../../src/modules/logger/logger.js';
+// Side-effect import — registers the run-wide AJV under TaskRegistry hook
+// `context:ajv`, so plugin-form tests can prime a stub context with a real AJV
+// before invoking the plugin's own hook.
+import '../../../../src/context/ajv.js';
+import type {
+  PipelineContextInterface,
+  PipelineStateInterface,
+  ClassificationProposalInterface,
+} from '../../../../src/types/PipelineState.js';
 
 // ── Inline schemas ─────────────────────────────────────────────────────────────
 
@@ -308,5 +323,235 @@ describe('ShaclShapeClassifier — file-path mode', () => {
         return true;
       },
     );
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// classify:shacl-shape — self-registering plugin tests
+// ──────────────────────────────────────────────────────────────────────────────
+
+interface PluginStubContextInterface extends Partial<PipelineContextInterface> {
+  target: string;
+  outDir: string;
+  config: Record<string, unknown>;
+}
+
+async function pluginPrimeStub(stub: PluginStubContextInterface): Promise<void> {
+  // Run only the context:ajv hook so ctx.ajv is populated.
+  for (const [name, fn] of TaskRegistry.onRunStartHooks()) {
+    if (name === 'context:ajv') {
+      await fn(stub as unknown as PipelineContextInterface);
+    }
+  }
+}
+
+async function runShaclShapePluginHook(stub: PluginStubContextInterface): Promise<void> {
+  for (const [name, fn] of TaskRegistry.onRunStartHooks()) {
+    if (name === SHACL_SHAPE_PLUGIN_NAME) {
+      await fn(stub as unknown as PipelineContextInterface);
+      return;
+    }
+  }
+  throw new Error('classify:shacl-shape hook is not registered');
+}
+
+function buildPluginState(
+  input: Record<string, unknown>,
+  ctx?:  PipelineContextInterface,
+  existingProposals: ReadonlyArray<ClassificationProposalInterface> = [],
+): PipelineStateInterface {
+  return {
+    targetId:        'unit-target',
+    source:          { target: 'unit-target', path: 'fixture.json' },
+    input,
+    classification:  null,
+    classifications: existingProposals,
+    output:          null,
+    context:         ctx,
+  };
+}
+
+describe('classify:shacl-shape — self-registration', () => {
+  it('registers both an onRunStart hook and a per-record task under classify:shacl-shape', () => {
+    const hookNames = TaskRegistry.onRunStartHooks().map(([n]) => n);
+    assert.ok(hookNames.includes(SHACL_SHAPE_PLUGIN_NAME), `expected ${SHACL_SHAPE_PLUGIN_NAME} in onRunStart hooks`);
+
+    assert.ok(TaskRegistry.has(SHACL_SHAPE_PLUGIN_NAME), `expected ${SHACL_SHAPE_PLUGIN_NAME} per-record task`);
+  });
+
+  it('per-record manifest declares proposesClass: true', () => {
+    const manifest = TaskRegistry.manifests().find(m => m.name === SHACL_SHAPE_PLUGIN_NAME && m.phase === undefined);
+    assert.ok(manifest, 'expected a per-record manifest entry (no phase)');
+    assert.equal(manifest.proposesClass, true);
+  });
+});
+
+describe('classify:shacl-shape — optional-jt no-op contract', () => {
+  // This is the load-bearing test for the silo contract: when
+  // shapesFrom === 'ontology' and ctx.jt is absent, the hook MUST mark the run
+  // as disabled (no throw), and per-record dispatch MUST be a silent no-op.
+  it('hook with shapesFrom=ontology and ctx.jt absent does not throw, primes disabled state', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: { shaclShape: { shapesFrom: 'ontology', priority: 45 } },
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+    // ctx.jt deliberately undefined.
+    await assert.doesNotReject(runShaclShapePluginHook(stub),
+      'hook MUST NOT throw when ctx.jt is absent in ontology mode');
+  });
+
+  it('per-record task is a silent no-op when the run was disabled at startup', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: { shaclShape: { shapesFrom: 'ontology', priority: 45 } },
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+    await runShaclShapePluginHook(stub);
+
+    const task = TaskRegistry.get(SHACL_SHAPE_PLUGIN_NAME);
+    const state = buildPluginState({ name: 'whatever' }, stub as unknown as PipelineContextInterface);
+
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+
+    assert.equal(nextCalled, true, 'next() must be called even with no jt');
+    assert.deepEqual(state.classifications, [], 'no proposals when run is disabled');
+  });
+
+  it('hook with shapesFrom=ontology and ctx.jt present primes a non-disabled cache', async () => {
+    const jt = JsonTologyOntology.create({
+      baseIRI: 'https://squashage.dev/vocabulary/test',
+      schemas: [
+        { schemaPath: 'widget.schema.json', schema: WIDGET_SCHEMA as unknown as Record<string, unknown> & { readonly '$id': string } },
+      ],
+    });
+
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: { shaclShape: { shapesFrom: 'ontology', priority: 45 } },
+      logger: Logger,
+      jt,
+    };
+    await pluginPrimeStub(stub);
+    await runShaclShapePluginHook(stub);
+
+    const task = TaskRegistry.get(SHACL_SHAPE_PLUGIN_NAME);
+    const state = buildPluginState({ name: 'Sprocket', sku: 'W-001' }, stub as unknown as PipelineContextInterface);
+
+    await task(async () => { /* noop */ }, state);
+
+    assert.equal(state.classifications.length, 1, 'expected one proposal from the Widget shape');
+    const [p] = state.classifications;
+    assert.ok(p);
+    assert.equal(p.source,    SHACL_SHAPE_PLUGIN_NAME);
+    assert.equal(p.className, 'Widget');
+    assert.equal(p.priority,  45);
+    assert.equal(p.confidence, 1);
+    assert.ok(p.reasons.some(r => r.includes('shacl:conforms=true')));
+  });
+});
+
+describe('classify:shacl-shape — onRunStart config validation', () => {
+  it('throws SquashageConfigError when shapesFrom is missing', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: { shaclShape: { /* missing shapesFrom */ priority: 45 } as Record<string, unknown> },
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+
+    await assert.rejects(
+      runShaclShapePluginHook(stub),
+      (err: unknown) => {
+        assert.ok(err instanceof SquashageConfigError, `Expected SquashageConfigError, got ${String(err)}`);
+        return true;
+      },
+    );
+  });
+
+  it('throws SquashageConfigError on additional properties', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: { shaclShape: { shapesFrom: 'ontology', bogus: 1 } },
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+
+    await assert.rejects(
+      runShaclShapePluginHook(stub),
+      (err: unknown) => err instanceof SquashageConfigError,
+    );
+  });
+
+  it('no shaclShape config -> hook is idle (no throw, no cache primed)', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      config: {},
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+    await assert.doesNotReject(runShaclShapePluginHook(stub));
+
+    // Per-record task with no cache primed: silent no-op.
+    const task = TaskRegistry.get(SHACL_SHAPE_PLUGIN_NAME);
+    const state = buildPluginState({ name: 'x' }, stub as unknown as PipelineContextInterface);
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+    assert.equal(nextCalled, true);
+    assert.deepEqual(state.classifications, []);
+  });
+
+  it('exports the AJV schema fragment as a plain object', () => {
+    assert.equal(typeof SHACL_SHAPE_CONFIG_SCHEMA, 'object');
+    assert.equal((SHACL_SHAPE_CONFIG_SCHEMA as { type: string }).type, 'object');
+  });
+});
+
+describe('classify:shacl-shape — file-path mode (plugin form)', () => {
+  let pluginShapePath = '';
+
+  before(async () => {
+    pluginShapePath = join(tmpdir(), `plugin-shacl-test-${Date.now().toString()}.ttl`);
+    await writeFile(pluginShapePath, PERSON_SHAPE_TURTLE, 'utf-8');
+  });
+
+  after(async () => {
+    await unlink(pluginShapePath).catch(() => { /* ignore */ });
+  });
+
+  it('hook parses Turtle once at startup; per-record task validates against cached shapes', async () => {
+    const stub: PluginStubContextInterface = {
+      target: 'unit',
+      outDir: '/tmp',
+      // __schemasBase bridge key keeps the same convention as task #11's ontology hook.
+      config: { shaclShape: { shapesFrom: pluginShapePath, priority: 45 }, __schemasBase: '/' },
+      logger: Logger,
+    };
+    await pluginPrimeStub(stub);
+    await runShaclShapePluginHook(stub);
+
+    const task = TaskRegistry.get(SHACL_SHAPE_PLUGIN_NAME);
+    const state = buildPluginState({ name: 'Alice' }, stub as unknown as PipelineContextInterface);
+
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+    assert.equal(nextCalled, true);
+
+    assert.equal(state.classifications.length, 1);
+    const [p] = state.classifications;
+    assert.ok(p);
+    assert.equal(p.source,    SHACL_SHAPE_PLUGIN_NAME);
+    assert.equal(p.className, 'Person');
+    assert.equal(p.priority,  45);
+    assert.ok(p.reasons.some(r => r.includes('shacl:conforms=true')));
   });
 });

@@ -34,7 +34,7 @@
  */
 
 import type { Quad } from '@rdfjs/types';
-import * as canonize from 'rdf-canonize';
+import { canonize } from 'rdf-canonize';
 
 import { Parser } from './Parser.js';
 
@@ -113,7 +113,7 @@ export class Canonicalize {
       return [];
     }
 
-    const nq = await canonize.canonize([...quads], { algorithm: 'RDFC-1.0' });
+    const nq = await canonize([...quads], { algorithm: 'RDFC-1.0' });
 
     if (nq.length === 0) {
       return [];

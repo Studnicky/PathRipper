@@ -15,6 +15,7 @@
  * `writer.end((error, result) => …)`
  * — called once with `(null, result)` on success,
  * — called once with `(error, '')` on failure.
+ * Typed via `@types/n3`; see {@link https://www.npmjs.com/package/@types/n3}.
  *
  * **JSON-LD bridge** — JSON-LD output is produced by first serializing the
  * quad array to N-Quads (recursive call), then passing the N-Quads string to
@@ -265,12 +266,15 @@ export class Serializer {
         writer.addQuad(quad);
       }
 
+      // n3 Writer.end calls done(null, result) on success and done(error, '') on
+      // failure. @types/n3 ErrorCallback types err as Error (non-null); the cast
+      // satisfies the strict-null check while preserving runtime correctness.
       writer.end((error, result) => {
         if (error !== null) {
           reject(error);
           return;
         }
-        resolve({ data: result, format });
+        resolve({ data: result as string, format });
       });
     });
   }
@@ -294,7 +298,10 @@ export class Serializer {
     const expanded = await jsonld.fromRDF(nq, { format: 'application/n-quads' });
 
     if (options.jsonldContext !== undefined) {
-      const compacted = await jsonld.compact(expanded, options.jsonldContext);
+      // JsonldContextDocInterface is Readonly<Record<string, unknown>>; @types/jsonld
+      // ContextDefinition has a narrower value type. The cast is safe because
+      // jsonld.compact accepts any plain object as its context at runtime.
+      const compacted = await jsonld.compact(expanded, options.jsonldContext as Parameters<typeof jsonld.compact>[1]);
       return { data: JSON.stringify(compacted, null, 2), format: 'jsonld' };
     }
 

@@ -22,6 +22,29 @@
  * - Any other string is treated as a filesystem path to a Turtle/N-Quads OWL
  *   TBox, loaded and parsed once at construction time.
  *
+ * **Module side effects** (per the v0.7.0 silo migration, task #19):
+ *
+ * 1. `TaskRegistry.registerHook('classify:taxonomic-narrowing', 'onRunStart', ...)`
+ *    — reads the per-plugin config namespace `ctx.config.taxonomicNarrowing`,
+ *    AJV-validates it via `ctx.ajv`, resolves the TBox source (file path or
+ *    `ctx.jt.tbox()`), and computes the transitive `owl:subClassOf` closure
+ *    once at startup. The hook caches the closure on a `WeakMap` keyed by
+ *    `ctx`. When `tboxFrom === 'ontology'` and `ctx.jt` is absent, the hook
+ *    sets an internal `disabled: true` flag and logs a warning — it does NOT
+ *    throw, preserving the optional-`jt` no-op contract from `docs/context-silo.md`.
+ *
+ * 2. `TaskRegistry.register('classify:taxonomic-narrowing', task)` —
+ *    self-registers the per-record task that filters proposals via the cached
+ *    closure. The task does NOT declare `proposesClass: true`: this classifier
+ *    consumes proposals (collapsing supertypes when subtypes are also proposed)
+ *    and never emits new class proposals.
+ *
+ * The legacy {@link TaxonomicNarrowingClassifier} class is retained for the
+ * existing {@link ClassificationFactory} wiring (which constructs an instance
+ * and registers `.execute` onto a per-run registry). Once the orchestrator is
+ * rewired to drive lifecycle hooks (a follow-up silo-migration task), the
+ * factory path is deleted and only the self-registered plugin form remains.
+ *
  * @module
  * @since 0.5.0
  * @category Classification
@@ -30,12 +53,16 @@
 import { readFileSync } from 'node:fs';
 import { resolve }      from 'node:path';
 
-import type { Quad } from '@rdfjs/types';
-import { Parser }    from '../../rdf/Parser.js';
+import type { Quad }             from '@rdfjs/types';
+import type { ValidateFunction } from 'ajv';
+
+import { Parser }            from '../../rdf/Parser.js';
 import { OutputConfigError } from '../../errors/OutputConfigError.js';
-import { Logger }    from '../../modules/logger/logger.js';
+import { Logger }            from '../../modules/logger/logger.js';
+import { TaskRegistry }      from '../../registry/TaskRegistry.js';
 import type { TaskFnInterface, NextFnInterface } from '../../types/Pipeline.js';
 import type {
+  PipelineContextInterface,
   PipelineStateInterface,
   ClassificationProposalInterface,
 } from '../../types/PipelineState.js';
@@ -451,3 +478,301 @@ export class TaxonomicNarrowingClassifier {
     return segment !== undefined ? segment : '';
   }
 }
+
+// ── Plugin self-registration (silo migration, task #19) ──────────────────────
+
+/**
+ * AJV schema fragment for `config.taxonomicNarrowing` (the per-plugin config
+ * namespace consumed by the `classify:taxonomic-narrowing` `onRunStart` hook).
+ *
+ * @remarks
+ * Validates structural shape of the {@link TaxonomicNarrowingConfigInterface}:
+ * `tboxFrom` is required and must be a non-empty string (either the literal
+ * `'ontology'` or a filesystem path to a Turtle/N-Quads OWL TBox file);
+ * `enabled` is an optional boolean.
+ *
+ * Exported so other plugins (and future config-aggregation tooling) may
+ * compose it; not part of the silo contract.
+ *
+ * @category Classification
+ * @since 0.7.0
+ * @group Schema
+ */
+export const TAXONOMIC_NARROWING_CONFIG_SCHEMA = {
+  type: 'object',
+  required: ['tboxFrom'],
+  additionalProperties: false,
+  properties: {
+    tboxFrom: { type: 'string', minLength: 1 },
+    enabled:  { type: 'boolean' },
+  },
+} as const;
+
+/**
+ * Per-context cache populated at `onRunStart` and consumed by the per-record
+ * task.
+ *
+ * @remarks
+ * Holds:
+ * - `closure` — the transitive `owl:subClassOf` closure built from the TBox
+ *   quads. May be empty when the TBox has no subClassOf assertions.
+ * - `disabled` — `true` when `tboxFrom === 'ontology'` and `ctx.jt` was absent
+ *   at `onRunStart`. Per the silo contract, the per-record task no-ops when
+ *   this flag is set instead of throwing (consumers of optional `ctx.jt` MUST
+ *   no-op when absent — see `docs/context-silo.md`).
+ *
+ * Keyed by the {@link PipelineContextInterface} object so concurrent runs in
+ * the same process do not collide; the WeakMap lets the cache release as soon
+ * as the run-context goes out of scope.
+ *
+ * @internal
+ */
+interface NarrowingRunStateInterface {
+  readonly closure:  Map<string, Set<string>>;
+  readonly disabled: boolean;
+}
+
+const narrowingStateByContext: WeakMap<
+  PipelineContextInterface,
+  NarrowingRunStateInterface
+> = new WeakMap();
+
+/**
+ * Internal bridge interface for the schemas-base directory.
+ *
+ * @remarks
+ * The orchestrator threads this via the private `ctx.config.__schemasBase`
+ * key so plugins can resolve relative file paths without re-deriving the
+ * config directory. INTERNAL — do NOT add to `docs/context-silo.md`.
+ *
+ * @internal
+ */
+interface CtxConfigBridgeInterface {
+  readonly __schemasBase?: string | undefined;
+}
+
+/**
+ * `onRunStart` hook for `classify:taxonomic-narrowing`.
+ *
+ * @remarks
+ * 1. Reads `ctx.config.taxonomicNarrowing` (per-plugin namespace per the silo
+ *    contract). No-ops when absent so the plugin is safe to import in
+ *    pipelines that do not configure taxonomic narrowing.
+ * 2. AJV-compiles {@link TAXONOMIC_NARROWING_CONFIG_SCHEMA} via the run-wide
+ *    `ctx.ajv` and fails fast with {@link OutputConfigError} when validation
+ *    fails.
+ * 3. Resolves the TBox source:
+ *    - `tboxFrom === 'ontology'` AND `ctx.jt === undefined` — sets the
+ *      `disabled: true` flag and logs a warning. DOES NOT THROW. The silo
+ *      contract requires consumers of optional `ctx.jt` to no-op when it is
+ *      absent at startup, not at per-record time.
+ *    - `tboxFrom === 'ontology'` AND `ctx.jt !== undefined` — resolves the
+ *      TBox quads from `ctx.jt.tbox()`.
+ *    - any other string — interpreted as a filesystem path; the file is read
+ *      and parsed (Turtle by default; N-Quads when extension is `.nq`/`.n-quads`).
+ * 4. Computes the transitive subClassOf closure via
+ *    {@link TaxonomicNarrowingClassifier.buildClosure} and caches it on
+ *    {@link narrowingStateByContext} keyed by `ctx`.
+ *
+ * @internal
+ */
+async function taxonomicNarrowingOnRunStart(ctx: PipelineContextInterface): Promise<void> {
+  const config = ctx.config as Readonly<Record<string, unknown>> & CtxConfigBridgeInterface;
+  const rawCfg = config['taxonomicNarrowing'];
+  if (rawCfg === undefined) {
+    logger.debug('onRunStart', 'no classify:taxonomic-narrowing config; hook left dormant', {
+      targetId: ctx.target,
+    });
+    return;
+  }
+
+  const validate: ValidateFunction = ctx.ajv.compile(TAXONOMIC_NARROWING_CONFIG_SCHEMA);
+  if (!validate(rawCfg)) {
+    const errors = validate.errors ?? [];
+    throw OutputConfigError.create(
+      `classify:taxonomic-narrowing: invalid config.taxonomicNarrowing — ${errors
+        .map(e => `${e.instancePath} ${e.message ?? ''}`)
+        .join('; ')}`,
+      { metadata: { targetId: ctx.target, errors: errors as unknown as Record<string, unknown>[] } },
+    );
+  }
+
+  const cfg = rawCfg as TaxonomicNarrowingConfigInterface;
+
+  // Optional-jt no-op: when ontology mode is configured but ctx.jt is absent,
+  // mark the plugin disabled at startup. The per-record task short-circuits
+  // when the disabled flag is set, so it never throws mid-record.
+  if (cfg.tboxFrom === 'ontology' && ctx.jt === undefined) {
+    logger.warn(
+      'onRunStart',
+      'classify:taxonomic-narrowing tboxFrom=ontology but ctx.jt is absent; disabling plugin for this run',
+      { targetId: ctx.target },
+    );
+    narrowingStateByContext.set(ctx, { closure: new Map(), disabled: true });
+    return;
+  }
+
+  // Resolve TBox quads.
+  let quads: ReadonlyArray<Quad>;
+  if (cfg.tboxFrom === 'ontology') {
+    // ctx.jt is guaranteed non-undefined here by the guard above; the bang
+    // is required because TS doesn't narrow optional members across the
+    // intervening async boundary.
+    quads = await ctx.jt!.tbox();
+  } else {
+    const schemasBase = config.__schemasBase ?? process.cwd();
+    const absPath     = resolve(schemasBase, cfg.tboxFrom);
+    let text: string;
+    try {
+      text = readFileSync(absPath, 'utf-8');
+    } catch (err) {
+      const cause = err instanceof Error ? err : undefined;
+      throw OutputConfigError.create(
+        `classify:taxonomic-narrowing: cannot read TBox file at ${absPath}: ${cause?.message ?? String(err)}`,
+        { cause, metadata: { tboxFrom: cfg.tboxFrom, absPath } },
+      );
+    }
+    const format = absPath.endsWith('.nq') || absPath.endsWith('.n-quads') ? 'nquads' : 'turtle';
+    const result = await Parser.parse(text, { format });
+    quads = result.quads;
+    logger.debug('onRunStart', 'Loaded TBox file', { absPath, quadCount: quads.length });
+  }
+
+  const closure = TaxonomicNarrowingClassifier.buildClosure(quads);
+  narrowingStateByContext.set(ctx, { closure, disabled: false });
+
+  logger.info('onRunStart', 'classify:taxonomic-narrowing closure computed', {
+    targetId:   ctx.target,
+    tboxFrom:   cfg.tboxFrom,
+    enabled:    cfg.enabled ?? false,
+    quadCount:  quads.length,
+    classCount: closure.size,
+  });
+}
+
+/**
+ * Per-record task function for `classify:taxonomic-narrowing`.
+ *
+ * @remarks
+ * Reads the closure cached at `onRunStart` and applies sibling-vs-supertype
+ * narrowing to `state.classifications`. The task NEVER throws when the cache
+ * is missing or the `disabled` flag is set — it simply chains to `next()`.
+ * This preserves the optional-`ctx.jt` no-op contract: a pipeline that lists
+ * `classify:taxonomic-narrowing` but runs without an ontology engine sees a
+ * silent pass-through, never a thrown error mid-record.
+ *
+ * The narrowing logic mirrors {@link TaxonomicNarrowingClassifier#execute}
+ * (the legacy class-based pathway): drop proposed class names that are
+ * supertypes of another proposed class name in the closure, and append a
+ * `__narrowing_applied__` audit sentinel when narrowing fires.
+ *
+ * @internal
+ */
+const taxonomicNarrowingTask: TaskFnInterface<PipelineStateInterface> = async (
+  next:  NextFnInterface,
+  state: PipelineStateInterface,
+): Promise<void> => {
+  const ctx = state.context;
+  const runState = ctx !== undefined ? narrowingStateByContext.get(ctx) : undefined;
+
+  if (runState === undefined) {
+    logger.debug('execute', 'classify:taxonomic-narrowing not configured; pass-through', {
+      targetId: state.targetId,
+    });
+    await next();
+    return;
+  }
+
+  if (runState.disabled) {
+    logger.debug('execute', 'classify:taxonomic-narrowing disabled (ctx.jt absent); pass-through', {
+      targetId: state.targetId,
+    });
+    await next();
+    return;
+  }
+
+  const closure = runState.closure;
+  if (closure.size === 0) {
+    logger.debug('execute', 'Empty TBox closure, no-op', { targetId: state.targetId });
+    await next();
+    return;
+  }
+
+  const SENTINELS = new Set<string>(['__source__', '__validation__', '__narrowing_applied__', 'unknown']);
+  const sentinelProposals = state.classifications.filter(p => SENTINELS.has(p.className));
+  const realProposals     = state.classifications.filter(p => !SENTINELS.has(p.className));
+
+  const proposedClassNames = new Set<string>(realProposals.map(p => p.className));
+  if (proposedClassNames.size <= 1) {
+    await next();
+    return;
+  }
+
+  const toKeep   = new Set<string>();
+  const toRemove = new Set<string>();
+  for (const candidate of proposedClassNames) {
+    let isSupertype = false;
+    for (const other of proposedClassNames) {
+      if (other === candidate) continue;
+      const otherClosure = closure.get(other);
+      if (otherClosure !== undefined && otherClosure.has(candidate)) {
+        isSupertype = true;
+        break;
+      }
+    }
+    if (isSupertype) toRemove.add(candidate);
+    else             toKeep.add(candidate);
+  }
+
+  if (toRemove.size === 0) {
+    logger.debug('execute', 'No supertype proposals found, pass through', {
+      targetId:        state.targetId,
+      proposedClasses: [...proposedClassNames],
+    });
+    await next();
+    return;
+  }
+
+  const survivingProposals = realProposals.filter(p => toKeep.has(p.className));
+
+  const narrowingReasons: string[] = [];
+  for (const removed of toRemove) {
+    for (const kept of toKeep) {
+      const keptClosure = closure.get(kept);
+      if (keptClosure !== undefined && keptClosure.has(removed)) {
+        narrowingReasons.push(`narrowed: ${kept} subClassOf ${removed}; dropped ${removed}`);
+      }
+    }
+  }
+
+  const sentinel: ClassificationProposalInterface = {
+    source:     'classify:taxonomic-narrowing',
+    className:  '__narrowing_applied__',
+    priority:   0,
+    confidence: 1,
+    reasons:    narrowingReasons,
+  };
+
+  logger.info('execute', 'Taxonomic narrowing applied', {
+    targetId:        state.targetId,
+    kept:            [...toKeep],
+    dropped:         [...toRemove],
+    narrowingReasons,
+  });
+
+  (state as unknown as { classifications: ReadonlyArray<ClassificationProposalInterface> })
+    .classifications = [
+      ...sentinelProposals,
+      ...survivingProposals,
+      sentinel,
+    ];
+
+  await next();
+};
+
+TaskRegistry.registerHook(
+  'classify:taxonomic-narrowing',
+  'onRunStart',
+  taxonomicNarrowingOnRunStart,
+);
+TaskRegistry.register('classify:taxonomic-narrowing', taxonomicNarrowingTask);
