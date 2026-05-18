@@ -30,7 +30,11 @@ graph TD
     RateLimiter[modules/http/RateLimiter] -.wraps.-> bottleneck
 ```
 
+<section data-component="pipeline">
+
 ## Pipeline pattern
+
+<p class="summary">Typed async middleware chain where every task receives (next, state) and advances the queue by calling next().</p>
 
 Typed async middleware chain where every task receives `(next, state)` and advances the queue by calling `next()`.
 
@@ -89,7 +93,13 @@ type TaskFnType<TState> = (next: NextFnType, state: TState) => Promise<void>
 
 Why this matters: If a task decides to bail out (malformed HTML, missing required field), it skips `await next()` and the write task never runs. You don't need error handling middleware; you just don't call `next()`. This is simpler than try/catch chains and keeps the control flow local to each task.
 
+</section>
+
+<section data-component="http-layer">
+
 ## HTTP machinery
+
+<p class="summary">Three composable classes — RateLimiter, RetryExecutor, and ErrorClassifier — form the HTTP stack, each injected independently.</p>
 
 Three composable classes (`RateLimiter`, `RetryExecutor`, and `ErrorClassifier`) form the HTTP stack, each injected independently.
 
@@ -150,7 +160,13 @@ Token-bucket backed by `bottleneck`. Factory methods: `RateLimiter.perSecond(n)`
 
 Rate limiting applies per request. If you set `rateLimitMs: 1000`, every fetch is at least 1000ms apart. If you set `jitterMs: 250`, an additional 0–250ms random delay is added per request. Jitter prevents synchronized bursts when multiple tasks start together. The limiter enforces this before the HTTP call enters the retry executor, so rate limiting happens even on retries; each retry attempt waits its own `minTime` before executing.
 
+</section>
+
+<section data-component="scrapers">
+
 ## Scrapers
+
+<p class="summary">Pure data accessors for HTML (via cheerio) and MediaWiki (via native fetch) that return typed results without coupling to the pipeline.</p>
 
 Pure data accessors for HTML (via cheerio) and MediaWiki (via native fetch) that return typed results without coupling to the pipeline.
 
@@ -173,7 +189,13 @@ The `ScrapeOrchestrator` selects from three modes: explicit `--category` flag �
 
 Wraps `wtf_wikipedia`. `WikitextParser.parse(title, wikitext)` returns a `ParsedPageInterface` with `infobox` (flat key→value record), `sections` (title + raw wikitext), and `categories`. Helper methods `infoboxField` and `infoboxNumber` pull typed values without null-checks at call site.
 
+</section>
+
+<section data-component="crawler">
+
 ## Link crawler
+
+<p class="summary">Recursive link crawler controlled by three regexes (domain, delimiter, target) that bound traversal and collect matching URLs.</p>
 
 Recursive link crawler controlled by three regexes (`domain`, `delimiter`, `target`) that bound traversal and collect matching URLs.
 
@@ -187,7 +209,13 @@ Three regexes control behavior:
 
 Visited URLs are tracked in a `Set`. All traversals run concurrently via `Promise.all` at each level. Results are deduplicated and sorted with a numeric-aware collator; so `Item-10` sorts after `Item-9`, not between `Item-1` and `Item-2`.
 
+</section>
+
+<section data-component="source-map">
+
 ## Source map
+
+<p class="summary">Complete index of every source file, its exported symbols, and the PathRipper or TORUS module it was ported from.</p>
 
 Complete index of every source file, its exported symbols, and the PathRipper or TORUS module it was ported from.
 
@@ -207,3 +235,5 @@ Complete index of every source file, its exported symbols, and the PathRipper or
 | `src/registry/PipelineState.ts` | `PipelineState` | New: typed state bridge between scrapers and plugins |
 | `src/config/RipperConfig.ts` | `RipperConfig` | New: replaces hardcoded `config.js` |
 | `src/cli/cli.ts` | `ripperoni` CLI | New: `commander` |
+
+</section>
