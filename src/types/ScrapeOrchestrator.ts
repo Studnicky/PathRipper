@@ -1,4 +1,4 @@
-import type { RipperConfigInterface } from './Config.js';
+import type { NormalizedRipperConfigInterface } from './Config.js';
 import type { MediaWikiScraper } from '../scrapers/MediaWikiScraper.js';
 import type { CategoryMemberInterface } from './MediaWikiScraper.js';
 import type { Logger } from '../modules/logger/logger.js';
@@ -61,7 +61,7 @@ export interface ScrapeHtmlOptionsInterface {
   /** Directory used to resolve relative plugin paths. */
   readonly configDir: string;
   /** Validated ripperoni configuration. */
-  readonly config:    RipperConfigInterface;
+  readonly config:    NormalizedRipperConfigInterface;
 }
 
 /**
@@ -87,7 +87,7 @@ export interface ScrapeWikiOptionsInterface {
   /** Directory used to resolve relative plugin paths. */
   readonly configDir:       string;
   /** Validated ripperoni configuration. */
-  readonly config:          RipperConfigInterface;
+  readonly config:          NormalizedRipperConfigInterface;
   /** When true, read titles from failures.json and re-scrape only those pages. */
   readonly resumeFailures?: boolean | undefined;
 }

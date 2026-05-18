@@ -59,7 +59,7 @@ Each key is a target name (e.g. `"aonprd"`). Value is a target config.
 | `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` |  | What to do when a record fails schema validation. |
 | `includeRawContent` | boolean | `true` | When `false`, raw content is not populated on `state.page._raw` at all during the pipeline run. No raw file is written to `raw/`. See [Output folder layout](#output-folder-layout) below. |
 | `mapping` | object |  | Field-rename map applied after plugin output. |
-| `cache` | CacheConfig |  | See [Cache](./cache). |
+| `cache` | CacheConfig | see [Cache defaults](#cache-config-shared-shape) | See [Cache](./cache). Omit to use the default. |
 | `crawler` | CrawlerConfig |  | Inline crawler config for this target. |
 
 Concurrency bound rationale: Concurrency is clamped to 1–32 to prevent runaway parallelism. At concurrency 32, you can have 32 HTTP requests in flight simultaneously. This is usually enough to saturate downstream bandwidth and quickly hit many servers' rate limits. Beyond 32, the marginal benefit drops and the risk of getting blocked increases. If you need more parallelism, run multiple Ripperoni instances.
@@ -90,6 +90,8 @@ Validation errors surface at first write. If your plugin produces invalid output
 
 ### Example
 
+Cache is on by default — omit the `cache` block and Ripperoni uses `output/.cache/<targetId>` with `read-write` mode automatically:
+
 ```json
 {
   "targets": {
@@ -103,15 +105,13 @@ Validation errors surface at first write. If your plugin produces invalid output
       "headers": {
         "User-Agent": "ripperoni/2.0 (+https://github.com/Studnicky/PathRipper)"
       },
-      "pipeline": ["html:fetch", "aonprd:parse", "json:write"],
-      "cache": {
-        "dir": "./output/.cache/aonprd",
-        "mode": "read-write"
-      }
+      "pipeline": ["html:fetch", "aonprd:parse", "json:write"]
     }
   }
 }
 ```
+
+This produces a cache at `output/.cache/aonprd` in `read-write` mode — identical to writing `"cache": { "dir": "output/.cache/aonprd", "mode": "read-write" }` explicitly.
 
 ---
 
@@ -147,6 +147,8 @@ A pipeline with no plugin step (`["html:fetch", "json:write"]`) is a valid and c
 
 Set `includeRawContent: false` to strip `_raw` from output. Use this for production scrapes where storage is a concern. Rough estimate: 15,000 AONPRD records x 80 KB of HTML = roughly 1.2 GB of additional output. If you do not need to re-parse output offline, opt out to keep file sizes small.
 
+Note: when opting out of raw content, you may also set `cache.mode: "off"` if you have no need to cache fetched pages:
+
 ```json
 {
   "targets": {
@@ -154,11 +156,13 @@ Set `includeRawContent: false` to strip `_raw` from output. Use this for product
       "baseUrl":           "https://2e.aonprd.com",
       "pipeline":          ["html:fetch", "aonprd:parse", "json:write"],
       "includeRawContent": false,
-      "cache": { "dir": "./output/.cache/aonprd", "mode": "read-write" }
+      "cache":             { "dir": ".cache", "mode": "off" }
     }
   }
 }
 ```
+
+Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load. See [Cache — Raw + cache-off invariant](./cache#raw--cache-off-invariant).
 
 ### Raw-dump-only pipeline (no plugin)
 
@@ -227,7 +231,13 @@ See [Crawler](./crawler) for how the three regexes interact.
 
 ## cache config (shared shape)
 
-Both `targets` and `mediawiki` blocks accept the same cache shape:
+Cache is on by default. Omitting the `cache` block from a `targets` or `mediawiki` entry applies:
+
+```json
+{ "dir": "output/.cache/<targetId>", "mode": "read-write" }
+```
+
+To override, supply an explicit `cache` block:
 
 ```json
 "cache": {
@@ -240,10 +250,10 @@ Both `targets` and `mediawiki` blocks accept the same cache shape:
 | Key | Type | Required | Notes |
 |-----|------|----------|-------|
 | `dir` | string | yes | Directory for cache meta files. |
-| `mode` | enum | yes | `read-write`, `read-only`, `write-only`, or `off`. |
+| `mode` | enum | yes | `read-write`, `read-only`, `write-only`, or `off`. `off` requires `includeRawContent: false`. |
 | `ttlMs` | integer ≥ 0 | no | Entries older than this (in ms) are treated as misses. |
 
-See [Cache](./cache) for sharding, eviction, and TTL behavior.
+See [Cache](./cache) for sharding, eviction, TTL, and the raw + cache-off invariant.
 
 ---
 
