@@ -13,13 +13,25 @@
  * @since 0.1.0
  */
 
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { OntologyClassifier } from '../../../../src/classification/tasks/OntologyClassifier.js';
+// Side-effect import: registers the `classify:ontology` task and its
+// `onRunStart` hook on the global TaskRegistry.
+import {
+  OntologyClassifier,
+  TASK_NAME,
+  CONFIG_NAMESPACE,
+  ontologyClassifierConfigSchema,
+} from '../../../../src/classification/tasks/OntologyClassifier.js';
 import type { OntologyConfigInterface } from '../../../../src/classification/tasks/OntologyClassifier.js';
 import { OutputConfigError } from '../../../../src/errors/OutputConfigError.js';
-import type { PipelineStateInterface, ClassificationProposalInterface } from '../../../../src/types/PipelineState.js';
+import { TaskRegistry } from '../../../../src/registry/TaskRegistry.js';
+import type { PipelineContextInterface, PipelineStateInterface, ClassificationProposalInterface } from '../../../../src/types/PipelineState.js';
+
+// Side-effect import: registers `context:ajv` so we can drive a real ctx.ajv
+// for the onRunStart hook tests below.
+import '../../../../src/context/ajv.js';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -323,6 +335,199 @@ describe('OntologyClassifier — metadata sentinels ignored', () => {
 
     assert.strictEqual(state.classifications.length, 0);
     assert.strictEqual(next.called, true);
+  });
+});
+
+// ── Self-registration (silo migration: TASK + onRunStart hook) ────────────────
+
+describe('OntologyClassifier — self-registration on the global TaskRegistry', () => {
+  it('registers the classify:ontology per-record task at module load', () => {
+    assert.strictEqual(
+      TaskRegistry.has(TASK_NAME),
+      true,
+      'classify:ontology task must be registered at module load',
+    );
+    assert.strictEqual(typeof TaskRegistry.get(TASK_NAME), 'function');
+  });
+
+  it('registers an onRunStart hook under the classify:ontology name', () => {
+    const hookNames = TaskRegistry.onRunStartHooks().map(([n]) => n);
+    assert.ok(
+      hookNames.includes(TASK_NAME),
+      `Expected an onRunStart hook named ${TASK_NAME}; got ${JSON.stringify(hookNames)}`,
+    );
+  });
+
+  it('does NOT declare proposesClass (this classifier validates, never votes)', () => {
+    const manifests = TaskRegistry.manifests();
+    const taskManifest = manifests.find(m => m.name === TASK_NAME && m.phase === undefined);
+    // The hook manifest entry will overwrite the task manifest under the same
+    // name, so we may only see the phase: 'onRunStart' entry. Either way, the
+    // validator must NOT carry proposesClass: true.
+    const candidates = manifests.filter(m => m.name === TASK_NAME);
+    assert.ok(candidates.length >= 1, 'classify:ontology must have at least one manifest entry');
+    for (const m of candidates) {
+      assert.notStrictEqual(
+        m.proposesClass,
+        true,
+        `classify:ontology must not declare proposesClass: true (entry: ${JSON.stringify(m)})`,
+      );
+    }
+    // Touch taskManifest to keep TS happy when the hook overwrite path elides it.
+    void taskManifest;
+  });
+
+  it('exports an AJV schema fragment for the ontologyClassifier config namespace', () => {
+    assert.strictEqual(typeof ontologyClassifierConfigSchema, 'object');
+    assert.strictEqual(CONFIG_NAMESPACE, 'ontologyClassifier');
+    assert.strictEqual(TASK_NAME, 'classify:ontology');
+  });
+});
+
+// ── Self-registered onRunStart hook: config validation + class map freeze ─────
+
+/** Builds a minimal context stub with a real AJV instance for hook tests. */
+async function buildCtxStub(config: Record<string, unknown>): Promise<PipelineContextInterface> {
+  const stub: Partial<PipelineContextInterface> & {
+    target: string;
+    outDir: string;
+    config: Record<string, unknown>;
+  } = {
+    target: 'test-target',
+    outDir: './graphs',
+    config,
+  };
+  // Drive the context:ajv hook to populate stub.ajv.
+  const ajvHook = TaskRegistry.onRunStartHooks().find(([n]) => n === 'context:ajv')?.[1];
+  assert.ok(ajvHook, 'context:ajv hook must be registered for these tests');
+  await ajvHook(stub as unknown as PipelineContextInterface);
+  return stub as unknown as PipelineContextInterface;
+}
+
+/** Drives the classify:ontology onRunStart hook against a built ctx stub. */
+async function runClassifyOntologyOnRunStart(ctx: PipelineContextInterface): Promise<void> {
+  const hook = TaskRegistry.onRunStartHooks().find(([n]) => n === TASK_NAME)?.[1];
+  assert.ok(hook, 'classify:ontology onRunStart hook must be registered');
+  await hook(ctx);
+}
+
+describe('OntologyClassifier — onRunStart hook config validation', () => {
+  beforeEach(() => {
+    OntologyClassifier.resetForTests();
+  });
+
+  it('accepts a valid ontologyClassifier config block', async () => {
+    const ctx = await buildCtxStub({
+      [CONFIG_NAMESPACE]: {
+        classes: {
+          feat:  'https://squashage.dev/vocabulary/aonprd#Feat',
+          spell: 'https://squashage.dev/vocabulary/aonprd#Spell',
+        },
+      },
+    });
+    await runClassifyOntologyOnRunStart(ctx);
+    // No throw == accepted.
+  });
+
+  it('throws OutputConfigError when the namespace is missing entirely', async () => {
+    const ctx = await buildCtxStub({});
+    await assert.rejects(
+      () => runClassifyOntologyOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, `Expected OutputConfigError, got ${String(err)}`);
+        assert.match(err.message, /missing config namespace "ontologyClassifier"/);
+        return true;
+      },
+    );
+  });
+
+  it('throws OutputConfigError when classes is empty', async () => {
+    const ctx = await buildCtxStub({
+      [CONFIG_NAMESPACE]: { classes: {} },
+    });
+    await assert.rejects(
+      () => runClassifyOntologyOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, `Expected OutputConfigError, got ${String(err)}`);
+        assert.match(err.message, /invalid "ontologyClassifier" config/);
+        return true;
+      },
+    );
+  });
+
+  it('throws OutputConfigError when a class IRI is not a URI', async () => {
+    const ctx = await buildCtxStub({
+      [CONFIG_NAMESPACE]: { classes: { feat: 'not a uri at all' } },
+    });
+    await assert.rejects(
+      () => runClassifyOntologyOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, `Expected OutputConfigError, got ${String(err)}`);
+        return true;
+      },
+    );
+  });
+
+  it('throws OutputConfigError when classes has additional non-string entry', async () => {
+    const ctx = await buildCtxStub({
+      [CONFIG_NAMESPACE]: { classes: { feat: 123 } },
+    });
+    await assert.rejects(
+      () => runClassifyOntologyOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, `Expected OutputConfigError, got ${String(err)}`);
+        return true;
+      },
+    );
+  });
+});
+
+// ── Self-registered task: end-to-end through onRunStart + per-record dispatch ─
+
+describe('OntologyClassifier — registered task drives the cached class map', () => {
+  beforeEach(() => {
+    OntologyClassifier.resetForTests();
+  });
+
+  it('per-record task uses the class map populated by onRunStart', async () => {
+    const ctx = await buildCtxStub({
+      [CONFIG_NAMESPACE]: {
+        classes: {
+          feat: 'https://squashage.dev/vocabulary/aonprd#Feat',
+        },
+      },
+    });
+    await runClassifyOntologyOnRunStart(ctx);
+
+    const task = TaskRegistry.get(TASK_NAME);
+    const state = buildState([
+      makeProposal('feat',     'classify:rules'),     // known
+      makeProposal('mystery',  'classify:structural'), // unknown
+    ]);
+    const next = makeNext();
+
+    await task(next.fn, state);
+
+    const validations = state.classifications.filter(p => p.className === '__validation__');
+    assert.strictEqual(validations.length, 1, 'one validation proposal for the unknown class');
+    assert.strictEqual(validations[0]?.source, 'classify:ontology');
+    assert.strictEqual(next.called, true);
+  });
+
+  it('per-record task throws fail-fast when invoked before onRunStart populates the map', async () => {
+    OntologyClassifier.resetForTests();
+    const task = TaskRegistry.get(TASK_NAME);
+    const state = buildState([makeProposal('feat')]);
+    const next = makeNext();
+
+    await assert.rejects(
+      () => task(next.fn, state),
+      (err: unknown) => {
+        assert.ok(err instanceof OutputConfigError, `Expected OutputConfigError, got ${String(err)}`);
+        assert.match(err.message, /onRunStart populated the class map|ontologyClassifier\.classes/);
+        return true;
+      },
+    );
   });
 });
 

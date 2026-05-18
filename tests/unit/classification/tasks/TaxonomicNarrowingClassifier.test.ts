@@ -288,3 +288,189 @@ describe('TaxonomicNarrowingClassifier — disabled', () => {
     assert.strictEqual(state.classifications.length, 2);
   });
 });
+
+// ── Suite: self-registered plugin pathway (silo migration, task #19) ──────────
+
+import { TaskRegistry } from '../../../../src/registry/TaskRegistry.js';
+import { TAXONOMIC_NARROWING_CONFIG_SCHEMA } from '../../../../src/classification/tasks/TaxonomicNarrowingClassifier.js';
+import type { PipelineContextInterface } from '../../../../src/types/PipelineState.js';
+
+// Side-effect import: registers `context:ajv` so we can drive a real ctx.ajv
+// for the onRunStart hook tests below.
+import '../../../../src/context/ajv.js';
+
+const TASK_NAME = 'classify:taxonomic-narrowing';
+
+/** Builds a minimal context stub with a real AJV instance for hook tests. */
+async function buildCtxStub(
+  config: Record<string, unknown>,
+  jtTbox?: ReadonlyArray<Quad>,
+): Promise<PipelineContextInterface> {
+  const jt = jtTbox !== undefined
+    ? {
+        tbox: async () => jtTbox,
+        shacl: async () => [],
+        classMap: () => ({}),
+        schemaForClassName: () => undefined,
+        baseIRI: () => BASE,
+        toQuads: async () => [],
+      }
+    : undefined;
+  const stub: Partial<PipelineContextInterface> & {
+    target: string;
+    outDir: string;
+    config: Record<string, unknown>;
+  } = {
+    target: 'unit-target',
+    outDir: './graphs',
+    config,
+    ...(jt !== undefined ? { jt } : {}),
+  };
+  // Drive the context:ajv hook to populate stub.ajv.
+  const ajvHook = TaskRegistry.onRunStartHooks().find(([n]) => n === 'context:ajv')?.[1];
+  assert.ok(ajvHook, 'context:ajv hook must be registered for these tests');
+  await ajvHook(stub as unknown as PipelineContextInterface);
+  return stub as unknown as PipelineContextInterface;
+}
+
+/** Drives the classify:taxonomic-narrowing onRunStart hook against a built ctx stub. */
+async function runOnRunStart(ctx: PipelineContextInterface): Promise<void> {
+  const hook = TaskRegistry.onRunStartHooks().find(([n]) => n === TASK_NAME)?.[1];
+  assert.ok(hook, 'classify:taxonomic-narrowing onRunStart hook must be registered');
+  await hook(ctx);
+}
+
+describe('TaxonomicNarrowingClassifier — self-registration on the global TaskRegistry', () => {
+  it('registers the classify:taxonomic-narrowing per-record task at module load', () => {
+    assert.strictEqual(
+      TaskRegistry.has(TASK_NAME),
+      true,
+      'classify:taxonomic-narrowing task must be registered at module load',
+    );
+    assert.strictEqual(typeof TaskRegistry.get(TASK_NAME), 'function');
+  });
+
+  it('registers an onRunStart hook under the classify:taxonomic-narrowing name', () => {
+    const hookNames = TaskRegistry.onRunStartHooks().map(([n]) => n);
+    assert.ok(
+      hookNames.includes(TASK_NAME),
+      `Expected an onRunStart hook named ${TASK_NAME}; got ${JSON.stringify(hookNames)}`,
+    );
+  });
+
+  it('does NOT declare proposesClass (this classifier filters proposals, never adds new ones)', () => {
+    const candidates = TaskRegistry.manifests().filter(m => m.name === TASK_NAME);
+    assert.ok(candidates.length >= 1, 'classify:taxonomic-narrowing must have at least one manifest entry');
+    for (const m of candidates) {
+      assert.notStrictEqual(
+        m.proposesClass,
+        true,
+        `classify:taxonomic-narrowing must not declare proposesClass: true (entry: ${JSON.stringify(m)})`,
+      );
+    }
+  });
+
+  it('exports an AJV schema fragment for the taxonomicNarrowing config namespace', () => {
+    assert.strictEqual(typeof TAXONOMIC_NARROWING_CONFIG_SCHEMA, 'object');
+    assert.strictEqual((TAXONOMIC_NARROWING_CONFIG_SCHEMA as { type: string }).type, 'object');
+  });
+});
+
+describe('TaxonomicNarrowingClassifier — onRunStart hook config validation', () => {
+  it('no-ops silently when ctx.config.taxonomicNarrowing is absent', async () => {
+    const ctx = await buildCtxStub({});
+    // No throw == accepted (hook left dormant).
+    await runOnRunStart(ctx);
+  });
+
+  it('throws OutputConfigError when tboxFrom is missing', async () => {
+    const ctx = await buildCtxStub({ taxonomicNarrowing: { enabled: true } });
+    await assert.rejects(
+      () => runOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof Error, `Expected Error, got ${String(err)}`);
+        assert.match(err.message, /classify:taxonomic-narrowing: invalid config/);
+        return true;
+      },
+    );
+  });
+
+  it('throws OutputConfigError when tboxFrom is empty string', async () => {
+    const ctx = await buildCtxStub({ taxonomicNarrowing: { tboxFrom: '' } });
+    await assert.rejects(
+      () => runOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof Error, `Expected Error, got ${String(err)}`);
+        return true;
+      },
+    );
+  });
+
+  it('throws OutputConfigError when enabled is not a boolean', async () => {
+    const ctx = await buildCtxStub({
+      taxonomicNarrowing: { tboxFrom: 'ontology', enabled: 'yes' },
+    });
+    await assert.rejects(
+      () => runOnRunStart(ctx),
+      (err: unknown) => {
+        assert.ok(err instanceof Error, `Expected Error, got ${String(err)}`);
+        return true;
+      },
+    );
+  });
+});
+
+describe('TaxonomicNarrowingClassifier — onRunStart preserves optional-jt no-op contract', () => {
+  it('does NOT throw and disables the plugin when tboxFrom=ontology but ctx.jt is absent', async () => {
+    const ctx = await buildCtxStub({
+      taxonomicNarrowing: { tboxFrom: 'ontology', enabled: true },
+    });
+    // ctx.jt is intentionally undefined here.
+    await runOnRunStart(ctx);
+
+    // Per-record task must no-op (pass-through) rather than throw.
+    const task = TaskRegistry.get(TASK_NAME);
+    const state = buildState([proposal('Weapon', 30), proposal('Equipment', 30)]);
+    (state as { context?: PipelineContextInterface }).context = ctx;
+
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+
+    assert.ok(nextCalled, 'next() must be called when plugin is disabled');
+    assert.strictEqual(state.classifications.length, 2, 'no narrowing applied');
+  });
+
+  it('builds the closure when ctx.jt is present and ontology mode is configured', async () => {
+    const tboxQuads: ReadonlyArray<Quad> = [subClassOf('Weapon', 'Equipment')];
+    const ctx = await buildCtxStub(
+      { taxonomicNarrowing: { tboxFrom: 'ontology', enabled: true } },
+      tboxQuads,
+    );
+    await runOnRunStart(ctx);
+
+    // Per-record task must apply narrowing.
+    const task = TaskRegistry.get(TASK_NAME);
+    const state = buildState([proposal('Weapon', 30), proposal('Equipment', 30)]);
+    (state as { context?: PipelineContextInterface }).context = ctx;
+
+    await task(async () => {}, state);
+
+    const realProposals = state.classifications.filter(p => !p.className.startsWith('__'));
+    assert.strictEqual(realProposals.length, 1, 'only Weapon (most specific) should survive');
+    assert.strictEqual(realProposals[0]?.className, 'Weapon');
+  });
+
+  it('per-record task no-ops when invoked without prior onRunStart cache entry', async () => {
+    // Build a fresh ctx with no taxonomicNarrowing config and no prior onRunStart run.
+    const ctx = await buildCtxStub({});
+    const task = TaskRegistry.get(TASK_NAME);
+    const state = buildState([proposal('Weapon', 30), proposal('Equipment', 30)]);
+    (state as { context?: PipelineContextInterface }).context = ctx;
+
+    let nextCalled = false;
+    await task(async () => { nextCalled = true; }, state);
+
+    assert.ok(nextCalled, 'next() must be called when plugin is unconfigured');
+    assert.strictEqual(state.classifications.length, 2, 'no narrowing applied (pass-through)');
+  });
+});

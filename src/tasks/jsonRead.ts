@@ -177,8 +177,16 @@ const jsonReadTask: TaskFnInterface<PipelineStateInterface> = async (
     });
   }
 
-  const recordPath = ctx.config['recordPath'];
-  const recordLine = typeof ctx.config['recordLine'] === 'number' ? ctx.config['recordLine'] : 0;
+  // recordPath/recordLine may arrive on `state` (silo path: orchestrator
+  // attaches per-record locator to the state object, leaving `ctx` shared) OR
+  // on `ctx.config` (legacy path: orchestrator wraps a per-record ctx). Prefer
+  // state-level override so plugin caches keyed by `ctx` identity stay stable.
+  const stateRecordPath = (state as Record<string, unknown>)['recordPath'];
+  const stateRecordLine = (state as Record<string, unknown>)['recordLine'];
+  const recordPath = stateRecordPath !== undefined ? stateRecordPath : ctx.config['recordPath'];
+  const recordLine = typeof stateRecordLine === 'number'
+    ? stateRecordLine
+    : typeof ctx.config['recordLine'] === 'number' ? ctx.config['recordLine'] : 0;
 
   // Pass-through: orchestrator pre-populated state.input and supplied no recordPath.
   if (recordPath === undefined && Object.keys(state.input).length > 0) {

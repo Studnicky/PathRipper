@@ -403,142 +403,40 @@ export interface SquashageConfigInterface {
 // ─── Cross-validation helper ───────────────────────────────────────────────────
 
 /**
- * Set of `classify:*` task names that are class-proposers (not just gates).
- * When 2+ of these are in the pipeline, `classify:conflict` is required.
- *
- * @internal
- */
-const CLASS_PROPOSERS = new Set<string>([
-  'classify:structural',
-  'classify:rules',
-  'classify:schema',
-  'classify:shacl-shape',
-  'classify:url-pattern',
-  'classify:property-fingerprint',
-  'classify:winknlp-entities',
-]);
-
-/**
- * Map from classify task name to the classification config sub-key that must
- * be present when the task is in the pipeline.
- *
- * @internal
- */
-const CLASSIFY_TASK_CONFIG_KEYS: Readonly<Record<string, string>> = {
-  'classify:source':                'source',
-  'classify:structural':            'structural',
-  'classify:rules':                 'rules',
-  'classify:schema':                'schemas',
-  'classify:ontology':              'ontology',
-  'classify:conflict':              'conflict',
-  'classify:shacl-shape':           'shaclShape',
-  'classify:taxonomic-narrowing':   'taxonomicNarrowing',
-  'classify:url-pattern':           'urlPattern',
-  'classify:property-fingerprint':  'propertyFingerprint',
-  'classify:winknlp-entities':      'winknlpEntities',
-};
-
-/**
- * Performs cross-validation of a single target config after AJV schema
- * validation passes.
+ * Enforces that `output.jsonldContext` is only present when the resolved
+ * output format is `jsonld` (explicit `format: 'jsonld'` or a `.jsonld`
+ * path extension).
  *
  * @remarks
- * Validates that every `classify:*` task in the pipeline has a corresponding
- * `classification.*` config sub-key present. Also enforces that when ≥2
- * distinct class-proposing classifiers are in the pipeline
- * (`classify:structural`, `classify:rules`, `classify:schema`), the
- * `classify:conflict` task must be present.
+ * Per-plugin AJV schemas (compiled at each plugin's `onRunStart` via
+ * `ctx.ajv.compile(...)`) now own classification config-namespace and shape
+ * validation, and the orchestrator enforces the proposer-count + conflict
+ * requirement at startup via `TaskRegistry.manifests()`. Only the
+ * `output.jsonldContext` rule remains here — it spans `output.format` and
+ * `output.path`, neither of which a single plugin owns.
  *
- * Also enforces that `output.jsonldContext` is only present when the resolved
- * format is `jsonld` (explicit `format: 'jsonld'` or a `.jsonld` path extension).
- *
- * @param target      - Target identifier for error messages.
+ * @param target       - Target identifier for error messages.
  * @param targetConfig - Validated target config to cross-check.
- * @throws {SquashageConfigError} When a classify task is listed without its config sub-key.
- * @throws {SquashageConfigError} When ≥2 class-proposers are listed without `classify:conflict`.
- * @throws {SquashageConfigError} When `output.jsonldContext` is set but format is not jsonld.
+ * @throws {SquashageConfigError} When `output.jsonldContext` is set but the resolved format is not jsonld.
  *
  * @internal
  */
-function crossValidateTarget(target: string, targetConfig: TargetConfigInterface): void {
-  const classification = targetConfig.classification as Record<string, unknown> | undefined;
-  const pipeline = targetConfig.pipeline;
-
-  // Validate each classify:* task has its config sub-key.
-  for (const taskName of pipeline) {
-    const configKey = CLASSIFY_TASK_CONFIG_KEYS[taskName];
-    if (configKey === undefined) {
-      // Not a classify task — skip.
-      continue;
-    }
-
-    const configValue = classification?.[configKey];
-    const isMissing =
-      configValue === undefined ||
-      configValue === null ||
-      (configKey === 'source' && configValue !== true) ||
-      (Array.isArray(configValue) && (configValue as unknown[]).length === 0) ||
-      (configKey === 'ontology' &&
-        typeof configValue === 'object' &&
-        configValue !== null &&
-        Object.keys((configValue as Record<string, unknown>)['classes'] as Record<string, unknown> ?? {}).length === 0);
-
-    if (isMissing) {
-      throw SquashageConfigError.create(
-        `Pipeline lists "${taskName}" but classification.${configKey} is missing or empty`,
-        { metadata: { target, task: taskName, configKey } },
-      );
-    }
-  }
-
-  // Enforce classify:conflict when ≥2 class-proposers are in the pipeline.
-  const proposersInPipeline = pipeline.filter((name) => CLASS_PROPOSERS.has(name));
-  const distinctProposers = new Set(proposersInPipeline);
-  if (distinctProposers.size >= 2 && !pipeline.includes('classify:conflict')) {
-    throw SquashageConfigError.create(
-      `Pipeline includes ${distinctProposers.size} class-proposing classifiers ` +
-      `(${[...distinctProposers].join(', ')}) but is missing "classify:conflict". ` +
-      `When multiple class-proposers are active, the ConflictResolver must be ` +
-      `present in the pipeline to pick the winning class.`,
-      { metadata: { target, distinctProposers: [...distinctProposers] } },
-    );
-  }
-
-  // Validate enrich:entity-link task requirements.
-  if (pipeline.includes('enrich:entity-link')) {
-    const enrichment = targetConfig.enrichment as Record<string, unknown> | undefined;
-    const entityLink = enrichment?.['entityLink'] as Record<string, unknown> | undefined;
-    if (entityLink === undefined || entityLink === null) {
-      throw SquashageConfigError.create(
-        `Pipeline lists "enrich:entity-link" but enrichment.entityLink is missing`,
-        { metadata: { target, task: 'enrich:entity-link' } },
-      );
-    }
-    const engine = entityLink['engine'];
-    if (engine !== 'winknlp') {
-      throw SquashageConfigError.create(
-        `enrichment.entityLink.engine must be "winknlp"; got "${String(engine)}"`,
-        { metadata: { target, engine } },
-      );
-    }
-  }
-
-  // Enforce jsonldContext is only set when output format resolves to jsonld.
+function validateOutputJsonldContext(target: string, targetConfig: TargetConfigInterface): void {
   const output = targetConfig.output as Record<string, unknown>;
   const jsonldContext = output['jsonldContext'];
-  if (jsonldContext !== undefined) {
-    const format = output['format'] as string | undefined;
-    const path   = output['path'] as string | undefined;
-    const isJsonldFormat =
-      format === 'jsonld' ||
-      (format === undefined && path !== undefined && extname(path).toLowerCase() === '.jsonld');
-    if (!isJsonldFormat) {
-      throw SquashageConfigError.create(
-        `output.jsonldContext is set on target "${target}" but the resolved output format is not "jsonld". ` +
-        `Either set output.format to "jsonld", use a ".jsonld" output path extension, or remove jsonldContext.`,
-        { metadata: { target, format, path } },
-      );
-    }
+  if (jsonldContext === undefined) return;
+
+  const format = output['format'] as string | undefined;
+  const path   = output['path'] as string | undefined;
+  const isJsonldFormat =
+    format === 'jsonld' ||
+    (format === undefined && path !== undefined && extname(path).toLowerCase() === '.jsonld');
+  if (!isJsonldFormat) {
+    throw SquashageConfigError.create(
+      `output.jsonldContext is set on target "${target}" but the resolved output format is not "jsonld". ` +
+      `Either set output.format to "jsonld", use a ".jsonld" output path extension, or remove jsonldContext.`,
+      { metadata: { target, format, path } },
+    );
   }
 }
 
@@ -658,8 +556,9 @@ export class SquashageConfig {
    * the config JSON (e.g. from an environment variable or a test fixture).
    *
    * After AJV schema validation passes, cross-validation is performed for each
-   * target's `pipeline` vs `classification` config sub-keys, and for
-   * `output.jsonldContext` vs the resolved output format.
+   * target's `output.jsonldContext` vs the resolved output format.
+   * (Classify task config-namespace and proposer-count rules now live in the
+   * per-plugin AJV schemas and the orchestrator's startup manifest check.)
    *
    * @param raw - Unknown value to validate.
    * @param configPath - Optional path shown in error messages for context.
@@ -684,10 +583,11 @@ export class SquashageConfig {
 
     const validated = raw as SquashageConfigInterface;
 
-    // Cross-validate each target: pipeline classify tasks vs classification config,
-    // and jsonldContext vs resolved output format.
+    // Cross-validate each target: jsonldContext vs resolved output format.
+    // (Classify task config-namespace + proposer-count rules now live in the
+    // per-plugin AJV schemas and the orchestrator's startup manifest check.)
     for (const [target, targetConfig] of Object.entries(validated.targets)) {
-      crossValidateTarget(target, targetConfig);
+      validateOutputJsonldContext(target, targetConfig);
     }
 
     log.debug('validate', 'Squashage config validated successfully', { configPath });

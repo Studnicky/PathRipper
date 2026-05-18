@@ -4,29 +4,40 @@
  *
  * @remarks
  * The orchestrator follows the pipeline lifecycle established by plan 13
- * (§"Pipeline Lifecycle: Orchestrator-Driven Finalize"). It:
+ * (§"Pipeline Lifecycle: Orchestrator-Driven Finalize") and the silo contract
+ * documented in `docs/context-silo.md`. It:
  *
  * 1. Resolves the target config and applies CLI overrides.
- * 2. Constructs the run-wide {@link PipelineContextInterface} (factory, dataset,
- *    builder, graphs, iri, output, prefixes).
- * 3. Strips `rdfjs:finalize` from the per-record pipeline so the finalize task
- *    never runs inside a per-record `ConcurrentPipeline` execution.
- * 4. Instantiates classifier task classes from `targetConfig.classification` via
- *    {@link ClassificationFactory.build} and registers each on the per-run
- *    {@link TaskRegistry} instance.
+ * 2. Constructs an empty `PipelineContextInterface` shell carrying the
+ *    orchestration metadata (`target`, `outDir`, `config`, `output`) plus the
+ *    private orchestrator-coordination bridge keys `__sampleSource` /
+ *    `__schemasBase` on `ctx.config`.
+ * 3. Strips end-of-run tasks (`rdfjs:finalize`, `rdfjs:stream`,
+ *    `enrich:entity-link`) from the per-record pipeline so they never run
+ *    inside a per-record `ConcurrentPipeline` execution.
+ * 4. Runs every applicable `onRunStart` lifecycle hook on the global
+ *    {@link TaskRegistry} in registration order. The hooks self-register at
+ *    import time (`src/context/index.ts` populates `ctx.logger`, `ctx.ajv`,
+ *    `ctx.factory`, `ctx.dataset`, `ctx.builder`, `ctx.iri`, `ctx.prefixes`,
+ *    `ctx.graphs`, `ctx.jt`, `ctx.runStartTime`; `src/classification/index.ts`
+ *    populates classifier-private run state). Per-record dispatch begins only
+ *    after every hook completes.
  * 5. Walks the input source (single `.json`, single `.jsonl`, or a directory
  *    that is recursively walked for `.json` and `.jsonl` files) and builds one
  *    {@link PipelineStateInterface} per record, each carrying its own augmented
  *    context with `config.recordPath` / `config.recordLine` so `json:read` can
  *    locate the record on disk.
  * 6. Drives per-record execution via {@link ConcurrentPipeline.executeAll}.
- * 7. After the per-record batch settles, invokes the finalize task once with a
- *    synthetic state carrying the run-wide context.
+ * 7. After the per-record batch settles, invokes `enrich:entity-link` (when
+ *    configured) and then the finalize task once with a synthetic state
+ *    carrying the run-wide context, and finally fires every registered
+ *    `onRunEnd` hook.
  * 8. Computes and returns the {@link RunResultInterface}.
  *
  * The module `'../tasks/index.js'` is imported once at the top so the global
- * {@link TaskRegistry} is populated with all built-in tasks before any pipeline
- * is assembled.
+ * {@link TaskRegistry} is populated with all built-in tasks, every
+ * `context:*` lifecycle hook, and every `classify:*` per-record task + hook
+ * before any pipeline is assembled.
  *
  * @module orchestrators/SquashageOrchestrator
  * @category Orchestrator
@@ -34,33 +45,27 @@
  */
 
 import { readdir, stat, readFile } from 'node:fs/promises';
-import { join, extname, dirname, resolve as resolvePath } from 'node:path';
+import { join, extname, dirname }  from 'node:path';
 
-// Bootstrap built-in task registrations (json:read, rdfjs:finalize, rdfjs:stream).
+// Bootstrap built-in task registrations + every context lifecycle hook + every
+// classifier plugin (`src/tasks/index.js` transitively imports
+// `src/context/index.js` and `src/classification/index.js`). This single
+// side-effect import populates the global TaskRegistry with everything the
+// orchestrator drives below — there is no per-run registry construction.
 import '../tasks/index.js';
 import { openStreamingOutput } from '../tasks/rdfjsStream.js';
 
 import type { SquashageConfigInterface, TargetConfigInterface } from '../config/SquashageConfig.js';
 import type { OutputConfigInterface }      from '../config/OutputConfig.js';
-import type { PipelineStateInterface, PipelineContextInterface } from '../types/PipelineState.js';
-import type { ClassificationConfigInterface } from '../classification/ClassificationFactory.js';
+import type { PipelineStateInterface, PipelineContextInterface, InputSourceInterface } from '../types/PipelineState.js';
 
-import { ClassificationFactory }   from '../classification/ClassificationFactory.js';
-import { PrefixResolver }          from '../classification/PrefixResolver.js';
-import type { PrefixResolutionInterface } from '../classification/PrefixResolver.js';
 import { Pipeline }                from '../pipeline/Pipeline.js';
 import { ConcurrentPipeline }      from '../pipeline/ConcurrentPipeline.js';
 import { PipelineState }           from '../registry/PipelineState.js';
 import { TaskRegistry }            from '../registry/TaskRegistry.js';
 import { SquashageConfigError }     from '../errors/SquashageConfigError.js';
-import { dataFactory }             from '../rdf/DataFactory.js';
-import { Dataset }                 from '../rdf/Dataset.js';
-import { GraphBuilder }            from '../rdf/GraphBuilder.js';
-import { Namespaces }              from '../rdf/Namespaces.js';
 import { QuarantineWriter }        from '../quarantine/QuarantineWriter.js';
 import { Logger }                  from '../modules/logger/logger.js';
-import { JsonTologyOntology }      from '../ontology/JsonTologyOntology.js';
-import type { JsonTologySchemaInputInterface } from '../ontology/JsonTologyOntology.js';
 import { EntityLinkTask }          from '../tasks/entityLink.js';
 import type { EntityLinkConfigInterface } from '../tasks/entityLink.js';
 
@@ -162,18 +167,24 @@ interface RecordLocatorInterface {
  *
  * 1. Validate target exists in `config.targets`.
  * 2. Apply CLI overrides to a synthesized {@link OutputConfigInterface}.
- * 3. Construct the run-wide {@link PipelineContextInterface} (including `prefixes`).
- * 4. Strip `rdfjs:finalize` from the per-record task list; hold a reference.
- * 5. Instantiate classifier tasks via {@link ClassificationFactory.build} and
- *    register them on a per-run {@link TaskRegistry} instance.
- * 6. Build a {@link Pipeline} from the remaining per-record tasks (backed by
- *    the per-run registry).
- * 7. Walk the input source to produce `RecordLocatorInterface[]`.
- * 8. Build one {@link PipelineStateInterface} per record, each augmented with
+ * 3. Strip end-of-run tasks (`rdfjs:finalize`, `rdfjs:stream`,
+ *    `enrich:entity-link`) from the per-record pipeline; resolve the active
+ *    finalize task by output encoding.
+ * 4. Walk the input source to produce `RecordLocatorInterface[]` and derive
+ *    the bridge keys (`__sampleSource`, `__schemasBase`).
+ * 5. Run all `TaskRegistry.onRunStartHooks()` to populate the run-wide silo
+ *    (factory, dataset, builder, prefixes, jt, runStartTime, classifier
+ *    singletons). Lifecycle plugins self-register at module load time via
+ *    `src/tasks/index.js` → `src/context/index.js` + `src/classification/index.js`.
+ * 6. Resolve per-record task functions from the global TaskRegistry and build
+ *    the {@link Pipeline}.
+ * 7. Build one {@link PipelineStateInterface} per record, each augmented with
  *    `config.recordPath` / `config.recordLine`.
- * 9. Execute via {@link ConcurrentPipeline.executeAll}.
- * 10. Invoke the finalize task once with a synthetic state carrying `ctx`.
- * 11. Return the {@link RunResultInterface}.
+ * 8. Execute via {@link ConcurrentPipeline.executeAll}.
+ * 9. Invoke `enrich:entity-link` (when configured) and the finalize task once
+ *    with a synthetic state carrying `ctx`; fire every registered `onRunEnd`
+ *    lifecycle hook.
+ * 10. Return the {@link RunResultInterface}.
  *
  * @example
  * ```ts
@@ -234,11 +245,7 @@ export class SquashageOrchestrator {
     const outDir       = options.outDir ?? './graphs';
     const outputConfig = SquashageOrchestrator.#buildOutputConfig(targetConfig, options);
 
-    // Step 3 — Context construction is deferred to after the input walk so that
-    //           PrefixResolver.resolve() can peek at the first record's path.
-    //           See Step 7b below.
-
-    // Step 4 — Strip end-of-run tasks (rdfjs:finalize, rdfjs:stream, enrich:entity-link) from per-record tasks; retain references.
+    // Step 3 — Strip end-of-run tasks (rdfjs:finalize, rdfjs:stream, enrich:entity-link) from per-record tasks.
     //
     // These are end-of-run tasks invoked by the orchestrator once after the
     // per-record batch settles, not inside the per-record pipeline loop.
@@ -250,86 +257,82 @@ export class SquashageOrchestrator {
     const perRecordNames   = targetConfig.pipeline.filter(
       name => name !== FINALIZE_NAME && name !== STREAM_NAME && name !== ENTITY_LINK_NAME,
     );
-
-    // Step 5 — Build a per-run TaskRegistry and register classifier task instances.
-    const registry = new TaskRegistry();
-
-    // Instantiate and register classifier tasks when classification config is present.
-    const classification = targetConfig.classification as ClassificationConfigInterface | undefined;
-    if (classification !== undefined) {
-      const schemasBase = options.configPath !== undefined
-        ? dirname(options.configPath)
-        : process.cwd();
-
-      logger.debug('run', 'Building classifier instances', { target, schemasBase });
-      const classifierInstances = ClassificationFactory.build(
-        classification,
-        outDir,
-        target,
-        schemasBase,
-      );
-
-      // Register only the classifier instances that are both instantiated AND
-      // listed in the target's pipeline.
-      const pipelineSet = new Set(targetConfig.pipeline);
-
-      if (pipelineSet.has('classify:source') && classifierInstances['classify:source'] !== undefined) {
-        registry.register('classify:source', classifierInstances['classify:source'].execute);
-      }
-      if (pipelineSet.has('classify:structural') && classifierInstances['classify:structural'] !== undefined) {
-        registry.register('classify:structural', classifierInstances['classify:structural'].execute);
-      }
-      if (pipelineSet.has('classify:rules') && classifierInstances['classify:rules'] !== undefined) {
-        registry.register('classify:rules', classifierInstances['classify:rules'].execute);
-      }
-      if (pipelineSet.has('classify:schema') && classifierInstances['classify:schema'] !== undefined) {
-        registry.register('classify:schema', classifierInstances['classify:schema'].execute);
-      }
-      if (pipelineSet.has('classify:ontology') && classifierInstances['classify:ontology'] !== undefined) {
-        registry.register('classify:ontology', classifierInstances['classify:ontology'].execute);
-      }
-      if (pipelineSet.has('classify:conflict') && classifierInstances['classify:conflict'] !== undefined) {
-        registry.register('classify:conflict', classifierInstances['classify:conflict'].execute);
-      }
-      if (pipelineSet.has('classify:shacl-shape') && classifierInstances['classify:shacl-shape'] !== undefined) {
-        registry.register('classify:shacl-shape', classifierInstances['classify:shacl-shape'].execute);
-      }
-      if (pipelineSet.has('classify:taxonomic-narrowing') && classifierInstances['classify:taxonomic-narrowing'] !== undefined) {
-        registry.register('classify:taxonomic-narrowing', classifierInstances['classify:taxonomic-narrowing'].execute);
-      }
-      if (pipelineSet.has('classify:url-pattern') && classifierInstances['classify:url-pattern'] !== undefined) {
-        registry.register('classify:url-pattern', classifierInstances['classify:url-pattern'].execute);
-      }
-      if (pipelineSet.has('classify:property-fingerprint') && classifierInstances['classify:property-fingerprint'] !== undefined) {
-        registry.register('classify:property-fingerprint', classifierInstances['classify:property-fingerprint'].execute);
-      }
-      if (pipelineSet.has('classify:winknlp-entities') && classifierInstances['classify:winknlp-entities'] !== undefined) {
-        registry.register('classify:winknlp-entities', classifierInstances['classify:winknlp-entities'].execute);
-      }
-
-      logger.info('run', 'Classifier tasks registered', { target, tasks: Object.keys(classifierInstances) });
-    }
-
-    // Register enrich:entity-link when configured and listed in the pipeline.
     const pipelineSet = new Set(targetConfig.pipeline);
-    if (pipelineSet.has('enrich:entity-link')) {
-      const enrichment = targetConfig.enrichment as Record<string, unknown> | undefined;
-      const entityLinkCfg = enrichment?.['entityLink'] as EntityLinkConfigInterface | undefined;
-      if (entityLinkCfg !== undefined) {
-        const entityLinkTask = EntityLinkTask.create(entityLinkCfg);
-        registry.register('enrich:entity-link', entityLinkTask.execute);
-        logger.info('run', 'enrich:entity-link task registered', { target });
-      }
-    }
 
-    // Look up all per-record tasks eagerly; classifier tasks come from the per-run registry,
-    // built-in tasks (json:read, rdfjs:finalize, plugin tasks) fall back to the static registry.
-    const perRecordTasks = perRecordNames.map(name => {
-      if (registry.has(name)) {
-        return registry.get(name);
-      }
-      return TaskRegistry.get(name);
+    // Step 4 — Walk input source so the first locator is available for prefix
+    //          derivation via the `__sampleSource` bridge key.
+    const inputRoot = options.inputOverride ?? targetConfig.input;
+    const locators  = await SquashageOrchestrator.#walkInput(inputRoot);
+
+    logger.info('walk', 'Input walk complete', { target, inputRoot, recordCount: locators.length });
+
+    const firstLocator = locators[0];
+    const sampleSource: InputSourceInterface | undefined = firstLocator !== undefined
+      ? { target, path: firstLocator.recordPath }
+      : undefined;
+
+    const schemasBase = options.configPath !== undefined
+      ? dirname(options.configPath)
+      : process.cwd();
+
+    // Step 5 — Build a skeleton PipelineContextInterface and run every applicable
+    //          `onRunStart` lifecycle hook on the global TaskRegistry. Hooks
+    //          self-register at module load time (`src/tasks/index.js` →
+    //          `src/context/index.js` + `src/classification/index.js`); they
+    //          populate the silo (`ctx.factory`, `ctx.dataset`, `ctx.builder`,
+    //          `ctx.iri`, `ctx.prefixes`, `ctx.graphs`, `ctx.jt`, `ctx.runStartTime`,
+    //          `ctx.ajv`, `ctx.logger`) before per-record dispatch.
+    //
+    //          The `__sampleSource` and `__schemasBase` keys on `ctx.config` are
+    //          PRIVATE orchestrator-coordination bridge keys consumed by the
+    //          `context:prefixes`, `context:ontology`, `classify:schema`, etc.
+    //          plugins. They are NOT part of the silo contract documented in
+    //          `docs/context-silo.md`. Tasks #27/#28 will replace the bridge
+    //          with first-class init record threading.
+    //
+    //          Until tasks #27/#28 flip the target config to flat per-plugin
+    //          namespaces, the orchestrator splats `targetConfig.classification`
+    //          into top-level `ctx.config.<key>` slots (the keys classifier
+    //          plugins read). The classification block also carries the
+    //          legacy `ontology` key, which is renamed to `ontologyClassifier`
+    //          to match `OntologyClassifier`'s namespace constant.
+    const seededConfig = SquashageOrchestrator.#seedConfig(
+      targetConfig,
+      sampleSource,
+      schemasBase,
+    );
+
+    const ctxSkeleton: Record<string, unknown> = {
+      target,
+      outDir,
+      config:  seededConfig,
+      output:  outputConfig,
+    };
+    const ctx = ctxSkeleton as unknown as PipelineContextInterface;
+
+    await SquashageOrchestrator.#runOnRunStartHooks(ctx, pipelineSet, target);
+
+    // Step 5b — Proposer-count check (Amendment A2). Counts hook + per-record
+    //           manifests that declare `proposesClass: true` and asserts that
+    //           `classify:conflict` is registered AND listed in the pipeline
+    //           when ≥2 distinct proposers participate. Mirrors the legacy
+    //           `crossValidateTarget` error message format so error consumers
+    //           do not break.
+    SquashageOrchestrator.#assertConflictResolverPresent(targetConfig, target);
+
+    logger.debug('run', 'Run-wide context constructed via lifecycle hooks', {
+      target,
+      instanceBase:   ctx.prefixes?.instances.base,
+      graphBase:      ctx.prefixes?.graphs.base,
+      vocabularyBase: ctx.prefixes?.vocabulary.base,
+      prefixSource:   ctx.prefixes?.source,
     });
+
+    // Step 6 — Resolve per-record task functions from the global TaskRegistry.
+    //          Classifier plugins register their per-record `execute` on the
+    //          global registry at module load time (via `src/classification/index.js`),
+    //          so per-record lookup falls through to `TaskRegistry.get(name)`.
+    const perRecordTasks = perRecordNames.map(name => TaskRegistry.get(name));
 
     // Resolve the finalize task based on output.encoding.
     const isStreamingOutput = (outputConfig as Record<string, unknown>)['encoding'] === 'stream';
@@ -345,47 +348,23 @@ export class SquashageOrchestrator {
       streaming: isStreamingOutput,
     });
 
-    // Step 6 — Build per-record Pipeline.
+    // Build per-record Pipeline.
     const pipeline = Pipeline.create<PipelineStateInterface>({ name: `squashage:${target}` });
     pipeline.addTasks(perRecordTasks);
 
-    // Step 7 — Walk input source.
-    const inputRoot = options.inputOverride ?? targetConfig.input;
-    const locators  = await SquashageOrchestrator.#walkInput(inputRoot);
-
-    logger.info('walk', 'Input walk complete', { target, inputRoot, recordCount: locators.length });
-
-    // Step 7b — Resolve prefix-base pairs.
-    //
-    // Peek at the first locator to produce a minimal InputSourceInterface for URL
-    // derivation. This requires no additional I/O — the path is already known from
-    // the walk. PrefixResolver.resolve is pure and deterministic.
-    const firstLocator = locators[0];
-    const sampleSource = firstLocator !== undefined
-      ? { target, path: firstLocator.recordPath }
-      : undefined;
-
-    const prefixes = PrefixResolver.resolve(target, targetConfig, sampleSource);
-
-    // Step 3a — Build optional json-tology ontology instance when engine === 'json-tology'.
-    const schemasBase = options.configPath !== undefined
-      ? dirname(options.configPath)
-      : process.cwd();
-
-    const jtInstance = await SquashageOrchestrator.#buildJtInstance(targetConfig, schemasBase);
-
-    // Step 3 (deferred) — Construct run-wide PipelineContextInterface with resolved prefixes.
-    // Freeze the run-start time once here so provenance timestamps are deterministic.
-    const runStartTime = new Date().toISOString();
-    const ctx = SquashageOrchestrator.#buildContext(target, outDir, targetConfig, outputConfig, prefixes, jtInstance, runStartTime);
-
-    logger.debug('run', 'Run-wide context constructed', {
-      target,
-      instanceBase:   prefixes.instances.base,
-      graphBase:      prefixes.graphs.base,
-      vocabularyBase: prefixes.vocabulary.base,
-      prefixSource:   prefixes.source,
-    });
+    // Resolve `enrich:entity-link` lazily (after hooks ran). When the pipeline
+    // includes the task and the config is present, build a stateful instance
+    // via EntityLinkTask.create(); otherwise the post-batch path no-ops.
+    let entityLinkTaskFn: ((next: () => Promise<void>, state: PipelineStateInterface) => Promise<void>) | undefined;
+    if (pipelineSet.has(ENTITY_LINK_NAME)) {
+      const enrichment    = targetConfig.enrichment as Record<string, unknown> | undefined;
+      const entityLinkCfg = enrichment?.['entityLink'] as EntityLinkConfigInterface | undefined;
+      if (entityLinkCfg !== undefined) {
+        const instance = EntityLinkTask.create(entityLinkCfg);
+        entityLinkTaskFn = instance.execute;
+        logger.info('run', 'enrich:entity-link task instantiated', { target });
+      }
+    }
 
     // Step 8b — Open streaming output before building per-record states.
     // IMPORTANT: must run BEFORE Step 8 so that the dataset proxy installed by
@@ -396,21 +375,20 @@ export class SquashageOrchestrator {
       logger.info('run', 'Streaming output opened', { target, path: outputConfig.path });
     }
 
-    // Step 8 — Build one state per record with per-record context augmentation.
+    // Step 8 — Build one state per record. Each state shares the run-wide ctx
+    //          object identity (stable across records and matched by classifier
+    //          plugins' `WeakMap<ctx, runState>` caches). The per-record locator
+    //          (`recordPath`, `recordLine`) is attached to the state's own
+    //          index-signature slots (state extends `Record<string, unknown>`),
+    //          which `json:read` and `output:provenance` read in preference to
+    //          `ctx.config` so the silo's run-wide ctx never has to be cloned.
     const states = locators.map(({ recordPath, recordLine }) => {
       const source = { target, path: recordPath };
       const state  = PipelineState.fromInput(target, source, {});
 
-      // Augment the shared context with the record-specific locator so json:read
-      // can find the file.  Each record gets its own context object that spreads
-      // the run-wide config and adds recordPath / recordLine.
-      const recordConfig: Record<string, unknown> = {
-        ...(ctx.config as Record<string, unknown>),
-        recordPath,
-        recordLine,
-      };
-      const recordCtx: PipelineContextInterface = { ...ctx, config: recordConfig };
-      (state as unknown as { context: PipelineContextInterface }).context = recordCtx;
+      (state as Record<string, unknown>)['recordPath'] = recordPath;
+      (state as Record<string, unknown>)['recordLine'] = recordLine;
+      (state as unknown as { context: PipelineContextInterface }).context = ctx;
 
       return state;
     });
@@ -449,17 +427,11 @@ export class SquashageOrchestrator {
       context:         ctx,
     };
 
-    // Invoke enrich:entity-link when it was listed in the pipeline and is registered.
-    if (targetConfig.pipeline.includes(ENTITY_LINK_NAME)) {
-      const entityLinkTask = registry.has(ENTITY_LINK_NAME)
-        ? registry.get(ENTITY_LINK_NAME)
-        : undefined;
-
-      if (entityLinkTask !== undefined) {
-        logger.debug('enrich', 'Invoking enrich:entity-link', { target });
-        await entityLinkTask(async (): Promise<void> => { /* no-op next */ }, endOfRunState);
-        logger.info('enrich', 'enrich:entity-link completed', { target });
-      }
+    // Invoke enrich:entity-link when configured and pipelined.
+    if (entityLinkTaskFn !== undefined) {
+      logger.debug('enrich', 'Invoking enrich:entity-link', { target });
+      await entityLinkTaskFn(async (): Promise<void> => { /* no-op next */ }, endOfRunState);
+      logger.info('enrich', 'enrich:entity-link completed', { target });
     }
 
     logger.debug('finalize', `Invoking ${activeFinalizeTaskName}`, { target });
@@ -467,6 +439,14 @@ export class SquashageOrchestrator {
     await activeFinalizeTask(async (): Promise<void> => { /* no-op next */ }, endOfRunState);
 
     logger.info('finalize', `${activeFinalizeTaskName} completed`, { target });
+
+    // Step 10b — Fire every registered `onRunEnd` lifecycle hook with the same
+    //            run-wide context. No built-in `onRunEnd` hooks ship today, so
+    //            this is forward-compatible scaffolding for future plugins.
+    for (const [name, fn] of TaskRegistry.onRunEndHooks()) {
+      logger.debug('onRunEnd', `Invoking onRunEnd hook: ${name}`, { target });
+      await fn(ctx);
+    }
 
     // Step 11 — Compute RunResultInterface.
     const qw         = QuarantineWriter.forRun(outDir, target);
@@ -547,90 +527,154 @@ export class SquashageOrchestrator {
   }
 
   /**
-   * Constructs the run-wide {@link PipelineContextInterface} from the target
-   * config, resolved output config, and resolved prefix-base pairs.
+   * Builds the frozen `ctx.config` slot the lifecycle hooks read.
    *
-   * @param target       - Target identifier.
-   * @param outDir       - Output base directory.
-   * @param targetConfig - Validated target config.
-   * @param outputConfig - Synthesized output config (CLI overrides already applied).
-   * @param prefixes     - Resolved prefix-base pairs from {@link PrefixResolver.resolve}.
-   * @param jt           - Optional json-tology ontology instance (present when engine === "json-tology").
-   * @returns Fully populated `PipelineContextInterface`.
+   * @remarks
+   * The returned object is the target config spread, with two additions:
+   *
+   * 1. `__sampleSource` and `__schemasBase` — the orchestrator-coordination
+   *    bridge keys read by `context:prefixes`, `context:ontology`,
+   *    `classify:schema`, etc. NOT part of the silo contract; tasks #27 / #28
+   *    will replace this back-channel with first-class init record threading.
+   *
+   * 2. The legacy monolithic `classification: { source, structural, rules,
+   *    schemas, ontology, conflict, ... }` block is splatted into top-level
+   *    keys so each classifier plugin can read its per-plugin namespace
+   *    directly. The `ontology` key inside that block is renamed to
+   *    `ontologyClassifier` to match {@link OntologyClassifier}'s namespace
+   *    constant. This compat shim exists only until tasks #27 / #28 flip the
+   *    target config schema to flat per-plugin namespaces; thereafter the
+   *    splat is a no-op.
+   *
+   * @param targetConfig - Per-target config from the squashage config file.
+   * @param sampleSource - Optional `{ target, path }` derived from the first
+   *                       walked record, used by `context:prefixes` for URL-host
+   *                       prefix derivation.
+   * @param schemasBase  - Base directory used by `context:ontology` and
+   *                       `classify:schema` to resolve relative schema paths.
+   * @returns Frozen config object suitable for the silo's `ctx.config` slot.
    */
-  static #buildContext(
-    target:        string,
-    outDir:        string,
-    targetConfig:  TargetConfigInterface,
-    outputConfig:  OutputConfigInterface,
-    prefixes:      PrefixResolutionInterface,
-    jt?:           JsonTologyOntology,
-    runStartTime?: string,
-  ): PipelineContextInterface {
-    const ontology = targetConfig.ontology;
-    const baseIri  =
-      (typeof ontology?.['baseIri'] === 'string' ? ontology['baseIri'] : undefined) ??
-      'https://example.org/';
-
-    const graphs = Object.fromEntries(
-      Object.entries(targetConfig.graphs ?? {}).map(([k, v]) => [k, dataFactory.namedNode(v)]),
-    );
-
-    const ctx: PipelineContextInterface = {
-      target,
-      outDir,
-      config:  Object.freeze({ ...(targetConfig as unknown as Record<string, unknown>) }),
-      factory: dataFactory,
-      dataset: Dataset.empty(),
-      builder: new GraphBuilder(baseIri),
-      graphs:  Object.freeze(graphs),
-      iri:     Namespaces.for(baseIri),
-      output:  outputConfig,
-      prefixes,
-      ...(jt !== undefined ? { jt } : {}),
-      ...(runStartTime !== undefined ? { runStartTime } : {}),
+  static #seedConfig(
+    targetConfig: TargetConfigInterface,
+    sampleSource: InputSourceInterface | undefined,
+    schemasBase:  string,
+  ): Readonly<Record<string, unknown>> {
+    const seeded: Record<string, unknown> = {
+      ...(targetConfig as unknown as Record<string, unknown>),
+      __schemasBase: schemasBase,
+      ...(sampleSource !== undefined ? { __sampleSource: sampleSource } : {}),
     };
 
-    return ctx;
+    // Compat shim: bridge the legacy `classification: { ... }` block to
+    // top-level per-plugin namespaces. Removed when task #28 flips the config
+    // schema to flat namespaces.
+    const classification = (targetConfig as unknown as Record<string, unknown>)['classification'];
+    if (classification !== undefined && classification !== null && typeof classification === 'object') {
+      for (const [key, value] of Object.entries(classification as Record<string, unknown>)) {
+        // Rename `ontology` → `ontologyClassifier` to match
+        // `OntologyClassifier.CONFIG_NAMESPACE`.
+        const targetKey = key === 'ontology' ? 'ontologyClassifier' : key;
+        if (seeded[targetKey] === undefined) {
+          seeded[targetKey] = value;
+        }
+      }
+    }
+
+    return Object.freeze(seeded);
   }
 
   /**
-   * Builds a {@link JsonTologyOntology} instance when
-   * `targetConfig.ontology.engine === "json-tology"`, otherwise returns `undefined`.
+   * Runs every applicable `onRunStart` lifecycle hook on the global
+   * {@link TaskRegistry} in registration order, narrowing classifier hooks
+   * to those whose registered name appears in `targetConfig.pipeline`.
    *
-   * @param targetConfig - Per-target config containing the optional ontology block.
-   * @param schemasBase  - Base directory for resolving relative schemaPath entries.
-   * @returns The constructed instance, or `undefined` when the engine is absent or "map".
+   * @remarks
+   * Hooks are filtered as follows:
+   *
+   * - Hooks whose name has NO matching per-record task in the registry are
+   *   structural lifecycle plugins (`context:logger`, `context:ajv`,
+   *   `context:dataset`, `context:prefixes`, `context:ontology`,
+   *   `context:run-time`). They run unconditionally.
+   *
+   * - Hooks whose name matches a registered per-record task are classifier
+   *   plugins (`classify:source`, `classify:rules`, …). They run only when
+   *   their task is listed in the target's pipeline. This preserves the
+   *   existing behavior whereby a classifier whose per-record task is NOT
+   *   pipelined for this run does not perform startup work (config compile,
+   *   schema load, etc.).
+   *
+   * Hooks fail-fast: any thrown error is decorated with the hook name and
+   * re-thrown so the orchestrator log carries the failing plugin's identifier.
+   *
+   * @param ctx         - The skeleton context (mutable view); hooks populate slots.
+   * @param pipelineSet - Set of per-record task names listed in the pipeline.
+   * @param target      - Target identifier (for log + error metadata).
+   * @throws Re-throws hook errors with the hook name on the metadata.
    */
-  static async #buildJtInstance(
+  static async #runOnRunStartHooks(
+    ctx:         PipelineContextInterface,
+    pipelineSet: ReadonlySet<string>,
+    target:      string,
+  ): Promise<void> {
+    const hooks = TaskRegistry.onRunStartHooks();
+    for (const [name, fn] of hooks) {
+      const isPerRecordTask = TaskRegistry.has(name);
+      if (isPerRecordTask && !pipelineSet.has(name)) {
+        logger.debug('onRunStart', `Skipping hook (not in pipeline): ${name}`, { target, name });
+        continue;
+      }
+      logger.debug('onRunStart', `Invoking hook: ${name}`, { target, name });
+      try {
+        await fn(ctx);
+      } catch (err) {
+        const cause = err instanceof Error ? err : undefined;
+        logger.error('onRunStart', `Hook ${name} threw`, { target, name, error: cause?.message });
+        throw err;
+      }
+    }
+  }
+
+  /**
+   * Asserts the `≥2 class-proposers ⇒ classify:conflict required` invariant.
+   *
+   * @remarks
+   * Counts every registered manifest with `proposesClass: true` whose name is
+   * also present in `targetConfig.pipeline`, and throws
+   * {@link SquashageConfigError} when the count is ≥2 AND
+   * `classify:conflict` is missing from the pipeline OR not registered. The
+   * error message format mirrors the legacy `crossValidateTarget`
+   * implementation in `src/config/SquashageConfig.ts` so error consumers do
+   * not break when task #26 deletes that legacy path.
+   *
+   * @param targetConfig - The resolved target config (used for pipeline list).
+   * @param target       - Target identifier (for error metadata).
+   * @throws {SquashageConfigError} When the invariant is violated.
+   */
+  static #assertConflictResolverPresent(
     targetConfig: TargetConfigInterface,
-    schemasBase:  string,
-  ): Promise<JsonTologyOntology | undefined> {
-    const ontologyBlock = targetConfig.ontology as Record<string, unknown> | undefined;
-    if (ontologyBlock === undefined) return undefined;
+    target:       string,
+  ): void {
+    const pipelineSet = new Set(targetConfig.pipeline);
 
-    const engine = ontologyBlock['engine'];
-    if (engine !== 'json-tology') return undefined;
+    const proposers = TaskRegistry.manifests()
+      .filter(m => m.proposesClass === true)
+      .map(m => m.name)
+      .filter(name => pipelineSet.has(name));
+    const distinctProposers = new Set(proposers);
 
-    const baseIRI  = ontologyBlock['baseIRI'] as string;
-    const rawSchemas = ontologyBlock['schemas'] as ReadonlyArray<{ readonly schemaPath: string }> | undefined;
-    if (rawSchemas === undefined || rawSchemas.length === 0) return undefined;
+    if (distinctProposers.size < 2) return;
 
-    const schemaInputs: JsonTologySchemaInputInterface[] = await Promise.all(
-      rawSchemas.map(async entry => {
-        const absPath = resolvePath(schemasBase, entry.schemaPath);
-        const text    = await readFile(absPath, 'utf8');
-        const schema  = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
-        return { schemaPath: entry.schemaPath, schema };
-      }),
+    const conflictRegistered = TaskRegistry.has('classify:conflict');
+    const conflictPipelined  = pipelineSet.has('classify:conflict');
+    if (conflictRegistered && conflictPipelined) return;
+
+    throw SquashageConfigError.create(
+      `Pipeline includes ${distinctProposers.size.toString()} class-proposing classifiers ` +
+      `(${[...distinctProposers].join(', ')}) but is missing "classify:conflict". ` +
+      `When multiple class-proposers are active, the ConflictResolver must be ` +
+      `present in the pipeline to pick the winning class.`,
+      { metadata: { target, distinctProposers: [...distinctProposers] } },
     );
-
-    logger.debug('run', 'Building JsonTologyOntology instance', {
-      baseIRI,
-      schemaCount: schemaInputs.length,
-    });
-
-    return JsonTologyOntology.create({ baseIRI, schemas: schemaInputs });
   }
 
   /**
