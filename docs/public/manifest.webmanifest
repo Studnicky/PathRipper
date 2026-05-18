@@ -1,0 +1,37 @@
+{
+  "name": "Ripperoni: web ingestion engine that slices wikis, sites, and URL lists into JSON records",
+  "short_name": "Ripperoni",
+  "description": "Web ingestion engine; slices wikis, sites, and URL lists into JSON records. Feed them into Squashage for graph reconstitution.",
+  "id": "/Ripperoni/",
+  "start_url": "/Ripperoni/",
+  "scope": "/Ripperoni/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#c8284a",
+  "background_color": "#0a0a0a",
+  "lang": "en-US",
+  "categories": ["productivity", "developer", "utilities"],
+  "icons": [
+    {
+      "src": "/Ripperoni/ripperoni.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Ripperoni/ripperoni.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/Ripperoni/og-image.png",
+      "type": "image/png",
+      "sizes": "1200x630",
+      "form_factor": "wide",
+      "label": "Ripperoni docs site — web ingestion engine for wikis, sites, and URL lists"
+    }
+  ]
+}

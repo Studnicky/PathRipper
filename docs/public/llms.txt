@@ -1,0 +1,32 @@
+# Ripperoni
+
+> Web ingestion engine that slices wikis, sites, and URL lists into structured JSON records. Point it at a domain; it fetches pages, runs your plugin against each one, and drops typed records on disk.
+
+Ripperoni is a TypeScript library and CLI for web ingestion. The engine is a typed async middleware pipeline (`Pipeline<TState>`) over pluggable scraper classes (HtmlScraper, MediaWikiScraper, LinkLister). HTTP machinery (RetryExecutor with exponential-jitter backoff, RateLimiter via bottleneck) is decoupled from scraping logic. AJV validates the JSON config at load time. Plugins are `.js` files loaded at runtime via TaskRegistry. Output is structured JSON records, one file per page, written to a configurable basePath. Not yet on npm; install by cloning.
+
+## Getting started
+
+- [Home](https://studnicky.github.io/Ripperoni/): project overview, feature list, and quick-install snippet.
+- [Getting started](https://studnicky.github.io/Ripperoni/getting-started): clone, install, build, create a config file, and run your first scrape.
+- [Walk-through](https://studnicky.github.io/Ripperoni/walk-through): concrete end-to-end example from a real URL (Archives of Nethys) through config, plugin, and final JSON record.
+
+## Usage
+
+- [Configuration](https://studnicky.github.io/Ripperoni/usage/configuration): JSON config file structure, AJV schema validation, all top-level keys (output, mediawiki, targets, html).
+- [Pipeline](https://studnicky.github.io/Ripperoni/usage/pipeline): typed async middleware queue, task signature `(next, state) => void`, composition and ordering of tasks.
+- [Scrapers](https://studnicky.github.io/Ripperoni/usage/scrapers): HtmlScraper (native fetch + cheerio, returns CheerioAPI handle) and MediaWikiScraper (JSON API, three enumeration modes, wikitext batch fetch).
+- [MediaWiki](https://studnicky.github.io/Ripperoni/usage/mediawiki): single-category, categories-array, and full-wiki enumeration; pagination, batch wikitext fetches, wtf_wikipedia infobox parsing, redirect resolution.
+- [Crawler](https://studnicky.github.io/Ripperoni/usage/crawler): LinkLister recursively follows links matching domain/target/delimiter regexes, deduplicates, sorts naturally, returns a URL list.
+- [Cache](https://studnicky.github.io/Ripperoni/usage/cache): ScraperCache sharded content-addressed pointer cache; saves HTTP responses to disk so re-runs replay from cache without hitting the network.
+- [Plugins](https://studnicky.github.io/Ripperoni/usage/plugins): plugin file structure, TaskRegistry.register, dynamic loading via pipeline array in config, task signature, writing output records.
+
+## Reference
+
+- [Architecture](https://studnicky.github.io/Ripperoni/architecture): module graph of pipeline, HTTP machinery, scrapers, and CLI; package boundaries and extension points.
+- [Roadmap](https://studnicky.github.io/Ripperoni/roadmap): shipped features (v2.x) and planned work — concurrent pipeline, checkpoint/resume, cache, config schema validation, plugin system.
+
+## Source
+
+- [GitHub repository](https://github.com/Studnicky/Ripperoni)
+- [npm package](https://www.npmjs.com/package/ripperoni)
+- [Sitemap](https://studnicky.github.io/Ripperoni/sitemap.xml)

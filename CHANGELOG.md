@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-05-18
+
+### Changed
+
+- **BREAKING: Cache defaults to on.** Targets and mediawiki entries that omit a `cache`
+  block now receive `{ dir: 'output/.cache/<targetId>', mode: 'read-write' }` automatically.
+  Combined with v2.5.0's `includeRawContent: true` default, raw content is always preserved
+  by default and never re-fetched on subsequent runs without explicit opt-out.
+
+- **BREAKING: Raw + cache-off rejected at config load.** Setting `cache.mode: 'off'`
+  while `includeRawContent` is true (or absent — the default is true) throws
+  `RipperConfigError` at `RipperConfig.load()`. Either set `includeRawContent: false`
+  or pick a write-capable cache mode (`'read-write'` or `'write-only'`). Raw output
+  without a cache exhausts disk on large scrapes — the loader catches the
+  misconfiguration before a single byte is fetched.
+
+- `RipperConfig.load()` return type narrowed from `Promise<RipperConfigInterface>` to
+  `Promise<NormalizedRipperConfigInterface>` — the resolved shape where every `cache`
+  block is guaranteed present. `ScrapeHtmlOptionsInterface.config` follows.
+
+- `plugins/aonprd/parse.task.ts` imports `TaskRegistry`, `PipelineStateInterface`, and
+  `TaskFnInterface` from `src/` instead of `dist/`. Single canonical source: the
+  orchestrator (under tsx) and the plugin now reference the same `TaskRegistry`
+  module instance, eliminating the dual-instance bug that prevented the full-pipeline
+  e2e test from finding the eager-registered plugin.
+
+### Added
+
+- `RipperConfig.normalize(config)` static method exposes the cache-default + invariant
+  pass for callers with an already-validated raw config.
+- `RAW_CACHE_OFF_ERROR` exported constant carrying the exact rejection message text.
+- Types: `ResolvedCacheConfigInterface`, `NormalizedTargetConfigInterface`,
+  `NormalizedWikiConfigInterface`, `NormalizedRipperConfigInterface`.
+- JSON Schema 2020-12 metadata enrichment on `RipperConfigSchema` — every block carries
+  native `title`, `description`, `examples`, `default`, `$comment` keywords. The new
+  `tests/unit/config/schemaExamples.test.ts` walks every nested `examples[]` and
+  validates each entry against its own (sub)schema so documented examples cannot
+  silently drift from the live structure.
+- Docs site SEO infrastructure: full favicon stack (SVG canonical + PNG fallbacks +
+  shortcut + apple-touch + mask-icon + manifest + sitemap + RSS alternate),
+  Open Graph (12 properties, 1200×630 dimensions), Twitter Card (`summary_large_image`),
+  four JSON-LD schemas (`SoftwareSourceCode` + `WebSite` + `Organization` per site,
+  `BreadcrumbList` per page, `HowTo` on `recipes/*` and `walk-through`),
+  preconnect + dns-prefetch hints, `hreflang` `en-US`/`x-default`, robots/keywords/
+  author/referrer metas, search-console verification meta tags (suppressed when
+  empty), `sitemap.xml` and `feed.xml` (RSS 2.0 from CHANGELOG) generated at build
+  time, `manifest.webmanifest` (PWA, scope `/Ripperoni/`), `robots.txt`, `llms.txt`
+  (AI/LLM-friendly site index), `favicon.svg`.
+- `ripperoni.seo` block in `package.json` (`googleSiteVerification`, `bingSiteVerification`,
+  `twitterHandle`, all empty by default; populating a value emits the corresponding
+  meta tag on the next build).
+- `docs/architecture.md` wraps each architectural section in
+  `<section data-component="…">` with `<p class="summary">` markers — restores the
+  docs-as-fixtures pattern that powers `tests/e2e/docs-html.test.ts`.
+
+### Fixed
+
+- `tests/e2e/docs-html.test.ts` now builds `docs/.vitepress/dist/` on demand and
+  serves it over a node:http fixture server instead of fetching the live deployed
+  site, making the test deterministic and runnable without network access.
+- `tests/e2e/aonprd-plugin.test.ts` full-pipeline subtest now uses a deterministic
+  sample of stable AON detail URLs instead of whichever pages the crawler surfaces
+  from the seed; the assertion that every parsed record carries a `name` is exercised
+  against known-good content rather than crawler-discovered admin/theme pages.
+
+### Dependencies
+
+- `vitepress-plugin-mermaid` and `mermaid` added as devDependencies. Renders mermaid
+  code blocks in `docs/architecture.md` as interactive SVG diagrams.
+
 ## [2.5.0] - 2026-05-07
 
 ### Changed

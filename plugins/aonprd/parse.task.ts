@@ -9,9 +9,9 @@
 // no on-page data is silently dropped.
 //
 // Self-registers as `aonprd:parse` via TaskRegistry on import.
-import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../dist/registry/PipelineState.js';
-import type { TaskFnInterface } from '../../dist/pipeline/Pipeline.js';
+import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
+import type { PipelineStateInterface } from '../../src/registry/PipelineState.js';
+import type { TaskFnInterface } from '../../src/pipeline/Pipeline.js';
 
 import { detectPageType, extractCommon, loadHtml } from './common.js';
 import { extractSpell, type SpellOutput }                                                         from './spell.js';
