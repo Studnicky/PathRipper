@@ -1,6 +1,6 @@
 {
   "name": "squashage",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Graph reconstitution pipeline; squashes classified JSON records into deterministic RDF (Turtle, TriG, JSON-LD, N-Triples, N-Quads).",
   "type": "module",
   "bin": {
