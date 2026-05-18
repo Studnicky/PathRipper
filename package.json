@@ -59,16 +59,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.0",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
     "mermaid": "^11.15.0",
-    "tsx": "^4.0.0",
+    "tsx": "^4.22.1",
     "typescript": "^6.0.3",
-    "typescript-eslint": "8.59.2",
+    "typescript-eslint": "8.59.3",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
-    "vue": "^3.0.0"
+    "vue": "^3.5.34"
   },
   "engines": {
     "node": ">=24.0.0"
