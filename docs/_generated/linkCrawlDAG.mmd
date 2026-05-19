@@ -1,0 +1,153 @@
+flowchart LR
+  %% linkCrawlDAG (v2.0)
+  init-frontier
+  init-frontier[init-frontier]
+  init-frontier -->|ready| fetch-0
+  init-frontier -->|empty| exhausted
+  fetch-0[fetch-0]
+  fetch-0 -->|success| dedupe-0
+  fetch-0 -->|empty| dedupe-0
+  fetch-0 -->|error| dedupe-0
+  fetch-0 -->|permanent| exhausted
+  dedupe-0[dedupe-0]
+  dedupe-0 -->|frontier-ready| fetch-1
+  dedupe-0 -->|frontier-empty| exhausted
+  dedupe-0 -->|budget-exhausted| exhausted
+  fetch-1[fetch-1]
+  fetch-1 -->|success| dedupe-1
+  fetch-1 -->|empty| dedupe-1
+  fetch-1 -->|error| dedupe-1
+  fetch-1 -->|permanent| exhausted
+  dedupe-1[dedupe-1]
+  dedupe-1 -->|frontier-ready| fetch-2
+  dedupe-1 -->|frontier-empty| exhausted
+  dedupe-1 -->|budget-exhausted| exhausted
+  fetch-2[fetch-2]
+  fetch-2 -->|success| dedupe-2
+  fetch-2 -->|empty| dedupe-2
+  fetch-2 -->|error| dedupe-2
+  fetch-2 -->|permanent| exhausted
+  dedupe-2[dedupe-2]
+  dedupe-2 -->|frontier-ready| fetch-3
+  dedupe-2 -->|frontier-empty| exhausted
+  dedupe-2 -->|budget-exhausted| exhausted
+  fetch-3[fetch-3]
+  fetch-3 -->|success| dedupe-3
+  fetch-3 -->|empty| dedupe-3
+  fetch-3 -->|error| dedupe-3
+  fetch-3 -->|permanent| exhausted
+  dedupe-3[dedupe-3]
+  dedupe-3 -->|frontier-ready| fetch-4
+  dedupe-3 -->|frontier-empty| exhausted
+  dedupe-3 -->|budget-exhausted| exhausted
+  fetch-4[fetch-4]
+  fetch-4 -->|success| dedupe-4
+  fetch-4 -->|empty| dedupe-4
+  fetch-4 -->|error| dedupe-4
+  fetch-4 -->|permanent| exhausted
+  dedupe-4[dedupe-4]
+  dedupe-4 -->|frontier-ready| fetch-5
+  dedupe-4 -->|frontier-empty| exhausted
+  dedupe-4 -->|budget-exhausted| exhausted
+  fetch-5[fetch-5]
+  fetch-5 -->|success| dedupe-5
+  fetch-5 -->|empty| dedupe-5
+  fetch-5 -->|error| dedupe-5
+  fetch-5 -->|permanent| exhausted
+  dedupe-5[dedupe-5]
+  dedupe-5 -->|frontier-ready| fetch-6
+  dedupe-5 -->|frontier-empty| exhausted
+  dedupe-5 -->|budget-exhausted| exhausted
+  fetch-6[fetch-6]
+  fetch-6 -->|success| dedupe-6
+  fetch-6 -->|empty| dedupe-6
+  fetch-6 -->|error| dedupe-6
+  fetch-6 -->|permanent| exhausted
+  dedupe-6[dedupe-6]
+  dedupe-6 -->|frontier-ready| fetch-7
+  dedupe-6 -->|frontier-empty| exhausted
+  dedupe-6 -->|budget-exhausted| exhausted
+  fetch-7[fetch-7]
+  fetch-7 -->|success| dedupe-7
+  fetch-7 -->|empty| dedupe-7
+  fetch-7 -->|error| dedupe-7
+  fetch-7 -->|permanent| exhausted
+  dedupe-7[dedupe-7]
+  dedupe-7 -->|frontier-ready| fetch-8
+  dedupe-7 -->|frontier-empty| exhausted
+  dedupe-7 -->|budget-exhausted| exhausted
+  fetch-8[fetch-8]
+  fetch-8 -->|success| dedupe-8
+  fetch-8 -->|empty| dedupe-8
+  fetch-8 -->|error| dedupe-8
+  fetch-8 -->|permanent| exhausted
+  dedupe-8[dedupe-8]
+  dedupe-8 -->|frontier-ready| fetch-9
+  dedupe-8 -->|frontier-empty| exhausted
+  dedupe-8 -->|budget-exhausted| exhausted
+  fetch-9[fetch-9]
+  fetch-9 -->|success| dedupe-9
+  fetch-9 -->|empty| dedupe-9
+  fetch-9 -->|error| dedupe-9
+  fetch-9 -->|permanent| exhausted
+  dedupe-9[dedupe-9]
+  dedupe-9 -->|frontier-ready| fetch-10
+  dedupe-9 -->|frontier-empty| exhausted
+  dedupe-9 -->|budget-exhausted| exhausted
+  fetch-10[fetch-10]
+  fetch-10 -->|success| dedupe-10
+  fetch-10 -->|empty| dedupe-10
+  fetch-10 -->|error| dedupe-10
+  fetch-10 -->|permanent| exhausted
+  dedupe-10[dedupe-10]
+  dedupe-10 -->|frontier-ready| fetch-11
+  dedupe-10 -->|frontier-empty| exhausted
+  dedupe-10 -->|budget-exhausted| exhausted
+  fetch-11[fetch-11]
+  fetch-11 -->|success| dedupe-11
+  fetch-11 -->|empty| dedupe-11
+  fetch-11 -->|error| dedupe-11
+  fetch-11 -->|permanent| exhausted
+  dedupe-11[dedupe-11]
+  dedupe-11 -->|frontier-ready| fetch-12
+  dedupe-11 -->|frontier-empty| exhausted
+  dedupe-11 -->|budget-exhausted| exhausted
+  fetch-12[fetch-12]
+  fetch-12 -->|success| dedupe-12
+  fetch-12 -->|empty| dedupe-12
+  fetch-12 -->|error| dedupe-12
+  fetch-12 -->|permanent| exhausted
+  dedupe-12[dedupe-12]
+  dedupe-12 -->|frontier-ready| fetch-13
+  dedupe-12 -->|frontier-empty| exhausted
+  dedupe-12 -->|budget-exhausted| exhausted
+  fetch-13[fetch-13]
+  fetch-13 -->|success| dedupe-13
+  fetch-13 -->|empty| dedupe-13
+  fetch-13 -->|error| dedupe-13
+  fetch-13 -->|permanent| exhausted
+  dedupe-13[dedupe-13]
+  dedupe-13 -->|frontier-ready| fetch-14
+  dedupe-13 -->|frontier-empty| exhausted
+  dedupe-13 -->|budget-exhausted| exhausted
+  fetch-14[fetch-14]
+  fetch-14 -->|success| dedupe-14
+  fetch-14 -->|empty| dedupe-14
+  fetch-14 -->|error| dedupe-14
+  fetch-14 -->|permanent| exhausted
+  dedupe-14[dedupe-14]
+  dedupe-14 -->|frontier-ready| fetch-15
+  dedupe-14 -->|frontier-empty| exhausted
+  dedupe-14 -->|budget-exhausted| exhausted
+  fetch-15[fetch-15]
+  fetch-15 -->|success| dedupe-15
+  fetch-15 -->|empty| dedupe-15
+  fetch-15 -->|error| dedupe-15
+  fetch-15 -->|permanent| exhausted
+  dedupe-15[dedupe-15]
+  dedupe-15 -->|frontier-ready| exhausted
+  dedupe-15 -->|frontier-empty| exhausted
+  dedupe-15 -->|budget-exhausted| exhausted
+  exhausted[exhausted]
+  exhausted -->|success| END
+  END([end])

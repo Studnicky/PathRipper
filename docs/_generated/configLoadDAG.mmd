@@ -1,0 +1,20 @@
+flowchart LR
+  %% configLoadDAG (v2.0)
+  config:read-file
+  config:read-file[config:read-file]
+  config:read-file -->|success| config:parse-json
+  config:read-file -->|not-found| END
+  config:read-file -->|error| END
+  config:parse-json[config:parse-json]
+  config:parse-json -->|success| config:validate-schema
+  config:parse-json -->|error| END
+  config:validate-schema[config:validate-schema]
+  config:validate-schema -->|valid| config:normalize-cache
+  config:validate-schema -->|invalid| END
+  config:normalize-cache[config:normalize-cache]
+  config:normalize-cache -->|success| config:assert-invariants
+  config:normalize-cache -->|invariant-violated| END
+  config:assert-invariants[config:assert-invariants]
+  config:assert-invariants -->|success| END
+  config:assert-invariants -->|invariant-violated| END
+  END([end])

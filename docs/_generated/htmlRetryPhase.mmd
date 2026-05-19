@@ -1,0 +1,9 @@
+flowchart LR
+  %% htmlRetryPhase (v2.0)
+  retry-urls
+  retry-urls{{retry-urls}}
+  retry-urls -->|all-success| END
+  retry-urls -->|partial| END
+  retry-urls -->|all-error| END
+  retry-urls -->|empty| END
+  END([end])

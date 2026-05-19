@@ -25,11 +25,13 @@ const RETRY_AFTER_SECONDS_MULTIPLIER = 1_000;
  * Register rules via `addRule` for custom logic, or call `ErrorClassifier.default()`
  * to get a pre-configured instance covering common HTTP and network error patterns.
  *
+ * Returns `{ category, backoffHint? }` — pure classification; retry decisions
+ * belong to the caller (or to `HttpRetryPolicy`).
+ *
  * @example
  * ```ts
  * const classifier = ErrorClassifier.default();
- * const result = classifier.classify(error);
- * if (result.retryable) retry(result.backoffHint);
+ * const { category, backoffHint } = classifier.classify(error);
  * ```
  * @category Http
  * @since 2.0.0
@@ -44,7 +46,7 @@ export class ErrorClassifier {
    *
    * @param predicate - Function returning `true` when this rule matches the error.
    * @param category - Error category to assign when the predicate matches.
-   * @param options - Optional `retryable` flag and `backoffHint` delay override.
+   * @param options - Optional `backoffHint` delay override.
    * @returns `this` for fluent chaining.
    */
   addRule(
@@ -65,35 +67,24 @@ export class ErrorClassifier {
    * Evaluates all registered rules against the given error.
    *
    * @param error - Error to classify.
-   * @returns Classification result with category, retryable flag, and optional backoff hint.
+   * @returns Classification result with category and optional backoff hint.
    */
   classify(error: ExtendedErrorInterface): ClassificationResultInterface {
     for (const rule of this.#rules) {
       if (rule.predicate(error)) {
-        const retryable = rule.retryable ?? this.#defaultRetryable(rule.category);
         const hint = typeof rule.backoffHint === 'function'
           ? rule.backoffHint(error)
           : rule.backoffHint;
+        const retryable = rule.retryable ?? ErrorClassifier.#defaultRetryable(rule.category);
         return hint !== undefined
-          ? { category: rule.category, retryable, backoffHint: hint }
+          ? { category: rule.category, backoffHint: hint, retryable }
           : { category: rule.category, retryable };
       }
     }
     return { category: ErrorCategory.UNKNOWN, retryable: false };
   }
 
-  /**
-   * Returns `true` if the error is classified as retryable.
-   *
-   * @param error - Error to evaluate.
-   * @returns Whether a retry is appropriate for this error.
-   */
-  isRetryable(error: ExtendedErrorInterface): boolean {
-    const result = this.classify(error);
-    return result.retryable;
-  }
-
-  #defaultRetryable(category: ErrorCategoryType): boolean {
+  static #defaultRetryable(category: ErrorCategoryType): boolean {
     return category === ErrorCategory.NETWORK
         || category === ErrorCategory.THROTTLED
         || category === ErrorCategory.TIMEOUT

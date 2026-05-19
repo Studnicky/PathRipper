@@ -1,8 +1,8 @@
-import type { FetchPageResult, FetchPagesBatchResult, FetchCategoryResult, FetchAllPagesResult, ScrapeCategoryResult } from '../types/Results.js';
+import type { FetchPageResult, FetchPagesBatchResult, FetchCategoryResult, FetchAllPagesResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
 import { CacheMissError } from '../errors/CacheMissError.js';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
-import { RetryExecutor } from '../modules/http/retryExecutor.js';
+import { HttpRetryPolicy } from '../modules/http/httpRetryPolicy.js';
 import { Logger } from '../modules/logger/logger.js';
 import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type {
@@ -17,10 +17,9 @@ import type {
 
 export type { MediaWikiConfigInterface, WikiPageInterface, CategoryMemberInterface };
 
-const DEFAULT_BATCH_SIZE       = 50;
-const API_CATEGORY_LIMIT       = 500;
-const DEFAULT_ALL_PAGES_LIMIT  = 500;
-const DEFAULT_RATE_LIMIT_MS    = 1_000;
+const API_CATEGORY_LIMIT      = 500;
+const DEFAULT_ALL_PAGES_LIMIT = 500;
+const DEFAULT_RATE_LIMIT_MS   = 1_000;
 
 /**
  * Fetches wikitext content and category membership from a MediaWiki action API.
@@ -40,30 +39,28 @@ const DEFAULT_RATE_LIMIT_MS    = 1_000;
  * @see MediaWikiConfigInterface
  */
 export class MediaWikiScraper {
-  readonly #apiUrl:    string;
-  readonly #headers:   Readonly<Record<string, string>>;
-  readonly #limiter:   RateLimiter;
-  readonly #retry:     RetryExecutor;
-  readonly #batchSize: number;
-  readonly #log:       Logger;
+  readonly #apiUrl:  string;
+  readonly #headers: Readonly<Record<string, string>>;
+  readonly #limiter: RateLimiter;
+  readonly #policy:  HttpRetryPolicy;
+  readonly #log:     Logger;
   /** Optional shared content store; null when not provided in config. */
-  readonly #cache:     ScraperCache | null;
+  readonly #cache:   ScraperCache | null;
 
   /**
    * @param config - MediaWiki API URL and optional rate-limit settings.
    */
   private constructor(config: MediaWikiConfigInterface) {
-    this.#apiUrl    = config.apiUrl;
-    this.#headers   = { 'Accept': 'application/json, */*' };
-    this.#limiter   = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#retry     = RetryExecutor.create({
-      maxAttempts: config.maxRetries      ?? 3,
+    this.#apiUrl   = config.apiUrl;
+    this.#headers  = { 'Accept': 'application/json, */*' };
+    this.#limiter  = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
+    this.#policy   = HttpRetryPolicy.create({
+      maxAttempts: config.maxRetries       ?? 3,
       baseDelayMs: config.retryBaseDelayMs ?? 500,
       maxDelayMs:  config.retryMaxDelayMs  ?? 30_000,
     });
-    this.#batchSize = config.batchSize ?? DEFAULT_BATCH_SIZE;
-    this.#log       = Logger.forComponent('MediaWikiScraper');
-    this.#cache     = config.cache ?? null;
+    this.#log      = Logger.forComponent('MediaWikiScraper');
+    this.#cache    = config.cache ?? null;
   }
 
   /**
@@ -128,7 +125,7 @@ export class MediaWikiScraper {
     if (missing.length === 0) return cached;
 
     const fetched = await this.#limiter.schedule((): Promise<WikiPageInterface[]> =>
-      this.#retry.execute(async (): Promise<WikiPageInterface[]> => {
+      this.#policy.run(async (): Promise<WikiPageInterface[]> => {
         const params = new URLSearchParams({
           action: 'query', titles: missing.join('|'), prop: 'revisions', redirects: '1',
           rvprop: 'content', format: 'json',
@@ -178,7 +175,7 @@ export class MediaWikiScraper {
       });
 
       const data = await this.#limiter.schedule((): Promise<CategoryMembersResponseInterface> =>
-        this.#retry.execute((): Promise<CategoryMembersResponseInterface> =>
+        this.#policy.run((): Promise<CategoryMembersResponseInterface> =>
           this.#get<CategoryMembersResponseInterface>(params),
         ),
       );
@@ -214,7 +211,7 @@ export class MediaWikiScraper {
       });
 
       const data = await this.#limiter.schedule((): Promise<AllPagesResponseInterface> =>
-        this.#retry.execute((): Promise<AllPagesResponseInterface> =>
+        this.#policy.run((): Promise<AllPagesResponseInterface> =>
           this.#get<AllPagesResponseInterface>(params),
         ),
       );
@@ -229,28 +226,6 @@ export class MediaWikiScraper {
 
     this.#log.info('fetchAllPages', `Total: ${members.length.toString()} pages`);
     return members;
-  }
-
-  /**
-   * Fetches all pages in a category, batching wikitext requests for efficiency.
-   *
-   * @param categoryName - Category name without the `Category:` prefix.
-   * @returns All wiki pages in the category with their wikitext content.
-   * @throws {HttpError} When the API returns a non-OK response.
-   */
-  public async scrapeCategory(categoryName: string): ScrapeCategoryResult {
-    const members = await this.fetchCategory(categoryName);
-    const titles  = members.map((m: CategoryMemberInterface): string => m.title);
-    const pages: WikiPageInterface[] = [];
-
-    for (let i = 0; i < titles.length; i += this.#batchSize) {
-      const slice = titles.slice(i, i + this.#batchSize);
-      const batch = await this.fetchPagesBatch(slice);
-      pages.push(...batch);
-      this.#log.debug('scrapeCategory', `Fetched ${pages.length.toString()}/${titles.length.toString()}`);
-    }
-
-    return pages;
   }
 
   private static wikitextOf(page: RevisionsPageInterface | undefined): string {

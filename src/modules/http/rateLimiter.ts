@@ -19,7 +19,7 @@ export type { RateLimiterConfigInterface };
  *
  * @category HTTP
  * @since 2.0.0
- * @see {@link RetryExecutor}
+ * @see {@link HttpRetryPolicy}
  * @group Core
  */
 export class RateLimiter {

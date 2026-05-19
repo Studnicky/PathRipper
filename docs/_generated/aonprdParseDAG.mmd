@@ -1,0 +1,69 @@
+flowchart LR
+  %% aonprd:parse (v1.0)
+  load-and-common
+  load-and-common[load-and-common]
+  load-and-common -->|success| detect-type
+  load-and-common -->|error| make-unknown
+  detect-type[detect-type]
+  detect-type -->|spell| extract-spell
+  detect-type -->|monster| extract-monster
+  detect-type -->|feat| extract-feat
+  detect-type -->|weapon| extract-weapon
+  detect-type -->|armor| extract-armor
+  detect-type -->|equipment| extract-equipment
+  detect-type -->|action| extract-action
+  detect-type -->|ancestry| extract-ancestry
+  detect-type -->|class| extract-class
+  detect-type -->|background| extract-background
+  detect-type -->|condition| extract-condition
+  detect-type -->|trait| extract-trait
+  detect-type -->|hazard| extract-hazard
+  detect-type -->|generic| extract-generic
+  detect-type -->|unknown| make-unknown
+  extract-spell[extract-spell]
+  extract-spell -->|success| terminate
+  extract-spell -->|error| make-unknown
+  extract-monster[extract-monster]
+  extract-monster -->|success| terminate
+  extract-monster -->|error| make-unknown
+  extract-feat[extract-feat]
+  extract-feat -->|success| terminate
+  extract-feat -->|error| make-unknown
+  extract-weapon[extract-weapon]
+  extract-weapon -->|success| terminate
+  extract-weapon -->|error| make-unknown
+  extract-armor[extract-armor]
+  extract-armor -->|success| terminate
+  extract-armor -->|error| make-unknown
+  extract-equipment[extract-equipment]
+  extract-equipment -->|success| terminate
+  extract-equipment -->|error| make-unknown
+  extract-action[extract-action]
+  extract-action -->|success| terminate
+  extract-action -->|error| make-unknown
+  extract-ancestry[extract-ancestry]
+  extract-ancestry -->|success| terminate
+  extract-ancestry -->|error| make-unknown
+  extract-class[extract-class]
+  extract-class -->|success| terminate
+  extract-class -->|error| make-unknown
+  extract-background[extract-background]
+  extract-background -->|success| terminate
+  extract-background -->|error| make-unknown
+  extract-condition[extract-condition]
+  extract-condition -->|success| terminate
+  extract-condition -->|error| make-unknown
+  extract-trait[extract-trait]
+  extract-trait -->|success| terminate
+  extract-trait -->|error| make-unknown
+  extract-hazard[extract-hazard]
+  extract-hazard -->|success| terminate
+  extract-hazard -->|error| make-unknown
+  extract-generic[extract-generic]
+  extract-generic -->|success| terminate
+  extract-generic -->|error| make-unknown
+  make-unknown[make-unknown]
+  make-unknown -->|success| terminate
+  terminate[terminate]
+  terminate -->|success| END
+  END([end])

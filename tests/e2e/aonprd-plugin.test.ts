@@ -1,7 +1,6 @@
 // Lane 11 follow-up — exercises the AON HTML adapter + the aonprd plugin
 // end-to-end against the live 2e.aonprd.com site. CI never runs this; the
-// plugin extraction logic is the real test of the project's plugin contract,
-// the wiki-side counterpart of which is tests/integration/bulbapedia.
+// plugin extraction logic is the real test of the project's plugin contract.
 //
 // Run locally:                npm run test:e2e
 // Plugin smoke only:          npm run test:e2e -- --test-name-pattern='aonprd plugin smoke'
@@ -13,19 +12,17 @@ import { resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-import { HtmlScraper }        from '../../src/scrapers/HtmlScraper.js';
-import { LinkLister }         from '../../src/crawlers/LinkLister.js';
-import { ScrapeOrchestrator } from '../../src/orchestrators/ScrapeOrchestrator.js';
-import { RipperConfig }       from '../../src/config/RipperConfig.js';
-import { ScraperCache }       from '../../src/modules/cache/ScraperCache.js';
-// Plugin self-registers `aonprd:parse` on import.
-import { parseAonHtml }       from '../../plugins/aonprd/parse.task.js';
+import { HtmlScraper }  from '../../src/scrapers/HtmlScraper.js';
+import { LinkLister }   from '../../src/crawlers/LinkLister.js';
+import { runHtml }     from '../../src/run/runHtml.js';
+import { RipperConfig } from '../../src/config/RipperConfig.js';
+import { ScraperCache } from '../../src/modules/cache/ScraperCache.js';
+import { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
 
 // A curated set of stable URLs across every page-type the plugin supports.
-// These are deliberately classic entries unlikely to be deleted/renumbered.
 const PLUGIN_PROBES: ReadonlyArray<{ url: string; expect_type: string }> = [
   { url: 'https://2e.aonprd.com/Spells.aspx?ID=1',     expect_type: 'spell' },
   { url: 'https://2e.aonprd.com/Feats.aspx?ID=1',      expect_type: 'feat' },
@@ -148,7 +145,7 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     assert.ok(r.category !== null, 'category must parse');
   });
 
-  it('full pipeline — LinkLister + ScrapeOrchestrator + plugin → typed JSON outputs', async () => {
+  it('full pipeline — LinkLister + RipperRun + plugin → typed JSON outputs', async () => {
     const fx = await RipperConfig.load(FIXTURE);
     const c  = fx.crawlers!['aonprd']!;
     const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
@@ -163,9 +160,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
       cache,
     });
     const links = await lister.buildList(['https://2e.aonprd.com/Conditions.aspx']);
-    // The crawler may surface AON theme/admin pages from the seed (e.g. Rules.aspx?ID=2455).
-    // Restrict the parse sample to deterministic, well-structured detail pages so the assertions
-    // exercise the plugin's extractors, not the crawler's frontier policy.
     const sample = [
       '/Conditions.aspx?ID=1',
       '/Spells.aspx?ID=1',
@@ -177,19 +171,17 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
 
     const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-e2e-'));
     try {
-      await ScrapeOrchestrator.scrapeHtml({
+      await runHtml({
         target:    'aonprd',
         paths:     sample,
         outDir,
-        configDir: resolve(__dirname, 'fixtures'),
+        configDir: resolve(__dirname, '..', '..'),
         config:    fx,
       });
 
-      // Plugin output now lives in <targetDir>/<pluginTaskName>/ subfolder.
-      // The pipeline task is 'aonprd:parse', so folder = <targetDir>/aonprd:parse/
-      const targetDir  = resolve(outDir, 'aonprd');
-      const pluginDir  = resolve(targetDir, 'aonprd:parse');
-      const files      = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+      const targetDir = resolve(outDir, 'aonprd');
+      const pluginDir = resolve(targetDir, 'aonprd:parse');
+      const files     = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
       assert.ok(files.length === sample.length,
         `expected ${sample.length.toString()} JSON files in aonprd:parse/, got ${files.length.toString()}`);
       for (const f of files) {

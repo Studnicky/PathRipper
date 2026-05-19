@@ -1,6 +1,6 @@
 import type { CheerioAPI } from 'cheerio';
 
-import type { RetryConfigInterface } from './RetryExecutor.js';
+import type { HttpRetryConfigInterface } from '../modules/http/httpRetryPolicy.js';
 import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 /**
@@ -8,7 +8,7 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @remarks
  * `rateLimitMs` and `jitterMs` are forwarded to the internal `RateLimiter`.
- * `retry` is forwarded to `RetryExecutor`; omit it to disable retries.
+ * `retry` is forwarded to `HttpRetryPolicy`; omit it to use defaults.
  *
  * @example
  * ```ts
@@ -33,7 +33,7 @@ export interface HtmlScraperConfigInterface {
   /** Maximum random jitter added to each delay, in milliseconds. */
   readonly jitterMs?:    number | undefined;
   /** Retry configuration for failed requests. */
-  readonly retry?: RetryConfigInterface | undefined;
+  readonly retry?: HttpRetryConfigInterface | undefined;
   /** Maximum number of retry attempts for failed requests (default 3). */
   readonly maxRetries?: number | undefined;
   /** Base delay in milliseconds for retry backoff (default 500). */

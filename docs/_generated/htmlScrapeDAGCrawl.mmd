@@ -1,0 +1,15 @@
+flowchart LR
+  %% htmlScrapeDAGCrawl (v2.0)
+  crawl
+  crawl([crawl])
+  crawl -->|success| scrape
+  crawl -->|error| done
+  scrape([scrape])
+  scrape -->|success| retry
+  scrape -->|error| retry
+  retry([retry])
+  retry -->|success| done
+  retry -->|error| done
+  done[done]
+  done -->|success| END
+  END([end])

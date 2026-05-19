@@ -61,7 +61,7 @@ Pipeline step breakdown:
 
 ## The plugin
 
-The relevant slice of `plugins/aonprd/feat.ts`:
+The relevant slice of `plugins/aonprd/feat.ts` (pure extraction — no HTTP, no I/O):
 
 ```ts
 import type { CheerioAPI } from 'cheerio';
@@ -101,7 +101,30 @@ export function extractFeat($: CheerioAPI, url: string): FeatOutput {
 }
 ```
 
-This is the only domain-specific code. `getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
+`getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
+
+The plugin entry point (`plugins/aonprd/parse.task.ts`) wraps this into a `NodeInterface` and self-registers:
+
+```ts
+import type { NodeInterface } from '@noocodex/dagonizer';
+import type { ScrapeState, AppServices } from 'ripperoni/nodes';
+import { registerGlobalNode } from 'ripperoni/orchestrators/ScrapeOrchestrator';
+
+export const aonprdParseNode: NodeInterface<ScrapeState, 'success' | 'error' | 'unknown', AppServices> = {
+  name:    'aonprd:parse',
+  outputs: ['success', 'error', 'unknown'],
+  async execute(state) {
+    const html = state.page.html;
+    if (html === undefined) { return { output: 'unknown' }; }
+    state.output = parseAonHtml(html, state.page.url) as unknown as Record<string, unknown>;
+    return { output: 'success' };
+  },
+};
+
+registerGlobalNode(aonprdParseNode);
+```
+
+The node declares named output ports. The dispatcher routes `success` to the next step (`json:write`), `error` and `unknown` to the failure collector.
 
 ---
 
@@ -134,8 +157,9 @@ The `_source` block makes the record traceable back to its origin page. Downstre
 1. **Rate-limited fetch**: waited `rateLimitMs` (1000ms) + up to `jitterMs` (250ms) random jitter before the request.
 2. **Cache check**: first run: cache miss, HTTP GET. Subsequent runs: cache hit, no network request.
 3. **Retry logic**: on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
-4. **Plugin executed**: `aonprd:parse` called with `(next, state)`. `state.input.html` contained the raw page HTML; the extractor ran cheerio selectors against it.
-5. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/feats-750.json`.
+4. **DAG dispatch**: `ScrapeOrchestrator` built a fan-out DAG over the URL list, dispatched via `Dagonizer`. The `html:fetch` node returned `success`; the `aonprd:parse` node ran next.
+5. **Plugin executed**: `aonprd:parse` ran with `state.page.html` containing the raw HTML. The extractor ran cheerio selectors and set `state.output`.
+6. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/aonprd:parse/Feats.aspx-ID-750.json`.
 
 ---
 

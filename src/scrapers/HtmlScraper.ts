@@ -3,7 +3,7 @@
 
 import { load } from 'cheerio';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
-import { RetryExecutor } from '../modules/http/retryExecutor.js';
+import { HttpRetryPolicy } from '../modules/http/httpRetryPolicy.js';
 import { Logger } from '../modules/logger/logger.js';
 import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type { FetchTextResult } from '../types/Results.js';
@@ -19,7 +19,7 @@ const DEFAULT_RATE_LIMIT_MS = 250;
  * Fetches and parses HTML pages using cheerio with rate limiting and retry support.
  *
  * @remarks
- * Uses {@link RateLimiter} and {@link RetryExecutor} for resilient HTTP fetching.
+ * Uses {@link RateLimiter} and {@link HttpRetryPolicy} for resilient HTTP fetching.
  * Parses responses with cheerio; no JavaScript execution — swap `fetch` for a headless driver if needed.
  *
  * @example
@@ -37,7 +37,7 @@ export class HtmlScraper {
   readonly #base: string;
   readonly #headers: Readonly<Record<string, string>>;
   readonly #limiter: RateLimiter;
-  readonly #retry: RetryExecutor;
+  readonly #policy: HttpRetryPolicy;
   readonly #log: Logger;
   /** Optional shared content store; null when not provided in config. */
   readonly #cache: ScraperCache | null;
@@ -49,11 +49,10 @@ export class HtmlScraper {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
     this.#limiter = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#retry   = RetryExecutor.create({
+    this.#policy  = HttpRetryPolicy.create({
       maxAttempts: config.maxRetries       ?? config.retry?.maxAttempts,
       baseDelayMs: config.retryBaseDelayMs ?? config.retry?.baseDelayMs,
       maxDelayMs:  config.retryMaxDelayMs  ?? config.retry?.maxDelayMs,
-      multiplier:  config.retry?.multiplier,
     });
     this.#log     = Logger.forComponent('HtmlScraper');
     this.#cache   = config.cache ?? null;
@@ -95,7 +94,7 @@ export class HtmlScraper {
     }
 
     const html = await this.#limiter.schedule((): Promise<string> =>
-      this.#retry.execute(async (): Promise<string> => {
+      this.#policy.run(async (): Promise<string> => {
         const res = await fetch(url, { headers: this.#headers });
         if (!res.ok) {
           throw HttpError.create(`HTTP ${res.status.toString()} ${url}`, { status: res.status, url });

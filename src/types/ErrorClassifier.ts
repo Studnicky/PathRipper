@@ -28,11 +28,15 @@ export const ErrorCategory = Object.freeze({
 /**
  * Result returned by `ErrorClassifier.classify()`.
  *
- * @remarks Carries the assigned category, retry eligibility, and an optional backoff hint.
+ * @remarks
+ * Carries the assigned category, retryability derived from the matched rule,
+ * and an optional backoff hint (e.g. from a `Retry-After` header). Retry
+ * decisions are consumed by `HttpRetryPolicy`; external callers should use
+ * the category directly.
+ *
  * @example
  * ```ts
- * const result: ClassificationResultInterface = classifier.classify(error);
- * if (result.retryable) setTimeout(retry, result.backoffHint ?? 1000);
+ * const { category, backoffHint } = classifier.classify(error);
  * ```
  * @category Http
  * @since 2.0.0
@@ -42,7 +46,7 @@ export const ErrorCategory = Object.freeze({
 export interface ClassificationResultInterface {
   /** The category assigned to this error. */
   readonly category: ErrorCategoryType;
-  /** Whether the failed operation may be retried. */
+  /** Whether the failed operation may be retried (derived from the matched rule). */
   readonly retryable: boolean;
   /** Suggested delay in milliseconds before the next retry, if available. */
   readonly backoffHint?: number | undefined;
@@ -102,7 +106,7 @@ export interface ClassificationRuleInterface {
  * @remarks Subset of `ClassificationRuleInterface` properties that may be customised per rule.
  * @example
  * ```ts
- * const opts: ClassificationRuleOptionsType = { retryable: true, backoffHint: 2000 };
+ * const opts: ClassificationRuleOptionsType = { backoffHint: 2000 };
  * classifier.addRule(pred, ErrorCategory.NETWORK, opts);
  * ```
  * @category Http

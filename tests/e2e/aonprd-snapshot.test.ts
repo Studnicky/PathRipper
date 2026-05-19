@@ -10,24 +10,9 @@ import { resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
-import { ScrapeOrchestrator } from '../../src/orchestrators/ScrapeOrchestrator.js';
-import { RipperConfig }       from '../../src/config/RipperConfig.js';
-import { TaskRegistry }       from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
-import type { TaskFnInterface } from '../../src/types/Pipeline.js';
-// Plugin compiles to .js next to its source; importing the .ts variant
-// bypasses the dist/src registry split (plugins import dist; tests run via tsx).
-import { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
-
-// Re-register the plugin's task against the *source* TaskRegistry so the
-// orchestrator (which also runs from source under tsx) can find it.
-const aonprdParseTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
-  const html = state.page.html;
-  if (html === undefined) { await next(); return; }
-  state.output = parseAonHtml(html, state.page.url) as unknown as Record<string, unknown>;
-  await next();
-};
-TaskRegistry.register('aonprd:parse', aonprdParseTask);
+import { runHtml }     from '../../src/run/runHtml.js';
+import { RipperConfig } from '../../src/config/RipperConfig.js';
+export { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
@@ -40,16 +25,13 @@ const PROBES: ReadonlyArray<string> = [
 
 describe('AONPRD snapshot e2e (local only)', () => {
   it('phase 1 writes raw + cache; phase 2 parses with zero network', async () => {
-    const baseFx = await RipperConfig.load(FIXTURE);
+    const baseFx    = await RipperConfig.load(FIXTURE);
     const aonTarget = baseFx.targets!['aonprd']!;
-    const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-snapshot-'));
-    const cacheDir = resolve(outDir, '.cache', 'aonprd');
+    const outDir    = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-snapshot-'));
+    const cacheDir  = resolve(outDir, '.cache', 'aonprd');
 
     try {
       // ── PHASE 1 ───────────────────────────────────────────────────────────
-      // Plugin self-registers on the static import above; orchestrator will
-      // re-import builtinTasks.js once and skip already-registered plugins.
-
       const phase1Config = {
         ...baseFx,
         targets: {
@@ -61,28 +43,26 @@ describe('AONPRD snapshot e2e (local only)', () => {
         },
       };
 
-      await ScrapeOrchestrator.scrapeHtml({
+      await runHtml({
         target:    'aonprd',
         paths:     [...PROBES],
         outDir,
-        configDir: resolve(__dirname, 'fixtures'),
+        configDir: resolve(__dirname, '..', '..'),
         config:    phase1Config,
       });
 
-      const rawDir = resolve(outDir, 'aonprd', 'raw');
+      const rawDir   = resolve(outDir, 'aonprd', 'raw');
       const rawFiles = await readdir(rawDir);
       assert.ok(rawFiles.length === PROBES.length,
         `phase 1: expected ${PROBES.length.toString()} raw HTML files, got ${rawFiles.length.toString()}`);
       for (const f of rawFiles) assert.match(f, /\.html$/);
 
-      // No JSON written in phase 1.
-      const targetDir = resolve(outDir, 'aonprd');
+      const targetDir   = resolve(outDir, 'aonprd');
       const phase1Files = await readdir(targetDir);
       assert.equal(phase1Files.filter((f: string): boolean => f.endsWith('.json')).length, 0,
         'phase 1: no JSON output expected');
 
       // ── PHASE 2 ───────────────────────────────────────────────────────────
-
       const phase2Config = {
         ...baseFx,
         targets: {
@@ -102,11 +82,11 @@ describe('AONPRD snapshot e2e (local only)', () => {
       }) as typeof fetch;
 
       try {
-        await ScrapeOrchestrator.scrapeHtml({
+        await runHtml({
           target:    'aonprd',
           paths:     [...PROBES],
           outDir,
-          configDir: resolve(__dirname, 'fixtures'),
+          configDir: resolve(__dirname, '..', '..'),
           config:    phase2Config,
         });
       } finally {
@@ -116,7 +96,6 @@ describe('AONPRD snapshot e2e (local only)', () => {
       assert.equal(fetchCalls.length, 0,
         `phase 2 must not hit the network; saw: ${fetchCalls.join(', ')}`);
 
-      // Plugin output now lives in <targetDir>/aonprd:parse/ subfolder.
       const pluginDir   = resolve(targetDir, 'aonprd:parse');
       const phase2Files = (await readdir(pluginDir)).filter((f: string): boolean =>
         f.endsWith('.json') && f !== 'failures.json',

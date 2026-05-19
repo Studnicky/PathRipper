@@ -1,4 +1,4 @@
-import type { RetryConfigInterface } from './RetryExecutor.js';
+import type { HttpRetryConfigInterface } from '../modules/http/httpRetryPolicy.js';
 import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 /**
@@ -25,7 +25,7 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @category Crawlers
  * @since 2.0.0
- * @see {@link RetryConfigInterface}
+ * @see {@link HttpRetryConfigInterface}
  * @group Types
  */
 export interface LinkListerConfigInterface {
@@ -42,7 +42,7 @@ export interface LinkListerConfigInterface {
   /** Maximum number of target links to collect before stopping. */
   readonly maxPages?:    number | undefined;
   /** Retry configuration for failed requests. */
-  readonly retry?: RetryConfigInterface | undefined;
+  readonly retry?: HttpRetryConfigInterface | undefined;
   /** HTTP headers sent with every request; passed identically to scrapers for cache-key parity. */
   readonly headers?: Readonly<Record<string, string>> | undefined;
   /** Shared content store; bodies fetched here become free hits for the scraper later in the same target run. */

@@ -1,17 +1,17 @@
 // AON (Archives of Nethys, 2e.aonprd.com) HTML parse plugin — entry point.
 //
-// This is the HTML-side counterpart to plugins/bulbapedia/parse.task.ts.
-// It dispatches by URL path to per-type extractors, each of which projects a
-// typed structured output on top of the shared CommonExtraction harvest in
-// ./common.ts. The shared foundation always captures every header label/value
-// pair, every `<h{2,3}>` section, every internal cross-reference link, and the
-// raw body HTML — so even when a per-type extractor doesn't recognize a page,
-// no on-page data is silently dropped.
-//
-// Self-registers as `aonprd:parse` via TaskRegistry on import.
-import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/registry/PipelineState.js';
-import type { TaskFnInterface } from '../../src/pipeline/Pipeline.js';
+// Exports:
+//   - `register(dispatcher)` — explicit plugin contract. Called by `RipperRun`
+//     after importing this module. Registers all constituent nodes and the DAG.
+//   - `parseAonHtml(html, url)` — direct-call API for unit tests and consumers
+//     that don't need the dispatcher.
+//   - Individual node exports for tests that exercise nodes in isolation.
+
+import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+
+import type { RipperDagonizer }  from '../../src/dispatcher/RipperDagonizer.js';
+import type { ScrapeState }      from '../../src/state/ScrapeState.js';
+import type { RipperServices }   from '../../src/services/RipperServices.js';
 
 import { detectPageType, extractCommon, loadHtml } from './common.js';
 import { extractSpell, type SpellOutput }                                                         from './spell.js';
@@ -25,6 +25,27 @@ import { extractAncestry, extractClass, extractBackground,
 import { extractCondition, extractTrait, extractHazard, extractGeneric, makeUnknown,
          type ConditionOutput, type TraitOutput, type HazardOutput, type GenericOutput,
          type UnknownOutput }                                                                     from './world.js';
+
+import {
+  loadAndCommonNode,
+  detectTypeNode,
+  extractSpellNode,
+  extractMonsterNode,
+  extractFeatNode,
+  extractWeaponNode,
+  extractArmorNode,
+  extractEquipmentNode,
+  extractActionNode,
+  extractAncestryNode,
+  extractClassNode,
+  extractBackgroundNode,
+  extractConditionNode,
+  extractTraitNode,
+  extractHazardNode,
+  extractGenericNode,
+  unknownTerminalNode,
+} from './nodes/index.js';
+import { aonprdParseDAG } from './parse.dag.js';
 
 /** Discriminated union of every typed output the AON parser produces. */
 export type AonOutput =
@@ -47,16 +68,14 @@ export type AonOutput =
 /**
  * Parse a fully-loaded AON detail page and return a typed structured record.
  *
- * Exported for direct use by unit tests and downstream consumers; the registered
- * pipeline task wraps this and writes the result into `state.output`.
+ * Exported for direct use by unit tests and downstream consumers that call the
+ * extractor without going through the dispatcher / DAG machinery.
  */
 export function parseAonHtml(html: string, url: string): AonOutput {
   const $ = loadHtml(html);
   const common = extractCommon($, url);
   if (common === null) return makeUnknown(url);
 
-  // Re-locate the same span the foundation used so the per-type extractor can
-  // walk its DOM where regex over HTML isn't enough. We mirror common.ts logic.
   const span = $('h1.title').first().closest('span');
   const target = span.find('span.monster-page').first().length > 0
     ? span.find('span.monster-page').first()
@@ -86,12 +105,50 @@ export function parseAonHtml(html: string, url: string): AonOutput {
   }
 }
 
-const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
-  const html = state.page.html;
-  if (html === undefined) { await next(); return; }
-  const output = parseAonHtml(html, state.page.url);
-  state.output = output as unknown as Record<string, unknown>;
-  await next();
-};
+// ── Plugin contract ────────────────────────────────────────────────────────────
 
-TaskRegistry.register('aonprd:parse', task);
+/**
+ * Explicit plugin registration. Called by `RipperRun` after importing this module.
+ * Registers all constituent nodes and the `aonprd:parse` DAG on the dispatcher.
+ *
+ * @param dispatcher - The `RipperDagonizer` instance for the current scrape run.
+ */
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(loadAndCommonNode);
+  dispatcher.registerNode(detectTypeNode);
+  dispatcher.registerNode(extractSpellNode);
+  dispatcher.registerNode(extractMonsterNode);
+  dispatcher.registerNode(extractFeatNode);
+  dispatcher.registerNode(extractWeaponNode);
+  dispatcher.registerNode(extractArmorNode);
+  dispatcher.registerNode(extractEquipmentNode);
+  dispatcher.registerNode(extractActionNode);
+  dispatcher.registerNode(extractAncestryNode);
+  dispatcher.registerNode(extractClassNode);
+  dispatcher.registerNode(extractBackgroundNode);
+  dispatcher.registerNode(extractConditionNode);
+  dispatcher.registerNode(extractTraitNode);
+  dispatcher.registerNode(extractHazardNode);
+  dispatcher.registerNode(extractGenericNode);
+  dispatcher.registerNode(unknownTerminalNode);
+  dispatcher.registerDAG(aonprdParseDAG);
+}
+
+// ── Legacy single-node export (kept for tests that reference aonprdParseNode) ─
+// The node itself is not registered by default — use parseAonHtml() for direct
+// calls or register(dispatcher) for pipeline integration.
+export const aonprdParseNode: NodeInterface<ScrapeState, 'success' | 'error' | 'unknown', RipperServices> = {
+  name:    'aonprd:parse',
+  outputs: ['success', 'error', 'unknown'],
+
+  async execute(
+    state:   ScrapeState,
+    _context: NodeContextInterface<RipperServices>,
+  ): Promise<{ output: 'success' | 'error' | 'unknown' }> {
+    const html = state.page.html;
+    if (html === undefined) { return { output: 'unknown' }; }
+    const output = parseAonHtml(html, state.page.url);
+    state.output = output as unknown as Record<string, unknown>;
+    return { output: 'success' };
+  },
+};

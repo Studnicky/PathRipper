@@ -1,0 +1,9 @@
+flowchart LR
+  %% htmlScrapePhase (v2.0)
+  scrape-urls
+  scrape-urls{{scrape-urls}}
+  scrape-urls -->|all-success| END
+  scrape-urls -->|partial| END
+  scrape-urls -->|all-error| END
+  scrape-urls -->|empty| END
+  END([end])
