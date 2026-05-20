@@ -5,15 +5,15 @@
  *   - htmlCrawlPhase  (optional URL discovery pass)
  *   - htmlScrapeDAG / htmlScrapeDAGCrawl (outer composition)
  *
- * **Phase DAGs** — expressed as separate `FlowDeriver.derive` calls with
+ * **Phase DAGs** — expressed as separate `DAGDeriver.derive` calls with
  * `annotations.fanouts` for the fan-out placements and `annotations.terminals`
  * for alternate exit routing. The `fanInOperation` is excluded from the
- * top-level contract chain (FlowDeriver filters fan-in names from `eligibleContracts`).
+ * top-level contract chain (DAGDeriver filters fan-in names from `eligibleContracts`).
  *
  * **Outer composition** — the outer DAGs (`htmlScrapeFlow`, `htmlScrapeFlowCrawl`)
  * wrap the phase flows as `DeepDAGNode` placements via `annotations.subDAGs`
  * (adopted in 0.7.0). Each phase step is an operation contract; the `subDAGs`
- * annotation declares the registered DAG name so FlowDeriver renders
+ * annotation declares the registered DAG name so DAGDeriver renders
  * `DeepDAGNode` instead of `SingleNode`.
  *
  * **Crawl phase** — single-contract flow whose only operation is
@@ -21,7 +21,7 @@
  * `annotations.terminals`.
  */
 
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { OperationContract } from '@noocodex/dagonizer/derive';
 import type { DAG } from '@noocodex/dagonizer';
 
@@ -49,7 +49,7 @@ const crawlContracts: readonly OperationContract[] = [
  * @category Flows
  * @since 4.0.0
  */
-export const htmlCrawlPhaseFlow: DAG = FlowDeriver.derive({
+export const htmlCrawlPhaseFlow: DAG = DAGDeriver.derive({
   name:       HTML_CRAWL_PHASE_FLOW,
   version:    '2.0',
   entrypoint: 'crawl:list-targets',
@@ -72,7 +72,7 @@ export const htmlCrawlPhaseFlow: DAG = FlowDeriver.derive({
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapePhaseFlow: DAG = FlowDeriver.derive({
+export const htmlScrapePhaseFlow: DAG = DAGDeriver.derive({
   name:       HTML_SCRAPE_PHASE_FLOW,
   version:    '2.0',
   entrypoint: 'scrape-urls',
@@ -86,6 +86,8 @@ export const htmlScrapePhaseFlow: DAG = FlowDeriver.derive({
         source:         'urls',
         itemKey:        'currentUrl',
         concurrency:    4,
+        node:           'scrape-urls',
+        strategy:       'custom',
         fanInOperation: 'html:partition',
         outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
       },
@@ -109,7 +111,7 @@ export const htmlScrapePhaseFlow: DAG = FlowDeriver.derive({
  * @category Flows
  * @since 4.0.0
  */
-export const htmlRetryPhaseFlow: DAG = FlowDeriver.derive({
+export const htmlRetryPhaseFlow: DAG = DAGDeriver.derive({
   name:       HTML_RETRY_PHASE_FLOW,
   version:    '2.0',
   entrypoint: 'retry-urls',
@@ -123,6 +125,8 @@ export const htmlRetryPhaseFlow: DAG = FlowDeriver.derive({
         source:         'failed',
         itemKey:        'currentRetryUrl',
         concurrency:    4,
+        node:           'retry-urls',
+        strategy:       'custom',
         fanInOperation: 'html:retryPartition',
         outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
       },
@@ -141,11 +145,11 @@ export const htmlRetryPhaseFlow: DAG = FlowDeriver.derive({
 // ── Outer composition DAGs ─────────────────────────────────────────────────────
 
 // Phase operations for the outer composition chain. Each phase has a unique
-// fictional produce key so FlowDeriver can chain them linearly:
+// fictional produce key so DAGDeriver can chain them linearly:
 //   scrape (produces: scrape-done) → retry (produces: retry-done) → done
 //
 // All outputs of scrape and retry route uniformly to the next derived stage
-// (FlowDeriver auto-wires all declared ports), matching the previous DAGBuilder
+// (DAGDeriver auto-wires all declared ports), matching the previous DAGBuilder
 // { success: next, error: next } routing.
 
 const SCRAPE_OUTPUT_MAPPING: Readonly<Record<string, string>> = { succeeded: 'succeeded', failed: 'failed' };
@@ -161,7 +165,7 @@ const CRAWL_OUTPUT_MAPPING:  Readonly<Record<string, string>> = { urls: 'urls' }
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapeFlow: DAG = FlowDeriver.derive({
+export const htmlScrapeFlow: DAG = DAGDeriver.derive({
   name:       'htmlScrapeDAG',
   version:    '2.0',
   entrypoint: 'scrape',
@@ -193,7 +197,7 @@ export const htmlScrapeFlow: DAG = FlowDeriver.derive({
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapeFlowCrawl: DAG = FlowDeriver.derive({
+export const htmlScrapeFlowCrawl: DAG = DAGDeriver.derive({
   name:       'htmlScrapeDAGCrawl',
   version:    '2.0',
   entrypoint: 'crawl',

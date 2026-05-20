@@ -1,6 +1,6 @@
 // Unit tests for src/flows/configLoadFlow.ts
 //
-// Verifies that FlowDeriver produces a DAG with the correct topology:
+// Verifies that DAGDeriver produces a DAG with the correct topology:
 //   - correct name and entrypoint
 //   - 5 nodes in the chain
 //   - each non-success output terminates (routes to null or not-found)

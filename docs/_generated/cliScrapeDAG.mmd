@@ -4,6 +4,13 @@ flowchart LR
   cli:load-config[cli:load-config]
   cli:load-config -->|success| cli:resolve-target
   cli:load-config -->|error| cli:exit
+  subgraph depth_1["depth_1 (parallel)"]
+    cli:resolve-target[cli:resolve-target]
+    cli:dispatch-html-scrape[cli:dispatch-html-scrape]
+    cli:dispatch-wiki-scrape[cli:dispatch-wiki-scrape]
+  end
+  depth_1 -->|success| cli:write-manifest
+  depth_1 -->|error| cli:write-manifest
   cli:resolve-target[cli:resolve-target]
   cli:resolve-target -->|html| cli:dispatch-html-scrape
   cli:resolve-target -->|wiki| cli:dispatch-wiki-scrape
@@ -16,6 +23,12 @@ flowchart LR
   cli:dispatch-wiki-scrape -->|success| cli:write-manifest
   cli:dispatch-wiki-scrape -->|partial| cli:write-manifest
   cli:dispatch-wiki-scrape -->|error| cli:write-manifest
+  subgraph depth_2["depth_2 (parallel)"]
+    cli:write-manifest[cli:write-manifest]
+    cli:exit[cli:exit]
+  end
+  depth_2 -->|success| END
+  depth_2 -->|error| END
   cli:write-manifest[cli:write-manifest]
   cli:write-manifest -->|success| cli:exit
   cli:write-manifest -->|skipped| cli:exit

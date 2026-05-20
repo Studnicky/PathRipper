@@ -46,7 +46,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@noocodex/dagonizer": "file:vendor/noocodex-dagonizer-0.7.0.tgz",
+    "@noocodex/dagonizer": "file:vendor/noocodex-dagonizer-0.8.1.tgz",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bottleneck": "^2.19.5",

@@ -6,16 +6,12 @@
  * from the config directory, then dispatches the outer scrape DAG and returns.
  *
  * Phase DAG construction:
- *   Phase DAGs (htmlScrapePhase, htmlRetryPhase, htmlCrawlPhase) are built
- *   inline with `DAGBuilder.fanOut` pointing at the real `html:dispatch-page-dag`
- *   node, using the built-in `partition` fan-in strategy. FlowDeriver's
- *   `fanouts` annotation hardcodes `strategy: 'custom'` (see `FlowDeriver.ts`
- *   line 262: `'fanIn': { 'strategy': 'custom', 'customNode': fan.fanInOperation }`)
- *   and cannot express the built-in `partition` strategy. DAGBuilder is retained
- *   for the phase DAG fan-out construction only.
+ *   Phase DAGs (htmlScrapePhase, htmlRetryPhase, htmlCrawlPhase) are derived
+ *   inline via `DAGDeriver.derive` with `strategy: 'partition'` fanout
+ *   annotations pointing at the real `html:dispatch-page-dag` node.
  *
  *   Outer composition DAGs (htmlScrapeDAG / htmlScrapeDAGCrawl) wrap the phase
- *   DAGs as `DeepDAGNode` placements via `FlowDeriver.derive` with
+ *   DAGs as `DeepDAGNode` placements via `DAGDeriver.derive` with
  *   `annotations.subDAGs` (adopted in 0.7.0).
  *
  * @module run/runHtml
@@ -25,8 +21,7 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve }          from 'node:path';
 
-import { DAGBuilder }               from '@noocodex/dagonizer/builder';
-import { FlowDeriver }              from '@noocodex/dagonizer/derive';
+import { DAGDeriver }               from '@noocodex/dagonizer/derive';
 import type { DagonizerInterface }  from '@noocodex/dagonizer';
 
 import type { RipperServices }        from '../services/RipperServices.js';
@@ -50,7 +45,6 @@ import {
   TerminalNode,
 } from '../nodes/index.js';
 import { makeDispatchPageDagNode }    from '../nodes/DispatchPageDagNode.js';
-import { stub }                       from '../flows/stub.js';
 
 import { buildHtmlPageFlow, htmlPageFlowName } from '../flows/htmlPageFlow.js';
 
@@ -249,38 +243,66 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   dispatcher.registerNode(htmlDispatchNode);
 
   // ── Phase DAG registration ─────────────────────────────────────────────────
-  // Phase DAGs use DAGBuilder.fanOut with the built-in `partition` fan-in
-  // strategy. FlowDeriver's `fanouts` annotation hardcodes `strategy: 'custom'`
-  // (FlowDeriver.ts:262) and cannot express the built-in partition strategy.
-  // DAGBuilder is retained here for this specific fan-out construction.
+  // Phase DAGs use DAGDeriver.derive with strategy: 'partition' fanout
+  // annotations pointing at the registered html:dispatch-page-dag node.
 
-  const htmlScrapePhaseDAG = new DAGBuilder(HTML_SCRAPE_PHASE, '2.0')
-    .fanOut(
-      'scrape-urls',
-      htmlDispatchNode,
-      'urls',
-      {
-        strategy:   'partition',
-        partitions: { success: 'succeeded', error: 'failed' },
+  const htmlScrapePhaseDAG = DAGDeriver.derive({
+    name:       HTML_SCRAPE_PHASE,
+    version:    '2.0',
+    entrypoint: 'scrape-urls',
+    contracts: [
+      { name: 'scrape-urls', hardRequired: ['urls'], produces: ['succeeded', 'failed'], outputs: ['success', 'error', 'empty'] },
+    ],
+    annotations: {
+      fanouts: {
+        'scrape-urls': {
+          source:     'urls',
+          itemKey:    'currentUrl',
+          concurrency: 4,
+          node:       'html:dispatch-page-dag',
+          strategy:   'partition',
+          partitions: { success: 'succeeded', error: 'failed' },
+          outcomes:   ['success', 'error', 'empty'],
+        },
       },
-      { 'all-success': null, partial: null, 'all-error': null, empty: null },
-      { itemKey: 'currentUrl', concurrency: 4 },
-    )
-    .build();
+      terminals: {
+        'scrape-urls': [
+          { outcome: 'success', target: null },
+          { outcome: 'error',   target: null },
+          { outcome: 'empty',   target: null },
+        ],
+      },
+    },
+  });
 
-  const htmlRetryPhaseDAG = new DAGBuilder(HTML_RETRY_PHASE, '2.0')
-    .fanOut(
-      'retry-urls',
-      htmlDispatchNode,
-      'failed',
-      {
-        strategy:   'partition',
-        partitions: { success: 'recovered', error: 'failedAfterRetry' },
+  const htmlRetryPhaseDAG = DAGDeriver.derive({
+    name:       HTML_RETRY_PHASE,
+    version:    '2.0',
+    entrypoint: 'retry-urls',
+    contracts: [
+      { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
+    ],
+    annotations: {
+      fanouts: {
+        'retry-urls': {
+          source:     'failed',
+          itemKey:    'currentRetryUrl',
+          concurrency: 4,
+          node:       'html:dispatch-page-dag',
+          strategy:   'partition',
+          partitions: { success: 'recovered', error: 'failedAfterRetry' },
+          outcomes:   ['success', 'error', 'empty'],
+        },
       },
-      { 'all-success': null, partial: null, 'all-error': null, empty: null },
-      { itemKey: 'currentRetryUrl', concurrency: 4 },
-    )
-    .build();
+      terminals: {
+        'retry-urls': [
+          { outcome: 'success', target: null },
+          { outcome: 'error',   target: null },
+          { outcome: 'empty',   target: null },
+        ],
+      },
+    },
+  });
 
   dispatcher.registerDAG(buildHtmlPageFlow(pipelineNames, opts.target, htmlPluginDagNames));
   dispatcher.registerDAG(htmlScrapePhaseDAG);
@@ -290,15 +312,25 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   let outerDagName: string;
 
   if (hasCrawl) {
-    const htmlCrawlPhaseDAG = new DAGBuilder(HTML_CRAWL_PHASE, '2.0')
-      .node(
-        'crawl:list-targets',
-        stub('crawl:list-targets', ['success', 'error', 'empty'] as const),
-        { success: null, error: null, empty: null },
-      )
-      .build();
+    const htmlCrawlPhaseDAG = DAGDeriver.derive({
+      name:       HTML_CRAWL_PHASE,
+      version:    '2.0',
+      entrypoint: 'crawl:list-targets',
+      contracts: [
+        { name: 'crawl:list-targets', hardRequired: [], produces: ['urls'], outputs: ['success', 'error', 'empty'] },
+      ],
+      annotations: {
+        terminals: {
+          'crawl:list-targets': [
+            { outcome: 'success', target: null },
+            { outcome: 'error',   target: null },
+            { outcome: 'empty',   target: null },
+          ],
+        },
+      },
+    });
 
-    const htmlScrapeDAGCrawl = FlowDeriver.derive({
+    const htmlScrapeDAGCrawl = DAGDeriver.derive({
       name:       'htmlScrapeDAGCrawl',
       version:    '2.0',
       entrypoint: 'crawl',
@@ -325,7 +357,7 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
     dispatcher.registerDAG(htmlScrapeDAGCrawl);
     outerDagName = 'htmlScrapeDAGCrawl';
   } else {
-    const htmlScrapeDAG = FlowDeriver.derive({
+    const htmlScrapeDAG = DAGDeriver.derive({
       name:       'htmlScrapeDAG',
       version:    '2.0',
       entrypoint: 'scrape',

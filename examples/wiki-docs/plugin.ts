@@ -8,8 +8,7 @@
 
 import wtf from 'wtf_wikipedia';
 
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { NodeInterface, NodeContextInterface, DAG } from '@noocodex/dagonizer';
 import type { OperationContract } from '@noocodex/dagonizer/contracts';
 
@@ -74,20 +73,12 @@ export const wikiDocsParseNode: NodeInterface<ScrapeState, 'success', RipperServ
 };
 
 /**
- * Flavor 2 (universal) wrapper DAG: trivial plugins are 1-node DAGs.
- * Legacy DAGBuilder version — kept for backwards compat during Wave 1.
- */
-export const wikiDocsParseDAG: DAG = new DAGBuilder('wiki-docs:parse', '1.0')
-  .node('parse', wikiDocsParseNode, { success: null })
-  .build();
-
-/**
- * FlowDeriver version of the wiki-docs parse DAG.
+ * Contract-derived wiki-docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const wikiDocsParseFlow: DAG = FlowDeriver.derive({
+export const wikiDocsParseFlow: DAG = DAGDeriver.derive({
   name:       'wiki-docs:parse',
   version:    '2.0',
   entrypoint: 'wiki-docs:parse-impl',
@@ -118,5 +109,5 @@ export const wikiDocsParseContract: OperationContract = {
  */
 export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
   dispatcher.registerNode(wikiDocsParseNode);
-  dispatcher.registerDAG(wikiDocsParseDAG);
+  dispatcher.registerDAG(wikiDocsParseFlow);
 }

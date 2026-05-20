@@ -148,7 +148,7 @@ export const DAG_FILENAME_MAP: ReadonlyMap<string, string> = new Map([
  * that plugin imports stay outside the `src/` rootDir constraint.
  *
  * Phase DAGs (`htmlScrapePhaseFlow` etc.) are imported directly from the
- * FlowDeriver-derived flow files. These flows reference virtual fan-out
+ * DAGDeriver-derived flow files. These flows reference virtual fan-out
  * operation names (`scrape-urls`, `html:partition`, etc.) that are not runtime
  * nodes — stubs are registered below so the dispatcher's node-reference
  * validation passes at docs-build time.
@@ -210,8 +210,8 @@ export const registerAllFlows = (
   dispatcher.registerNode(stub('crawl:exhausted',           ['success']));
   dispatcher.registerNode(stub('crawl:recurse',             ['success']));
 
-  // ── Virtual fan-out node stubs (FlowDeriver phase flows) ─────────────────
-  // The FlowDeriver-derived phase flows use virtual operation names that do not
+  // ── Virtual fan-out node stubs (DAGDeriver phase flows) ─────────────────
+  // The DAGDeriver-derived phase flows use virtual operation names that do not
   // correspond to real runtime nodes. These stubs satisfy dispatcher validation
   // at docs-build time so the phase flows can be registered for visualization.
   dispatcher.registerNode(stub('scrape-urls',            ['all-success', 'partial', 'all-error', 'empty']));
@@ -223,7 +223,7 @@ export const registerAllFlows = (
   dispatcher.registerNode(stub('wiki:retryPartition',    ['success']));
   dispatcher.registerNode(stub('retry-titles',           ['all-success', 'partial', 'all-error', 'empty']));
 
-  // ── Phase DAGs (imported from FlowDeriver flow files) ─────────────────────
+  // ── Phase DAGs (imported from DAGDeriver flow files) ─────────────────────
   // Defined once in the flow files; no inline DAGBuilder duplication here.
   // Must precede outer DAGs that reference them as DeepDAGNode.
   dispatcher.registerDAG(htmlCrawlPhaseFlow);

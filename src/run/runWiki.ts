@@ -7,16 +7,12 @@
  * dispatches the outer scrape DAG for each batch and returns.
  *
  * Phase DAG construction:
- *   Phase DAGs (wikiScrapePhase, wikiRetryPhase) are built inline with
- *   `DAGBuilder.fanOut` pointing at the real `wiki:dispatch-page-dag` node,
- *   using the built-in `partition` fan-in strategy. FlowDeriver's `fanouts`
- *   annotation hardcodes `strategy: 'custom'` (see `FlowDeriver.ts` line 262:
- *   `'fanIn': { 'strategy': 'custom', 'customNode': fan.fanInOperation }`) and
- *   cannot express the built-in `partition` strategy. DAGBuilder is retained
- *   for the phase DAG fan-out construction only.
+ *   Phase DAGs (wikiScrapePhase, wikiRetryPhase) are derived inline via
+ *   `DAGDeriver.derive` with `strategy: 'partition'` fanout annotations
+ *   pointing at the real `wiki:dispatch-page-dag` node.
  *
  *   The outer composition DAG (wikiScrapeDAG) wraps phase DAGs as `DeepDAGNode`
- *   placements via `FlowDeriver.derive` with `annotations.subDAGs` (adopted in
+ *   placements via `DAGDeriver.derive` with `annotations.subDAGs` (adopted in
  *   0.7.0).
  *
  *   The wikiResolveMembersFlow from src/flows/ is used directly (it references
@@ -31,8 +27,7 @@ import { resolve }                   from 'node:path';
 
 import { Dagonizer }                  from '@noocodex/dagonizer';
 import type { DagonizerInterface }    from '@noocodex/dagonizer';
-import { DAGBuilder }                 from '@noocodex/dagonizer/builder';
-import { FlowDeriver }                from '@noocodex/dagonizer/derive';
+import { DAGDeriver }                 from '@noocodex/dagonizer/derive';
 
 import type { RipperServices }        from '../services/RipperServices.js';
 import { RipperDagonizer }            from '../dispatcher/RipperDagonizer.js';
@@ -362,40 +357,67 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
     });
     batchDispatcher.registerNode(batchDispatchNode);
 
-    // ── Phase DAGs (DAGBuilder with built-in partition strategy) ──────────────
-    // FlowDeriver's fanouts annotation hardcodes strategy: 'custom'
-    // (FlowDeriver.ts:262). The partition strategy is a DAGBuilder built-in
-    // not expressible via FlowDeriver annotations.
-    const wikiScrapePhaseDAG = new DAGBuilder(WIKI_SCRAPE_PHASE, '2.0')
-      .fanOut(
-        'scrape-titles',
-        batchDispatchNode,
-        'titles',
-        {
-          strategy:   'partition',
-          partitions: { success: 'succeeded', error: 'failed' },
+    // ── Phase DAGs (DAGDeriver with strategy: 'partition') ───────────────────
+    const wikiScrapePhaseDAG = DAGDeriver.derive({
+      name:       WIKI_SCRAPE_PHASE,
+      version:    '2.0',
+      entrypoint: 'scrape-titles',
+      contracts: [
+        { name: 'scrape-titles', hardRequired: ['titles'], produces: ['succeeded', 'failed'], outputs: ['success', 'error', 'empty'] },
+      ],
+      annotations: {
+        fanouts: {
+          'scrape-titles': {
+            source:     'titles',
+            itemKey:    'currentTitle',
+            concurrency: 8,
+            node:       'wiki:dispatch-page-dag',
+            strategy:   'partition',
+            partitions: { success: 'succeeded', error: 'failed' },
+            outcomes:   ['success', 'error', 'empty'],
+          },
         },
-        { 'all-success': null, partial: null, 'all-error': null, empty: null },
-        { itemKey: 'currentTitle', concurrency: 8 },
-      )
-      .build();
-
-    const wikiRetryPhaseDAG = new DAGBuilder(WIKI_RETRY_PHASE, '2.0')
-      .fanOut(
-        'retry-titles',
-        batchDispatchNode,
-        'failed',
-        {
-          strategy:   'partition',
-          partitions: { success: 'recovered', error: 'failedAfterRetry' },
+        terminals: {
+          'scrape-titles': [
+            { outcome: 'success', target: null },
+            { outcome: 'error',   target: null },
+            { outcome: 'empty',   target: null },
+          ],
         },
-        { 'all-success': null, partial: null, 'all-error': null, empty: null },
-        { itemKey: 'currentRetryTitle', concurrency: 8 },
-      )
-      .build();
+      },
+    });
 
-    // ── Outer composition DAG (FlowDeriver with subDAGs) ──────────────────────
-    const wikiScrapeDAG = FlowDeriver.derive({
+    const wikiRetryPhaseDAG = DAGDeriver.derive({
+      name:       WIKI_RETRY_PHASE,
+      version:    '2.0',
+      entrypoint: 'retry-titles',
+      contracts: [
+        { name: 'retry-titles', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
+      ],
+      annotations: {
+        fanouts: {
+          'retry-titles': {
+            source:     'failed',
+            itemKey:    'currentRetryTitle',
+            concurrency: 8,
+            node:       'wiki:dispatch-page-dag',
+            strategy:   'partition',
+            partitions: { success: 'recovered', error: 'failedAfterRetry' },
+            outcomes:   ['success', 'error', 'empty'],
+          },
+        },
+        terminals: {
+          'retry-titles': [
+            { outcome: 'success', target: null },
+            { outcome: 'error',   target: null },
+            { outcome: 'empty',   target: null },
+          ],
+        },
+      },
+    });
+
+    // ── Outer composition DAG (DAGDeriver with subDAGs) ───────────────────────
+    const wikiScrapeDAG = DAGDeriver.derive({
       name:       'wikiScrapeDAG',
       version:    '2.0',
       entrypoint: 'scrape',

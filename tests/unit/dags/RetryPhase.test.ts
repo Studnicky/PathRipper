@@ -8,15 +8,14 @@
 // The phase is dispatched directly (independent of the outer composition DAG)
 // so each phase is testable in isolation.
 //
-// Phase DAGs are built with DAGBuilder.fanOut, matching how runHtml constructs
-// them. The FlowDeriver-derived htmlRetryPhaseFlow (src/flows/htmlScrapeFlow.ts)
-// is a visualization artifact and not dispatch-compatible with the real node set.
+// Phase DAGs are derived via DAGDeriver.derive with strategy: 'partition', matching
+// how runHtml/runWiki construct them at runtime.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Dagonizer } from '@noocodex/dagonizer';
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 
 import { ScrapeState }       from '../../../src/state/ScrapeState.js';
@@ -51,27 +50,63 @@ const failingDispatchNode: NodeInterface<ScrapeState, 'success' | 'error', Rippe
 
 // ── Test helpers ───────────────────────────────────────────────────────────────
 
-const buildRetryPhaseDAG = () => new DAGBuilder(HTML_RETRY_PHASE, '2.0')
-  .fanOut(
-    'retry-urls',
-    succeedingDispatchNode, // placeholder; overridden per test
-    'failed',
-    { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
-    { 'all-success': null, partial: null, 'all-error': null, empty: null },
-    { itemKey: 'currentRetryUrl', concurrency: 4 },
-  )
-  .build();
+const buildRetryPhaseDAG = () => DAGDeriver.derive({
+  name:       HTML_RETRY_PHASE,
+  version:    '2.0',
+  entrypoint: 'retry-urls',
+  contracts: [
+    { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
+  ],
+  annotations: {
+    fanouts: {
+      'retry-urls': {
+        source:     'failed',
+        itemKey:    'currentRetryUrl',
+        concurrency: 4,
+        node:       'html:dispatch-page-dag',
+        strategy:   'partition',
+        partitions: { success: 'recovered', error: 'failedAfterRetry' },
+        outcomes:   ['success', 'error', 'empty'],
+      },
+    },
+    terminals: {
+      'retry-urls': [
+        { outcome: 'success', target: null },
+        { outcome: 'error',   target: null },
+        { outcome: 'empty',   target: null },
+      ],
+    },
+  },
+});
 
-const buildRetryPhaseDAGFail = () => new DAGBuilder(HTML_RETRY_PHASE, '2.0')
-  .fanOut(
-    'retry-urls',
-    failingDispatchNode,
-    'failed',
-    { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
-    { 'all-success': null, partial: null, 'all-error': null, empty: null },
-    { itemKey: 'currentRetryUrl', concurrency: 4 },
-  )
-  .build();
+const buildRetryPhaseDAGFail = () => DAGDeriver.derive({
+  name:       HTML_RETRY_PHASE,
+  version:    '2.0',
+  entrypoint: 'retry-urls',
+  contracts: [
+    { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
+  ],
+  annotations: {
+    fanouts: {
+      'retry-urls': {
+        source:     'failed',
+        itemKey:    'currentRetryUrl',
+        concurrency: 4,
+        node:       'html:dispatch-page-dag',
+        strategy:   'partition',
+        partitions: { success: 'recovered', error: 'failedAfterRetry' },
+        outcomes:   ['success', 'error', 'empty'],
+      },
+    },
+    terminals: {
+      'retry-urls': [
+        { outcome: 'success', target: null },
+        { outcome: 'error',   target: null },
+        { outcome: 'empty',   target: null },
+      ],
+    },
+  },
+});
 
 const makeServices = (dispatcher: Dagonizer<ScrapeState, RipperServices>): RipperServices => ({
   log:        Logger.forComponent('RetryPhase.test'),
@@ -146,16 +181,34 @@ describe('htmlRetryPhase', () => {
       },
     };
 
-    const mixedRetryDAG = new DAGBuilder(HTML_RETRY_PHASE, '2.0')
-      .fanOut(
-        'retry-urls',
-        mixedDispatchNode,
-        'failed',
-        { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
-        { 'all-success': null, partial: null, 'all-error': null, empty: null },
-        { itemKey: 'currentRetryUrl', concurrency: 4 },
-      )
-      .build();
+    const mixedRetryDAG = DAGDeriver.derive({
+      name:       HTML_RETRY_PHASE,
+      version:    '2.0',
+      entrypoint: 'retry-urls',
+      contracts: [
+        { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
+      ],
+      annotations: {
+        fanouts: {
+          'retry-urls': {
+            source:     'failed',
+            itemKey:    'currentRetryUrl',
+            concurrency: 4,
+            node:       'html:dispatch-page-dag',
+            strategy:   'partition',
+            partitions: { success: 'recovered', error: 'failedAfterRetry' },
+            outcomes:   ['success', 'error', 'empty'],
+          },
+        },
+        terminals: {
+          'retry-urls': [
+            { outcome: 'success', target: null },
+            { outcome: 'error',   target: null },
+            { outcome: 'empty',   target: null },
+          ],
+        },
+      },
+    });
 
     const holder: { current: RipperServices | null } = { current: null };
     const dispatcher = new Dagonizer<ScrapeState, RipperServices>({

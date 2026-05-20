@@ -5,7 +5,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { Dagonizer }    from '@noocodex/dagonizer';
-import { DAGBuilder }   from '@noocodex/dagonizer/builder';
+import { DAGDeriver }   from '@noocodex/dagonizer/derive';
 
 import { MemberResolutionState } from '../../../../src/state/MemberResolutionState.js';
 import { ChooseModeNode }        from '../../../../src/nodes/wiki/ChooseModeNode.js';
@@ -45,18 +45,32 @@ const runChooseMode = async (state: MemberResolutionState): Promise<ModePort[]> 
   }
 
   dispatcher.registerDAG(
-    new DAGBuilder(dagId, '1.0')
-      .node('wiki:choose-mode', ChooseModeNode, {
-        'resume-failures':  'stub:cm:resume-failures',
-        'single-category':  'stub:cm:single-category',
-        'by-categories':    'stub:cm:by-categories',
-        'all-pages':        'stub:cm:all-pages',
-      })
-      .node('stub:cm:resume-failures',  makeStub('resume-failures'),  { ok: null })
-      .node('stub:cm:single-category',  makeStub('single-category'),  { ok: null })
-      .node('stub:cm:by-categories',    makeStub('by-categories'),    { ok: null })
-      .node('stub:cm:all-pages',        makeStub('all-pages'),        { ok: null })
-      .build(),
+    DAGDeriver.derive({
+      name:       dagId,
+      version:    '1.0',
+      entrypoint: 'wiki:choose-mode',
+      contracts: [
+        { name: 'wiki:choose-mode',          hardRequired: [], produces: [], outputs: ['resume-failures', 'single-category', 'by-categories', 'all-pages'] },
+        { name: 'stub:cm:resume-failures',   hardRequired: [], produces: [], outputs: ['ok'] },
+        { name: 'stub:cm:single-category',   hardRequired: [], produces: [], outputs: ['ok'] },
+        { name: 'stub:cm:by-categories',     hardRequired: [], produces: [], outputs: ['ok'] },
+        { name: 'stub:cm:all-pages',         hardRequired: [], produces: [], outputs: ['ok'] },
+      ],
+      annotations: {
+        terminals: {
+          'wiki:choose-mode': [
+            { outcome: 'resume-failures', target: 'stub:cm:resume-failures' },
+            { outcome: 'single-category', target: 'stub:cm:single-category' },
+            { outcome: 'by-categories',   target: 'stub:cm:by-categories'   },
+            { outcome: 'all-pages',       target: 'stub:cm:all-pages'        },
+          ],
+          'stub:cm:resume-failures': [{ outcome: 'ok', target: null }],
+          'stub:cm:single-category': [{ outcome: 'ok', target: null }],
+          'stub:cm:by-categories':   [{ outcome: 'ok', target: null }],
+          'stub:cm:all-pages':       [{ outcome: 'ok', target: null }],
+        },
+      },
+    }),
   );
 
   await dispatcher.execute(dagId, state);

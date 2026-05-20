@@ -5,8 +5,7 @@
 // Plugin contract: exports `register(dispatcher)` which is called by `RipperRun`
 // after importing this module. No side-effect-on-import registration.
 import { load } from 'cheerio';
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 export const docsParseNode = {
     name: 'docs:parse-impl',
     outputs: ['success'],
@@ -38,21 +37,12 @@ export const docsParseNode = {
     },
 };
 /**
- * Flavor 2 (universal) wrapper DAG: even trivial single-node plugins are
- * registered as DAGs so the orchestrator's resolution layer is uniform.
- * Legacy DAGBuilder version — kept for backwards compat during Wave 1.
- */
-export const docsParseDAG = new DAGBuilder('docs:parse', '1.0')
-    .node('parse', docsParseNode, { success: null })
-    .build();
-/**
- * FlowDeriver version of the docs parse DAG.
- * Name matches `docsParseDAG` so the dispatcher treats them as equivalent.
+ * Contract-derived docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const docsParseFlow = FlowDeriver.derive({
+export const docsParseFlow = DAGDeriver.derive({
     name: 'docs:parse',
     version: '2.0',
     entrypoint: 'docs:parse-impl',
@@ -80,5 +70,5 @@ export const docsParseContract = {
  */
 export function register(dispatcher) {
     dispatcher.registerNode(docsParseNode);
-    dispatcher.registerDAG(docsParseDAG);
+    dispatcher.registerDAG(docsParseFlow);
 }

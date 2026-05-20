@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { Dagonizer } from '@noocodex/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import { wikiDocsParseNode, wikiDocsParseDAG } from '../../../../examples/wiki-docs/plugin.js';
+import { wikiDocsParseNode, wikiDocsParseFlow as wikiDocsParseDAG } from '../../../../examples/wiki-docs/plugin.js';
 
 const COMPONENT_WIKITEXT = `
 {{RipperoniComponent

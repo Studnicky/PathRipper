@@ -4,55 +4,21 @@
 // The DAG name 'aonprd:parse' matches the pipeline-config entry so existing
 // user configs work without modification — the orchestrator resolves it via
 // the global DAG registry instead of the node registry.
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { DAG }   from '@noocodex/dagonizer';
-
-import { loadAndCommonNode }     from './nodes/loadAndCommon.js';
-import { detectTypeNode }        from './nodes/detectType.js';
-import { extractSpellNode }      from './nodes/extractSpell.js';
-import { extractMonsterNode }    from './nodes/extractMonster.js';
-import { extractFeatNode }       from './nodes/extractFeat.js';
-import { extractWeaponNode }     from './nodes/extractWeapon.js';
-import { extractArmorNode }      from './nodes/extractArmor.js';
-import { extractEquipmentNode }  from './nodes/extractEquipment.js';
-import { extractActionNode }     from './nodes/extractAction.js';
-import { extractAncestryNode }   from './nodes/extractAncestry.js';
-import { extractClassNode }      from './nodes/extractClass.js';
-import { extractBackgroundNode } from './nodes/extractBackground.js';
-import { extractConditionNode }  from './nodes/extractCondition.js';
-import { extractTraitNode }      from './nodes/extractTrait.js';
-import { extractHazardNode }     from './nodes/extractHazard.js';
-import { extractGenericNode }    from './nodes/extractGeneric.js';
-import { unknownTerminalNode }   from './nodes/unknownTerminal.js';
-import { TerminalNode }          from '../../src/nodes/TerminalNode.js';
-
-// ── Stub wrappers ─────────────────────────────────────────────────────────────
-// DAGBuilder.node() needs the node object for type inference, but the real
-// nodes are registered on the dispatcher separately. We pass the real node
-// objects here because the DAG is built once and used at registration time.
 
 /**
  * Builds the `aonprd:parse` plugin DAG.
  *
  * Shape:
- *   load-and-common → detect-type → {
- *     spell       → extract-spell      → terminate
- *     monster     → extract-monster    → terminate
- *     feat        → extract-feat       → terminate
- *     weapon      → extract-weapon     → terminate
- *     armor       → extract-armor      → terminate
- *     equipment   → extract-equipment  → terminate
- *     action      → extract-action     → terminate
- *     ancestry    → extract-ancestry   → terminate
- *     class       → extract-class      → terminate
- *     background  → extract-background → terminate
- *     condition   → extract-condition  → terminate
- *     trait       → extract-trait      → terminate
- *     hazard      → extract-hazard     → terminate
- *     generic     → extract-generic    → terminate
- *     unknown     → make-unknown       → terminate
+ *   aonprd:load-and-common → aonprd:detect-type → {
+ *     spell       → aonprd:extract-spell      → flow:terminate
+ *     monster     → aonprd:extract-monster    → flow:terminate
+ *     ...
+ *     unknown     → aonprd:make-unknown       → flow:terminate
  *   }
- *   load-and-common(error) → make-unknown → terminate
+ *   aonprd:load-and-common(error) → aonprd:make-unknown → flow:terminate
+ *   aonprd:extract-*(error)       → aonprd:make-unknown → flow:terminate
  *
  * The DAG name 'aonprd:parse' is the pipeline-config step name — unchanged from
  * the pre-decomposition single-node version.
@@ -60,52 +26,68 @@ import { TerminalNode }          from '../../src/nodes/TerminalNode.js';
  * @category Plugin DAGs
  * @since 3.0.0
  */
-export const aonprdParseDAG: DAG = new DAGBuilder('aonprd:parse', '1.0')
-  // ── Load + shared extraction ────────────────────────────────────────────────
-  .node(
-    'load-and-common',
-    loadAndCommonNode,
-    { success: 'detect-type', error: 'make-unknown' },
-  )
-  // ── Type detection ──────────────────────────────────────────────────────────
-  .node(
-    'detect-type',
-    detectTypeNode,
-    {
-      spell:      'extract-spell',
-      monster:    'extract-monster',
-      feat:       'extract-feat',
-      weapon:     'extract-weapon',
-      armor:      'extract-armor',
-      equipment:  'extract-equipment',
-      action:     'extract-action',
-      ancestry:   'extract-ancestry',
-      class:      'extract-class',
-      background: 'extract-background',
-      condition:  'extract-condition',
-      trait:      'extract-trait',
-      hazard:     'extract-hazard',
-      generic:    'extract-generic',
-      unknown:    'make-unknown',
+export const aonprdParseDAG: DAG = DAGDeriver.derive({
+  name:       'aonprd:parse',
+  version:    '1.0',
+  entrypoint: 'aonprd:load-and-common',
+  contracts: [
+    { name: 'aonprd:load-and-common',     hardRequired: [],           produces: ['commonData'], outputs: ['success', 'error'] },
+    { name: 'aonprd:detect-type',         hardRequired: ['commonData'], produces: ['pageType'], outputs: ['spell', 'monster', 'feat', 'weapon', 'armor', 'equipment', 'action', 'ancestry', 'class', 'background', 'condition', 'trait', 'hazard', 'generic', 'unknown'] },
+    { name: 'aonprd:extract-spell',       hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-monster',     hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-feat',        hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-weapon',      hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-armor',       hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-equipment',   hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-action',      hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-ancestry',    hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-class',       hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-background',  hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-condition',   hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-trait',       hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-hazard',      hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:extract-generic',     hardRequired: [],           produces: [],             outputs: ['success', 'error'] },
+    { name: 'aonprd:make-unknown',        hardRequired: [],           produces: [],             outputs: ['success'] },
+    { name: 'flow:terminate',             hardRequired: [],           produces: [],             outputs: ['success'] },
+  ],
+  annotations: {
+    terminals: {
+      'aonprd:load-and-common': [
+        { outcome: 'error', target: 'aonprd:make-unknown' },
+      ],
+      'aonprd:detect-type': [
+        { outcome: 'spell',      target: 'aonprd:extract-spell'      },
+        { outcome: 'monster',    target: 'aonprd:extract-monster'    },
+        { outcome: 'feat',       target: 'aonprd:extract-feat'       },
+        { outcome: 'weapon',     target: 'aonprd:extract-weapon'     },
+        { outcome: 'armor',      target: 'aonprd:extract-armor'      },
+        { outcome: 'equipment',  target: 'aonprd:extract-equipment'  },
+        { outcome: 'action',     target: 'aonprd:extract-action'     },
+        { outcome: 'ancestry',   target: 'aonprd:extract-ancestry'   },
+        { outcome: 'class',      target: 'aonprd:extract-class'      },
+        { outcome: 'background', target: 'aonprd:extract-background' },
+        { outcome: 'condition',  target: 'aonprd:extract-condition'  },
+        { outcome: 'trait',      target: 'aonprd:extract-trait'      },
+        { outcome: 'hazard',     target: 'aonprd:extract-hazard'     },
+        { outcome: 'generic',    target: 'aonprd:extract-generic'    },
+        { outcome: 'unknown',    target: 'aonprd:make-unknown'       },
+      ],
+      'aonprd:extract-spell':      [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-monster':    [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-feat':       [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-weapon':     [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-armor':      [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-equipment':  [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-action':     [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-ancestry':   [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-class':      [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-background': [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-condition':  [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-trait':      [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-hazard':     [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:extract-generic':    [{ outcome: 'success', target: 'flow:terminate' }, { outcome: 'error', target: 'aonprd:make-unknown' }],
+      'aonprd:make-unknown':       [{ outcome: 'success', target: 'flow:terminate' }],
+      'flow:terminate':            [{ outcome: 'success', target: null             }],
     },
-  )
-  // ── Per-type extractors ─────────────────────────────────────────────────────
-  .node('extract-spell',      extractSpellNode,      { success: 'terminate', error: 'make-unknown' })
-  .node('extract-monster',    extractMonsterNode,    { success: 'terminate', error: 'make-unknown' })
-  .node('extract-feat',       extractFeatNode,       { success: 'terminate', error: 'make-unknown' })
-  .node('extract-weapon',     extractWeaponNode,     { success: 'terminate', error: 'make-unknown' })
-  .node('extract-armor',      extractArmorNode,      { success: 'terminate', error: 'make-unknown' })
-  .node('extract-equipment',  extractEquipmentNode,  { success: 'terminate', error: 'make-unknown' })
-  .node('extract-action',     extractActionNode,     { success: 'terminate', error: 'make-unknown' })
-  .node('extract-ancestry',   extractAncestryNode,   { success: 'terminate', error: 'make-unknown' })
-  .node('extract-class',      extractClassNode,      { success: 'terminate', error: 'make-unknown' })
-  .node('extract-background', extractBackgroundNode, { success: 'terminate', error: 'make-unknown' })
-  .node('extract-condition',  extractConditionNode,  { success: 'terminate', error: 'make-unknown' })
-  .node('extract-trait',      extractTraitNode,      { success: 'terminate', error: 'make-unknown' })
-  .node('extract-hazard',     extractHazardNode,     { success: 'terminate', error: 'make-unknown' })
-  .node('extract-generic',    extractGenericNode,    { success: 'terminate', error: 'make-unknown' })
-  // ── Unknown / fallback ──────────────────────────────────────────────────────
-  .node('make-unknown', unknownTerminalNode, { success: 'terminate' })
-  // ── Terminator — DAGs cannot route to null from a non-terminal node ─────────
-  .node('terminate', TerminalNode, { success: null })
-  .build();
+  },
+});

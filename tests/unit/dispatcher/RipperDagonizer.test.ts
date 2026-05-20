@@ -8,7 +8,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { NodeStateBase, DAGBuilder } from '@noocodex/dagonizer';
+import { NodeStateBase } from '@noocodex/dagonizer';
+import { DAGDeriver }   from '@noocodex/dagonizer/derive';
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 
 import { RipperDagonizer } from '../../../src/dispatcher/RipperDagonizer.js';
@@ -63,9 +64,19 @@ const noopNode: NodeInterface<MinimalState, 'done', RipperServices> = {
 };
 
 const buildTestDag = () =>
-  new DAGBuilder(TEST_DAG_NAME, '1.0')
-    .node(TEST_NODE_NAME, noopNode, { done: null })
-    .build();
+  DAGDeriver.derive({
+    name:       TEST_DAG_NAME,
+    version:    '1.0',
+    entrypoint: TEST_NODE_NAME,
+    contracts: [
+      { name: TEST_NODE_NAME, hardRequired: [], produces: [], outputs: ['done'] },
+    ],
+    annotations: {
+      terminals: {
+        [TEST_NODE_NAME]: [{ outcome: 'done', target: null }],
+      },
+    },
+  });
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 

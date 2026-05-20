@@ -46,8 +46,8 @@ import { extractGenericNode }    from '../../../plugins/aonprd/nodes/extractGene
 import { unknownTerminalNode }   from '../../../plugins/aonprd/nodes/unknownTerminal.js';
 import { aonprdParseDAG }        from '../../../plugins/aonprd/parse.dag.js';
 
-import { docsParseNode, docsParseDAG }       from '../../../examples/docs-scraper/plugin.js';
-import { wikiDocsParseNode, wikiDocsParseDAG } from '../../../examples/wiki-docs/plugin.js';
+import { docsParseNode, docsParseFlow as docsParseDAG }           from '../../../examples/docs-scraper/plugin.js';
+import { wikiDocsParseNode, wikiDocsParseFlow as wikiDocsParseDAG } from '../../../examples/wiki-docs/plugin.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_DIR   = resolve(__dirname, '../../_generated');

@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { Dagonizer } from '@noocodex/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import { docsParseNode, docsParseDAG } from '../../../../examples/docs-scraper/plugin.js';
+import { docsParseNode, docsParseFlow as docsParseDAG } from '../../../../examples/docs-scraper/plugin.js';
 
 const FIXTURE_HTML = `
 <html>

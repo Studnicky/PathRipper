@@ -37,15 +37,15 @@ describe('rawContent integration (folder-split layout)', () => {
     fixtureHtml = await readFile(FIXTURE_HTML_PATH, 'utf8');
 
     // Write a temporary plugin file that exports register() for stub:parse.
-    // The plugin uses an absolute import path to DAGBuilder so it can be loaded
+    // The plugin uses an absolute import path to DAGDeriver so it can be loaded
     // from a tmp directory where node_modules is not accessible via traversal.
     pluginDir = join(outDir, 'plugins', 'stub');
     await mkdir(pluginDir, { recursive: true });
-    const dagBuilderAbsPath = resolve(
-      __dirname, '..', '..', 'node_modules', '@noocodex', 'dagonizer', 'dist', 'builder', 'DAGBuilder.js',
+    const dagDeriverAbsPath = resolve(
+      __dirname, '..', '..', 'node_modules', '@noocodex', 'dagonizer', 'dist', 'derive', 'index.js',
     );
     await writeFile(join(pluginDir, 'parse.task.js'), `
-import { DAGBuilder } from ${JSON.stringify(`file://${dagBuilderAbsPath}`)};
+import { DAGDeriver } from ${JSON.stringify(`file://${dagDeriverAbsPath}`)};
 
 const stubParseNode = {
   name: 'stub:parse',
@@ -56,9 +56,17 @@ const stubParseNode = {
   },
 };
 
-const stubParseDAG = new DAGBuilder('stub:parse', '1.0')
-  .node('parse', stubParseNode, { success: null })
-  .build();
+const stubParseDAG = DAGDeriver.derive({
+  name:       'stub:parse',
+  version:    '1.0',
+  entrypoint: 'parse',
+  contracts: [
+    { name: 'parse', hardRequired: [], produces: [], outputs: ['success'] },
+  ],
+  annotations: {
+    terminals: { parse: [{ outcome: 'success', target: null }] },
+  },
+});
 
 export function register(dispatcher) {
   dispatcher.registerNode(stubParseNode);

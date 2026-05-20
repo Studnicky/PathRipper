@@ -4,7 +4,7 @@
  * ## Strategy: trampolined dispatch (dynamic recursion)
  *
  * The prior 16-level unrolled `DAGBuilder` approach is replaced with two flat
- * `FlowDeriver.derive(...)` flows sharing the same crawl node set:
+ * `DAGDeriver.derive(...)` flows sharing the same crawl node set:
  *
  *   - `linkCrawlDAG`      — outer DAG: init-frontier + one level + recurse/done.
  *   - `linkCrawlLevelDAG` — inner DAG: one level + recurse/done (no init).
@@ -49,7 +49,7 @@
  *     crawl:exhausted          { success → null }
  */
 
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { DAG } from '@noocodex/dagonizer';
 
 import { LINK_CRAWL_LEVEL_DAG_NAME } from '../nodes/crawl/RecurseCrawlNode.js';
@@ -93,7 +93,7 @@ export const buildLinkCrawlFlow = (): { linkCrawlDAG: DAG; linkCrawlLevelDAG: DA
   // ── linkCrawlLevelDAG ──────────────────────────────────────────────────────
   // Inner trampoline target: fetch → dedupe → recurse | exhausted.
   // All four fetch-and-extract outputs route uniformly to dedupe (auto-wired).
-  const linkCrawlLevelDAG: DAG = FlowDeriver.derive({
+  const linkCrawlLevelDAG: DAG = DAGDeriver.derive({
     name:       LINK_CRAWL_LEVEL_DAG_NAME,
     version:    '2.0',
     entrypoint: 'crawl:fetch-and-extract',
@@ -132,7 +132,7 @@ export const buildLinkCrawlFlow = (): { linkCrawlDAG: DAG; linkCrawlLevelDAG: DA
   //   ready → crawl:fetch-and-extract (via data graph: init produces 'frontier',
   //           fetch requires 'frontier')
   //   empty → crawl:exhausted (terminal)
-  const linkCrawlDAG: DAG = FlowDeriver.derive({
+  const linkCrawlDAG: DAG = DAGDeriver.derive({
     name:       LINK_CRAWL_FLOW_NAME,
     version:    '2.0',
     entrypoint: 'crawl:init-frontier',

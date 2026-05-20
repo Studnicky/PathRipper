@@ -5,7 +5,7 @@
  *   - wikiResolveMembersDAG (member resolution DAG)
  *   - wikiScrapeDAG (outer composition)
  *
- * **Phase DAGs** — expressed as `FlowDeriver.derive` calls with
+ * **Phase DAGs** — expressed as `DAGDeriver.derive` calls with
  * `annotations.fanouts` for fan-out placements and `annotations.terminals`
  * for alternate exit routing. Same structure as htmlScrapeFlow phases.
  *
@@ -17,10 +17,10 @@
  * **Outer composition** — the outer `wikiScrapeFlow` wraps the phase flows as
  * `DeepDAGNode` placements via `annotations.subDAGs` (adopted in 0.7.0). Each
  * phase step is an operation contract; the `subDAGs` annotation declares the
- * registered DAG name so FlowDeriver renders `DeepDAGNode` instead of `SingleNode`.
+ * registered DAG name so DAGDeriver renders `DeepDAGNode` instead of `SingleNode`.
  */
 
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { OperationContract } from '@noocodex/dagonizer/derive';
 import type { DAG } from '@noocodex/dagonizer';
 
@@ -43,7 +43,7 @@ export const WIKI_RESOLVE_MEMBERS_FLOW = 'wikiResolveMembersDAG';
  * @category Flows
  * @since 4.0.0
  */
-export const wikiScrapePhaseFlow: DAG = FlowDeriver.derive({
+export const wikiScrapePhaseFlow: DAG = DAGDeriver.derive({
   name:       WIKI_SCRAPE_PHASE_FLOW,
   version:    '2.0',
   entrypoint: 'scrape-titles',
@@ -57,6 +57,8 @@ export const wikiScrapePhaseFlow: DAG = FlowDeriver.derive({
         source:         'titles',
         itemKey:        'currentTitle',
         concurrency:    8,
+        node:           'scrape-titles',
+        strategy:       'custom',
         fanInOperation: 'wiki:partition',
         outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
       },
@@ -80,7 +82,7 @@ export const wikiScrapePhaseFlow: DAG = FlowDeriver.derive({
  * @category Flows
  * @since 4.0.0
  */
-export const wikiRetryPhaseFlow: DAG = FlowDeriver.derive({
+export const wikiRetryPhaseFlow: DAG = DAGDeriver.derive({
   name:       WIKI_RETRY_PHASE_FLOW,
   version:    '2.0',
   entrypoint: 'retry-titles',
@@ -94,6 +96,8 @@ export const wikiRetryPhaseFlow: DAG = FlowDeriver.derive({
         source:         'failed',
         itemKey:        'currentRetryTitle',
         concurrency:    8,
+        node:           'retry-titles',
+        strategy:       'custom',
         fanInOperation: 'wiki:retryPartition',
         outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
       },
@@ -140,7 +144,7 @@ const resolveMembersContracts: readonly OperationContract[] = [
   { name: 'wiki:fetch-all-pages',          hardRequired: [],          produces: ['members'], outputs: ['success', 'error'] },
 ];
 
-export const wikiResolveMembersFlow: DAG = FlowDeriver.derive({
+export const wikiResolveMembersFlow: DAG = DAGDeriver.derive({
   name:       WIKI_RESOLVE_MEMBERS_FLOW,
   version:    '2.0',
   entrypoint: 'wiki:choose-mode',
@@ -190,7 +194,7 @@ const RETRY_OUTPUT_MAPPING:  Readonly<Record<string, string>> = { recovered: 're
  * @category Flows
  * @since 4.0.0
  */
-export const wikiScrapeFlow: DAG = FlowDeriver.derive({
+export const wikiScrapeFlow: DAG = DAGDeriver.derive({
   name:       'wikiScrapeDAG',
   version:    '2.0',
   entrypoint: 'scrape',

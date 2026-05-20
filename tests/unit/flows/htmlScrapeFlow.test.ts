@@ -1,6 +1,6 @@
 // Unit tests for src/flows/htmlScrapeFlow.ts
 //
-// Verifies that FlowDeriver derives phase flows with the correct topology.
+// Verifies that DAGDeriver derives phase flows with the correct topology.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';

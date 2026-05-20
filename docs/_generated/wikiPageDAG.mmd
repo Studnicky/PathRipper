@@ -7,8 +7,8 @@ flowchart LR
   wiki:write-raw[wiki:write-raw]
   wiki:write-raw -->|success| json:write
   json:write[json:write]
-  json:write -->|success| END
-  json:write -->|skipped| END
+  json:write -->|success| flow:terminate
+  json:write -->|skipped| flow:terminate
   flow:terminate[flow:terminate]
   flow:terminate -->|success| END
   END([end])

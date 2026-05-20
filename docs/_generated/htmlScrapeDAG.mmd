@@ -5,8 +5,8 @@ flowchart LR
   scrape -->|success| retry
   scrape -->|error| retry
   retry([retry])
-  retry -->|success| done
-  retry -->|error| done
-  done[done]
-  done -->|success| END
+  retry -->|success| flow:terminate
+  retry -->|error| flow:terminate
+  flow:terminate[flow:terminate]
+  flow:terminate -->|success| END
   END([end])

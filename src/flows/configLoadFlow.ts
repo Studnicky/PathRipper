@@ -1,8 +1,8 @@
 /**
  * configLoadFlow — contract-derived config-load flow.
  *
- * Uses FlowDeriver with `annotations.terminals` for all non-`success` output
- * ports. FlowDeriver is sufficient here because:
+ * Uses DAGDeriver with `annotations.terminals` for all non-`success` output
+ * ports. DAGDeriver is sufficient here because:
  *
  *   - The five nodes form a strict linear data chain via `produces ↔ hardRequired`
  *     matching: `path → raw → parsed → validated → normalized`.
@@ -10,7 +10,7 @@
  *     `invariant-violated`) terminate the flow → `target: null`.
  *   - `config:validate-schema` emits `valid`/`invalid` instead of `success`/`error`.
  *     Both are declared in `terminals`: `valid` re-routes to the auto-derived next
- *     node (`config:normalize-cache`), `invalid` terminates. FlowDeriver still
+ *     node (`config:normalize-cache`), `invalid` terminates. DAGDeriver still
  *     auto-wires `success → config:normalize-cache` from the data graph — this
  *     dead route is harmless since the node never emits `success`.
  *
@@ -18,7 +18,7 @@
  *           → config:normalize-cache → config:assert-invariants
  */
 
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { DAG }    from '@noocodex/dagonizer';
 import type { OperationContract } from '@noocodex/dagonizer/contracts';
 
@@ -49,7 +49,7 @@ const configContracts: readonly OperationContract[] = [
  * @category Flows
  * @since 4.0.0
  */
-export const configLoadFlow: DAG = FlowDeriver.derive({
+export const configLoadFlow: DAG = DAGDeriver.derive({
   name:       CONFIG_LOAD_FLOW,
   version:    '2.0',
   entrypoint: 'config:read-file',

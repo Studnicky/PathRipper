@@ -7,8 +7,7 @@
 
 import { load } from 'cheerio';
 
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 import type { NodeInterface, NodeContextInterface, DAG } from '@noocodex/dagonizer';
 import type { OperationContract } from '@noocodex/dagonizer/contracts';
 
@@ -72,22 +71,12 @@ export const docsParseNode: NodeInterface<ScrapeState, 'success', RipperServices
 };
 
 /**
- * Flavor 2 (universal) wrapper DAG: even trivial single-node plugins are
- * registered as DAGs so the orchestrator's resolution layer is uniform.
- * Legacy DAGBuilder version — kept for backwards compat during Wave 1.
- */
-export const docsParseDAG: DAG = new DAGBuilder('docs:parse', '1.0')
-  .node('parse', docsParseNode, { success: null })
-  .build();
-
-/**
- * FlowDeriver version of the docs parse DAG.
- * Name matches `docsParseDAG` so the dispatcher treats them as equivalent.
+ * Contract-derived docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const docsParseFlow: DAG = FlowDeriver.derive({
+export const docsParseFlow: DAG = DAGDeriver.derive({
   name:       'docs:parse',
   version:    '2.0',
   entrypoint: 'docs:parse-impl',
@@ -118,5 +107,5 @@ export const docsParseContract: OperationContract = {
  */
 export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
   dispatcher.registerNode(docsParseNode);
-  dispatcher.registerDAG(docsParseDAG);
+  dispatcher.registerDAG(docsParseFlow);
 }

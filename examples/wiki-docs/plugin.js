@@ -6,8 +6,7 @@
 // Plugin contract: exports `register(dispatcher)` which is called by `RipperRun`
 // after importing this module. No side-effect-on-import registration.
 import wtf from 'wtf_wikipedia';
-import { DAGBuilder } from '@noocodex/dagonizer/builder';
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
 const TEMPLATE_MARKER = '{{RipperoniComponent';
 export const wikiDocsParseNode = {
     name: 'wiki-docs:parse-impl',
@@ -41,19 +40,12 @@ export const wikiDocsParseNode = {
     },
 };
 /**
- * Flavor 2 (universal) wrapper DAG: trivial plugins are 1-node DAGs.
- * Legacy DAGBuilder version — kept for backwards compat during Wave 1.
- */
-export const wikiDocsParseDAG = new DAGBuilder('wiki-docs:parse', '1.0')
-    .node('parse', wikiDocsParseNode, { success: null })
-    .build();
-/**
- * FlowDeriver version of the wiki-docs parse DAG.
+ * Contract-derived wiki-docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const wikiDocsParseFlow = FlowDeriver.derive({
+export const wikiDocsParseFlow = DAGDeriver.derive({
     name: 'wiki-docs:parse',
     version: '2.0',
     entrypoint: 'wiki-docs:parse-impl',
@@ -81,5 +73,5 @@ export const wikiDocsParseContract = {
  */
 export function register(dispatcher) {
     dispatcher.registerNode(wikiDocsParseNode);
-    dispatcher.registerDAG(wikiDocsParseDAG);
+    dispatcher.registerDAG(wikiDocsParseFlow);
 }

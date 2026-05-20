@@ -1,8 +1,8 @@
 /**
  * cliScrapeFlow — contract-derived CLI scrape flow.
  *
- * Uses FlowDeriver with `annotations.terminals` for all non-`success` output
- * ports. FlowDeriver is sufficient here because:
+ * Uses DAGDeriver with `annotations.terminals` for all non-`success` output
+ * ports. DAGDeriver is sufficient here because:
  *
  *   - The data graph provides a linear chain: `load-config → resolve-target`
  *     (via `configPath → config → targetKind`) and dispatch-to-write-manifest
@@ -12,7 +12,7 @@
  *     (re-routing to the correct dispatch node) and `null` for `not-found`.
  *   - Both dispatch nodes (`dispatch-html-scrape`, `dispatch-wiki-scrape`) share
  *     the same `hardRequired` fields (`config`, `targetId`), so they appear at
- *     the same data-graph depth. FlowDeriver places them in a `ParallelNode`
+ *     the same data-graph depth. DAGDeriver places them in a `ParallelNode`
  *     description, but the cursor-based runtime never reaches that group —
  *     `resolve-target`'s `terminals` route directly to the appropriate
  *     `SingleNode` placement, bypassing the parallel wrapper entirely.
@@ -29,7 +29,7 @@
  *   load-config/error → exit
  */
 
-import { FlowDeriver }       from '@noocodex/dagonizer/derive';
+import { DAGDeriver }       from '@noocodex/dagonizer/derive';
 import type { DAG }           from '@noocodex/dagonizer';
 import type { OperationContract } from '@noocodex/dagonizer/contracts';
 
@@ -62,7 +62,7 @@ const cliContracts: readonly OperationContract[] = [
  * @category Flows
  * @since 4.0.0
  */
-export const cliScrapeFlow: DAG = FlowDeriver.derive({
+export const cliScrapeFlow: DAG = DAGDeriver.derive({
   name:       CLI_SCRAPE_FLOW,
   version:    '2.0',
   entrypoint: 'cli:load-config',

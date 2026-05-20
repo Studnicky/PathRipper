@@ -3,15 +3,14 @@
  * dispatcher validation.
  *
  * Used in `registerAllFlows.ts` where virtual operation names used in
- * FlowDeriver-derived phase flows (fan-out sentinels, CLI nodes, config nodes,
+ * DAGDeriver-derived phase flows (fan-out sentinels, CLI nodes, config nodes,
  * crawl nodes) must be registered on the dispatcher for structural validation
  * at docs-build time. The real nodes are registered on the dispatcher before
  * actual dispatch.
  *
  * Also used in `runHtml.ts` for the crawl phase DAG's `crawl:list-targets`
- * single-node slot inside the DAGBuilder-built crawl phase (DAGBuilder requires
- * a concrete `NodeInterface` value; the real `CrawlListTargetsNode` is
- * registered separately).
+ * single-node slot for docs-build registration (the real `CrawlListTargetsNode` is
+ * registered separately on the dispatcher before dispatch).
  *
  * The `execute` function throws immediately — any call indicates a registration
  * bug (the dispatcher resolved the stub instead of the registered node).

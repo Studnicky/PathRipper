@@ -1,13 +1,13 @@
 /**
  * wikiPageFlow — per-title child DAG for one wiki page scrape.
  *
- * Contract-derived via `FlowDeriver.derive` with `annotations.subDAGs` for
+ * Contract-derived via `DAGDeriver.derive` with `annotations.subDAGs` for
  * plugin DAG placements (adopted in 0.7.0). Each pipeline step maps to an
  * `OperationContract`; plugin steps additionally appear in `annotations.subDAGs`
  * so the deriver emits a `DeepDAGNode` placement instead of `SingleNode`.
  *
  * The dynamic-construction concern (pipeline comes from user config) is orthogonal
- * to FlowDeriver — we call `FlowDeriver.derive({...})` with the per-target
+ * to DAGDeriver — we call `DAGDeriver.derive({...})` with the per-target
  * contracts list at construction time, same dynamism the previous DAGBuilder
  * version had, just declarative.
  *
@@ -18,8 +18,8 @@
  * placements cannot terminate the run directly).
  */
 
-import { FlowDeriver } from '@noocodex/dagonizer/derive';
-import type { OperationContract, FlowAnnotations, FlowDeepDAG, FlowTerminal } from '@noocodex/dagonizer/derive';
+import { DAGDeriver } from '@noocodex/dagonizer/derive';
+import type { OperationContract, DAGDeriverAnnotations, DAGDeriverSubDAG, DAGDeriverTerminal } from '@noocodex/dagonizer/derive';
 import type { DAG } from '@noocodex/dagonizer';
 
 /**
@@ -89,8 +89,8 @@ export const buildWikiPageFlow = (
 
   const dagName    = wikiPageFlowName(targetId);
   const contracts: OperationContract[] = [];
-  const subDAGs:   Record<string, FlowDeepDAG> = {};
-  const terminals: Record<string, FlowTerminal[]> = {};
+  const subDAGs:   Record<string, DAGDeriverSubDAG> = {};
+  const terminals: Record<string, DAGDeriverTerminal[]> = {};
 
   for (let i = 0; i < allSteps.length; i++) {
     const name = allSteps[i] as string;
@@ -136,12 +136,12 @@ export const buildWikiPageFlow = (
     }
   }
 
-  const annotations: FlowAnnotations = {
+  const annotations: DAGDeriverAnnotations = {
     ...(Object.keys(terminals).length > 0 ? { terminals } : {}),
     ...(Object.keys(subDAGs).length   > 0 ? { subDAGs }  : {}),
   };
 
-  return FlowDeriver.derive({
+  return DAGDeriver.derive({
     name:        dagName,
     version:     '2.0',
     entrypoint:  allSteps[0] as string,
