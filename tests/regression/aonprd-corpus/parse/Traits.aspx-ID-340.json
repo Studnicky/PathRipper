@@ -1,0 +1,46 @@
+{
+  "_type": "trait",
+  "url": "https://2e.aonprd.com/Traits.aspx?ID=340",
+  "entity_id": 340,
+  "name": "Geniekin",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Ancestry Guide",
+    "page": 141,
+    "source_id": 74
+  },
+  "sources": [
+    {
+      "book": "Ancestry Guide",
+      "page": 141,
+      "source_id": 74,
+      "raw": "Ancestry Guide pg. 141"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Traits.aspx?ID=340",
+      "text": "Geniekin",
+      "kind": "Traits",
+      "id": 340
+    },
+    {
+      "href": "Sources.aspx?ID=74",
+      "text": "Ancestry Guide pg. 141",
+      "kind": "Sources",
+      "id": 74
+    }
+  ],
+  "body_text": "An umbrella term for planar scions descended from beings from the Elemental Planes. Geniekin craft and use these weapons.",
+  "body_html": "An umbrella term for planar scions descended from beings from the Elemental Planes. Geniekin craft and use these weapons.<br><br><nethys-search default-query=\"ap-creatures=hide&amp;display=grouped&amp;group-fields=type&amp;link-layout=horizontal\" fixed-params=\"ID=340\" fixed-query-string=\"trait:&quot;Geniekin&quot; !type:trait\" page-id=\"trait\" load-all=\"true\"></nethys-search>",
+  "meta_description": "An umbrella term for planar scions descended from beings from the Elemental Planes. Geniekin craft and use these weapons.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Traits, Geniekin",
+  "category": null
+}

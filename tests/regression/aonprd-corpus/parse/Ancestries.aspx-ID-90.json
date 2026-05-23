@@ -1,0 +1,404 @@
+{
+  "_type": "ancestry",
+  "url": "https://2e.aonprd.com/Ancestries.aspx?ID=90",
+  "entity_id": 90,
+  "name": "Tanuki",
+  "rarity": "uncommon",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Uncommon",
+    "Humanoid",
+    "Tanuki"
+  ],
+  "trait_ids": {
+    "Uncommon": 721,
+    "Humanoid": 628,
+    "Tanuki": 830
+  },
+  "source": {
+    "book": "Tian Xia Character Guide",
+    "page": 65,
+    "source_id": 230
+  },
+  "sources": [
+    {
+      "book": "Tian Xia Character Guide",
+      "page": 65,
+      "source_id": 230,
+      "raw": "Tian Xia Character Guide pg. 65"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Live life to the absolute fullest, getting into whatever trouble that approach might bring you.</li><li>Take pride in your duties and accomplishments, no matter how humble.</li><li>Be accustomed to the role of underdog and take it in stride, seeing failure as a wonderful punchline.</li></ul>",
+      "body_text": "Live life to the absolute fullest, getting into whatever trouble that approach might bring you.Take pride in your duties and accomplishments, no matter how humble.Be accustomed to the role of underdog and take it in stride, seeing failure as a wonderful punchline.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Find you the life of any party.</li><li>Know you'll always have their back.</li><li>Hope you aren't about to play a joke on them.</li></ul>",
+      "body_text": "Find you the life of any party.Know you'll always have their back.Hope you aren't about to play a joke on them.",
+      "links": []
+    },
+    {
+      "heading": "Physical Description",
+      "level": 2,
+      "body_html": "Tanuki are short humanoids who resemble bipedal raccoon dogs, usually growing between 3 and 4 feet tall. They tend to have rotund bodies, with large bellies that appear even wider due to their thick fur. A tanuki's face is likewise round, with wide-set, alert eyes outlined within a dark mask of fur. Tanuki have a single bushy tail that they take great pride in and to which they ascribe their powers. These qualities together give tanuki a strong cultural appreciation for rounded shapes over sharp angles, such as daruma dolls, circular doors, and the moon. <br><br>Tanuki often wear simple, rustic clothing, opting for plain garb over elegant frills or shining jewels. However, tanuki are known to go all-out for festivals and similar celebrations, which they see as the perfect opportunity to enjoy life to the fullest. Many tanuki make it a point to always carry a red vest and dancing towel in case an impromptu party breaks out.<br>",
+      "body_text": "Tanuki are short humanoids who resemble bipedal raccoon dogs, usually growing between 3 and 4 feet tall. They tend to have rotund bodies, with large bellies that appear even wider due to their thick fur. A tanuki's face is likewise round, with wide-set, alert eyes outlined within a dark mask of fur. Tanuki have a single bushy tail that they take great pride in and to which they ascribe their powers. These qualities together give tanuki a strong cultural appreciation for rounded shapes over sharp angles, such as daruma dolls, circular doors, and the moon. Tanuki often wear simple, rustic clothing, opting for plain garb over elegant frills or shining jewels. However, tanuki are known to go all-out for festivals and similar celebrations, which they see as the perfect opportunity to enjoy life to the fullest. Many tanuki make it a point to always carry a red vest and dancing towel in case an impromptu party breaks out.",
+      "links": []
+    },
+    {
+      "heading": "Society",
+      "level": 2,
+      "body_html": "Tanuki know that, among the many people of Golarion, they're underdogs, possessing neither the mastery of the heavens that tengu command nor the divine favor that kitsune enjoy. All things considered, tanuki know they have to support each other, building tight communities where everyone knows each other's names. These communities tend to exist on the outskirts of villages, often in abandoned warehouses or farms or else near temples and other public buildings. When tanuki societies overlap with those of other peoples, they usually function unseen with their own codes of honor, rarely noticed by those in power.<br><br>Tanuki love celebration and will hold any number of parties for even the smallest accomplishments—a project such as building a new bridge might have a kick-off ceremony, a toast when the plans are decided, a morale lunch when the workers have assembled, a banquet upon finishing the bridge, and a festival to dance over the bridge when it opens to the public. This proclivity is sometimes brought up as a reason for why tanuki endeavors tend to take an interminably long time (with some failing spectacularly along the way), but tanuki feel that it's important to celebrate what small victories they can. Besides, the community bonds forged among the participants are as much a part of the project as the actual building itself.<br>",
+      "body_text": "Tanuki know that, among the many people of Golarion, they're underdogs, possessing neither the mastery of the heavens that tengu command nor the divine favor that kitsune enjoy. All things considered, tanuki know they have to support each other, building tight communities where everyone knows each other's names. These communities tend to exist on the outskirts of villages, often in abandoned warehouses or farms or else near temples and other public buildings. When tanuki societies overlap with those of other peoples, they usually function unseen with their own codes of honor, rarely noticed by those in power. Tanuki love celebration and will hold any number of parties for even the smallest accomplishments—a project such as building a new bridge might have a kick-off ceremony, a toast when the plans are decided, a morale lunch when the workers have assembled, a banquet upon finishing the bridge, and a festival to dance over the bridge when it opens to the public. This proclivity is sometimes brought up as a reason for why tanuki endeavors tend to take an interminably long time (with some failing spectacularly along the way), but tanuki feel that it's important to celebrate what small victories they can. Besides, the community bonds forged among the participants are as much a part of the project as the actual building itself.",
+      "links": []
+    },
+    {
+      "heading": "Beliefs",
+      "level": 2,
+      "body_html": " Tanuki count no member of the Celestial Court among their own—a fact they see as further evidence that they have to stick up for each other since there's no tanuki deity looking out for them—but they find themselves drawn toward gods such as Kofusachi, whose boisterous and compassionate approach to life they consider aspirational. Though tanuki hold deep reverence toward the moon, they tend not to worship <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=317\">Tsukiyo</a>, knowing he finds loud worship agitating, and they take care to not invoke his name or imagery during harvest moon or lunar new year celebrations to ensure their cheers and belly drums don't draw his attention. Tanuki with Inner Sea cultural traditions tend to revere <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=280\">Cayden Cailean</a>, seeing the blood of a tanuki in his commoner status (and drunken accomplishments), with some tanuki statues even depicting Cayden with a big belly and leaf atop his head to suggest that he was simply a tanuki in human form, tricking the Avistani even to this day. <br><br>Tanuki generally use their powers to humble the rich and snobby; at the very least, they create illusions with no more evil in their hearts than a simple joke (or a free meal taken from one who can afford it), rather than acting out of malice. However, there are some tanuki do harbor resentment, which can take root and fester in their hearts. These tanuki turn to cruel ends, known for all manner of nefarious deeds, chief among them cooking their enemies into soups or stews once they've finished tricking them.<br><br><b>Popular Edicts</b> Choose excitement over stability, let bygones be bygones, make your community laugh <br><br><b>Popular Anathema</b> Feel entitled to social status, prank one of lower means than yourself, wallow in your failures<br>",
+      "body_text": "Tanuki count no member of the Celestial Court among their own—a fact they see as further evidence that they have to stick up for each other since there's no tanuki deity looking out for them—but they find themselves drawn toward gods such as Kofusachi, whose boisterous and compassionate approach to life they consider aspirational. Though tanuki hold deep reverence toward the moon, they tend not to worship Tsukiyo, knowing he finds loud worship agitating, and they take care to not invoke his name or imagery during harvest moon or lunar new year celebrations to ensure their cheers and belly drums don't draw his attention. Tanuki with Inner Sea cultural traditions tend to revere Cayden Cailean, seeing the blood of a tanuki in his commoner status (and drunken accomplishments), with some tanuki statues even depicting Cayden with a big belly and leaf atop his head to suggest that he was simply a tanuki in human form, tricking the Avistani even to this day. Tanuki generally use their powers to humble the rich and snobby; at the very least, they create illusions with no more evil in their hearts than a simple joke (or a free meal taken from one who can afford it), rather than acting out of malice. However, there are some tanuki do harbor resentment, which can take root and fester in their hearts. These tanuki turn to cruel ends, known for all manner of nefarious deeds, chief among them cooking their enemies into soups or stews once they've finished tricking them. Popular Edicts Choose excitement over stability, let bygones be bygones, make your community laugh Popular Anathema Feel entitled to social status, prank one of lower means than yourself, wallow in your failures",
+      "links": [
+        {
+          "href": "Deities.aspx?ID=317",
+          "text": "Tsukiyo",
+          "kind": "Deities",
+          "id": 317
+        },
+        {
+          "href": "Deities.aspx?ID=280",
+          "text": "Cayden Cailean",
+          "kind": "Deities",
+          "id": 280
+        }
+      ]
+    },
+    {
+      "heading": "Names",
+      "level": 2,
+      "body_html": "Ame, Chiyo, Chosuke, Hinata, Mari, Nao, Saya, Taro, Terao, Rei, Ichiro, Jiro, Saburo, Shiro, Satsuki, Mutsu, Nanami, Hazuki",
+      "body_text": "Ame, Chiyo, Chosuke, Hinata, Mari, Nao, Saya, Taro, Terao, Rei, Ichiro, Jiro, Saburo, Shiro, Satsuki, Mutsu, Nanami, Hazuki",
+      "links": []
+    },
+    {
+      "heading": "Hit Points",
+      "level": 2,
+      "body_html": "10<br>",
+      "body_text": "10",
+      "links": []
+    },
+    {
+      "heading": "Size",
+      "level": 2,
+      "body_html": "Small<br>",
+      "body_text": "Small",
+      "links": []
+    },
+    {
+      "heading": "Speed",
+      "level": 2,
+      "body_html": "25 feet<br>",
+      "body_text": "25 feet",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "Constitution<br>Charisma<br>Free<br>",
+      "body_text": "Constitution Charisma Free",
+      "links": []
+    },
+    {
+      "heading": "Attribute Flaw",
+      "level": 2,
+      "body_html": "Wisdom<br>",
+      "body_text": "Wisdom",
+      "links": []
+    },
+    {
+      "heading": "Languages",
+      "level": 2,
+      "body_html": "<a href=\"Languages.aspx?ID=155\">Common</a><br><a href=\"Languages.aspx?ID=179\">Tanuki</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=158\">Elven</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=159\">Gnomish</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=160\">Goblin</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=86\">Kitsune</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=47\">Tengu</a>, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "body_text": "Common Tanuki Additional languages equal to your Intelligence modifier (if it's positive). Choose from Elven, Fey, Gnomish, Goblin, Kitsune, Tengu, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "links": [
+        {
+          "href": "Languages.aspx?ID=155",
+          "text": "Common",
+          "kind": "Languages",
+          "id": 155
+        },
+        {
+          "href": "Languages.aspx?ID=179",
+          "text": "Tanuki",
+          "kind": "Languages",
+          "id": 179
+        },
+        {
+          "href": "Languages.aspx?ID=158",
+          "text": "Elven",
+          "kind": "Languages",
+          "id": 158
+        },
+        {
+          "href": "Languages.aspx?ID=119",
+          "text": "Fey",
+          "kind": "Languages",
+          "id": 119
+        },
+        {
+          "href": "Languages.aspx?ID=159",
+          "text": "Gnomish",
+          "kind": "Languages",
+          "id": 159
+        },
+        {
+          "href": "Languages.aspx?ID=160",
+          "text": "Goblin",
+          "kind": "Languages",
+          "id": 160
+        },
+        {
+          "href": "Languages.aspx?ID=86",
+          "text": "Kitsune",
+          "kind": "Languages",
+          "id": 86
+        },
+        {
+          "href": "Languages.aspx?ID=47",
+          "text": "Tengu",
+          "kind": "Languages",
+          "id": 47
+        }
+      ]
+    },
+    {
+      "heading": "Change Shape",
+      "level": 2,
+      "body_html": " <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=561\">concentrate</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=670\">polymorph</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=676\">primal</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=830\">tanuki</a>) You can transform into a mundane raccoon dog, using the statistics of <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1626\"><i>pest form</i></a>. This is a specific raccoon dog form that's the same age and body type as your true form and has roughly analogous physical traits, such as hair color. Using Change Shape counts as creating a disguise for the <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2388\">Impersonate</a> use of <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=38\">Deception</a>. You lose any unarmed Strikes you gained from a tanuki heritage or ancestry feat in this form. You can remain in your raccoon dog form indefinitely, and you can shift back to your tanuki form by using this action again.",
+      "body_text": "[one-action] (concentrate, polymorph, primal, tanuki) You can transform into a mundane raccoon dog, using the statistics of pest form. This is a specific raccoon dog form that's the same age and body type as your true form and has roughly analogous physical traits, such as hair color. Using Change Shape counts as creating a disguise for the Impersonate use of Deception. You lose any unarmed Strikes you gained from a tanuki heritage or ancestry feat in this form. You can remain in your raccoon dog form indefinitely, and you can shift back to your tanuki form by using this action again.",
+      "links": [
+        {
+          "href": "Traits.aspx?ID=561",
+          "text": "concentrate",
+          "kind": "Traits",
+          "id": 561
+        },
+        {
+          "href": "Traits.aspx?ID=670",
+          "text": "polymorph",
+          "kind": "Traits",
+          "id": 670
+        },
+        {
+          "href": "Traits.aspx?ID=676",
+          "text": "primal",
+          "kind": "Traits",
+          "id": 676
+        },
+        {
+          "href": "Traits.aspx?ID=830",
+          "text": "tanuki",
+          "kind": "Traits",
+          "id": 830
+        },
+        {
+          "href": "Spells.aspx?ID=1626",
+          "text": "pest form",
+          "kind": "Spells",
+          "id": 1626
+        },
+        {
+          "href": "Actions.aspx?ID=2388",
+          "text": "Impersonate",
+          "kind": "Actions",
+          "id": 2388
+        },
+        {
+          "href": "Skills.aspx?ID=38",
+          "text": "Deception",
+          "kind": "Skills",
+          "id": 38
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Ancestries.aspx?ID=90",
+      "text": "Tanuki",
+      "kind": "Ancestries",
+      "id": 90
+    },
+    {
+      "href": "/Traits.aspx?ID=721",
+      "text": "Uncommon",
+      "kind": "Traits",
+      "id": 721
+    },
+    {
+      "href": "/Traits.aspx?ID=628",
+      "text": "Humanoid",
+      "kind": "Traits",
+      "id": 628
+    },
+    {
+      "href": "/Traits.aspx?ID=830",
+      "text": "Tanuki",
+      "kind": "Traits",
+      "id": 830
+    },
+    {
+      "href": "Sources.aspx?ID=230",
+      "text": "Tian Xia Character Guide pg. 65",
+      "kind": "Sources",
+      "id": 230
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "PFS Note",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Traits.aspx?ID=557",
+      "text": "common",
+      "kind": "Traits",
+      "id": 557
+    },
+    {
+      "href": "Deities.aspx?ID=317",
+      "text": "Tsukiyo",
+      "kind": "Deities",
+      "id": 317
+    },
+    {
+      "href": "Deities.aspx?ID=280",
+      "text": "Cayden Cailean",
+      "kind": "Deities",
+      "id": 280
+    },
+    {
+      "href": "Languages.aspx?ID=155",
+      "text": "Common",
+      "kind": "Languages",
+      "id": 155
+    },
+    {
+      "href": "Languages.aspx?ID=179",
+      "text": "Tanuki",
+      "kind": "Languages",
+      "id": 179
+    },
+    {
+      "href": "Languages.aspx?ID=158",
+      "text": "Elven",
+      "kind": "Languages",
+      "id": 158
+    },
+    {
+      "href": "Languages.aspx?ID=119",
+      "text": "Fey",
+      "kind": "Languages",
+      "id": 119
+    },
+    {
+      "href": "Languages.aspx?ID=159",
+      "text": "Gnomish",
+      "kind": "Languages",
+      "id": 159
+    },
+    {
+      "href": "Languages.aspx?ID=160",
+      "text": "Goblin",
+      "kind": "Languages",
+      "id": 160
+    },
+    {
+      "href": "Languages.aspx?ID=86",
+      "text": "Kitsune",
+      "kind": "Languages",
+      "id": 86
+    },
+    {
+      "href": "Languages.aspx?ID=47",
+      "text": "Tengu",
+      "kind": "Languages",
+      "id": 47
+    },
+    {
+      "href": "Traits.aspx?ID=561",
+      "text": "concentrate",
+      "kind": "Traits",
+      "id": 561
+    },
+    {
+      "href": "Traits.aspx?ID=670",
+      "text": "polymorph",
+      "kind": "Traits",
+      "id": 670
+    },
+    {
+      "href": "Traits.aspx?ID=676",
+      "text": "primal",
+      "kind": "Traits",
+      "id": 676
+    },
+    {
+      "href": "Traits.aspx?ID=830",
+      "text": "tanuki",
+      "kind": "Traits",
+      "id": 830
+    },
+    {
+      "href": "Spells.aspx?ID=1626",
+      "text": "pest form",
+      "kind": "Spells",
+      "id": 1626
+    },
+    {
+      "href": "Actions.aspx?ID=2388",
+      "text": "Impersonate",
+      "kind": "Actions",
+      "id": 2388
+    },
+    {
+      "href": "Skills.aspx?ID=38",
+      "text": "Deception",
+      "kind": "Skills",
+      "id": 38
+    }
+  ],
+  "body_text": "PFS Note While several tanuki feats allow characters to disguise themselves as inanimate objects, doing so does not change a character’s mechanical statistics, such as AC or defenses. A name for both a raccoon-like animal native to Minkai and sapient tanuki who possess shapeshifting powers. They are common in Minkai, the Forest of Spirits, and Goka. Tian Xia is replete with magically gifted ancestries—such as tengu, kitsune, yakshas, and yaoguai—whose powers bring them high regard and who, in turn, use their gifts for responsible ends. Tanuki aren't one of these ancestries. Instead, the shapeshifting raccoon dog–like humanoids use their powers of illusion and transformation in ways more people should: for fun! Tanuki delight in pranks and practical jokes, especially those that allow them to take the high and mighty down a notch and show them what life is like for everyone else. Where other peoples take pride in their storied histories, noble traditions, or intricate ceremonies, tanuki take pride in their simplicity and disregard for the world's many rules. Though some might claim this outlook reduces tanuki to uncouth rubes, tanuki feel it makes them more cultured; after all, one must know a rule to bend it, and one must understand a norm to break it. That being said, their laid-back natures can cause tanuki, and others, no end of trouble. Their focus on living in the moment can often mean they're brought low by a problem they could've solved earlier with little effort. At the end of the day, tanuki rarely come out on top, and even their victories tend to be mixed with small defeats or embarrassment. A tanuki bard might save the day with the power of his music, but only because he played so off-key that bandits mistook him for a fearsome ghost. Tanuki are usually just fine with such an outcome, though. There's a truth to the world that tanuki know in their bellies: that the ups and downs of life are all just a big joke, and if everyone's going to be made a fool in the end, you might as well be the fool who gets to dance and have fun along the way! Life's a party, and tanuki intend to enjoy it as much as they can before their luck inevitably runs out. If you want to play a character who loves to have fun—occasionally at another's or your own expense— who's always up for a party and perhaps a bit too clever for their own good, you should play a tanuki.You Might...Live life to the absolute fullest, getting into whatever trouble that approach might bring you.Take pride in your duties and accomplishments, no matter how humble.Be accustomed to the role of underdog and take it in stride, seeing failure as a wonderful punchline.Others Probably...Find you the life of any party.Know you'll always have their back.Hope you aren't about to play a joke on them.Physical DescriptionTanuki are short humanoids who resemble bipedal raccoon dogs, usually growing between 3 and 4 feet tall. They tend to have rotund bodies, with large bellies that appear even wider due to their thick fur. A tanuki's face is likewise round, with wide-set, alert eyes outlined within a dark mask of fur. Tanuki have a single bushy tail that they take great pride in and to which they ascribe their powers. These qualities together give tanuki a strong cultural appreciation for rounded shapes over sharp angles, such as daruma dolls, circular doors, and the moon. Tanuki often wear simple, rustic clothing, opting for plain garb over elegant frills or shining jewels. However, tanuki are known to go all-out for festivals and similar celebrations, which they see as the perfect opportunity to enjoy life to the fullest. Many tanuki make it a point to always carry a red vest and dancing towel in case an impromptu party breaks out. SocietyTanuki know that, among the many people of Golarion, they're underdogs, possessing neither the mastery of the heavens that tengu command nor the divine favor that kitsune enjoy. All things considered, tanuki know they have to support each other, building tight communities where everyone knows each other's names. These communities tend to exist on the outskirts of villages, often in abandoned warehouses or farms or else near temples and other public buildings. When tanuki societies overlap with those of other peoples, they usually function unseen with their own codes of honor, rarely noticed by those in power. Tanuki love celebration and will hold any number of parties for even the smallest accomplishments—a project such as building a new bridge might have a kick-off ceremony, a toast when the plans are decided, a morale lunch when the workers have assembled, a banquet upon finishing the bridge, and a festival to dance over the bridge when it opens to the public. This proclivity is sometimes brought up as a reason for why tanuki endeavors tend to take an interminably long time (with some failing spectacularly along the way), but tanuki feel that it's important to celebrate what small victories they can. Besides, the community bonds forged among the participants are as much a part of the project as the actual building itself. Beliefs Tanuki count no member of the Celestial Court among their own—a fact they see as further evidence that they have to stick up for each other since there's no tanuki deity looking out for them—but they find themselves drawn toward gods such as Kofusachi, whose boisterous and compassionate approach to life they consider aspirational. Though tanuki hold deep reverence toward the moon, they tend not to worship Tsukiyo, knowing he finds loud worship agitating, and they take care to not invoke his name or imagery during harvest moon or lunar new year celebrations to ensure their cheers and belly drums don't draw his attention. Tanuki with Inner Sea cultural traditions tend to revere Cayden Cailean, seeing the blood of a tanuki in his commoner status (and drunken accomplishments), with some tanuki statues even depicting Cayden with a big belly and leaf atop his head to suggest that he was simply a tanuki in human form, tricking the Avistani even to this day. Tanuki generally use their powers to humble the rich and snobby; at the very least, they create illusions with no more evil in their hearts than a simple joke (or a free meal taken from one who can afford it), rather than acting out of malice. However, there are some tanuki do harbor resentment, which can take root and fester in their hearts. These tanuki turn to cruel ends, known for all manner of nefarious deeds, chief among them cooking their enemies into soups or stews once they've finished tricking them. Popular Edicts Choose excitement over stability, let bygones be bygones, make your community laugh Popular Anathema Feel entitled to social status, prank one of lower means than yourself, wallow in your failures NamesAme, Chiyo, Chosuke, Hinata, Mari, Nao, Saya, Taro, Terao, Rei, Ichiro, Jiro, Saburo, Shiro, Satsuki, Mutsu, Nanami, HazukiTanuki MechanicsHit Points10 SizeSmall Speed25 feet Attribute BoostsConstitution Charisma Free Attribute FlawWisdom LanguagesCommon Tanuki Additional languages equal to your Intelligence modifier (if it's positive). Choose from Elven, Fey, Gnomish, Goblin, Kitsune, Tengu, and any other languages to which you have access (such as the languages prevalent in your region).Change Shape [one-action] (concentrate, polymorph, primal, tanuki) You can transform into a mundane raccoon dog, using the statistics of pest form. This is a specific raccoon dog form that's the same age and body type as your true form and has roughly analogous physical traits, such as hair color. Using Change Shape counts as creating a disguise for the Impersonate use of Deception. You lose any unarmed Strikes you gained from a tanuki heritage or ancestry feat in this form. You can remain in your raccoon dog form indefinitely, and you can shift back to your tanuki form by using this action again.",
+  "body_html": "<u><a href=\"PFS.aspx\"><b><i>PFS Note</i></b></a></u><i> While several tanuki feats allow characters to disguise themselves as inanimate objects, doing so does not change a character’s mechanical statistics, such as AC or defenses.</i><br><br><i>A name for both a raccoon-like animal native to Minkai and sapient tanuki who possess shapeshifting powers. They are <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=557\">common</a> in Minkai, the\nForest of Spirits, and Goka.</i><br><br>Tian Xia is replete with magically gifted ancestries—such as tengu, kitsune, yakshas, and yaoguai—whose powers bring them high regard and who, in turn, use their gifts for responsible ends. Tanuki aren't one of these ancestries. Instead, the shapeshifting raccoon dog–like humanoids use their powers of illusion and transformation in ways more people should: for fun! Tanuki delight in pranks and practical jokes, especially those that allow them to take the high and mighty down a notch and show them what life is like for everyone else. Where other peoples take pride in their storied histories, noble traditions, or intricate ceremonies, tanuki take pride in their simplicity and disregard for the world's many rules. Though some might claim this outlook reduces tanuki to uncouth rubes, tanuki feel it makes them more cultured; after all, one must know a rule to bend it, and one must understand a norm to break it. <br><br>That being said, their laid-back natures can cause tanuki, and others, no end of trouble. Their focus on living in the moment can often mean they're brought low by a problem they could've solved earlier with little effort. At the end of the day, tanuki rarely come out on top, and even their victories tend to be mixed with small defeats or embarrassment. A tanuki bard might save the day with the power of his music, but only because he played so off-key that bandits mistook him for a fearsome ghost. Tanuki are usually just fine with such an outcome, though. There's a truth to the world that tanuki know in their bellies: that the ups and downs of life are all just a big joke, and if everyone's going to be made a fool in the end, you might as well be the fool who gets to dance and have fun along the way! Life's a party, and tanuki intend to enjoy it as much as they can before their luck inevitably runs out. <br><br>If you want to play a character who loves to have fun—occasionally at another's or your own expense— who's always up for a party and perhaps a bit too clever for their own good, you should play a tanuki.<h2 class=\"title\">You Might...</h2><ul><li>Live life to the absolute fullest, getting into whatever trouble that approach might bring you.</li><li>Take pride in your duties and accomplishments, no matter how humble.</li><li>Be accustomed to the role of underdog and take it in stride, seeing failure as a wonderful punchline.</li></ul><h2 class=\"title\">Others Probably...</h2><ul><li>Find you the life of any party.</li><li>Know you'll always have their back.</li><li>Hope you aren't about to play a joke on them.</li></ul><h2 class=\"title\">Physical Description</h2>Tanuki are short humanoids who resemble bipedal raccoon dogs, usually growing between 3 and 4 feet tall. They tend to have rotund bodies, with large bellies that appear even wider due to their thick fur. A tanuki's face is likewise round, with wide-set, alert eyes outlined within a dark mask of fur. Tanuki have a single bushy tail that they take great pride in and to which they ascribe their powers. These qualities together give tanuki a strong cultural appreciation for rounded shapes over sharp angles, such as daruma dolls, circular doors, and the moon. <br><br>Tanuki often wear simple, rustic clothing, opting for plain garb over elegant frills or shining jewels. However, tanuki are known to go all-out for festivals and similar celebrations, which they see as the perfect opportunity to enjoy life to the fullest. Many tanuki make it a point to always carry a red vest and dancing towel in case an impromptu party breaks out.<br><h2 class=\"title\">Society</h2>Tanuki know that, among the many people of Golarion, they're underdogs, possessing neither the mastery of the heavens that tengu command nor the divine favor that kitsune enjoy. All things considered, tanuki know they have to support each other, building tight communities where everyone knows each other's names. These communities tend to exist on the outskirts of villages, often in abandoned warehouses or farms or else near temples and other public buildings. When tanuki societies overlap with those of other peoples, they usually function unseen with their own codes of honor, rarely noticed by those in power.<br><br>Tanuki love celebration and will hold any number of parties for even the smallest accomplishments—a project such as building a new bridge might have a kick-off ceremony, a toast when the plans are decided, a morale lunch when the workers have assembled, a banquet upon finishing the bridge, and a festival to dance over the bridge when it opens to the public. This proclivity is sometimes brought up as a reason for why tanuki endeavors tend to take an interminably long time (with some failing spectacularly along the way), but tanuki feel that it's important to celebrate what small victories they can. Besides, the community bonds forged among the participants are as much a part of the project as the actual building itself.<br><h2 class=\"title\">Beliefs</h2> Tanuki count no member of the Celestial Court among their own—a fact they see as further evidence that they have to stick up for each other since there's no tanuki deity looking out for them—but they find themselves drawn toward gods such as Kofusachi, whose boisterous and compassionate approach to life they consider aspirational. Though tanuki hold deep reverence toward the moon, they tend not to worship <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=317\">Tsukiyo</a>, knowing he finds loud worship agitating, and they take care to not invoke his name or imagery during harvest moon or lunar new year celebrations to ensure their cheers and belly drums don't draw his attention. Tanuki with Inner Sea cultural traditions tend to revere <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=280\">Cayden Cailean</a>, seeing the blood of a tanuki in his commoner status (and drunken accomplishments), with some tanuki statues even depicting Cayden with a big belly and leaf atop his head to suggest that he was simply a tanuki in human form, tricking the Avistani even to this day. <br><br>Tanuki generally use their powers to humble the rich and snobby; at the very least, they create illusions with no more evil in their hearts than a simple joke (or a free meal taken from one who can afford it), rather than acting out of malice. However, there are some tanuki do harbor resentment, which can take root and fester in their hearts. These tanuki turn to cruel ends, known for all manner of nefarious deeds, chief among them cooking their enemies into soups or stews once they've finished tricking them.<br><br><b>Popular Edicts</b> Choose excitement over stability, let bygones be bygones, make your community laugh <br><br><b>Popular Anathema</b> Feel entitled to social status, prank one of lower means than yourself, wallow in your failures<br><h2 class=\"title\">Names</h2>Ame, Chiyo, Chosuke, Hinata, Mari, Nao, Saya, Taro, Terao, Rei, Ichiro, Jiro, Saburo, Shiro, Satsuki, Mutsu, Nanami, Hazuki<h1 class=\"title\">Tanuki Mechanics</h1><h2 class=\"title\">Hit Points</h2>10<br><h2 class=\"title\">Size</h2>Small<br><h2 class=\"title\">Speed</h2>25 feet<br><h2 class=\"title\">Attribute Boosts</h2>Constitution<br>Charisma<br>Free<br><h2 class=\"title\">Attribute Flaw</h2>Wisdom<br><h2 class=\"title\">Languages</h2><a href=\"Languages.aspx?ID=155\">Common</a><br><a href=\"Languages.aspx?ID=179\">Tanuki</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=158\">Elven</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=159\">Gnomish</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=160\">Goblin</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=86\">Kitsune</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=47\">Tengu</a>, and any other languages to which you have access (such as the languages prevalent in your region).<h2 class=\"title\">Change Shape</h2> <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=561\">concentrate</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=670\">polymorph</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=676\">primal</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=830\">tanuki</a>) You can transform into a mundane raccoon dog, using the statistics of <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1626\"><i>pest form</i></a>. This is a specific raccoon dog form that's the same age and body type as your true form and has roughly analogous physical traits, such as hair color. Using Change Shape counts as creating a disguise for the <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2388\">Impersonate</a> use of <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=38\">Deception</a>. You lose any unarmed Strikes you gained from a tanuki heritage or ancestry feat in this form. You can remain in your raccoon dog form indefinitely, and you can shift back to your tanuki form by using this action again.",
+  "meta_description": "Tian Xia is replete with magically gifted ancestries—such as tengu, kitsune, yakshas, and yaoguai—whose powers bring them high regard and who, in turn, use their gifts for responsible ends. Tanuki aren't one of these ancestries. Instead, the shapeshifting raccoon dog–like humanoids use their powers of illusion and transformation in ways more people should: for fun! Tanuki delight in pranks and practical jokes, especially those that allow them to take the high and mighty down a notch and show them what life is like for everyone else. Where other peoples take pride in their storied histories, noble traditions, or intricate ceremonies, tanuki take pride in their simplicity and disregard for the world's many rules. Though some might claim this outlook reduces tanuki to uncouth rubes, tanuki feel it makes them more cultured; after all, one must know a rule to bend it, and one must understand a norm to break it. That being said, their laid-back natures can cause tanuki, and others, no end of trouble. Their focus on living in the moment can often mean they're brought low by a problem they could've solved earlier with little effort. At the end of the day, tanuki rarely come out on top, and even their victories tend to be mixed with small defeats or embarrassment. A tanuki bard might save the day with the power of his music, but only because he played so off-key that bandits mistook him for a fearsome ghost. Tanuki are usually just fine with such an outcome, though. There's a truth to the world that tanuki know in their bellies: that the ups and downs of life are all just a big joke, and if everyone's going to be made a fool in the end, you might as well be the fool who gets to dance and have fun along the way! Life's a party, and tanuki intend to enjoy it as much as they can before their luck inevitably runs out. If you want to play a character who loves to have fun—occasionally at another's or your own expense— who's always up for a party and perhaps a bit too clever for their own good, you should play a tanuki.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Ancestries, Ancestry, Tanuki",
+  "mechanics": {
+    "hit_points": null,
+    "size": null,
+    "speed": null,
+    "attribute_boosts": [],
+    "attribute_flaws": [],
+    "languages": {
+      "fixed": [],
+      "bonus_choice": [],
+      "raw": null
+    },
+    "vision": null,
+    "granted": []
+  },
+  "popular_edicts": "Choose excitement over stability, let bygones be bygones, make your community laugh",
+  "popular_anathema": "Feel entitled to social status, prank one of lower means than yourself, wallow in your failures"
+}

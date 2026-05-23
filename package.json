@@ -31,11 +31,12 @@
     "build": "tsc --noEmit false && npm run build:plugins",
     "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
     "typecheck": "tsc --noEmit",
+    "typecheck:tests": "tsc -p tsconfig.typecheck.json",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "test": "node --experimental-test-module-mocks --import tsx --test 'tests/unit/**/*.test.ts'",
     "test:unit": "node --experimental-test-module-mocks --import tsx --test 'tests/unit/**/*.test.ts'",
-    "check": "npm run typecheck && npm run lint && npm run test:unit",
+    "check": "npm run typecheck && npm run typecheck:tests && npm run lint && npm run test:unit",
     "dev": "node --watch dist/cli/cli.js",
     "postinstall": "bash scripts/install-hooks.sh",
     "prepare": "bash scripts/install-hooks.sh",
@@ -46,7 +47,7 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@noocodex/dagonizer": "file:vendor/noocodex-dagonizer-0.8.1.tgz",
+    "@noocodex/dagonizer": "file:vendor/noocodex-dagonizer-0.9.2.tgz",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bottleneck": "^2.19.5",

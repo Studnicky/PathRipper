@@ -1,0 +1,129 @@
+{
+  "_type": "hazard",
+  "url": "https://2e.aonprd.com/Hazards.aspx?ID=648",
+  "entity_id": 648,
+  "name": "Grasping Currents",
+  "rarity": "unique",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": "Hazards.aspx?ID=416&NoRedirect=1",
+  "traits": [
+    "Unique",
+    "Complex",
+    "Haunt"
+  ],
+  "trait_ids": {
+    "Unique": 723,
+    "Complex": 30,
+    "Haunt": 622
+  },
+  "source": {
+    "book": "Season of Ghosts (Hardcover)",
+    "page": 36,
+    "source_id": 294
+  },
+  "sources": [
+    {
+      "book": "Season of Ghosts (Hardcover)",
+      "page": 36,
+      "source_id": 294,
+      "raw": "Season of Ghosts (Hardcover) pg. 36"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Complexity": "Complex",
+    "Stealth": "+20 (trained) to notice a weird, faintly glowing ripple of the current beneath the water",
+    "Description": "A swath of drowned spirits tries to pull someone down into the water to join them."
+  },
+  "links": [
+    {
+      "href": "Hazards.aspx?ID=416&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Hazards",
+      "id": 416
+    },
+    {
+      "href": "Hazards.aspx?ID=648",
+      "text": "Grasping Currents",
+      "kind": "Hazards",
+      "id": 648
+    },
+    {
+      "href": "/Traits.aspx?ID=723",
+      "text": "Unique",
+      "kind": "Traits",
+      "id": 723
+    },
+    {
+      "href": "/Traits.aspx?ID=30",
+      "text": "Complex",
+      "kind": "Traits",
+      "id": 30
+    },
+    {
+      "href": "/Traits.aspx?ID=622",
+      "text": "Haunt",
+      "kind": "Traits",
+      "id": 622
+    },
+    {
+      "href": "Sources.aspx?ID=294",
+      "text": "Season of Ghosts (Hardcover) pg. 36",
+      "kind": "Sources",
+      "id": 294
+    },
+    {
+      "href": "Skills.aspx?ID=46",
+      "text": "Religion",
+      "kind": "Skills",
+      "id": 46
+    },
+    {
+      "href": "Skills.aspx?ID=36",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 36
+    },
+    {
+      "href": "Actions.aspx?ID=2376",
+      "text": "Grapple",
+      "kind": "Actions",
+      "id": 2376
+    },
+    {
+      "href": "Skills.aspx?ID=41",
+      "text": "Sailing Lore",
+      "kind": "Skills",
+      "id": 41
+    }
+  ],
+  "body_text": "Disable DC 23 Religion to calm the unquiet spirits in the waters for an hour, or light the Eternal Lantern (automatically disables the haunt) Ghostly Grasp [reaction] Trigger A creature attempts to cross the lake by swimming or piloting a boat; Effect Ghostly arms reach up to grab and clutch at the creature or the boat, causing a –2 penalty to the Athletics or Piloting check that triggered the haunt. The haunt then rolls initiative.Routine (1 action) On its initiative, the grasping currents attempt to Grapple a swimming creature or capsize a rowboat by attempting an Athletics check with a +12 modifier. A creature that’s restrained by the grasping currents is pulled underwater and risks drowning. To capsize a rowboat, the haunt’s Athletics check is rolled against the pilot’s Athletics or Sailing Lore DC, whichever is higherReset The grasping currents quickly build up power and can trigger again after 10 minutes have passed.",
+  "body_html": "<b>Disable</b> DC 23 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=46\">Religion</a> to calm the unquiet spirits in the waters for an hour, or light the <i>Eternal Lantern</i> (automatically disables the haunt)<br><b>Ghostly Grasp</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  <b>Trigger</b> A creature attempts to cross the lake by swimming or piloting a boat; <b>Effect</b> Ghostly arms reach up to grab and clutch at the creature or the boat, causing a –2 penalty to the <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=36\">Athletics</a> or Piloting check that triggered the haunt. The haunt then rolls initiative.<hr><b>Routine</b> (1 action) On its initiative, the grasping currents attempt to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2376\">Grapple</a> a swimming creature or capsize a rowboat by attempting an <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=36\">Athletics</a> check with a +12 modifier. A creature that’s restrained by the grasping currents is pulled underwater and risks drowning. To capsize a rowboat, the haunt’s Athletics check is rolled against the pilot’s Athletics or <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=41\">Sailing Lore</a> DC, whichever is higher<hr><b>Reset</b> The grasping currents quickly build up power and can trigger again after 10 minutes have passed.",
+  "meta_description": "A swath of drowned spirits tries to pull someone down into the water to join them.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Hazard, Grasping Currents",
+  "level": 3,
+  "complexity": "complex",
+  "stealth": {
+    "dc": null,
+    "notes": "+20 (trained) to notice a weird, faintly glowing ripple of the current beneath the water",
+    "raw": "+20 (trained) to notice a weird, faintly glowing ripple of the current beneath the water"
+  },
+  "description_text": "A swath of drowned spirits tries to pull someone down into the water to join them.",
+  "disable": [],
+  "defenses": {
+    "ac": null,
+    "saves": {
+      "fort": null,
+      "ref": null,
+      "will": null
+    },
+    "hardness": [],
+    "hp": [],
+    "immunities": [],
+    "weaknesses": [],
+    "resistances": []
+  },
+  "routines": [],
+  "reset": null
+}

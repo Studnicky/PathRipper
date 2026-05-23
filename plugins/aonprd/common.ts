@@ -6,27 +6,142 @@
 import { load, type CheerioAPI, type Cheerio } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
 
+import type { CommonStrategy, SourceRef, LinkRef, Section } from './capabilities/strategy.js';
+
+// Re-export the canonical Layer-1 shapes so existing imports from `common.ts`
+// continue to resolve. Per λ rules these are the SAME identifiers — no local
+// aliasing. The source-of-truth lives in `capabilities/strategy.ts` (plugin-
+// agnostic) and a plugin's strategy implementation produces them.
+export type { SourceRef, LinkRef, Section } from './capabilities/strategy.js';
+
 // ─── Public types ─────────────────────────────────────────────────────────────
 
 /** All AON page kinds we recognize. `generic`/`unknown` are catch-alls. */
+/**
+ * URL-path → page-type entries. **This table is the single source of truth**
+ * for AON page-type discrimination. Add a new entry here and the `AonPageType`
+ * union, every typed switch over it, and `URL_TO_TYPE` lookups all pick it up
+ * automatically via TypeScript inference.
+ *
+ * Multiple URL paths may map to the same page-type (e.g. `mythicspells` and
+ * `spells` both → `spell`); the union deduplicates.
+ */
+const URL_TO_TYPE_ENTRIES = [
+  // ── Core game content ────────────────────────────────────────────────────
+  ['spells',           'spell'],
+  ['rituals',          'ritual'],
+  ['mythicspells',     'spell'],
+  ['mythicrituals',    'ritual'],
+  ['feats',            'feat'],
+  ['mythicfeats',      'feat'],
+  ['monsters',         'monster'],
+  ['creatures',        'monster'],
+  ['npcs',             'monster'],
+  ['equipment',        'equipment'],
+  ['weapons',          'weapon'],
+  ['armor',            'armor'],
+  ['shields',          'shield'],
+  ['conditions',       'condition'],
+  ['backgrounds',      'background'],
+  ['traits',           'trait'],
+  ['ancestries',       'ancestry'],
+  ['classes',          'class'],
+  ['actions',          'action'],
+  ['activities',       'action'],
+  ['hazards',          'hazard'],
+  ['deities',          'deity'],
+  ['archetypes',       'archetype'],
+  ['monsterfamilies',  'monster-family'],
+  ['rules',            'rule'],
+  ['familiars',        'familiar'],
+  ['skills',           'skill'],
+  ['domains',          'domain'],
+  ['sources',          'source'],
+  ['articles',         'article'],
+  ['deitycategories',  'deity-category'],
+  ['weapongroups',     'weapon-group'],
+  ['armorgroups',      'armor-group'],
+  ['contributors',     'contributor'],
+  // ── Monster-adjacent typed extractors (Wave 5 B1) ────────────────────────
+  ['companions',       'animal-companion'],
+  ['monsterabilities', 'monster-ability'],
+  ['monstertemplates', 'monster-template'],
+  // ── Character / class aggregators (Wave 5 B2) ────────────────────────────
+  ['classsamples',      'class-sample'],
+  ['classkits',         'class-kit'],
+  ['npcthemetemplates', 'npc-theme-template'],
+  // ── Equipment-adjacent (Wave 5 B4) ───────────────────────────────────────
+  ['relics',        'relic'],
+  ['setrelics',     'set-relic'],
+  ['siegeweapons',  'siege-weapon'],
+  ['vehicles',      'vehicle'],
+  // ── World-meta (Wave 5 B5) ───────────────────────────────────────────────
+  ['languages', 'language'],
+  ['planes',    'plane'],
+  // ── Afflictions (Wave 5 B6) ──────────────────────────────────────────────
+  ['curses',         'curse'],
+  ['diseases',       'disease'],
+  ['weatherhazards', 'weather-hazard'],
+  // ── Kingmaker subsystem (Wave 5 B7) ──────────────────────────────────────
+  ['kmstructures',   'km-structure'],
+  ['kmevents',       'km-event'],
+  ['tactics',        'tactic'],
+  ['campmeals',      'camp-meal'],
+  ['campactivities', 'camp-activity'],
+  ['kmwartactics',   'km-war-tactic'],
+  ['kmwararmies',    'km-war-army'],
+  // ── Long-tail class subclasses (Wave 5 B8) ───────────────────────────────
+  // 34 URL kinds collapse to one shared `subclass-feature` typed extractor
+  // discriminated at runtime by `subclass_family` + `parent_class` fields.
+  ['bloodlines',         'subclass-feature'],
+  ['mysteries',          'subclass-feature'],
+  ['patrons',            'subclass-feature'],
+  ['lessons',            'subclass-feature'],
+  ['apparitions',        'subclass-feature'],
+  ['causes',             'subclass-feature'],
+  ['eidolons',           'subclass-feature'],
+  ['researchfields',     'subclass-feature'],
+  ['hybridstudies',      'subclass-feature'],
+  ['methodologies',      'subclass-feature'],
+  ['muses',              'subclass-feature'],
+  ['ways',               'subclass-feature'],
+  ['huntersedge',        'subclass-feature'],
+  ['implements',         'subclass-feature'],
+  ['consciousminds',     'subclass-feature'],
+  ['subconsciousminds',  'subclass-feature'],
+  ['rackets',            'subclass-feature'],
+  ['druidicorders',      'subclass-feature'],
+  ['instincts',          'subclass-feature'],
+  ['styles',             'subclass-feature'],
+  ['arcaneschools',      'subclass-feature'],
+  ['arcanethesis',       'subclass-feature'],
+  ['mythicdestinies',    'subclass-feature'],
+  ['ikons',              'subclass-feature'],
+  ['epithets',           'subclass-feature'],
+  ['deviantfeats',       'subclass-feature'],
+  ['heritages',          'subclass-feature'],
+  ['elements',           'subclass-feature'],
+  ['followers',          'subclass-feature'],
+  ['practices',          'subclass-feature'],
+  ['hellknightorders',   'subclass-feature'],
+  ['doctrines',          'subclass-feature'],
+  ['tenets',             'subclass-feature'],
+  ['innovations',        'subclass-feature'],
+] as const satisfies ReadonlyArray<readonly [string, string]>;
+
+/** Page types reachable from a known URL path (derived from {@link URL_TO_TYPE_ENTRIES}). */
+type UrlMappedPageType = (typeof URL_TO_TYPE_ENTRIES)[number][1];
+
+/**
+ * Discriminator for every AON page kind we recognise. `generic` is the
+ * fallback for unmapped URL paths; `unknown` is reserved for pages whose
+ * structure couldn't be parsed at all.
+ *
+ * To extend: add a row to {@link URL_TO_TYPE_ENTRIES}. The union expands
+ * automatically and TypeScript enforces exhaustiveness at every consumer.
+ */
 export type AonPageType =
-  | 'spell'
-  | 'feat'
-  | 'monster'
-  | 'equipment'
-  | 'weapon'
-  | 'armor'
-  | 'shield'
-  | 'condition'
-  | 'background'
-  | 'trait'
-  | 'ancestry'
-  | 'class'
-  | 'action'
-  | 'hazard'
-  | 'ritual'
-  | 'deity'
-  | 'archetype'
+  | UrlMappedPageType
   | 'generic'
   | 'unknown';
 
@@ -43,30 +158,6 @@ export type Rarity = 'common' | 'uncommon' | 'rare' | 'unique';
 
 export type PfsLegality = 'standard' | 'limited' | 'restricted';
 
-/** Reference to an AON Sources.aspx entry with parsed page number. */
-export interface SourceRef {
-  /** Book title — e.g. "Player Core". */
-  book:      string | null;
-  /** Page number within the source book. */
-  page:      number | null;
-  /** AON Sources.aspx ID. */
-  source_id: number | null;
-  /** Raw text as displayed (e.g. "Player Core pg. 287"). */
-  raw:       string;
-}
-
-/** Inline cross-reference harvested from a page body. */
-export interface LinkRef {
-  /** Verbatim href (resolved against `https://2e.aonprd.com`). */
-  href: string;
-  /** Display text of the anchor. */
-  text: string;
-  /** Target kind derived from `.aspx` filename — `Spells`, `Traits`, etc. */
-  kind: string;
-  /** Numeric ID extracted from `?ID=…`, when present. */
-  id:   number | null;
-}
-
 /** A single `<b>Label</b> Value<br />` pair captured from the header section. */
 export interface HarvestedField {
   /** Label text, stripped of trailing colon/whitespace. */
@@ -77,15 +168,6 @@ export interface HarvestedField {
   value_html: string;
   /** Order in which the field appeared (0-based). */
   order:      number;
-}
-
-/** A `<h{2,3} class="title">` heading with its body and links. */
-export interface Section {
-  heading:   string;
-  level:     2 | 3;
-  body_text: string;
-  body_html: string;
-  links:     LinkRef[];
 }
 
 /** Trait pill list classified by CSS variant. */
@@ -150,31 +232,8 @@ export interface CommonExtraction {
 
 // ─── URL → page type discrimination ───────────────────────────────────────────
 
-const URL_TO_TYPE: ReadonlyMap<string, AonPageType> = new Map<string, AonPageType>([
-  ['spells',          'spell'],
-  ['rituals',         'ritual'],
-  ['mythicspells',    'spell'],
-  ['mythicrituals',   'ritual'],
-  ['feats',           'feat'],
-  ['mythicfeats',     'feat'],
-  ['mythicdestinies', 'feat'],
-  ['monsters',        'monster'],
-  ['creatures',       'monster'],
-  ['equipment',       'equipment'],
-  ['weapons',         'weapon'],
-  ['armor',           'armor'],
-  ['shields',         'shield'],
-  ['conditions',      'condition'],
-  ['backgrounds',     'background'],
-  ['traits',          'trait'],
-  ['ancestries',      'ancestry'],
-  ['classes',         'class'],
-  ['actions',         'action'],
-  ['activities',      'action'],
-  ['hazards',         'hazard'],
-  ['deities',         'deity'],
-  ['archetypes',      'archetype'],
-]);
+/** Lookup table derived from {@link URL_TO_TYPE_ENTRIES}; do not edit directly. */
+const URL_TO_TYPE: ReadonlyMap<string, AonPageType> = new Map(URL_TO_TYPE_ENTRIES);
 
 /** Map a URL like `…/Spells.aspx?ID=1` to its page-type discriminator. */
 export function detectPageType(url: string): AonPageType {
@@ -363,21 +422,37 @@ function parseSourceText(raw: string): { book: string | null; page: number | nul
   return { book: raw.trim(), page: null };
 }
 
-/** Capture every `<b>Source</b>` reference on the page (header + body footnotes). */
+/**
+ * Capture every `<b>Source</b>` reference on the page (header + body footnotes).
+ *
+ * Wave 5 H15: this is the AON-specific implementation of the
+ * `SourceRefStrategy.extractSources` contract. The hardcoded
+ * `<b>Source</b>` literal and `Sources.aspx?ID=` URL pattern below are AON
+ * markup — non-AON plugins must supply their own implementation via a
+ * different `SourceRefStrategy`.
+ */
 export function extractSources(span: CheerioNode): SourceRef[] {
   const html = span.html() ?? '';
   const out: SourceRef[] = [];
+  const seen = new Set<string>();
   let match: RegExpExecArray | null;
   SOURCE_RE.lastIndex = 0;
   while ((match = SOURCE_RE.exec(html)) !== null) {
     const idStr = match[1];
     const label = match[2] ?? '';
     const { book, page } = parseSourceText(label);
+    const source_id = idStr !== undefined ? parseInt(idStr, 10) : null;
+    // Dedup by (source_id, book, page) — AON repeats the source ref under each
+    // subsection on multi-feat pages (archetypes, etc.) but the canonical
+    // reference is the same row.
+    const key = `${source_id ?? 'n'}|${book ?? ''}|${page ?? 'n'}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     out.push({
       book,
       page,
-      source_id: idStr !== undefined ? parseInt(idStr, 10) : null,
-      raw:       label.trim(),
+      source_id,
+      raw: label.trim(),
     });
   }
   return out;
@@ -385,10 +460,19 @@ export function extractSources(span: CheerioNode): SourceRef[] {
 
 // ─── Field harvest (header section before first `<hr />`) ─────────────────────
 
-/** Strip HTML tags + decode common entities + normalize whitespace. */
+/**
+ * Strip HTML tags + decode common entities + normalize whitespace.
+ *
+ * Tag-adjacency rule: when a closing tag is immediately followed by an opening
+ * tag (no whitespace, e.g. `<a>Taldane</a><a>Nagaji</a>`), insert a single
+ * space before stripping — otherwise adjacent linked tokens collapse into
+ * one (e.g. `TaldaneNagaji`). Tag-to-text adjacency (`<i>foo</i>bar`) keeps
+ * the legacy no-space behavior so proper-name italics don't gain artifacts.
+ */
 export function htmlToText(html: string): string {
   return html
     .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<\/[a-z][a-z0-9]*\s*>(?=<[a-z])/gi, ' ')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -402,6 +486,26 @@ export function htmlToText(html: string): string {
     .replace(/&times;/g, '×')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * Return a copy of `fieldMap` with any keys whose case-insensitive form
+ * appears in `claimedKeys` removed. Use in finalize nodes to drop AON labels
+ * that have been lifted into structured fields, so `raw_fields` only contains
+ * unstructured residue.
+ */
+export function stripStructuredKeys(
+  fieldMap:    Readonly<Record<string, string>>,
+  claimedKeys: Iterable<string>,
+): Record<string, string> {
+  const claimed = new Set<string>();
+  for (const k of claimedKeys) claimed.add(k.trim().toLowerCase());
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(fieldMap)) {
+    if (claimed.has(k.trim().toLowerCase())) continue;
+    out[k] = v;
+  }
+  return out;
 }
 
 /**
@@ -515,26 +619,44 @@ export function splitOnHr(html: string): { head: string; body: string } {
  * of equal-or-higher level. Skips `feel-title` and `hide-on-print` decorative
  * variants.
  */
+function isDecorativeHeading(el: Element): boolean {
+  const cls = (el.attribs?.['class'] ?? '').toLowerCase();
+  return cls.includes('feel-title')
+      || cls.includes('hide-on-print')
+      || cls.includes('legacy-content-warning');
+}
+
+/**
+ * Wave 5 H16: AON-specific implementation of the
+ * `SectionWalkerStrategy.harvestSections` contract. The `.title` CSS class
+ * filter is AON markup — non-AON plugins supply their own implementation.
+ */
 export function harvestSections($: CheerioAPI, span: CheerioNode): Section[] {
   const out: Section[] = [];
   const HEADING_SEL = 'h2.title, h3.title';
   span.find(HEADING_SEL).each((_, el) => {
+    if (isDecorativeHeading(el as Element)) return;
     const $h = $(el);
-    const cls = ($h.attr('class') ?? '').toLowerCase();
-    if (cls.includes('feel-title') || cls.includes('hide-on-print')) return;
-    if (cls.includes('legacy-content-warning')) return;
     const tag = (el as Element).tagName.toLowerCase();
     const level: 2 | 3 = tag === 'h3' ? 3 : 2;
     const heading = $h.text().replace(/\s+/g, ' ').trim();
     if (heading === '') return;
 
-    // Collect siblings until the next h2/h3 (any level).
+    // Collect siblings until the next real h1/h2/h3. Decorative title variants
+    // (legacy-content-warning, feel-title, hide-on-print) sit between a real
+    // heading and its body — skip over them entirely rather than emit them
+    // into the body or treat them as a section boundary.
     const fragments: string[] = [];
     let cur = (el as Element).next as AnyNode | null;
     while (cur !== null) {
       if (cur.type === 'tag') {
-        const tagName = (cur as Element).tagName.toLowerCase();
-        if (tagName === 'h2' || tagName === 'h3' || tagName === 'h1') break;
+        const next = cur as Element;
+        const tagName = next.tagName.toLowerCase();
+        if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
+          if (!isDecorativeHeading(next)) break;
+          cur = (cur as { next: AnyNode | null }).next;
+          continue;
+        }
       }
       fragments.push($.html(cur as AnyNode));
       cur = (cur as { next: AnyNode | null }).next;
@@ -616,8 +738,21 @@ export function extractMetaKeywords($: CheerioAPI): string | null {
 
 // ─── Common-extraction entry ──────────────────────────────────────────────────
 
-/** Run the full shared extraction pipeline over a parsed AON page. */
-export function extractCommon($: CheerioAPI, url: string): CommonExtraction | null {
+/**
+ * Run the full shared extraction pipeline over a parsed page.
+ *
+ * Wave 5 H15/H16: the source-citation walk and the section harvester are
+ * supplied via {@link CommonStrategy}. The remaining helpers (`findContentSpan`,
+ * `extractTitle`, `extractTraits`, `harvestFields`, `harvestLinks`,
+ * `detectPageType`) remain AON-shaped today and are scoped to be lifted to
+ * strategies in a later wave when a second source plugin materialises a
+ * concrete need.
+ */
+export function extractCommon(
+  $:        CheerioAPI,
+  url:      string,
+  strategy: CommonStrategy,
+): CommonExtraction | null {
   const span = findContentSpan($);
   if (span === null) return null;
 
@@ -631,10 +766,10 @@ export function extractCommon($: CheerioAPI, url: string): CommonExtraction | nu
 
   const title    = extractTitle($, target);
   const traits   = extractTraits($, target);
-  const sources  = extractSources(target);
+  const sources  = strategy.sourceRef.extractSources(target, $);
   const source   = sources[0] ?? { book: null, page: null, source_id: null, raw: '' };
   const { fields, field_map } = harvestFields(head);
-  const sections = harvestSections($, target);
+  const sections = strategy.sectionWalker.harvestSections($, target);
   const links    = harvestLinks(html);
 
   return {
@@ -722,4 +857,190 @@ export function splitTopLevel(value: string, sep: ',' | ';' | '|' = ','): string
 /** Boilerplate cheerio loader for per-type unit tests. */
 export function loadHtml(html: string): CheerioAPI {
   return load(html);
+}
+
+/**
+ * The canonical capability output union — every extract/finalize node that
+ * can soft-fail uses this. Terminal nodes (`flow:terminate`,
+ * `aonprd:make-unknown`) and pure-assembly finalize nodes use `['success']`
+ * inline instead.
+ */
+export const CAPABILITY_OUTPUTS = ['success', 'error'] as const;
+
+/**
+ * Load an HTML fragment wrapped in a `<div id="{rootId}">…</div>` shell.
+ * Returns the wrapping CheerioAPI; the rootId lets callers anchor their queries
+ * (e.g. `$h('#head-root b')`). Used by sub-fragment parsers in concept slice
+ * helpers (`class.parseClassFeaturesProgression`, `familiar.parseSubAbilities`,
+ * `monster.parseBareBoldAbilities`, and the shared `collectBareBoldBlocks`).
+ */
+export function loadFragment(html: string, rootId = 'fragment-root'): CheerioAPI {
+  return load(`<div id="${rootId}">${html}</div>`);
+}
+
+// ─── Structural primitives (shared by capabilities + per-type extractors) ────
+
+/**
+ * Walk an HTML fragment and return the inner HTML of every
+ * `<span class="hanging-indent">` in document order.
+ *
+ * Structural primitive — does not apply any domain filters (e.g. ability-name
+ * validation, KNOWN_LABELS checks). Downstream code decides what to do with
+ * each block.
+ */
+export function collectHangingIndentInners(html: string): string[] {
+  const out: string[] = [];
+  const openRe = /<span\s+class="hanging-indent">/gi;
+  let m: RegExpExecArray | null;
+  while ((m = openRe.exec(html)) !== null) {
+    const start = m.index + m[0].length;
+    let depth = 1;
+    let i = start;
+    while (i < html.length && depth > 0) {
+      const open  = html.indexOf('<span', i);
+      const close = html.indexOf('</span>', i);
+      if (close === -1) break;
+      if (open !== -1 && open < close) { depth++; i = open + 5; }
+      else {
+        depth--;
+        if (depth === 0) {
+          out.push(html.slice(start, close));
+          openRe.lastIndex = close + 7;
+          break;
+        }
+        i = close + 7;
+      }
+    }
+  }
+  return out;
+}
+
+/** A bare-bold block: a `<b>` whose text is plain (no child markup) followed by its value siblings. */
+export interface BareBoldBlock {
+  /** Text content of the `<b>` element, colon stripped. */
+  name:       string;
+  /** Rendered inner HTML of the sibling nodes following the `<b>` until the next boundary. */
+  value_html: string;
+}
+
+/**
+ * Walk an HTML fragment (the head section before the first `<hr/>`) and
+ * return every `<b>Name</b> value` block whose `<b>` has no child markup and
+ * is NOT inside:
+ *   - `span.hanging-indent`
+ *   - any `h1`, `h2`, `h3`
+ *   - `a.monster-pwl-link`
+ *   - `h2.hide-on-print` or `h3.hide-on-print`
+ *
+ * When the `<b>` is the sole child of an `<a>`, the sibling walk starts from
+ * the anchor's next sibling (not the bold's).
+ *
+ * Structural primitive — does not apply `isAbilityName` / `isVariantOverlayJunk`
+ * domain filters. Downstream capabilities add those.
+ */
+export function collectBareBoldBlocks(headHtml: string): BareBoldBlock[] {
+  const out: BareBoldBlock[] = [];
+  // AON occasionally emits double-bold wrappers `<b><b>Name</b></b>`.
+  // Flatten before parsing so the inner `<b>` retains the value siblings it needs.
+  const flattened = headHtml.replace(/<b>\s*<b>([^<]+)<\/b>\s*<\/b>/gi, '<b>$1</b>');
+  const $h = loadFragment(flattened, 'head-root');
+
+  $h('#head-root b').each((_, el) => {
+    const $b = $h(el);
+    if ($b.children().length > 0) return;                          // markup-in-name → skip
+    if ($b.parents('span.hanging-indent').length > 0) return;      // handled by hanging-indent block
+    if ($b.closest('h1, h2, h3').length > 0) return;               // heading chrome
+    if ($b.parents('a.monster-pwl-link').length > 0) return;
+    if ($b.parents('h2.hide-on-print, h3.hide-on-print').length > 0) return;
+
+    const name = $b.text().trim().replace(/:$/, '');
+    if (name === '') return;
+
+    // When the bold is the sole child of an anchor, value siblings are anchored
+    // to the parent anchor's next, not the bold's.
+    const parent = (el as import('domhandler').Element).parent;
+    const startsAfter: import('domhandler').Element = (
+      parent !== null
+      && parent !== undefined
+      && parent.type === 'tag'
+      && (parent as import('domhandler').Element).tagName.toLowerCase() === 'a'
+      && (parent as import('domhandler').Element).children.length === 1
+    )
+      ? (parent as import('domhandler').Element)
+      : (el as import('domhandler').Element);
+
+    const valueNodes: AnyNode[] = [];
+    let cur = startsAfter.next as AnyNode | null;
+    while (cur !== null) {
+      if (cur.type === 'tag') {
+        const tagName = (cur as Element).tagName.toLowerCase();
+        if (tagName === 'b' || tagName === 'br' || tagName === 'hr') break;
+      }
+      valueNodes.push(cur);
+      cur = (cur as { next: AnyNode | null }).next;
+    }
+    const value_html = valueNodes.map((n) => $h.html(n as AnyNode)).join('');
+    out.push({ name, value_html });
+  });
+
+  return out;
+}
+
+// ─── Shared section / PFS helpers (Wave 6 H11, H12) ───────────────────────────
+
+/**
+ * Heading text patterns AON uses for legacy-content-warning sub-sections.
+ *
+ * These `<h3 class="title legacy-content-warning">` blocks are chrome, not
+ * content. The `legacy: true` flag on the title extraction already carries
+ * the same signal, so concept finalize nodes filter them out of `sections[]`.
+ *
+ * Single source of truth — 13 concept files previously redeclared this regex.
+ */
+export const LEGACY_HEADING_RE = /legacy[\s-]content[\s-]warning/i;
+
+/**
+ * Drop `<h3 class="title legacy-content-warning">` entries from a sections
+ * array. Centralised here so every concept that surfaces `sections[]` in its
+ * output applies the same filter (Wave 6 H11).
+ */
+export function filterLegacySections(sections: readonly Section[]): Section[] {
+  return sections.filter((s) => !LEGACY_HEADING_RE.test(s.heading));
+}
+
+/**
+ * Extract the PFS Note text from a cheerio document (Wave 6 H12).
+ *
+ * The AON HTML pattern (with browser-repaired tag soup):
+ *   `<u><a href="PFS.aspx"><b><i>PFS Note</b></u></a> <body text> <br/>`
+ *
+ * Strategy: locate the `<a href="PFS.aspx">` anchor whose text contains
+ * "PFS Note", then capture the trailing siblings up to the next `<br>` via a
+ * tolerant regex over the rendered HTML (the cheerio tree for the malformed
+ * markup is unreliable). Returns null when no PFS Note is present.
+ *
+ * Single source of truth — language, equipment, and weapon concepts previously
+ * redeclared this helper.
+ */
+export function extractPfsNote($: CheerioAPI, target: CheerioNode): string | null {
+  let pfsAnchor: ReturnType<CheerioAPI> | null = null;
+
+  target.find('a[href*="PFS.aspx"]').each((_, el) => {
+    if (pfsAnchor !== null) return;
+    const text = $(el).text().replace(/\s+/g, ' ').trim();
+    if (/PFS\s*Note/i.test(text)) {
+      pfsAnchor = $(el);
+    }
+  });
+
+  if (pfsAnchor === null) return null;
+
+  const targetHtml = target.html() ?? '';
+  const pfsRe = /PFS\.aspx[^>]*>[^<]*(?:<[^>]+>)*\s*PFS\s*Note[^<]*(?:<\/[^>]+>\s*)*([\s\S]*?)(?:<br\s*\/?>|$)/i;
+  const m = pfsRe.exec(targetHtml);
+  if (m === null) return null;
+
+  const raw = m[1] ?? '';
+  const text = htmlToText(raw).trim();
+  return text !== '' ? text : null;
 }

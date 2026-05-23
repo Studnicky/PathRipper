@@ -1,0 +1,52 @@
+{
+  "_type": "trait",
+  "url": "https://2e.aonprd.com/Traits.aspx?ID=199",
+  "entity_id": 199,
+  "name": "Unarmed",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": "Traits.aspx?ID=199&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 283,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 283,
+      "source_id": 216,
+      "raw": "Player Core pg. 283"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Traits.aspx?ID=199&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Traits",
+      "id": 199
+    },
+    {
+      "href": "Traits.aspx?ID=719",
+      "text": "Unarmed",
+      "kind": "Traits",
+      "id": 719
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 283",
+      "kind": "Sources",
+      "id": 216
+    }
+  ],
+  "body_text": "An unarmed attack uses your body rather than a manufactured weapon. An unarmed attack isn’t a weapon, though has a weapon group and might have weapon traits. An unarmed attack can’t be Disarmed. It also doesn’t take up a hand, though a fist or other grasping appendage generally works like a free-hand weapon.",
+  "body_html": "An unarmed attack uses your body rather than a manufactured weapon. An unarmed attack isn’t a weapon, though has a weapon group and might have weapon traits. An unarmed attack can’t be Disarmed. It also doesn’t take up a hand, though a fist or other grasping appendage generally works like a free-hand weapon.<br><br><nethys-search default-query=\"ap-creatures=hide&amp;display=grouped&amp;group-fields=type&amp;link-layout=horizontal\" fixed-params=\"ID=719\" fixed-query-string=\"trait:&quot;Unarmed&quot; !type:trait\" page-id=\"trait\" load-all=\"true\"></nethys-search>",
+  "meta_description": "An unarmed attack uses your body rather than a manufactured weapon. An unarmed attack isn’t a weapon, though has a weapon group and might have weapon traits. An unarmed attack can’t be Disarmed. It also doesn’t take up a hand, though a fist or other grasping appendage generally works like a free-hand weapon.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Traits, Unarmed",
+  "category": null
+}

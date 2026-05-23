@@ -1,0 +1,344 @@
+{
+  "_type": "monster",
+  "url": "https://2e.aonprd.com/Monsters.aspx?ID=2408",
+  "monster_id": 2408,
+  "name": "Skinskitter",
+  "level": 1,
+  "rarity": "common",
+  "size": "Small",
+  "alignment": "CN",
+  "traits": [
+    "Aberration",
+    "Amphibious",
+    "Mindless"
+  ],
+  "trait_ids": {
+    "CN": 95,
+    "Small": 445,
+    "Aberration": 1,
+    "Amphibious": 207,
+    "Mindless": 108
+  },
+  "source": {
+    "book": "Impossible Lands",
+    "page": 329,
+    "source_id": 146
+  },
+  "sources": [
+    {
+      "book": "Impossible Lands",
+      "page": 329,
+      "source_id": 146,
+      "raw": "Impossible Lands pg. 329"
+    },
+    {
+      "book": "Impossible Lands",
+      "page": 327,
+      "source_id": 146,
+      "raw": "Impossible Lands pg. 327"
+    }
+  ],
+  "alt_edition_url": null,
+  "pfs": null,
+  "recall_knowledge": {
+    "dc": null,
+    "lores": [],
+    "raw": null
+  },
+  "perception": {
+    "modifier": 7,
+    "senses": [
+      "a taste for skin (imprecise) 60 feet"
+    ],
+    "raw": "+7; a taste for skin (imprecise) 60 feet"
+  },
+  "languages": {
+    "languages": [],
+    "special": [],
+    "raw": null
+  },
+  "skills": [
+    {
+      "name": "Acrobatics",
+      "modifier": 7,
+      "conditionals": []
+    },
+    {
+      "name": "Athletics",
+      "modifier": 5,
+      "conditionals": []
+    },
+    {
+      "name": "Stealth",
+      "modifier": 7,
+      "conditionals": [
+        {
+          "bonus": 9,
+          "context": "in blood or water"
+        }
+      ]
+    }
+  ],
+  "abilities": {
+    "str": 2,
+    "dex": 4,
+    "con": 1,
+    "int": -5,
+    "wis": 0,
+    "cha": -5
+  },
+  "items": [],
+  "ac": {
+    "value": 16,
+    "conditional": null,
+    "saves_note": null
+  },
+  "saves": {
+    "fort": 6,
+    "ref": 9,
+    "will": 5
+  },
+  "hp": {
+    "value": 20,
+    "special": null
+  },
+  "hardness": null,
+  "immunities": [
+    "mental"
+  ],
+  "weaknesses": [
+    {
+      "type": "cold iron",
+      "value": 2
+    }
+  ],
+  "resistances": [],
+  "speed": {
+    "walk": 20,
+    "burrow": null,
+    "climb": null,
+    "fly": null,
+    "swim": 20,
+    "special": null
+  },
+  "strikes": [
+    {
+      "kind": "melee",
+      "action": "one-action",
+      "weapon": "[one-action]",
+      "attack_bonus": null,
+      "map_bonuses": null,
+      "traits": [],
+      "damage": [],
+      "effects": null
+    }
+  ],
+  "spell_lists": [],
+  "top_abilities": [],
+  "defensive_abilities": [
+    {
+      "name": "Shuddering Skitter [reaction]",
+      "actions": "reaction",
+      "traits": [],
+      "frequency": "once per day",
+      "trigger": "The skinskitter is reduced to 0 HP",
+      "requirements": null,
+      "effect": "The fear of death agitates the skinskitter, precipitating a sudden existential awakening of consciousness. The skinskitter is reduced to 1 HP, loses the mindless trait and immunity to mental effects for the next 24 hours, gains the ability to speak one language (typically Osiriani or Vudrani), and takes two of the following actions in any order: Hide, Sneak, Step, Stride, or Take Cover. In addition, the square occupied by the skinskitter before using Shuddering Skitter becomes difficult terrain, as they disgorge a shower of half-digested calluses, chewed nails, and entangled hair in their skittering wake.",
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Shuddering Skitter  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span> </b> <b>Frequency</b> once per day; <b>Trigger</b> The skinskitter is reduced to 0 HP; <b>Effect</b> The fear of death agitates the skinskitter, precipitating a sudden existential awakening of consciousness. The skinskitter is reduced to 1 HP, loses the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=108\">mindless</a> trait and immunity to <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=106\">mental</a> effects for the next 24 hours, gains the ability to speak one language (typically <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=40\">Osiriani</a> or <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=45\">Vudrani</a>), and takes two of the following actions in any order: <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=62\">Hide</a>, <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=63\">Sneak</a>, Step, Stride, or <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=90\">Take Cover</a>. In addition, the square occupied by the skinskitter before using Shuddering Skitter becomes difficult terrain, as they disgorge a shower of half-digested calluses, chewed nails, and entangled hair in their skittering wake.",
+      "body_text": "Shuddering Skitter [reaction] Frequency once per day; Trigger The skinskitter is reduced to 0 HP; Effect The fear of death agitates the skinskitter, precipitating a sudden existential awakening of consciousness. The skinskitter is reduced to 1 HP, loses the mindless trait and immunity to mental effects for the next 24 hours, gains the ability to speak one language (typically Osiriani or Vudrani), and takes two of the following actions in any order: Hide, Sneak, Step, Stride, or Take Cover. In addition, the square occupied by the skinskitter before using Shuddering Skitter becomes difficult terrain, as they disgorge a shower of half-digested calluses, chewed nails, and entangled hair in their skittering wake."
+    }
+  ],
+  "offensive_abilities": [
+    {
+      "name": "Share the Skin",
+      "actions": "one-action",
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": "A grabbed, paralyzed, restrained, unconscious, or willing creature is within the skinskitter's reach",
+      "effect": "The skinskitter scrapes and shears away large sheets of the victim's skin. This requires an Athletics check against the victim's Fortitude DC if the victim is grabbed and is automatic for any of the other conditions. The massive pain causes the victim to become clumsy 1 for 1 minute, and the skinskitter drapes itself in the flapping skin, granting it 10 temporary Hit Points for 1 minute.",
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Share the Skin</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>   <b>Requirements</b> A <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=20\">grabbed</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=28\">paralyzed</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=33\">restrained</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=38\">unconscious</a>, or willing creature is within the skinskitter's reach; <b>Effect</b> The skinskitter scrapes and shears away large sheets of the victim's skin. This requires an <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=3\">Athletics</a> check against the victim's Fortitude DC if the victim is grabbed and is automatic for any of the other conditions. The massive pain causes the victim to become <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=3\">clumsy 1</a> for 1 minute, and the skinskitter drapes itself in the flapping skin, granting it 10 temporary Hit Points for 1 minute.",
+      "body_text": "Share the Skin [one-action] Requirements A grabbed, paralyzed, restrained, unconscious, or willing creature is within the skinskitter's reach; Effect The skinskitter scrapes and shears away large sheets of the victim's skin. This requires an Athletics check against the victim's Fortitude DC if the victim is grabbed and is automatic for any of the other conditions. The massive pain causes the victim to become clumsy 1 for 1 minute, and the skinskitter drapes itself in the flapping skin, granting it 10 temporary Hit Points for 1 minute."
+    }
+  ],
+  "variants": [
+    {
+      "kind": "elite",
+      "url": "Monsters.aspx?ID=2408&Elite=true&NoRedirect=1"
+    },
+    {
+      "kind": "normal",
+      "url": "Monsters.aspx?ID=2408&NoRedirect=1"
+    },
+    {
+      "kind": "weak",
+      "url": "Monsters.aspx?ID=2408&Weak=true&NoRedirect=1"
+    },
+    {
+      "kind": "pwl",
+      "url": "Monsters.aspx?ID=2408&PWL=true&NoRedirect=1"
+    }
+  ],
+  "family_links": [
+    {
+      "name": "Fleshforged",
+      "family_id": 329
+    }
+  ],
+  "raw_fields": {
+    "Elite": "|",
+    "Normal": "|",
+    "Proficiency without Level": "Print Stat BlockSkinskitterCreature 1Legacy ContentCN Small Aberration Amphibious Mindless",
+    "Perception": "+7; a taste for skin (imprecise) 60 feet",
+    "Skills": "Acrobatics +7, Athletics +5, Stealth +7 (+9 in blood or water)",
+    "Str": "+2,",
+    "Dex": "+4,",
+    "Con": "+1,",
+    "Int": "-5,",
+    "Wis": "+0,",
+    "Cha": "-5",
+    "A Taste for Skin": "A skinskitter tastes skin (including leather), hair, claws, and nails within 60 feet."
+  },
+  "links": [
+    {
+      "href": "Traits.aspx?ID=106",
+      "text": "mental",
+      "kind": "Traits",
+      "id": 106
+    },
+    {
+      "href": "Equipment.aspx?ID=375",
+      "text": "cold iron",
+      "kind": "Equipment",
+      "id": 375
+    },
+    {
+      "href": "Traits.aspx?ID=108",
+      "text": "mindless",
+      "kind": "Traits",
+      "id": 108
+    },
+    {
+      "href": "Languages.aspx?ID=40",
+      "text": "Osiriani",
+      "kind": "Languages",
+      "id": 40
+    },
+    {
+      "href": "Languages.aspx?ID=45",
+      "text": "Vudrani",
+      "kind": "Languages",
+      "id": 45
+    },
+    {
+      "href": "Actions.aspx?ID=62",
+      "text": "Hide",
+      "kind": "Actions",
+      "id": 62
+    },
+    {
+      "href": "Actions.aspx?ID=63",
+      "text": "Sneak",
+      "kind": "Actions",
+      "id": 63
+    },
+    {
+      "href": "Actions.aspx?ID=90",
+      "text": "Take Cover",
+      "kind": "Actions",
+      "id": 90
+    },
+    {
+      "href": "Rules.aspx?ID=322",
+      "text": "+4/-1",
+      "kind": "Rules",
+      "id": 322
+    },
+    {
+      "href": "Traits.aspx?ID=179",
+      "text": "finesse",
+      "kind": "Traits",
+      "id": 179
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=18",
+      "text": "Grab",
+      "kind": "MonsterAbilities",
+      "id": 18
+    },
+    {
+      "href": "Conditions.aspx?ID=20",
+      "text": "grabbed",
+      "kind": "Conditions",
+      "id": 20
+    },
+    {
+      "href": "Conditions.aspx?ID=28",
+      "text": "paralyzed",
+      "kind": "Conditions",
+      "id": 28
+    },
+    {
+      "href": "Conditions.aspx?ID=33",
+      "text": "restrained",
+      "kind": "Conditions",
+      "id": 33
+    },
+    {
+      "href": "Conditions.aspx?ID=38",
+      "text": "unconscious",
+      "kind": "Conditions",
+      "id": 38
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    },
+    {
+      "href": "Conditions.aspx?ID=3",
+      "text": "clumsy 1",
+      "kind": "Conditions",
+      "id": 3
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=329",
+      "text": "Fleshforged",
+      "kind": "MonsterFamilies",
+      "id": 329
+    },
+    {
+      "href": "Monsters.aspx?ID=2406",
+      "text": "Fleshforged Conformer",
+      "kind": "Monsters",
+      "id": 2406
+    },
+    {
+      "href": "Monsters.aspx?ID=2407",
+      "text": "Fleshforged Dreadnought",
+      "kind": "Monsters",
+      "id": 2407
+    },
+    {
+      "href": "Monsters.aspx?ID=2408",
+      "text": "Fleshforged Skinskitter",
+      "kind": "Monsters",
+      "id": 2408
+    },
+    {
+      "href": "Sources.aspx?ID=146",
+      "text": "Impossible Lands pg. 327",
+      "kind": "Sources",
+      "id": 146
+    }
+  ],
+  "body_text": "AC 16; Fort +6, Ref +9, Will +5 HP 20; Immunities mental; Weaknesses cold iron 2 Shuddering Skitter [reaction] Frequency once per day; Trigger The skinskitter is reduced to 0 HP; Effect The fear of death agitates the skinskitter, precipitating a sudden existential awakening of consciousness. The skinskitter is reduced to 1 HP, loses the mindless trait and immunity to mental effects for the next 24 hours, gains the ability to speak one language (typically Osiriani or Vudrani), and takes two of the following actions in any order: Hide, Sneak, Step, Stride, or Take Cover. In addition, the square occupied by the skinskitter before using Shuddering Skitter becomes difficult terrain, as they disgorge a shower of half-digested calluses, chewed nails, and entangled hair in their skittering wake.Speed 20 feet, swim 20 feet Melee [one-action] nail +9 [+4/-1] (finesse), Damage 1d8+1 piercing plus GrabShare the Skin [one-action] Requirements A grabbed, paralyzed, restrained, unconscious, or willing creature is within the skinskitter's reach; Effect The skinskitter scrapes and shears away large sheets of the victim's skin. This requires an Athletics check against the victim's Fortitude DC if the victim is grabbed and is automatic for any of the other conditions. The massive pain causes the victim to become clumsy 1 for 1 minute, and the skinskitter drapes itself in the flapping skin, granting it 10 temporary Hit Points for 1 minute. Mindless or Not?A few truly twisted individuals have performed experiments on captive skinskitters, attempting to determine the extent of the creatures' intellectual capabilities. As skinskitters only show signs of consciousness when faced with imminent death, the research involved keeping the fleshforged dregs in constant states of mental and physical duress. Unsurprisingly, given the conditions of such research, the results of these studies are dubious at best.All Monsters in \"Fleshforged\"NameLevelFleshforged Conformer8Fleshforged Dreadnought18Fleshforged Skinskitter1FleshforgedSource Impossible Lands pg. 327 Nethys Note: no description has been provided for this family",
+  "body_html": "<b>AC</b> 16; <b>Fort</b> +6, <b>Ref</b> +9, <b>Will</b> +5<br><b>HP</b> 20; <b>Immunities</b> <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=106\">mental</a>; <b>Weaknesses</b> <a style=\"text-decoration:underline\" href=\"Equipment.aspx?ID=375\">cold iron</a> 2<br><span class=\"hanging-indent\"><b>Shuddering Skitter  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span> </b> <b>Frequency</b> once per day; <b>Trigger</b> The skinskitter is reduced to 0 HP; <b>Effect</b> The fear of death agitates the skinskitter, precipitating a sudden existential awakening of consciousness. The skinskitter is reduced to 1 HP, loses the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=108\">mindless</a> trait and immunity to <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=106\">mental</a> effects for the next 24 hours, gains the ability to speak one language (typically <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=40\">Osiriani</a> or <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=45\">Vudrani</a>), and takes two of the following actions in any order: <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=62\">Hide</a>, <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=63\">Sneak</a>, Step, Stride, or <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=90\">Take Cover</a>. In addition, the square occupied by the skinskitter before using Shuddering Skitter becomes difficult terrain, as they disgorge a shower of half-digested calluses, chewed nails, and entangled hair in their skittering wake.</span><hr><b>Speed</b> 20 feet, swim 20 feet<br><span class=\"hanging-indent\"><b>Melee</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  nail +9 [<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=322\"><u>+4/-1</u></a>] (<a href=\"Traits.aspx?ID=179\"><u>finesse</u></a>), <b>Damage</b> 1d8+1 piercing plus <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=18\">Grab</a></span><span class=\"hanging-indent\"><b>Share the Skin</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>   <b>Requirements</b> A <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=20\">grabbed</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=28\">paralyzed</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=33\">restrained</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=38\">unconscious</a>, or willing creature is within the skinskitter's reach; <b>Effect</b> The skinskitter scrapes and shears away large sheets of the victim's skin. This requires an <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=3\">Athletics</a> check against the victim's Fortitude DC if the victim is grabbed and is automatic for any of the other conditions. The massive pain causes the victim to become <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=3\">clumsy 1</a> for 1 minute, and the skinskitter drapes itself in the flapping skin, granting it 10 temporary Hit Points for 1 minute.</span><h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Mindless or Not?</h3>A few truly twisted individuals have performed experiments on captive skinskitters, attempting to determine the extent of the creatures' intellectual capabilities. As skinskitters only show signs of consciousness when faced with imminent death, the research involved keeping the fleshforged dregs in constant states of mental and physical duress. Unsurprisingly, given the conditions of such research, the results of these studies are dubious at best.<div class=\"monster-family hide-on-print\"><h2 class=\"title\">All Monsters in \"<a href=\"MonsterFamilies.aspx?ID=329\">Fleshforged</a>\"</h2><table class=\"inner\"><tbody><tr><td><b>Name</b></td><td><b>Level</b></td></tr><tr><td><a href=\"Monsters.aspx?ID=2406\">Fleshforged Conformer</a></td><td>8</td></tr><tr><td><a href=\"Monsters.aspx?ID=2407\">Fleshforged Dreadnought</a></td><td>18</td></tr><tr><td><a href=\"Monsters.aspx?ID=2408\">Fleshforged Skinskitter</a></td><td>1</td></tr></tbody></table><h1 class=\"title\"><a href=\"MonsterFamilies.aspx?ID=329\">Fleshforged</a></h1><b>Source</b> <a href=\"Sources.aspx?ID=146\" target=\"_blank\" class=\"external-link\"><i>Impossible Lands pg. 327</i></a><br><i>Nethys Note: no description has been provided for this family</i></div>",
+  "meta_description": "These elusive oddments resemble discarded hides of butchered animals and fleshwarping experiments, floating like so much meaty detritus in the bloody filth of Ecanus's charnel-clogged sewers. Skinskitters, named for their fluid, erratic movements, scavenge the city for leavings of fleshy waste. They prefer discreet, non-violent ways of procuring these biological materials and shy from combat, seemingly possessed of a nervous temperament. Nexian fleshforgers quip this is entirely reasonable, as skinskitters are little more than nervous systems wrapped in dying skin. Nexian guards who actually have to hunt these fleshforged pests aren't quite as jocular; confronted by the oddly childlike pleas of these cornered puddles of flesh, hair, and eyes, many recruits simply choose to leave the city watch. On occasion, curious scholars or soldiers have questioned why skinskitters pursue organic tissue, and whether this is a simple instinct or in pursuit of a grander purpose. Most fleshforgers assume that skinskitters consume organic matter to repair themselves in a process similar to eating, and give the matter no further thought, showing no more interest in the creatures than a smith might show in a bead of melted slag. The most paranoid Nexians claim that skinskitters are attempting to build something out of their collections of cast-off skin, perhaps even reconstructing themselves into fleshforged conformers. There is no recorded evidence of this ever occurring, however— if the creatures have any awareness at all, it's more likely that skinskitters are driven by the basest of instincts to better themselves through the same methods used in their creation but lack the understanding and self-direction to ever succeed.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Monsters, Skinskitter"
+}

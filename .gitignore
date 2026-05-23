@@ -1,3 +1,7 @@
+# Ripper output captures (per-plugin scrape artifacts)
+output/
+output-*/
+
 # Logs
 logs
 *.log

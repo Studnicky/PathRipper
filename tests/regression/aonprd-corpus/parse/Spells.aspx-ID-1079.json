@@ -1,0 +1,177 @@
+{
+  "_type": "spell",
+  "url": "https://2e.aonprd.com/Spells.aspx?ID=1079",
+  "spell_id": 1079,
+  "name": "Cloak of Light",
+  "kind": "spell",
+  "rank": 4,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Spells.aspx?ID=1079&NoRedirect=1",
+  "action_cost": "two-actions",
+  "traits": [
+    "Concentrate",
+    "Healing",
+    "Light",
+    "Manipulate",
+    "Vitality"
+  ],
+  "trait_ids": {
+    "Concentrate": 32,
+    "Healing": 89,
+    "Light": 100,
+    "Manipulate": 104,
+    "Vitality": 509
+  },
+  "source": {
+    "book": "Divine Mysteries",
+    "page": 256,
+    "source_id": 234
+  },
+  "sources": [
+    {
+      "book": "Divine Mysteries",
+      "page": 256,
+      "source_id": 234,
+      "raw": "Divine Mysteries pg. 256"
+    }
+  ],
+  "traditions": [
+    "divine",
+    "primal"
+  ],
+  "spell_list": null,
+  "bloodlines": [],
+  "cult": [],
+  "domain": [],
+  "deities": [],
+  "mysteries": [],
+  "patron_themes": [],
+  "catalysts": [],
+  "cast": {
+    "actions": null,
+    "components": [],
+    "time": null,
+    "raw": null
+  },
+  "trigger": null,
+  "range": null,
+  "area": null,
+  "targets": null,
+  "defense": null,
+  "saving_throw": null,
+  "duration": "sustained for up to 1 minute",
+  "cost": null,
+  "requirements": null,
+  "description_html": "You surround yourself in holy light that restores the living and rebuffs undead. You glow with <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2402\">bright light</a> in a 30-foot radius and <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2403\">dim light</a> to the next 30 feet. Living creatures that begin their turn adjacent to you recover 4d6 Hit Points. <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=722\">Undead</a> creatures that begin their turn adjacent to you take 4d6 <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=509\">vitality</a> damage (basic Fortitude save).<ul></ul><hr>",
+  "description_text": "You surround yourself in holy light that restores the living and rebuffs undead. You glow with bright light in a 30-foot radius and dim light to the next 30 feet. Living creatures that begin their turn adjacent to you recover 4d6 Hit Points. Undead creatures that begin their turn adjacent to you take 4d6 vitality damage (basic Fortitude save).",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "affliction": null,
+  "heightened": [
+    {
+      "rank_label": "+2",
+      "rank": null,
+      "increment": 2,
+      "body_html": "The healing increases by 2d6, and the damage to undead increases by 2d6.",
+      "body_text": "The healing increases by 2d6, and the damage to undead increases by 2d6."
+    }
+  ],
+  "raw_fields": {
+    "Traditions": "divine, primal",
+    "Duration": "sustained for up to 1 minute"
+  },
+  "links": [
+    {
+      "href": "Spells.aspx?ID=1079&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Spells",
+      "id": 1079
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "/Traits.aspx?ID=89",
+      "text": "Healing",
+      "kind": "Traits",
+      "id": 89
+    },
+    {
+      "href": "/Traits.aspx?ID=100",
+      "text": "Light",
+      "kind": "Traits",
+      "id": 100
+    },
+    {
+      "href": "/Traits.aspx?ID=104",
+      "text": "Manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "/Traits.aspx?ID=509",
+      "text": "Vitality",
+      "kind": "Traits",
+      "id": 509
+    },
+    {
+      "href": "Sources.aspx?ID=234",
+      "text": "Divine Mysteries pg. 256",
+      "kind": "Sources",
+      "id": 234
+    },
+    {
+      "href": "Spells.aspx?Tradition=2",
+      "text": "divine",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?Tradition=4",
+      "text": "primal",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Rules.aspx?ID=2402",
+      "text": "bright light",
+      "kind": "Rules",
+      "id": 2402
+    },
+    {
+      "href": "Rules.aspx?ID=2403",
+      "text": "dim light",
+      "kind": "Rules",
+      "id": 2403
+    },
+    {
+      "href": "Traits.aspx?ID=722",
+      "text": "Undead",
+      "kind": "Traits",
+      "id": 722
+    },
+    {
+      "href": "Traits.aspx?ID=509",
+      "text": "vitality",
+      "kind": "Traits",
+      "id": 509
+    }
+  ],
+  "meta_description": "You surround yourself in holy light that restores the living and rebuffs undead. You glow with bright light in a 30-foot radius and dim light to the next 30 feet. Living creatures that begin their turn adjacent to you recover 4d6 Hit Points. Undead creatures that begin their turn adjacent to you take 4d6 vitality damage (basic Fortitude save).",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Spells, Cloak of Light"
+}

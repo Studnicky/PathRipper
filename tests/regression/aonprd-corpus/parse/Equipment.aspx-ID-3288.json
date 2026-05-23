@@ -1,0 +1,190 @@
+{
+  "_type": "equipment",
+  "url": "https://2e.aonprd.com/Equipment.aspx?ID=3288",
+  "equipment_id": 3288,
+  "name": "Blasting Stone",
+  "item_level": 1,
+  "tiered_variants": true,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Equipment.aspx?ID=79&NoRedirect=1",
+  "traits": [
+    "Alchemical",
+    "Bomb",
+    "Consumable",
+    "Sonic",
+    "Splash"
+  ],
+  "trait_ids": {
+    "Alchemical": 528,
+    "Bomb": 548,
+    "Consumable": 564,
+    "Sonic": 697,
+    "Splash": 699
+  },
+  "source": {
+    "book": "Player Core 2",
+    "page": 283,
+    "source_id": 227
+  },
+  "sources": [
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    }
+  ],
+  "price": {
+    "gp": null,
+    "sp": null,
+    "cp": null,
+    "raw": null
+  },
+  "bulk": "L",
+  "usage": "held in 1 hand",
+  "hands": null,
+  "activations": [
+    {
+      "action_cost": "one-action",
+      "components": [],
+      "text": "Strike"
+    }
+  ],
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "effect": null,
+  "onset": null,
+  "duration": null,
+  "craft_requirements": null,
+  "access": null,
+  "benefit": null,
+  "drawback": null,
+  "cost": null,
+  "saving_throw": null,
+  "description_html": "When this pebble hits a creature or a hard surface, it explodes with a deafening bang. A blasting stone deals the listed sonic damage and sonic splash damage, and each creature within 10 feet of the space in which the stone exploded must succeed at a Fortitude saving throw with the listed DC or be <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=66\">deafened</a> until the end of its next turn. Many types of blasting stones grant an item bonus to attack rolls.<br>",
+  "description_text": "When this pebble hits a creature or a hard surface, it explodes with a deafening bang. A blasting stone deals the listed sonic damage and sonic splash damage, and each creature within 10 feet of the space in which the stone exploded must succeed at a Fortitude saving throw with the listed DC or be deafened until the end of its next turn. Many types of blasting stones grant an item bonus to attack rolls.",
+  "variants": [
+    {
+      "name": "Blasting Stone (Lesser)",
+      "item_level": 1,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 3,
+        "sp": null,
+        "cp": null,
+        "raw": "3 gp"
+      },
+      "bulk": "L",
+      "description_text": "The bomb deals 1d4 sonic damage and 1 sonic splash damage, and the DC is 17."
+    },
+    {
+      "name": "Blasting Stone (Moderate)",
+      "item_level": 3,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 10,
+        "sp": null,
+        "cp": null,
+        "raw": "10 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +1 item bonus to attack rolls. The bomb deals 2d4 sonic damage and 2 sonic splash damage, and the DC is 20."
+    },
+    {
+      "name": "Blasting Stone (Greater)",
+      "item_level": 11,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 250,
+        "sp": null,
+        "cp": null,
+        "raw": "250 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +2 item bonus to attack rolls. The bomb deals 3d4 sonic damage and 3 sonic splash damage, and the DC is 28."
+    },
+    {
+      "name": "Blasting Stone (Major)",
+      "item_level": 17,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 2500,
+        "sp": null,
+        "cp": null,
+        "raw": "2,500 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +3 item bonus to attack rolls. The bomb deals 4d4 sonic damage and 4 sonic splash damage, and the DC is 36."
+    }
+  ],
+  "raw_fields": {
+    "Usage": "held in 1 hand",
+    "Bulk": "L",
+    "Activate": "[one-action] Strike"
+  },
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=66",
+      "text": "deafened",
+      "kind": "Conditions",
+      "id": 66
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Sources.aspx?ID=227",
+      "text": "Player Core 2 pg. 283",
+      "kind": "Sources",
+      "id": 227
+    }
+  ],
+  "meta_description": "When this pebble hits a creature or a hard surface, it explodes with a deafening bang. A blasting stone deals the listed sonic damage and sonic splash damage, and each creature within 10 feet of the space in which the stone exploded must succeed at a Fortitude saving throw with the listed DC or be deafened until the end of its next turn. Many types of blasting stones grant an item bonus to attack rolls.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Treasure, Blasting Stone"
+}

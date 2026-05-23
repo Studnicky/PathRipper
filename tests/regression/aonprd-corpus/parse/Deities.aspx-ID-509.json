@@ -1,0 +1,206 @@
+{
+  "_type": "generic",
+  "url": "https://2e.aonprd.com/Deities.aspx?ID=509",
+  "entity_id": 509,
+  "name": "Zugero (The Dream Battler)",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Divine Mysteries",
+    "page": 312,
+    "source_id": 234
+  },
+  "sources": [
+    {
+      "book": "Divine Mysteries",
+      "page": 312,
+      "source_id": 234,
+      "raw": "Divine Mysteries pg. 312"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Devotee Benefits",
+      "level": 2,
+      "body_html": "<b><a href=\"Backgrounds.aspx?ID=132\"><u>Divine Attribute</u></a></b> Intelligence or Wisdom<br><b>Divine Font</b> <i><u><a href=\"Spells.aspx?ID=146\">harm</a></u></i><br><b>Divine Sanctification</b> none<br><b>Divine Skill</b> <u><a href=\"Skills.aspx?ID=34\">Acrobatics</a></u><br><b>Favored Weapon</b> <u><a href=\"Weapons.aspx?ID=433\">bola</a></u><br><b>Domains</b> <a href=\"Domains.aspx?ID=69\"><u>darkness</u></a>, <a href=\"Domains.aspx?ID=79\"><u>indulgence</u></a>, <a href=\"Domains.aspx?ID=80\"><u>knowledge</u></a>, <a href=\"Domains.aspx?ID=116\"><u>repose</u></a><br><b>Cleric Spells</b> 1st: <i><u><a href=\"Spells.aspx?ID=1675\">sleep</a></u></i>, 2nd: <i><u><a href=\"Spells.aspx?ID=1577\">invisibility</a></u></i>, 5th: <i><u><a href=\"Spells.aspx?ID=1570\">illusory scene</a></u></i>",
+      "body_text": "Divine Attribute Intelligence or Wisdom Divine Font harm Divine Sanctification none Divine Skill Acrobatics Favored Weapon bola Domains darkness, indulgence, knowledge, repose Cleric Spells 1st: sleep, 2nd: invisibility, 5th: illusory scene",
+      "links": [
+        {
+          "href": "Backgrounds.aspx?ID=132",
+          "text": "Divine Attribute",
+          "kind": "Backgrounds",
+          "id": 132
+        },
+        {
+          "href": "Spells.aspx?ID=146",
+          "text": "harm",
+          "kind": "Spells",
+          "id": 146
+        },
+        {
+          "href": "Skills.aspx?ID=34",
+          "text": "Acrobatics",
+          "kind": "Skills",
+          "id": 34
+        },
+        {
+          "href": "Weapons.aspx?ID=433",
+          "text": "bola",
+          "kind": "Weapons",
+          "id": 433
+        },
+        {
+          "href": "Domains.aspx?ID=69",
+          "text": "darkness",
+          "kind": "Domains",
+          "id": 69
+        },
+        {
+          "href": "Domains.aspx?ID=79",
+          "text": "indulgence",
+          "kind": "Domains",
+          "id": 79
+        },
+        {
+          "href": "Domains.aspx?ID=80",
+          "text": "knowledge",
+          "kind": "Domains",
+          "id": 80
+        },
+        {
+          "href": "Domains.aspx?ID=116",
+          "text": "repose",
+          "kind": "Domains",
+          "id": 116
+        },
+        {
+          "href": "Spells.aspx?ID=1675",
+          "text": "sleep",
+          "kind": "Spells",
+          "id": 1675
+        },
+        {
+          "href": "Spells.aspx?ID=1577",
+          "text": "invisibility",
+          "kind": "Spells",
+          "id": 1577
+        },
+        {
+          "href": "Spells.aspx?ID=1570",
+          "text": "illusory scene",
+          "kind": "Spells",
+          "id": 1570
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Deities.aspx?ID=509",
+      "text": "Zugero (The Dream Battler)",
+      "kind": "Deities",
+      "id": 509
+    },
+    {
+      "href": "Sources.aspx?ID=234",
+      "text": "Divine Mysteries pg. 312",
+      "kind": "Sources",
+      "id": 234
+    },
+    {
+      "href": "Ancestries.aspx?ID=62",
+      "text": "goblin",
+      "kind": "Ancestries",
+      "id": 62
+    },
+    {
+      "href": "DeityCategories.aspx?ID=27",
+      "text": "Goblin Gods",
+      "kind": "DeityCategories",
+      "id": 27
+    },
+    {
+      "href": "Backgrounds.aspx?ID=132",
+      "text": "Divine Attribute",
+      "kind": "Backgrounds",
+      "id": 132
+    },
+    {
+      "href": "Spells.aspx?ID=146",
+      "text": "harm",
+      "kind": "Spells",
+      "id": 146
+    },
+    {
+      "href": "Skills.aspx?ID=34",
+      "text": "Acrobatics",
+      "kind": "Skills",
+      "id": 34
+    },
+    {
+      "href": "Weapons.aspx?ID=433",
+      "text": "bola",
+      "kind": "Weapons",
+      "id": 433
+    },
+    {
+      "href": "Domains.aspx?ID=69",
+      "text": "darkness",
+      "kind": "Domains",
+      "id": 69
+    },
+    {
+      "href": "Domains.aspx?ID=79",
+      "text": "indulgence",
+      "kind": "Domains",
+      "id": 79
+    },
+    {
+      "href": "Domains.aspx?ID=80",
+      "text": "knowledge",
+      "kind": "Domains",
+      "id": 80
+    },
+    {
+      "href": "Domains.aspx?ID=116",
+      "text": "repose",
+      "kind": "Domains",
+      "id": 116
+    },
+    {
+      "href": "Spells.aspx?ID=1675",
+      "text": "sleep",
+      "kind": "Spells",
+      "id": 1675
+    },
+    {
+      "href": "Spells.aspx?ID=1577",
+      "text": "invisibility",
+      "kind": "Spells",
+      "id": 1577
+    },
+    {
+      "href": "Spells.aspx?ID=1570",
+      "text": "illusory scene",
+      "kind": "Spells",
+      "id": 1570
+    }
+  ],
+  "body_text": "Zugero encompasses both ends of the spectrum of battle. When she was a mortal, she was revered as a fantastic general; no other goblin had been said to emerge victorious in so many raids. Zugero considered there to be no need to enter a battle if there was no guaranteed victory. She planned out ambush points, having others create traps or use the environment to their favor. She kept her brilliant tactical mind sharp with constant rest. It wasn’t uncommon for her soldiers to find her napping or drinking midengagement, nestled away safely behind back lines. According to tales, it was her most powerful nap ever that eventually elevated her to become the Dream Battler. She now appears as a goblin with pale green skin clad in slapdash armor made from scraps, carrying a number of armaments and trap devices around her belt. Depending on the observer, she either appears alert for battle or on the verge of falling asleep, which many goblins state is a sign as to which task the observer should focus on at the time. To force her followers to rest and relax, Zugero whispers strategies or gives epiphanies on how to face a battle or ambush only when her followers are ignoring their current duties. To Zugero, a well-rested mind is vital to achieving victory in battle, while also being a fantastic reward for a successful confrontation. She is selective; not everyone can gain her advice, and she is claimed to judge her followers by the number of scars they possess. Experience makes a cunning and great tactician, and that is gained through battle, or failing at deceiving the enemy into doing what one wants. Thus, those who want to be one of Zugero’s chosen need to face danger, and think strategically how to survive it. Category Goblin Gods Edicts Fight today so you can rest tomorrow, work smart instead of hard, slack off and get away with it Anathema Launch yourself thoughtlessly into work or combat Areas of Concern Ambushes, lurking, slacking Religious Symbol Cup on a pillow Sacred Animal Badger Sacred Color(s) Brown, black Devotee BenefitsDivine Attribute Intelligence or Wisdom Divine Font harm Divine Sanctification none Divine Skill Acrobatics Favored Weapon bola Domains darkness, indulgence, knowledge, repose Cleric Spells 1st: sleep, 2nd: invisibility, 5th: illusory scene",
+  "body_html": "Zugero encompasses both ends of the spectrum of battle. When she was a mortal, she was revered as a fantastic general; no other <a style=\"text-decoration:underline\" href=\"Ancestries.aspx?ID=62\">goblin</a> had been said to emerge victorious in so many raids. Zugero considered there to be no need to enter a battle if there was no guaranteed victory. She planned out ambush points, having others create traps or use the environment to their favor. She kept her brilliant tactical mind sharp with constant rest. It wasn’t uncommon for her soldiers to find her napping or drinking midengagement, nestled away safely behind back lines. According to tales, it was her most powerful nap ever that eventually elevated her to become the Dream Battler. She now appears as a goblin with pale green skin clad in slapdash armor made from scraps, carrying a number of armaments and trap devices around her belt. Depending on the observer, she either appears alert for battle or on the verge of falling asleep, which many goblins state is a sign as to which task the observer should focus on at the time.<br><br>To force her followers to rest and relax, Zugero whispers strategies or gives epiphanies on how to face a battle or ambush only when her followers are ignoring their current duties. To Zugero, a well-rested mind is vital to achieving victory in battle, while also being a fantastic reward for a successful confrontation. She is selective; not everyone can gain her advice, and she is claimed to judge her followers by the number of scars they possess. Experience makes a cunning and great tactician, and that is gained through battle, or failing at deceiving the enemy into doing what one wants. Thus, those who want to be one of Zugero’s chosen need to face danger, and think strategically how to survive it.<br><br><b>Category</b> <a href=\"DeityCategories.aspx?ID=27\">Goblin Gods</a><br><b>Edicts</b> Fight today so you can rest tomorrow, work smart instead of hard, slack off and get away with it<br><b>Anathema</b> Launch yourself thoughtlessly into work or combat<br><b>Areas of Concern</b> Ambushes, lurking, slacking <br><b>Religious Symbol</b> Cup on a pillow <br><b>Sacred Animal</b> Badger <br><b>Sacred Color(s)</b> Brown, black <h2 class=\"title\">Devotee Benefits</h2><b><a href=\"Backgrounds.aspx?ID=132\"><u>Divine Attribute</u></a></b> Intelligence or Wisdom<br><b>Divine Font</b> <i><u><a href=\"Spells.aspx?ID=146\">harm</a></u></i><br><b>Divine Sanctification</b> none<br><b>Divine Skill</b> <u><a href=\"Skills.aspx?ID=34\">Acrobatics</a></u><br><b>Favored Weapon</b> <u><a href=\"Weapons.aspx?ID=433\">bola</a></u><br><b>Domains</b> <a href=\"Domains.aspx?ID=69\"><u>darkness</u></a>, <a href=\"Domains.aspx?ID=79\"><u>indulgence</u></a>, <a href=\"Domains.aspx?ID=80\"><u>knowledge</u></a>, <a href=\"Domains.aspx?ID=116\"><u>repose</u></a><br><b>Cleric Spells</b> 1st: <i><u><a href=\"Spells.aspx?ID=1675\">sleep</a></u></i>, 2nd: <i><u><a href=\"Spells.aspx?ID=1577\">invisibility</a></u></i>, 5th: <i><u><a href=\"Spells.aspx?ID=1570\">illusory scene</a></u></i>",
+  "meta_description": "Zugero encompasses both ends of the spectrum of battle. When she was a mortal, she was revered as a fantastic general; no other goblin had been said to emerge victorious in so many raids. Zugero considered there to be no need to enter a battle if there was no guaranteed victory. She planned out ambush points, having others create traps or use the environment to their favor. She kept her brilliant tactical mind sharp with constant rest. It wasn’t uncommon for her soldiers to find her napping or drinking midengagement, nestled away safely behind back lines. According to tales, it was her most powerful nap ever that eventually elevated her to become the Dream Battler. She now appears as a goblin with pale green skin clad in slapdash armor made from scraps, carrying a number of armaments and trap devices around her belt. Depending on the observer, she either appears alert for battle or on the verge of falling asleep, which many goblins state is a sign as to which task the observer should focus on at the time. To force her followers to rest and relax, Zugero whispers strategies or gives epiphanies on how to face a battle or ambush only when her followers are ignoring their current duties. To Zugero, a well-rested mind is vital to achieving victory in battle, while also being a fantastic reward for a successful confrontation. She is selective; not everyone can gain her advice, and she is claimed to judge her followers by the number of scars they possess. Experience makes a cunning and great tactician, and that is gained through battle, or failing at deceiving the enemy into doing what one wants. Thus, those who want to be one of Zugero’s chosen need to face danger, and think strategically how to survive it.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Deity, Zugero",
+  "level": null,
+  "level_kind": null
+}

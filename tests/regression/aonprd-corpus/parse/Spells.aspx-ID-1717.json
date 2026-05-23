@@ -1,0 +1,192 @@
+{
+  "_type": "spell",
+  "url": "https://2e.aonprd.com/Spells.aspx?ID=1717",
+  "spell_id": 1717,
+  "name": "Telekinetic Maneuver",
+  "kind": "spell",
+  "rank": 2,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Spells.aspx?ID=333&NoRedirect=1",
+  "action_cost": "two-actions",
+  "traits": [
+    "Attack",
+    "Concentrate",
+    "Force",
+    "Manipulate"
+  ],
+  "trait_ids": {
+    "Attack": 15,
+    "Concentrate": 32,
+    "Force": 75,
+    "Manipulate": 104
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 363,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 363,
+      "source_id": 216,
+      "raw": "Player Core pg. 363"
+    }
+  ],
+  "traditions": [
+    "arcane",
+    "occult"
+  ],
+  "spell_list": null,
+  "bloodlines": [],
+  "cult": [],
+  "domain": [],
+  "deities": [
+    {
+      "name": "Yluma",
+      "deity_id": 721
+    }
+  ],
+  "mysteries": [
+    {
+      "name": "battle",
+      "mystery_id": 13
+    }
+  ],
+  "patron_themes": [],
+  "catalysts": [],
+  "cast": {
+    "actions": null,
+    "components": [],
+    "time": null,
+    "raw": null
+  },
+  "trigger": null,
+  "range": "60 feet",
+  "area": null,
+  "targets": "1 creature",
+  "defense": null,
+  "saving_throw": null,
+  "duration": null,
+  "cost": null,
+  "requirements": null,
+  "description_html": "With a rush of telekinetic power, you move a foe or something they carry. You can attempt to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=41\">Disarm</a>, <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2379\">Reposition</a>, <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=38\">Shove</a>, or <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=40\">Trip</a> the target using a spell attack roll instead of an <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=3\">Athletics</a> check.<ul></ul>",
+  "description_text": "With a rush of telekinetic power, you move a foe or something they carry. You can attempt to Disarm, Reposition, Shove, or Trip the target using a spell attack roll instead of an Athletics check.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "affliction": null,
+  "heightened": [],
+  "raw_fields": {
+    "Traditions": "arcane, occult",
+    "Deity": "Yluma",
+    "Mystery": "battle",
+    "Range": "60 feet",
+    "Targets": "1 creature"
+  },
+  "links": [
+    {
+      "href": "Spells.aspx?ID=333&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Spells",
+      "id": 333
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=15",
+      "text": "Attack",
+      "kind": "Traits",
+      "id": 15
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "/Traits.aspx?ID=75",
+      "text": "Force",
+      "kind": "Traits",
+      "id": 75
+    },
+    {
+      "href": "/Traits.aspx?ID=104",
+      "text": "Manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 363",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Spells.aspx?Tradition=1",
+      "text": "arcane",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?Tradition=3",
+      "text": "occult",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Deities.aspx?ID=721",
+      "text": "Yluma",
+      "kind": "Deities",
+      "id": 721
+    },
+    {
+      "href": "Mysteries.aspx?ID=13",
+      "text": "battle",
+      "kind": "Mysteries",
+      "id": 13
+    },
+    {
+      "href": "Actions.aspx?ID=41",
+      "text": "Disarm",
+      "kind": "Actions",
+      "id": 41
+    },
+    {
+      "href": "Actions.aspx?ID=2379",
+      "text": "Reposition",
+      "kind": "Actions",
+      "id": 2379
+    },
+    {
+      "href": "Actions.aspx?ID=38",
+      "text": "Shove",
+      "kind": "Actions",
+      "id": 38
+    },
+    {
+      "href": "Actions.aspx?ID=40",
+      "text": "Trip",
+      "kind": "Actions",
+      "id": 40
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    }
+  ],
+  "meta_description": "With a rush of telekinetic power, you move a foe or something they carry. You can attempt to Disarm , Reposition , Shove , or Trip the target using a spell attack roll instead of an Athletics check.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Spells, Telekinetic Maneuver"
+}

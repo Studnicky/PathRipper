@@ -1,0 +1,186 @@
+{
+  "_type": "spell",
+  "url": "https://2e.aonprd.com/Spells.aspx?ID=1567",
+  "spell_id": 1567,
+  "name": "Illusory Creature",
+  "kind": "spell",
+  "rank": 2,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Spells.aspx?ID=158&NoRedirect=1",
+  "action_cost": "two-actions",
+  "traits": [
+    "Auditory",
+    "Concentrate",
+    "Illusion",
+    "Manipulate",
+    "Olfactory",
+    "Visual"
+  ],
+  "trait_ids": {
+    "Auditory": 16,
+    "Concentrate": 32,
+    "Illusion": 92,
+    "Manipulate": 104,
+    "Olfactory": 246,
+    "Visual": 163
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 336,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 336,
+      "source_id": 216,
+      "raw": "Player Core pg. 336"
+    }
+  ],
+  "traditions": [
+    "arcane",
+    "occult"
+  ],
+  "spell_list": null,
+  "bloodlines": [],
+  "cult": [],
+  "domain": [],
+  "deities": [],
+  "mysteries": [],
+  "patron_themes": [],
+  "catalysts": [],
+  "cast": {
+    "actions": null,
+    "components": [],
+    "time": null,
+    "raw": null
+  },
+  "trigger": null,
+  "range": "500 feet",
+  "area": null,
+  "targets": null,
+  "defense": null,
+  "saving_throw": null,
+  "duration": "sustained",
+  "cost": null,
+  "requirements": null,
+  "description_html": "You create an illusory image of a Large or smaller creature. It generates the appropriate sounds, smells, and feels believable to the touch. If you and the image are ever farther than 500 feet apart, the spell ends.<br><br> The image can't speak, but you can use your actions to speak through the creature, with the spell disguising your voice as appropriate. You might need to attempt a <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=5\">Deception</a> or <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=12\">Performance</a> check to mimic the creature, as determined by the GM. This is especially likely if you're trying to imitate a specific person and engage with someone that person knows. <br><br>In combat, the illusion can use 2 actions per turn, which it uses when you Sustain the spell. It uses your spell attack modifier for attack rolls and your spell DC for its AC. Its saving throw modifiers are equal to your spell DC – 10. It is substantial enough that it can flank other creatures. If the image is hit by an attack or fails a save, the spell ends.<br><br> The illusion can cause damage by making the target believe the illusion's attacks are real, but it cannot otherwise directly affect the physical world. If the illusory creature hits with a Strike, the target takes 3d4 mental damage. The illusion's Strikes are <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=188\">nonlethal</a>. If the damage doesn't correspond to the image of the monster—for example, if an illusory Large dragon deals only 5 damage—the GM might allow the target to attempt an immediate Perception check to disbelieve the spell. Any relevant resistances and weaknesses apply if the target thinks they do, as judged by the GM. For example, if the illusion wields a warhammer and attacks a creature resistant to bludgeoning damage, the creature would take less mental damage. However, illusory damage does not deactivate regeneration or trigger other effects that require a certain damage type. The GM should track illusory damage dealt by the illusion.<br><br> Any creature that touches the image or uses the <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=84\">Seek</a> action to examine it can attempt to disbelieve your illusion. When a creature disbelieves the illusion, it recovers from half the damage it had taken from it (if any) and doesn't take any further damage from it.<ul></ul><hr>",
+  "description_text": "You create an illusory image of a Large or smaller creature. It generates the appropriate sounds, smells, and feels believable to the touch. If you and the image are ever farther than 500 feet apart, the spell ends. The image can't speak, but you can use your actions to speak through the creature, with the spell disguising your voice as appropriate. You might need to attempt a Deception or Performance check to mimic the creature, as determined by the GM. This is especially likely if you're trying to imitate a specific person and engage with someone that person knows. In combat, the illusion can use 2 actions per turn, which it uses when you Sustain the spell. It uses your spell attack modifier for attack rolls and your spell DC for its AC. Its saving throw modifiers are equal to your spell DC – 10. It is substantial enough that it can flank other creatures. If the image is hit by an attack or fails a save, the spell ends. The illusion can cause damage by making the target believe the illusion's attacks are real, but it cannot otherwise directly affect the physical world. If the illusory creature hits with a Strike, the target takes 3d4 mental damage. The illusion's Strikes are nonlethal. If the damage doesn't correspond to the image of the monster—for example, if an illusory Large dragon deals only 5 damage—the GM might allow the target to attempt an immediate Perception check to disbelieve the spell. Any relevant resistances and weaknesses apply if the target thinks they do, as judged by the GM. For example, if the illusion wields a warhammer and attacks a creature resistant to bludgeoning damage, the creature would take less mental damage. However, illusory damage does not deactivate regeneration or trigger other effects that require a certain damage type. The GM should track illusory damage dealt by the illusion. Any creature that touches the image or uses the Seek action to examine it can attempt to disbelieve your illusion. When a creature disbelieves the illusion, it recovers from half the damage it had taken from it (if any) and doesn't take any further damage from it.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "affliction": null,
+  "heightened": [
+    {
+      "rank_label": "+1",
+      "rank": null,
+      "increment": 1,
+      "body_html": "The damage of the image's Strikes increases by 1d4, and the maximum size of creature you can create increases by one (to a maximum of Gargantuan).",
+      "body_text": "The damage of the image's Strikes increases by 1d4, and the maximum size of creature you can create increases by one (to a maximum of Gargantuan)."
+    }
+  ],
+  "raw_fields": {
+    "Traditions": "arcane, occult",
+    "Range": "500 feet",
+    "Duration": "sustained"
+  },
+  "links": [
+    {
+      "href": "Spells.aspx?ID=158&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Spells",
+      "id": 158
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=16",
+      "text": "Auditory",
+      "kind": "Traits",
+      "id": 16
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "/Traits.aspx?ID=92",
+      "text": "Illusion",
+      "kind": "Traits",
+      "id": 92
+    },
+    {
+      "href": "/Traits.aspx?ID=104",
+      "text": "Manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "/Traits.aspx?ID=246",
+      "text": "Olfactory",
+      "kind": "Traits",
+      "id": 246
+    },
+    {
+      "href": "/Traits.aspx?ID=163",
+      "text": "Visual",
+      "kind": "Traits",
+      "id": 163
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 336",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Spells.aspx?Tradition=1",
+      "text": "arcane",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?Tradition=3",
+      "text": "occult",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Skills.aspx?ID=5",
+      "text": "Deception",
+      "kind": "Skills",
+      "id": 5
+    },
+    {
+      "href": "Skills.aspx?ID=12",
+      "text": "Performance",
+      "kind": "Skills",
+      "id": 12
+    },
+    {
+      "href": "Traits.aspx?ID=188",
+      "text": "nonlethal",
+      "kind": "Traits",
+      "id": 188
+    },
+    {
+      "href": "Actions.aspx?ID=84",
+      "text": "Seek",
+      "kind": "Actions",
+      "id": 84
+    }
+  ],
+  "meta_description": "You create an illusory image of a Large or smaller creature. It generates the appropriate sounds, smells, and feels believable to the touch. If you and the image are ever farther than 500 feet apart, the spell ends. The image can't speak, but you can use your actions to speak through the creature, with the spell disguising your voice as appropriate. You might need to attempt a Deception or Performance check to mimic the creature, as determined by the GM. This is especially likely if you're trying to imitate a specific person and engage with someone that person knows. In combat, the illusion can use 2 actions per turn, which it uses when you Sustain the spell. It uses your spell attack modifier for attack rolls and your spell DC for its AC. Its saving throw modifiers are equal to your spell DC – 10. It is substantial enough that it can flank other creatures. If the image is hit by an attack or fails a save, the spell ends. The illusion can cause damage by making the target believe the illusion's attacks are real, but it cannot otherwise directly affect the physical world. If the illusory creature hits with a Strike, the target takes 3d4 mental damage. The illusion's Strikes are nonlethal . If the damage doesn't correspond to the image of the monster—for example, if an illusory Large dragon deals only 5 damage—the GM might allow the target to attempt an immediate Perception check to disbelieve the spell. Any relevant resistances and weaknesses apply if the target thinks they do, as judged by the GM. For example, if the illusion wields a warhammer and attacks a creature resistant to bludgeoning damage, the creature would take less mental damage. However, illusory damage does not deactivate regeneration or trigger other effects that require a certain damage type. The GM should track illusory damage dealt by the illusion. Any creature that touches the image or uses the Seek action to examine it can attempt to disbelieve your illusion. When a creature disbelieves the illusion, it recovers from half the damage it had taken from it (if any) and doesn't take any further damage from it.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Spells, Illusory Creature"
+}

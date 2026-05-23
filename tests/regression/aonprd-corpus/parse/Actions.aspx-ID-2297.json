@@ -1,0 +1,52 @@
+{
+  "_type": "action",
+  "url": "https://2e.aonprd.com/Actions.aspx?ID=2297",
+  "action_id": 2297,
+  "name": "Interact",
+  "rarity": "common",
+  "action_cost": "one-action",
+  "traits": [
+    "Manipulate"
+  ],
+  "trait_ids": {
+    "Manipulate": 104
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 416,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 416,
+      "source_id": 216,
+      "raw": "Player Core pg. 416"
+    }
+  ],
+  "legacy": false,
+  "alt_edition_url": null,
+  "trigger": null,
+  "frequency": null,
+  "requirements": null,
+  "cost": null,
+  "effect_html": "You use your hand or hands to manipulate an object or the terrain. You can grab an unattended or stored object, draw a weapon, <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2150\">swap a held item for another</a>, open a door, or achieve a  similar effect. On rare occasions, you might have to attempt a skill check to determine if your Interact action was successful.",
+  "effect_text": "You use your hand or hands to manipulate an object or the terrain. You can grab an unattended or stored object, draw a weapon, swap a held item for another, open a door, or achieve a similar effect. On rare occasions, you might have to attempt a skill check to determine if your Interact action was successful.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Rules.aspx?ID=2150",
+      "text": "swap a held item for another",
+      "kind": "Rules",
+      "id": 2150
+    }
+  ],
+  "meta_description": "You use your hand or hands to manipulate an object or the terrain. You can grab an unattended or stored object, draw a weapon, swap a held item for another , open a door, or achieve a similar effect. On rare occasions, you might have to attempt a skill check to determine if your Interact action was successful.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Actions, Interact"
+}

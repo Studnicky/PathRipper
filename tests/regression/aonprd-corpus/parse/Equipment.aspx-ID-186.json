@@ -1,0 +1,192 @@
+{
+  "_type": "equipment",
+  "url": "https://2e.aonprd.com/Equipment.aspx?ID=186",
+  "equipment_id": 186,
+  "name": "Healing Potion",
+  "item_level": 1,
+  "tiered_variants": true,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Equipment.aspx?ID=186&NoRedirect=1",
+  "traits": [
+    "Consumable",
+    "Healing",
+    "Magical",
+    "Potion",
+    "Vitality"
+  ],
+  "trait_ids": {
+    "Consumable": 564,
+    "Healing": 623,
+    "Magical": 644,
+    "Potion": 672,
+    "Vitality": 509
+  },
+  "source": {
+    "book": "GM Core",
+    "page": 259,
+    "source_id": 218
+  },
+  "sources": [
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    },
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    },
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    },
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    },
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    },
+    {
+      "book": "GM Core",
+      "page": 259,
+      "source_id": 218,
+      "raw": "GM Core pg. 259"
+    }
+  ],
+  "price": {
+    "gp": null,
+    "sp": null,
+    "cp": null,
+    "raw": null
+  },
+  "bulk": "L",
+  "usage": "held in 1 hand",
+  "hands": null,
+  "activations": [
+    {
+      "action_cost": "one-action",
+      "components": [
+        "manipulate"
+      ],
+      "text": null
+    }
+  ],
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "effect": null,
+  "onset": null,
+  "duration": null,
+  "craft_requirements": null,
+  "access": null,
+  "benefit": null,
+  "drawback": null,
+  "cost": null,
+  "saving_throw": null,
+  "description_html": "A <i>healing potion</i> is a vial of a ruby-red liquid that imparts a tingling sensation as the drinker's wounds heal rapidly. When you drink a <i>healing potion</i>, you regain the listed number of Hit Points.<br>",
+  "description_text": "A healing potion is a vial of a ruby-red liquid that imparts a tingling sensation as the drinker's wounds heal rapidly. When you drink a healing potion, you regain the listed number of Hit Points.",
+  "variants": [
+    {
+      "name": "Healing Potion (Lesser)",
+      "item_level": 3,
+      "source": {
+        "book": "GM Core",
+        "page": 259,
+        "source_id": 218
+      },
+      "price": {
+        "gp": 12,
+        "sp": null,
+        "cp": null,
+        "raw": "12 gp"
+      },
+      "bulk": null,
+      "description_text": "The potion restores 2d8+5 Hit Points."
+    },
+    {
+      "name": "Healing Potion (Moderate)",
+      "item_level": 6,
+      "source": {
+        "book": "GM Core",
+        "page": 259,
+        "source_id": 218
+      },
+      "price": {
+        "gp": 50,
+        "sp": null,
+        "cp": null,
+        "raw": "50 gp"
+      },
+      "bulk": null,
+      "description_text": "The potion restores 3d8+10 Hit Points."
+    },
+    {
+      "name": "Healing Potion (Greater)",
+      "item_level": 12,
+      "source": {
+        "book": "GM Core",
+        "page": 259,
+        "source_id": 218
+      },
+      "price": {
+        "gp": 400,
+        "sp": null,
+        "cp": null,
+        "raw": "400 gp"
+      },
+      "bulk": null,
+      "description_text": "The potion restores 6d8+20 Hit Points."
+    },
+    {
+      "name": "Healing Potion (Major)",
+      "item_level": 18,
+      "source": {
+        "book": "GM Core",
+        "page": 259,
+        "source_id": 218
+      },
+      "price": {
+        "gp": 5000,
+        "sp": null,
+        "cp": null,
+        "raw": "5,000 gp"
+      },
+      "bulk": null,
+      "description_text": "The potion restores 8d8+30 Hit Points."
+    }
+  ],
+  "raw_fields": {
+    "Usage": "held in 1 hand",
+    "Bulk": "L",
+    "Activate": "[one-action] (manipulate)"
+  },
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Sources.aspx?ID=218",
+      "text": "GM Core pg. 259",
+      "kind": "Sources",
+      "id": 218
+    }
+  ],
+  "meta_description": "A healing potion is a vial of a ruby-red liquid that imparts a tingling sensation as the drinker's wounds heal rapidly. When you drink a healing potion , you regain the listed number of Hit Points.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Treasure, Healing Potion"
+}

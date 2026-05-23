@@ -1,0 +1,94 @@
+{
+  "_type": "generic",
+  "url": "https://2e.aonprd.com/CampMeals.aspx?ID=18",
+  "entity_id": 18,
+  "name": "Monster Casserole",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Kingmaker Companion Guide",
+    "page": 117,
+    "source_id": 151
+  },
+  "sources": [
+    {
+      "book": "Kingmaker Companion Guide",
+      "page": 117,
+      "source_id": 151,
+      "raw": "Kingmaker Companion Guide pg. 117"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Recipe Price": "70 gp",
+    "Ingredients": "7 basic, 2 special",
+    "Preparation": "DC 28 Cooking Lore or DC 30 Survival",
+    "Favorite Meal": "+1 status bonus to Athletics checks for the next 24 hours."
+  },
+  "links": [
+    {
+      "href": "CampMeals.aspx?ID=18",
+      "text": "Monster Casserole",
+      "kind": "CampMeals",
+      "id": 18
+    },
+    {
+      "href": "Sources.aspx?ID=151",
+      "text": "Kingmaker Companion Guide pg. 117",
+      "kind": "Sources",
+      "id": 151
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Cooking Lore",
+      "kind": "Skills",
+      "id": 8
+    },
+    {
+      "href": "Skills.aspx?ID=16",
+      "text": "Survival",
+      "kind": "Skills",
+      "id": 16
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    },
+    {
+      "href": "Traits.aspx?ID=1",
+      "text": "aberrations",
+      "kind": "Traits",
+      "id": 1
+    },
+    {
+      "href": "Traits.aspx?ID=20",
+      "text": "beasts",
+      "kind": "Traits",
+      "id": 20
+    },
+    {
+      "href": "Traits.aspx?ID=50",
+      "text": "dragons",
+      "kind": "Traits",
+      "id": 50
+    },
+    {
+      "href": "Traits.aspx?ID=68",
+      "text": "fear",
+      "kind": "Traits",
+      "id": 68
+    }
+  ],
+  "body_text": "The exact ingredients of a monster casserole vary according to taste, but always include eggs, cheese, and meat. Critical Success The meal grants a +2 status bonus to damage rolls from melee Strikes against aberrations, beasts, and dragons for the next 24 hours. Success The meal grants a +2 status bonus to damage rolls from melee Strikes against aberrations, beasts, and dragons for the remainder of the camping session. Critical Failure The meal is unsettling to both the belly and the mind. The eater suffers a –2 status penalty to saving throws against fear effects for the next 24 hours or until they achieve a critical success on such a saving throw, whichever comes first.",
+  "body_html": "The exact ingredients of a monster casserole vary according to taste, but always include eggs, cheese, and meat.<br><br><b>Critical Success</b> The meal grants a +2 status bonus to damage rolls from melee Strikes against <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=1\">aberrations</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=20\">beasts</a>, and <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=50\">dragons</a> for the next 24 hours.<br><b>Success</b> The meal grants a +2 status bonus to damage rolls from melee Strikes against aberrations, beasts, and dragons for the remainder of the camping session.<br><b>Critical Failure</b> The meal is unsettling to both the belly and the mind. The eater suffers a –2 status penalty to saving throws against <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=68\">fear</a> effects for the next 24 hours or until they achieve a critical success on such a saving throw, whichever comes first.",
+  "meta_description": "The exact ingredients of a monster casserole vary according to taste, but always include eggs, cheese, and meat.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Kingmaker, Camping, Meals, Monster Casserole",
+  "level": 11,
+  "level_kind": "Meal"
+}

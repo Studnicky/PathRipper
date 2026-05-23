@@ -107,6 +107,37 @@ export class ScrapeState extends NodeStateBase {
   }
 
   /**
+   * Clear transient plugin metadata at end-of-parse so per-page state doesn't
+   * leak across parses in fan-out dispatchers, and so large objects (CheerioAPI
+   * handles holding multi-MB parsed DOM trees) get released eagerly.
+   *
+   * Default-clears the keys this codebase's aonprd plugin writes. Callers
+   * supplying `keys` override the default list (use for other plugins).
+   */
+  clearTransientMetadata(keys?: readonly string[]): void {
+    const toClear = keys ?? [
+      'aonprdCheerio',
+      'aonprdCommon',
+      'aonprdTarget',
+      'aonprdConceptId',
+      'aonprdRuleContext',
+      'aonprdMetaTags',
+      'field_map',
+      'fields',
+      'sections',
+      'source',
+      'sources',
+    ];
+    // NodeStateBase exposes metadata as Readonly<Record<…>>; cast through to
+    // delete keys outright (setMetadata(key, undefined) keeps the key with a
+    // stale undefined value, which still retains downstream object refs).
+    const meta = this.metadata as Record<string, unknown>;
+    for (const key of toClear) {
+      delete meta[key];
+    }
+  }
+
+  /**
    * Snapshots domain-specific fields for `Checkpoint.from()`.
    * Called by the engine automatically; do not call directly.
    *

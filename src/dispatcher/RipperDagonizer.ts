@@ -10,11 +10,23 @@ export interface RipperDagonizerOptionsInterface {
   readonly services: RipperServices;
   /** @deprecated Wave-2 will remove this field. Observer layer eliminated. */
   readonly observer?: unknown;
+  /**
+   * When `true` (default `false`), contract warnings surfaced during
+   * `registerDAG` are also retained on the instance and exposed via
+   * `contractWarnings()`. Tests use this to assert "no warnings" or to
+   * inspect the warning text. Production callers normally rely on the
+   * logger output and leave this off.
+   */
+  readonly collectContractWarnings?: boolean;
 }
 
 /**
  * `Dagonizer` subclass that logs the five lifecycle hooks directly via a
  * component-scoped `Logger`. No observer interface, no injected callback.
+ *
+ * Wave 3 H7 — overrides `onContractWarning` to surface `ContractRegistryValidator`
+ * dead-write warnings via the project logger. Optionally retains warnings on
+ * the instance for test inspection via `collectContractWarnings: true`.
  *
  * @category Dispatcher
  * @since 4.0.0
@@ -22,8 +34,12 @@ export interface RipperDagonizerOptionsInterface {
 export class RipperDagonizer<TState extends NodeStateInterface>
   extends Dagonizer<TState, RipperServices> {
 
+  readonly #collectContractWarnings: boolean;
+  readonly #contractWarnings: string[] = [];
+
   constructor(options: RipperDagonizerOptionsInterface) {
     super({ services: options.services });
+    this.#collectContractWarnings = options.collectContractWarnings ?? false;
   }
 
   protected override onFlowStart(dagName: string, _state: TState): void {
@@ -52,5 +68,30 @@ export class RipperDagonizer<TState extends NodeStateInterface>
 
   protected override onError(nodeName: string, error: Error, _state: TState): void {
     log.error('node-error', `Node '${nodeName}' threw: ${error.message}`, { stack: error.stack });
+  }
+
+  /**
+   * Surface `ContractRegistryValidator` dead-write warnings (Wave 3 H7).
+   *
+   * `Dagonizer.registerDAG` runs `ContractRegistryValidator.validate` for
+   * every DAG derived from a node registry. Dangling reads throw
+   * `DAGError`; dead writes are non-fatal and routed here. We log them
+   * via the project logger and (optionally) retain them for test
+   * inspection.
+   */
+  protected override onContractWarning(message: string): void {
+    log.warn('contract-warning', message);
+    if (this.#collectContractWarnings) {
+      this.#contractWarnings.push(message);
+    }
+  }
+
+  /**
+   * Snapshot of contract warnings collected since construction. Returns an
+   * empty array when `collectContractWarnings` was not enabled, regardless
+   * of how many warnings were logged.
+   */
+  contractWarnings(): readonly string[] {
+    return [...this.#contractWarnings];
   }
 }

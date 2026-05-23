@@ -1,7 +1,7 @@
 // Unit tests for the aonprd:parse plugin DAG.
-// Stands up a real Dagonizer dispatcher, registers all plugin nodes + the DAG,
-// dispatches against fixture HTML for multiple page types, and asserts that
-// state.output carries the expected typed shape.
+// Stands up a real Dagonizer dispatcher, registers all taxonomy nodes + the
+// DAG, dispatches against fixture HTML for multiple page types, and asserts
+// that state.output carries the expected typed shape.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -12,25 +12,7 @@ import { Dagonizer } from '@noocodex/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { TerminalNode } from '../../../../src/nodes/TerminalNode.js';
-import {
-  loadAndCommonNode,
-  detectTypeNode,
-  extractSpellNode,
-  extractMonsterNode,
-  extractFeatNode,
-  extractWeaponNode,
-  extractArmorNode,
-  extractEquipmentNode,
-  extractActionNode,
-  extractAncestryNode,
-  extractClassNode,
-  extractBackgroundNode,
-  extractConditionNode,
-  extractTraitNode,
-  extractHazardNode,
-  extractGenericNode,
-  unknownTerminalNode,
-} from '../../../../plugins/aonprd/nodes/index.js';
+import { TAXONOMY }     from '../../../../plugins/aonprd/taxonomy/aonprd.js';
 import { aonprdParseDAG } from '../../../../plugins/aonprd/parse.dag.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -43,25 +25,14 @@ async function load(name: string): Promise<string> {
 function buildDispatcher() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dispatcher = new Dagonizer<ScrapeState, any>({ services: {} as any });
-  // Register all plugin sub-nodes before the DAG.
   dispatcher.registerNode(TerminalNode);
-  dispatcher.registerNode(loadAndCommonNode);
-  dispatcher.registerNode(detectTypeNode);
-  dispatcher.registerNode(extractSpellNode);
-  dispatcher.registerNode(extractMonsterNode);
-  dispatcher.registerNode(extractFeatNode);
-  dispatcher.registerNode(extractWeaponNode);
-  dispatcher.registerNode(extractArmorNode);
-  dispatcher.registerNode(extractEquipmentNode);
-  dispatcher.registerNode(extractActionNode);
-  dispatcher.registerNode(extractAncestryNode);
-  dispatcher.registerNode(extractClassNode);
-  dispatcher.registerNode(extractBackgroundNode);
-  dispatcher.registerNode(extractConditionNode);
-  dispatcher.registerNode(extractTraitNode);
-  dispatcher.registerNode(extractHazardNode);
-  dispatcher.registerNode(extractGenericNode);
-  dispatcher.registerNode(unknownTerminalNode);
+  // Register every node from the compiled AONPRD taxonomy. This mirrors what
+  // the production `register()` in parse.task.ts does — TAXONOMY.allNodes()
+  // includes the router, all capability nodes, unknownTerminal, and
+  // flow:terminate.
+  for (const node of TAXONOMY.allNodes()) {
+    dispatcher.registerNode(node);
+  }
   dispatcher.registerDAG(aonprdParseDAG);
   return dispatcher;
 }
@@ -139,18 +110,24 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     assert.equal(state.output?.['name'], 'Acolyte');
   });
 
-  it('dispatches unknown URL and produces unknown output', async () => {
+  it('dispatches unmapped URL through the generic fallback (Wave 7 M7)', async () => {
     const dispatcher = buildDispatcher();
     const state = makeState('<html><body>nothing</body></html>', 'https://2e.aonprd.com/X.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    // loadAndCommon errors → make-unknown → terminate
-    assert.equal(state.output?.['_type'], 'unknown');
+    // Wave 7 M7: the URL router now routes unmatched URLs to `genericConcept`
+    // (the only ConceptDecl with `urlPaths: []`) instead of `aonprd:make-unknown`.
+    // The fallback produces a `generic`-typed output. Operators see the
+    // fallback being hit via the `_type` discriminator on the output.
+    assert.equal(state.output?.['_type'], 'generic');
   });
 
-  it('DAG resolves generics (deity path) through extract-generic', async () => {
+  it('DAG resolves generics (unmapped URL path) through taxonomy generic concept', async () => {
     const dispatcher = buildDispatcher();
     const html  = await load('spell-abyssal-plague.html');
-    const state = makeState(html, 'https://2e.aonprd.com/Languages.aspx?ID=99');
+    // Wave 7 M7: unmatched URL → routes to `genericConcept`. Even though the
+    // HTML is a spell page, the URL path (`Bestiary.aspx`) has no taxonomy
+    // entry, so the fallback chain runs.
+    const state = makeState(html, 'https://2e.aonprd.com/Bestiary.aspx?ID=99');
     await dispatcher.execute('aonprd:parse', state);
     assert.equal(state.output?.['_type'], 'generic');
   });

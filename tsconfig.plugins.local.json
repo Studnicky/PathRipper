@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".",
+    "declarationMap": false,
+    "sourceMap": false,
+    "declaration": false,
+    "noEmit": false
+  },
+  "include": ["plugins/aonprd/**/*.ts", "examples/**/*.ts"],
+  "exclude": ["node_modules", "plugins/bulbapedia"]
+}

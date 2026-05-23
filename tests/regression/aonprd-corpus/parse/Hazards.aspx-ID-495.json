@@ -1,0 +1,135 @@
+{
+  "_type": "hazard",
+  "url": "https://2e.aonprd.com/Hazards.aspx?ID=495",
+  "entity_id": 495,
+  "name": "Summoning Rune",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": "Hazards.aspx?ID=20&NoRedirect=1",
+  "traits": [
+    "Complex",
+    "Magical",
+    "Trap"
+  ],
+  "trait_ids": {
+    "Complex": 30,
+    "Magical": 103,
+    "Trap": 158
+  },
+  "source": {
+    "book": "GM Core",
+    "page": 108,
+    "source_id": 218
+  },
+  "sources": [
+    {
+      "book": "GM Core",
+      "page": 108,
+      "source_id": 218,
+      "raw": "GM Core pg. 108"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Complexity": "Complex",
+    "Stealth": "+7 (trained)",
+    "Description": "A cloud of invisible magical sensors in a 10-foot radius surrounds an invisible wall or floor rune the size of the creature to be summoned."
+  },
+  "links": [
+    {
+      "href": "Hazards.aspx?ID=20&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Hazards",
+      "id": 20
+    },
+    {
+      "href": "Hazards.aspx?ID=495",
+      "text": "Summoning Rune",
+      "kind": "Hazards",
+      "id": 495
+    },
+    {
+      "href": "/Traits.aspx?ID=30",
+      "text": "Complex",
+      "kind": "Traits",
+      "id": 30
+    },
+    {
+      "href": "/Traits.aspx?ID=103",
+      "text": "Magical",
+      "kind": "Traits",
+      "id": 103
+    },
+    {
+      "href": "/Traits.aspx?ID=158",
+      "text": "Trap",
+      "kind": "Traits",
+      "id": 158
+    },
+    {
+      "href": "Sources.aspx?ID=218",
+      "text": "GM Core pg. 108",
+      "kind": "Sources",
+      "id": 218
+    },
+    {
+      "href": "Skills.aspx?ID=34",
+      "text": "Acrobatics",
+      "kind": "Skills",
+      "id": 34
+    },
+    {
+      "href": "Skills.aspx?ID=50",
+      "text": "Thievery",
+      "kind": "Skills",
+      "id": 50
+    },
+    {
+      "href": "Spells.aspx?ID=1493",
+      "text": "dispel magic",
+      "kind": "Spells",
+      "id": 1493
+    },
+    {
+      "href": "Rules.aspx?ID=3280",
+      "text": "counteract",
+      "kind": "Rules",
+      "id": 3280
+    },
+    {
+      "href": "Traits.aspx?ID=534",
+      "text": "arcane",
+      "kind": "Traits",
+      "id": 534
+    }
+  ],
+  "body_text": "Disable DC 15 Acrobatics to approach without triggering the trap followed by DC 17 Thievery (trained) to erase the rune, or dispel magic (1st rank; counteract DC 15) to counteract the rune Summon Monster [reaction] (arcane) Trigger A creature enters the cloud of magical sensors; Effect This trap summons a specific 1st-level creature, determined when the trap is created. The creature rolls initiative and remains for 2d6 rounds, after which the spell ends and the creature disappears. The creature also disappears if someone disables the trap before the duration expires. The summoned creature can use 3 actions each round and can use reactions, unlike most summoned creatures.Reset The trap resets each day at dawn.",
+  "body_html": "<b>Disable</b> DC 15 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=34\">Acrobatics</a> to approach without triggering the trap followed by DC 17 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=50\">Thievery</a> (trained) to erase the rune, or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1493\"><i>dispel magic</i></a> (1st rank; <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=3280\">counteract</a> DC 15) to counteract the rune<br><b>Summon Monster</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=534\">arcane</a>) <b>Trigger</b> A creature enters the cloud of magical sensors; <b>Effect</b> This trap summons a specific 1st-level creature, determined when the trap is created. The creature rolls initiative and remains for 2d6 rounds, after which the spell ends and the creature disappears. The creature also disappears if someone disables the trap before the duration expires. The summoned creature can use 3 actions each round and can use reactions, unlike most summoned creatures.<hr><b>Reset</b> The trap resets each day at dawn.",
+  "meta_description": "A cloud of invisible magical sensors in a 10-foot radius surrounds an invisible wall or floor rune the size of the creature to be summoned.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Hazard, Summoning Rune",
+  "level": 1,
+  "complexity": "complex",
+  "stealth": {
+    "dc": null,
+    "notes": "+7 (trained)",
+    "raw": "+7 (trained)"
+  },
+  "description_text": "A cloud of invisible magical sensors in a 10-foot radius surrounds an invisible wall or floor rune the size of the creature to be summoned.",
+  "disable": [],
+  "defenses": {
+    "ac": null,
+    "saves": {
+      "fort": null,
+      "ref": null,
+      "will": null
+    },
+    "hardness": [],
+    "hp": [],
+    "immunities": [],
+    "weaknesses": [],
+    "resistances": []
+  },
+  "routines": [],
+  "reset": null
+}

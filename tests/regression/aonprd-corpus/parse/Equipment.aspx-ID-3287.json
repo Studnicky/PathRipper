@@ -1,0 +1,190 @@
+{
+  "_type": "equipment",
+  "url": "https://2e.aonprd.com/Equipment.aspx?ID=3287",
+  "equipment_id": 3287,
+  "name": "Alchemist's Fire",
+  "item_level": 1,
+  "tiered_variants": true,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Equipment.aspx?ID=75&NoRedirect=1",
+  "traits": [
+    "Alchemical",
+    "Bomb",
+    "Consumable",
+    "Fire",
+    "Splash"
+  ],
+  "trait_ids": {
+    "Alchemical": 528,
+    "Bomb": 548,
+    "Consumable": 564,
+    "Fire": 604,
+    "Splash": 699
+  },
+  "source": {
+    "book": "Player Core 2",
+    "page": 283,
+    "source_id": 227
+  },
+  "sources": [
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    },
+    {
+      "book": "Player Core 2",
+      "page": 283,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 283"
+    }
+  ],
+  "price": {
+    "gp": null,
+    "sp": null,
+    "cp": null,
+    "raw": null
+  },
+  "bulk": "L",
+  "usage": "held in 1 hand",
+  "hands": null,
+  "activations": [
+    {
+      "action_cost": "one-action",
+      "components": [],
+      "text": "Strike"
+    }
+  ],
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "effect": null,
+  "onset": null,
+  "duration": null,
+  "craft_requirements": null,
+  "access": null,
+  "benefit": null,
+  "drawback": null,
+  "cost": null,
+  "saving_throw": null,
+  "description_html": "Alchemist's fire is a combination of volatile liquids that ignite when exposed to air. Alchemist's fire deals the listed fire damage, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=29\">persistent fire damage</a>, and splash damage. Many types grant an item bonus to attack rolls.<br>",
+  "description_text": "Alchemist's fire is a combination of volatile liquids that ignite when exposed to air. Alchemist's fire deals the listed fire damage, persistent fire damage, and splash damage. Many types grant an item bonus to attack rolls.",
+  "variants": [
+    {
+      "name": "Alchemist's Fire (Lesser)",
+      "item_level": 1,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 3,
+        "sp": null,
+        "cp": null,
+        "raw": "3 gp"
+      },
+      "bulk": "L",
+      "description_text": "The bomb deals 1d8 fire damage, 1 persistent fire damage, and 1 fire splash damage."
+    },
+    {
+      "name": "Alchemist's Fire (Moderate)",
+      "item_level": 3,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 10,
+        "sp": null,
+        "cp": null,
+        "raw": "10 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +1 item bonus to attack rolls. The bomb deals 2d8 fire damage, 2 persistent fire damage, and 2 fire splash damage."
+    },
+    {
+      "name": "Alchemist's Fire (Greater)",
+      "item_level": 11,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 250,
+        "sp": null,
+        "cp": null,
+        "raw": "250 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +2 item bonus to attack rolls. The bomb deals 3d8 fire damage, 3 persistent fire damage, and 3 fire splash damage."
+    },
+    {
+      "name": "Alchemist's Fire (Major)",
+      "item_level": 17,
+      "source": {
+        "book": "Player Core 2",
+        "page": 283,
+        "source_id": 227
+      },
+      "price": {
+        "gp": 2500,
+        "sp": null,
+        "cp": null,
+        "raw": "2,500 gp"
+      },
+      "bulk": "L",
+      "description_text": "You gain a +3 item bonus to attack rolls. The bomb deals 4d8 fire damage, 4 persistent fire damage, and 4 fire splash damage."
+    }
+  ],
+  "raw_fields": {
+    "Usage": "held in 1 hand",
+    "Bulk": "L",
+    "Activate": "[one-action] Strike"
+  },
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=29",
+      "text": "persistent fire damage",
+      "kind": "Conditions",
+      "id": 29
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Sources.aspx?ID=227",
+      "text": "Player Core 2 pg. 283",
+      "kind": "Sources",
+      "id": 227
+    }
+  ],
+  "meta_description": "Alchemist's fire is a combination of volatile liquids that ignite when exposed to air. Alchemist's fire deals the listed fire damage, persistent fire damage , and splash damage. Many types grant an item bonus to attack rolls.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Treasure, Alchemist's Fire"
+}

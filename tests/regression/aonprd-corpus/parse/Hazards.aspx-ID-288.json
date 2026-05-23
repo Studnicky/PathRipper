@@ -1,0 +1,97 @@
+{
+  "_type": "hazard",
+  "url": "https://2e.aonprd.com/Hazards.aspx?ID=288",
+  "entity_id": 288,
+  "name": "Test of Tactics",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [
+    "Mechanical",
+    "Trap"
+  ],
+  "trait_ids": {
+    "Mechanical": 105,
+    "Trap": 158
+  },
+  "source": {
+    "book": "Kingmaker Adventure Path",
+    "page": 324,
+    "source_id": 150
+  },
+  "sources": [
+    {
+      "book": "Kingmaker Adventure Path",
+      "page": 324,
+      "source_id": 150,
+      "raw": "Kingmaker Adventure Path pg. 324"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Complexity": "Simple",
+    "Stealth": "DC 37 (expert)",
+    "Description": "Obscure magical runes hidden within the runes of the 16 named warriors bind a pair of derghodaemons into the walls of this hallway."
+  },
+  "links": [
+    {
+      "href": "Hazards.aspx?ID=288",
+      "text": "Test of Tactics",
+      "kind": "Hazards",
+      "id": 288
+    },
+    {
+      "href": "/Traits.aspx?ID=105",
+      "text": "Mechanical",
+      "kind": "Traits",
+      "id": 105
+    },
+    {
+      "href": "/Traits.aspx?ID=158",
+      "text": "Trap",
+      "kind": "Traits",
+      "id": 158
+    },
+    {
+      "href": "Sources.aspx?ID=150",
+      "text": "Kingmaker Adventure Path pg. 324",
+      "kind": "Sources",
+      "id": 150
+    },
+    {
+      "href": "Spells.aspx?ID=78",
+      "text": "dispel magic",
+      "kind": "Spells",
+      "id": 78
+    }
+  ],
+  "body_text": "Disable Thievery DC 37 (expert) to remove a set of runes linked to one bound derghodaemon, or dispel magic (7th level, counteract DC 31) to counteract the trap's magic. Conjure Daemon [reaction] Trigger A creature moves past the bend in the middle of the hall; Effect A pair of derghodaemons rise up from the floor to the north and southeast near the stairs; the daemons roll for initiative using Stealth, and fight to the death but do not pursue foes out of this area.Reset If at least one of the derghodaemons survives, the trap resets after 1 hour, causing the surviving derghodaemons to be completely restored to full health and to merge with the floors.",
+  "body_html": "<b>Disable</b> Thievery DC 37 (expert) to remove a set of runes linked to one bound derghodaemon, or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=78\"><i>dispel magic</i></a> (7th level, counteract DC 31) to counteract the trap's magic.<br><b>Conjure Daemon</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  <b>Trigger</b> A creature moves past the bend in the middle of the hall; <b>Effect</b> A pair of derghodaemons rise up from the floor to the north and southeast near the stairs; the daemons roll for initiative using Stealth, and fight to the death but do not pursue foes out of this area.<hr><b>Reset</b> If at least one of the derghodaemons survives, the trap resets after 1 hour, causing the surviving derghodaemons to be completely restored to full health and to merge with the floors.",
+  "meta_description": "Obscure magical runes hidden within the runes of the 16 named warriors bind a pair of derghodaemons into the walls of this hallway.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Hazard, Test of Tactics",
+  "level": 13,
+  "complexity": "simple",
+  "stealth": {
+    "dc": 37,
+    "notes": "(expert)",
+    "raw": "DC 37 (expert)"
+  },
+  "description_text": "Obscure magical runes hidden within the runes of the 16 named warriors bind a pair of derghodaemons into the walls of this hallway.",
+  "disable": [],
+  "defenses": {
+    "ac": null,
+    "saves": {
+      "fort": null,
+      "ref": null,
+      "will": null
+    },
+    "hardness": [],
+    "hp": [],
+    "immunities": [],
+    "weaknesses": [],
+    "resistances": []
+  },
+  "routines": [],
+  "reset": null
+}
