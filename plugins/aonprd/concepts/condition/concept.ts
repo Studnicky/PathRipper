@@ -2,8 +2,8 @@ import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
-import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
+import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
+import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import {
   CAPABILITY_OUTPUTS,
