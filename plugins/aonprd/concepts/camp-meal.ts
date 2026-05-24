@@ -1,9 +1,7 @@
 //
 // Kingmaker Companion Guide camp recipe pages (CampMeals.aspx) carry recipe
 // price, ingredients, preparation, favorite_meal head labels, a flavor prose
-// description, and degree-of-success outcomes. This concept delegates to Wave 5
-// slice helpers in camp-meal.ts for correctness. Output is byte-equivalent to
-// the Wave 5 baseline.
+// description, and degree-of-success outcomes. Helpers are inlined.
 //
 // bespoke node-folder under nodes/camp-meal/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -31,7 +29,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: camp-meal.ts ──────────────────────────────────
 /** Camp-meal degree-of-success outcome. */
 export interface CampMealOutcome {
   tier: 'critical-success' | 'success' | 'failure' | 'critical-failure';

@@ -1,7 +1,7 @@
 //
-// Byte-equivalent to Wave 5 shape — monster-family pages are lore + member-list
-// pages with minimal structured data; the Wave 5 helpers already handle the
-// Members framing section harvest and family identity.
+// Monster-family pages are lore + member-list pages with minimal structured
+// data; the inlined helpers handle the Members framing section harvest and
+// family identity.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -26,8 +26,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: monster-family.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** A creature that belongs to this monster family. */
 export interface MonsterFamilyMember {

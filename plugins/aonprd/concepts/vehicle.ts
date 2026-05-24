@@ -1,5 +1,4 @@
 //
-// Byte-equivalent to Wave 5 VehicleOutput shape.
 // Vehicles.aspx pages document piloted transports with body-resident stat-block
 // fields, piloting checks, and operator action definitions.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -29,8 +28,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: vehicle.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** Piloting check option — one of several skills usable to control a vehicle. */
 export interface VehiclePilotingCheck {

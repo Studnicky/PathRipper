@@ -178,8 +178,8 @@ describe('aonprd plugin — background extractor', () => {
 describe('aonprd plugin — page-type detection', () => {
   it('returns unknown for unmapped paths', async () => {
     // Re-use the spell HTML against an unknown URL path. The taxonomy has no
-    // entry for Bestiary.aspx, so the router produces 'unknown'. Wave 5
-    // unmapped URL paths now route to `genericConcept` (the
+    // entry for Bestiary.aspx, so the router produces 'unknown'. Unmapped URL
+    // paths route to `genericConcept` (the
     // taxonomy fallback) instead of `aonprd:make-unknown`. The output is
     // `_type: 'generic'` so operators can see WHICH unmatched URL is
     // hitting the fallback (vs. being silently lost as `unknown`).

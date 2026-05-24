@@ -1,5 +1,4 @@
 //
-// Byte-equivalent to Wave 5 SetRelicOutput shape.
 // SetRelics.aspx pages describe linked relic sets with tiered benefits.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -28,8 +27,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: set-relic.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** A single set-item component (an equipment piece bound to the set). */
 export interface SetRelicItem {

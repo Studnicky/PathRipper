@@ -1,6 +1,6 @@
 //
-// Byte-equivalent to Wave 5 shape — weapon-group pages have well-defined
-// structure that is already fully captured by the Wave 5 helpers.
+// Weapon-group pages have well-defined structure; the inlined helpers fully
+// cover the content shape.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -26,8 +26,7 @@ import {
   filterLegacySections,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: weapon-group.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** A weapon listed under a weapon group. */
 export interface WeaponGroupWeapon {

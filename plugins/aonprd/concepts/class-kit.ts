@@ -29,7 +29,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: class-kit.ts ──────────────────────────────────
+
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** A linked equipment reference harvested from one of the kit lists. */

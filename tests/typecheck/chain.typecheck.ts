@@ -1,4 +1,4 @@
-// Typecheck-only test for Wave 3 H6 — `chain()` compile-time validation.
+// Typecheck-only test for `chain()` compile-time validation.
 //
 // This file is NOT a runtime test. It is compiled by `tsc --noEmit` via the
 // dedicated `tsconfig.typecheck.json`. Each `@ts-expect-error` line asserts

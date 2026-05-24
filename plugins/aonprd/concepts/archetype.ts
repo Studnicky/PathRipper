@@ -34,7 +34,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: archetype.ts ──────────────────────────────────
+
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** One feat entry harvested from a `<h2 class="title">` section on the page. */

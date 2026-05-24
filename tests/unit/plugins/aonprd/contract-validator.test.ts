@@ -1,4 +1,4 @@
-// Wave 3 H7 — registration-time `ContractRegistryValidator` integration.
+// Registration-time `ContractRegistryValidator` integration.
 //
 // Verifies that:
 //   1. `RipperDagonizer.onContractWarning` is wired and surfaces dead-write
@@ -30,7 +30,7 @@ function buildServices(): RipperServices {
 
 // ─── Test 1: live taxonomy registration — zero warnings ─────────────────────
 
-describe('Wave 3 H7 — ContractRegistryValidator integration', () => {
+describe('ContractRegistryValidator integration', () => {
   it('live AONPRD taxonomy registers without contract warnings', () => {
     const dispatcher = new RipperDagonizer<ScrapeState>({
       services: buildServices(),

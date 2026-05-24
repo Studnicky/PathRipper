@@ -1,4 +1,4 @@
-// Unit tests for class concept capability nodes (Phase 6.4).
+// Unit tests for class concept capability nodes.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -79,7 +79,7 @@ describe('extract:class-progression — class-sorcerer', () => {
     const out = state.output as Partial<ClassOutput>;
     assert.ok(Array.isArray(out.progression), 'progression should be an array');
     // Some fixtures use table-format class features that parseClassFeaturesProgression
-    // may return empty — this is correct Wave 5 behaviour for those pages.
+    // may return empty — this is expected behaviour for those pages.
   });
 
   it('progression entries (when present) have level and features arrays', async () => {

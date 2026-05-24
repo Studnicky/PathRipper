@@ -2,8 +2,7 @@
 // Kingmaker mass-combat army stat-block pages (KMWarArmies.aspx) carry
 // scouting, recruitment, consumption, a description prose line, AC, maneuver,
 // morale, HP, melee/ranged attacks, and named ability blocks. This concept
-// delegates to Wave 5 slice helpers in km-war-army.ts for correctness. Output
-// is byte-equivalent to the Wave 5 baseline.
+// Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-war-army/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -32,7 +31,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: km-war-army.ts ──────────────────────────────────
 /** A named ability block on an army page. */
 export interface KmWarArmyAbility {
   /** Bold label of the ability — e.g. "Swamp Dwellers", "Darkvision". */

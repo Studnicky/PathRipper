@@ -4,7 +4,7 @@
 // set plus a DAGDeriverAnnotations bundle for DAGDeriver.derive.
 //
 // The pipeline switch in parse.dag.ts / parse.task.ts is NOT touched here;
-// this module is an orphan library until Phase 6.4 wires it in.
+// this module is an orphan library until the taxonomy router wires it in.
 import type { NodeInterface, NodeContextInterface, NodeStateInterface } from '@noocodex/dagonizer';
 import type { DAGDeriverAnnotations } from '@noocodex/dagonizer/derive';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -662,7 +662,7 @@ export class Taxonomy {
   /**
    * Build DAGDeriverAnnotations from the routing trie.
    *
-   * Topology (Wave 3 H10 — open-world):
+   * Topology (open-world):
    * 1. `aonprd:taxonomy-route` (URL router) is the DAG entrypoint. Per leaf
    *    concept it routes to that concept's first cap (from `entryTargets`).
    *    Unknown URLs go to `aonprd:make-unknown`.

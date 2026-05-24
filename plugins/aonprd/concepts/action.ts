@@ -1,7 +1,7 @@
 //
-// Byte-equivalent to Wave 5 shape — action pages are well-structured;
-// the Wave 5 helpers already handle all significant data including skill refs,
-// four-tier outcome blocks, and trigger/frequency/requirements fields.
+// Action pages are well-structured; the inlined helpers handle all significant
+// data including skill refs, four-tier outcome blocks, and
+// trigger/frequency/requirements fields.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -28,7 +28,6 @@ import {
 } from '../common.js';
 import { parseOutcomesBlock } from '../capabilities/outcomesBlock.js';
 
-// ─── Inlined from Wave 5: action.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 export interface ActionOutput {

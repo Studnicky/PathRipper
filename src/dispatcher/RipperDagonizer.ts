@@ -24,7 +24,7 @@ export interface RipperDagonizerOptionsInterface {
  * `Dagonizer` subclass that logs the five lifecycle hooks directly via a
  * component-scoped `Logger`. No observer interface, no injected callback.
  *
- * Wave 3 H7 — overrides `onContractWarning` to surface `ContractRegistryValidator`
+ * Overrides `onContractWarning` to surface `ContractRegistryValidator`
  * dead-write warnings via the project logger. Optionally retains warnings on
  * the instance for test inspection via `collectContractWarnings: true`.
  *

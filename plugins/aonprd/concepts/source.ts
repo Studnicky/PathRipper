@@ -2,10 +2,7 @@
 // Source pages (Sources.aspx) are book metadata entries: product page URL,
 // release date, product line, source group, errata version, and an extensive
 // catalog of every entity sourced from that book organized by h2 category
-// headings. This concept delegates to the Wave 5 slice helpers in source.ts
-// for correctness; output is byte-equivalent to the Wave 5 baseline.
-//
-// in this file with inline contracts.
+// headings. Helpers are inlined with inline contracts.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -31,8 +28,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: source.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /**
  * A linked AON entity referenced from this book's catalog sections (Ancestries,

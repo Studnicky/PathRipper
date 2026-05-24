@@ -1,4 +1,4 @@
-// Unit tests for ritual concept capability nodes (Phase 6.4).
+// Unit tests for ritual concept capability nodes.
 // Rituals share the spell HTML structure — same slices, different URL paths.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';

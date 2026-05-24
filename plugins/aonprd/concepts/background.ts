@@ -28,7 +28,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: background.ts ──────────────────────────────────
+
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 export interface BackgroundOutput {

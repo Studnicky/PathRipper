@@ -1,10 +1,8 @@
 //
 // Affliction pages (Curses.aspx) carry a statblock with Saving Throw, Onset,
 // Maximum Duration, and Stage N progression markers. This concept delegates
-// to the Wave 5 slice helpers in curse.ts for correctness; output is
-//
-// in this file with inline contracts. Wave 6 M4 dropped the `entity_id` alias
-// in favour of the concept-specific `curse_id`.
+// Helpers are inlined with inline contracts. The `entity_id` alias was
+// dropped in favour of the concept-specific `curse_id`.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -32,8 +30,7 @@ import {
 import { parseSavingThrow } from '../capabilities/savingThrow.js';
 import { parseAfflictionStages } from '../capabilities/afflictionStages.js';
 
-// ─── Inlined from Wave 5: curse.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** A single stage of a curse progression. */
 export interface CurseStage {

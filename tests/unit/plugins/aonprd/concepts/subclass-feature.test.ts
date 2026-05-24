@@ -1,4 +1,4 @@
-// Unit tests for subclass-feature concept capability nodes (Phase 6.4).
+// Unit tests for subclass-feature concept capability nodes.
 // Uses five fixtures: bloodline (modern layout), mystery (modern + spell list),
 // patron (legacy layout), druidic-order (modern), and research-field (modern).
 import { describe, it } from 'node:test';

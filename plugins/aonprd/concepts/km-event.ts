@@ -1,8 +1,7 @@
 //
 // Kingmaker kingdom event pages (KMEvents.aspx) carry location, kingdom_skill,
 // leader, requirement, special, prose description, and degree-of-success
-// outcomes. This concept delegates to Wave 5 slice helpers in km-event.ts for
-// correctness. Output is byte-equivalent to the Wave 5 baseline.
+// outcomes. Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-event/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -29,7 +28,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: km-event.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 /** A degree-of-success outcome (Critical Success / Success / Failure / Critical Failure). */

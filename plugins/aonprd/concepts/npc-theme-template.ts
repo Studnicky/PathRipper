@@ -29,7 +29,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: npc-theme-template.ts ──────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** A single level-tiered benefit entry (1st, 4th, 7th, 12th, 17th, …). */

@@ -1,8 +1,7 @@
 //
-// Byte-equivalent to Wave 5 shape — monster-template pages describe creature
-// adjustment templates (Elite, Weak, Undead, etc.) with bullet adjustments,
-// optional subsections, HP tables, and best-effort numeric delta parsing.
-// The Wave 5 helpers fully cover this content shape.
+// Monster-template pages describe creature adjustment templates (Elite, Weak,
+// Undead, etc.) with bullet adjustments, optional subsections, HP tables, and
+// best-effort numeric delta parsing.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -27,7 +26,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: monster-template.ts ──────────────────────────────────
 // ─── Output types ─────────────────────────────────────────────────────────────
 
 /** A single bullet from a `<ul><li>…</li></ul>` adjustment list. */

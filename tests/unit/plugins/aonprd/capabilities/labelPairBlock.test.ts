@@ -1,5 +1,5 @@
 // Unit tests for extract:label-pair-block capability.
-// Proves byte-equivalence with harvestFields() from common.ts (Wave 5 source of truth).
+// Proves byte-equivalence with harvestFields() from common.ts.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { CheerioAPI } from 'cheerio';

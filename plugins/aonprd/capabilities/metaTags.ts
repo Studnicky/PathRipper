@@ -4,11 +4,10 @@
 // concept finalize nodes that previously called `extractMetaDescription` +
 // `extractMetaKeywords` inline.
 //
-// Lifted into Layer 1 during Wave 4 H5 — 51 of 51 concept finalize nodes
-// previously re-implemented this. The capability runs once per page and
-// every concept reads from `aonprdMetaTags`.
+// Lifted into Layer 1 so the capability runs once per page and every concept
+// reads from `aonprdMetaTags` rather than re-implementing extraction inline.
 //
-// Wave 1 open-world convention: soft-fail to `'success'` with no writes when
+// Open-world convention: soft-fail to `'success'` with no writes when
 // `aonprdCheerio` is absent (e.g. rule pages whose load short-circuits).
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

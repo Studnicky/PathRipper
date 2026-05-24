@@ -1,4 +1,4 @@
-// Unit tests for the Phase 6.2 Taxonomy compiler.
+// Unit tests for the Taxonomy compiler.
 // Validates the public API of Taxonomy.compile() and the generated nodes.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';

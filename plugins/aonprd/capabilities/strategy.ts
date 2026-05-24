@@ -1,4 +1,4 @@
-// Wave 5 — strategy interfaces for Layer-1 capabilities.
+// Strategy interfaces for Layer-1 capabilities.
 //
 // Plugin-agnostic. Defines the shapes the Layer-1 capabilities produce plus
 // the strategy interfaces a plugin supplies to teach `extractCommon` how to
@@ -84,10 +84,10 @@ export interface SectionWalkerStrategy {
 /**
  * Composite strategy bag supplied by a plugin to drive `extractCommon`.
  *
- * Wave 5 narrows the strategy surface to H15 + H16. Additional Layer-1
- * extractors (title, traits, fields, links, page-type detection) remain
- * AON-shaped today; a future wave can widen this interface as additional
- * plugins surface concrete needs.
+ * The current strategy surface covers source-citation extraction and
+ * section-walker extraction. Additional Layer-1 extractors (title, traits,
+ * fields, links, page-type detection) remain AON-shaped; a second source
+ * plugin surfacing concrete needs can widen this interface.
  */
 export interface CommonStrategy {
   readonly sourceRef:     SourceRefStrategy;

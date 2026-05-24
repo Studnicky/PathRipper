@@ -1,4 +1,4 @@
-// Unit tests for language concept capability nodes (Phase 6.3).
+// Unit tests for language concept capability nodes.
 // Tests each of the 5 capability nodes in isolation against the two language
 // HTML fixtures (language-common.html and language-osiriani.html).
 import { describe, it } from 'node:test';
@@ -323,9 +323,9 @@ describe('full language pipeline — language-common', () => {
     assert.ok(Array.isArray(out.links), 'links missing');
   });
 
-  it('has no typical_speakers field (Wave 5 deprecated field)', async () => {
+  it('has no typical_speakers field (deprecated field)', async () => {
     const out = await primeAndRunFull('language-common.html', 'https://2e.aonprd.com/Languages.aspx?ID=1');
-    assert.ok(!('typical_speakers' in out), 'typical_speakers should be absent — deprecated in Wave 6');
+    assert.ok(!('typical_speakers' in out), 'typical_speakers should be absent — deprecated field');
   });
 });
 

@@ -28,7 +28,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: class-sample.ts ──────────────────────────────────
+
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** A linked feat reference with optional level annotation (e.g. "(2nd)"). */

@@ -2,9 +2,7 @@
 // Domain pages (Domains.aspx) are short divine-domain entries: name, source,
 // deity list, domain spell + advanced domain spell, optional Apocryphal Domain
 // Spells subsection, and a brief flavor description. This concept delegates to
-// the Wave 5 slice helpers in domain.ts for correctness; output is
-//
-// in this file with inline contracts.
+// Helpers are inlined with inline contracts.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -30,7 +28,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: domain.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 /** A spell reference parsed from a `<b>Domain Spell</b>` field. */

@@ -2,8 +2,7 @@
 // Commander class squad-tactic pages (Tactics.aspx) carry an action-cost glyph,
 // a category/tier marker, optional prerequisites/requirements/trigger/frequency
 // head labels, an effect body, and an optional Special callout. This concept
-// delegates to Wave 5 slice helpers in tactic.ts for correctness. Output is
-//
+// Output is
 // bespoke node-folder under nodes/tactic/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -31,7 +30,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: tactic.ts ──────────────────────────────────
 export interface TacticOutput {
   url:             string;
   tactic_id:       number | null;

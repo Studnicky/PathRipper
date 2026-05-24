@@ -3,11 +3,10 @@
 // CommonExtraction pipeline, and stashes both the CheerioAPI handle and the
 // CommonExtraction result as transient metadata keys for downstream nodes.
 //
-// Wave 5 H15/H16: `extractCommon` is now strategy-driven. The singleton
-// `loadAndCommonNode` exported below is wired with the AON strategy
-// (`aonStrategy`). A non-AON plugin builds its own node via
-// `makeLoadAndCommonNode(strategy)` and binds the same Layer-1 capabilities
-// downstream.
+// `extractCommon` is strategy-driven. The singleton `loadAndCommonNode`
+// exported below is wired with the AON strategy (`aonStrategy`). A non-AON
+// plugin builds its own node via `makeLoadAndCommonNode(strategy)` and binds
+// the same Layer-1 capabilities downstream.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 

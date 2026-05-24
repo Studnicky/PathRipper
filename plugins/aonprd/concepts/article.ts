@@ -1,6 +1,6 @@
 //
-// Byte-equivalent to Wave 5 shape — article pages are prose-only entries;
-// no structured improvements warranted beyond legacy-section filtering.
+// Article pages are prose-only entries; no structured improvements warranted
+// beyond legacy-section filtering.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -25,7 +25,7 @@ import {
   filterLegacySections,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: article.ts ──────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 export interface ArticleOutput {

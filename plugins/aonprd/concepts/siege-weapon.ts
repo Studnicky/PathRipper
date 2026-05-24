@@ -1,5 +1,4 @@
 //
-// Byte-equivalent to Wave 5 SiegeWeaponOutput shape.
 // SiegeWeapons.aspx pages document large ranged engines with body-resident
 // stat-block fields and operator action definitions.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -28,8 +27,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: siege-weapon.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** Ammunition entry parsed from the `Ammunition` field. */
 export interface SiegeWeaponAmmunition {

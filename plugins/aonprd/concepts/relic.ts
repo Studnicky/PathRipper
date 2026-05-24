@@ -1,6 +1,6 @@
 //
-// Byte-equivalent to Wave 5 RelicOutput shape, which covers both single-gift
-// pages (?ID=N) and aspect-aggregator pages (?Aspect=N) under one concept.
+// Covers both single-gift pages (?ID=N) and aspect-aggregator pages
+// (?Aspect=N) under one concept.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -26,8 +26,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: relic.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** A single relic gift (Minor/Major/Grand) — either the primary `gift` or one
  *  entry inside an `aspects[]` aggregator page. */

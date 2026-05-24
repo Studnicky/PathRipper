@@ -1,4 +1,4 @@
-// Unit tests for rule concept capability nodes (Phase 6.4).
+// Unit tests for rule concept capability nodes.
 //
 // Rule pages bypass extractCommon entirely — `loadAndCommonNode` only stashes
 // `aonprdCheerio`. All capability nodes read from `aonprdCheerio` directly and

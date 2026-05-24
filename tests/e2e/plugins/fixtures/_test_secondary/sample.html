@@ -1,18 +1,18 @@
 <!--
-  Wave 5 secondary-source fixture.
-  Hand-crafted, non-AON page shape:
+  Secondary-source fixture (non-AON page shape).
+  Hand-crafted to exercise the Layer-1 strategy interfaces:
     - Plain `<h2>` / `<h3>` section headings (no `.title` class) — exercises
       the SectionWalkerStrategy.
     - `<div class="citation" data-source-id=N data-page=N>` source blocks —
       exercises the SourceRefStrategy.
     - The literal `<b>Source</b>` line is present only because the AONPRD
-      `findContentSpan` helper requires it (out of scope for Wave 5). The
-      secondary `extractSources` strategy DOES NOT read from it.
+      `findContentSpan` helper requires it. The secondary `extractSources`
+      strategy DOES NOT read from it.
 -->
 <html>
 <head>
   <title>Sample Article</title>
-  <meta name="description" content="A hand-crafted secondary-source fixture for Wave 5.">
+  <meta name="description" content="A hand-crafted secondary-source fixture.">
   <meta name="keywords" content="secondary, fixture, sample">
 </head>
 <body>

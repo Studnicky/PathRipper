@@ -1,4 +1,4 @@
-// Unit tests for skill concept capability nodes (Phase 6.4).
+// Unit tests for skill concept capability nodes.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 

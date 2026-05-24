@@ -32,7 +32,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: deity-category.ts ──────────────────────────────────
+
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** A linked deity reference harvested from the Members section. */

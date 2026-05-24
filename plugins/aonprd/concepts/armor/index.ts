@@ -1,5 +1,4 @@
 //
-// Byte-equivalent to Wave 5 ArmorOutput shape.
 // URL paths: ['armor', 'shields'] — both Armor.aspx and Shields.aspx pages
 // use the same structure and ArmorOutput shape.
 

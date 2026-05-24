@@ -1,7 +1,6 @@
 //
-// Delegates to the Wave 5 slice helpers in contributor.ts for correctness.
-// Byte-equivalent to Wave 5 shape — contributor pages have minimal structured
-// data; no improvements warranted beyond legacy-section filtering.
+// Contributor pages have minimal structured data; no improvements warranted
+// beyond legacy-section filtering.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
@@ -27,8 +26,7 @@ import {
   filterLegacySections,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: contributor.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 export interface ContributorOutput {
   url:              string;

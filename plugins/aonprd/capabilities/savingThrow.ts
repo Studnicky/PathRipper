@@ -9,7 +9,7 @@
 // or the Saving Throw field is missing. This is a pure parse + side-write
 // capability (open-world convention: produces = []).
 //
-// Lifted during Wave 6 phase to eliminate duplicate parsers in 5 concept files.
+// Lifted into a shared capability to eliminate duplicate parsers across concept files.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
 

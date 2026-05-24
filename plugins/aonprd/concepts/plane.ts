@@ -1,6 +1,5 @@
 //
-// Delegates to the Wave 5 slice helpers in plane.ts for correctness, adding
-// legacy-section filtering on the `sections[]` output.
+// Adds legacy-section filtering on the `sections[]` output.
 //
 // (mirrors the language concept pattern); the `legacy: true` flag already
 // carries that signal from the title extraction.
@@ -30,8 +29,7 @@ import {
   filterLegacySections,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: plane.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /**
  * A linked divinity reference harvested from a plane's `<b>Divinities</b>`

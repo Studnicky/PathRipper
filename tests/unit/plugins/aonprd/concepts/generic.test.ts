@@ -1,4 +1,4 @@
-// Unit tests for generic concept capability nodes (Phase 6.4).
+// Unit tests for generic concept capability nodes.
 //
 // The generic concept is a fallback with urlPaths: []. It has no direct URL
 // route — it exists so the taxonomy can route to it once a generic-fallback

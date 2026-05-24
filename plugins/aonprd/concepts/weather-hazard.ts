@@ -25,7 +25,7 @@ import {
   filterLegacySections,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: weather-hazard.ts ──────────────────────────────────
+
 // ─── Output type ──────────────────────────────────────────────────────────────
 
 /** A single labelled mechanical effect of a weather hazard. */

@@ -1,10 +1,9 @@
 // Types for armor, weapon, and equipment concepts.
 //
 // NOTE: This file contains MULTIPLE interface declarations (WeaponOutput,
-// ArmorOutput, EquipmentOutput, EquipmentVariant, Activation) — a historical
-// artifact of Wave 5 equipment.ts split. The armor concept itself uses only
-// ArmorOutput. The others are dead in this file but referenced through their
-// own concept files (weapon, equipment) — they are isolated copies.
+// ArmorOutput, EquipmentOutput, EquipmentVariant, Activation). The armor
+// concept itself uses only ArmorOutput. The others are referenced through
+// their own concept files (weapon, equipment) — they are isolated copies.
 //
 // Keep all interfaces in armor's types.ts for now — DO NOT remove or relocate
 // them.

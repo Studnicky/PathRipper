@@ -1,18 +1,17 @@
-// E2e regression test — language taxonomic extraction (Phase 6.3).
+// E2e regression test — language taxonomic extraction.
 //
-// Validates the improved Wave 6 output shape against both HTML fixtures:
+// Validates the output shape against both HTML fixtures:
 //   - language-common.html  (ID=1, legacy, ancestries + creatures sections)
 //   - language-osiriani.html (ID=36, PFS note, creatures section only)
 //
-// Also loads Wave 5 corpus samples from output-live/ and verifies that:
+// Also loads corpus samples from output-live/ and verifies that:
 //   a) Non-deprecated scalar fields are equivalent.
 //   b) New fields (speakers, section_counts, pfs_note) are present.
 //   c) The deprecated `typical_speakers` field is absent.
 //
-// Note on corpus: output-live/ files capture Wave 5 outputs where language
-// pages were typed as `_type: 'generic'` (language routing wasn't wired).
-// We test up to N=5 samples that can be matched to HTML fixtures; all others
-// are skipped gracefully.
+// Note on corpus: output-live/ files capture prior generic-extraction outputs
+// (language routing wasn't wired at that point). We test up to N=5 samples
+// that can be matched to HTML fixtures; all others are skipped gracefully.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -158,14 +157,14 @@ describe('language taxonomic extraction — fixture parsing', () => {
   });
 });
 
-// ─── Strict superset check vs Wave 5 baseline ────────────────────────────────
+// ─── Strict superset check vs prior baseline ─────────────────────────────────
 //
-// The corpus samples are Wave 5 outputs captured with _type='generic'.
+// The corpus samples are prior generic-extraction outputs (_type='generic').
 // We verify that scalar fields with clear semantic equivalents match and
-// that the new Wave 6 fields are present.
+// that the new fields are present.
 
-describe('language taxonomic extraction — superset of Wave 5 baseline', () => {
-  // Map fixture name → Wave 5 corpus sample ID.
+describe('language taxonomic extraction — superset of prior baseline', () => {
+  // Map fixture name → corpus sample ID.
   // language-common.html   = ID=1  (Legacy Common, Core Rulebook)
   // language-osiriani.html = ID=40 (Legacy Osiriani, with PFS note + redirect banner)
   const WAVE5_FIXTURE_PAIRS: ReadonlyArray<{ fixture: string; id: number }> = [
@@ -174,7 +173,7 @@ describe('language taxonomic extraction — superset of Wave 5 baseline', () => 
   ];
 
   for (const { fixture, id } of WAVE5_FIXTURE_PAIRS) {
-    it(`${fixture}: Wave 6 output is strict superset of Wave 5 scalar fields`, async () => {
+    it(`${fixture}: output is strict superset of prior scalar fields`, async () => {
       const wave5 = await loadCorpusSample(id);
       if (wave5 === null) {
         // eslint-disable-next-line no-console
@@ -192,7 +191,7 @@ describe('language taxonomic extraction — superset of Wave 5 baseline', () => 
       assert.equal(wave6.rarity, wave5['rarity'], 'rarity mismatch');
 
       // source.book matches when the HTML fixture corresponds to the same edition as
-      // the Wave 5 corpus sample. AON live-redirects legacy IDs to the remaster,
+      // the corpus sample. AON live-redirects legacy IDs to the remaster,
       // so the fixture HTML may contain remaster content while the corpus was captured
       // from the legacy page. We skip the source.book check in that case.
       const w5source = wave5['source'] as { book?: string } | undefined;
@@ -206,19 +205,19 @@ describe('language taxonomic extraction — superset of Wave 5 baseline', () => 
         console.log(`    [edition-delta] source.book: Wave5="${w5source.book}" Wave6="${w6book ?? 'null'}" (fixture is remaster; corpus is legacy)`);
       }
 
-      // language_id matches entity_id from Wave 5
+      // language_id should match entity_id from the prior output
       const w5EntityId = wave5['entity_id'];
       if (typeof w5EntityId === 'number') {
         assert.equal(wave6.language_id, w5EntityId, 'language_id (Wave6) should equal entity_id (Wave5)');
       }
 
-      // Wave 6 adds new fields — verify they exist
-      assert.ok('speakers' in wave6,       'speakers field missing from Wave 6 output');
-      assert.ok('section_counts' in wave6,  'section_counts field missing from Wave 6 output');
-      assert.ok('pfs_note' in wave6,        'pfs_note field missing from Wave 6 output');
+      // Verify new fields are present
+      assert.ok('speakers' in wave6,       'speakers field missing from output');
+      assert.ok('section_counts' in wave6,  'section_counts field missing from output');
+      assert.ok('pfs_note' in wave6,        'pfs_note field missing from output');
 
-      // typical_speakers is gone in Wave 6
-      assert.ok(!('typical_speakers' in wave6), 'typical_speakers should be absent from Wave 6 output');
+      // typical_speakers is removed
+      assert.ok(!('typical_speakers' in wave6), 'typical_speakers should be absent from output');
 
       // Report deltas
       const newFields = ['speakers', 'section_counts', 'pfs_note'];

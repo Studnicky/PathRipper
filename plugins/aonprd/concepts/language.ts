@@ -1,10 +1,7 @@
 //
 // Defines the improved LanguageOutput shape with structured speaker
 // buckets, section counts, PFS note extraction, and legacy section filtering.
-// Supersedes the Wave 5 shape in language.ts; that file remains unchanged as
-// the running pipeline still uses it.
-//
-// Breaking change vs Wave 5:
+// Breaking changes from the prior generic-extraction output:
 //   - `typical_speakers` (flat ancestry list) is REMOVED.
 //   - `speakers` (structured buckets) is the replacement.
 //   - `section_counts` is NEW.
@@ -79,8 +76,8 @@ export type LanguageKind =
   | 'regional';
 
 /**
- * Improved output shape for AON Languages.aspx pages (Wave 6 taxonomic
- * extraction). The `typical_speakers` field from Wave 5 is gone; use
+ * Output shape for AON Languages.aspx pages with structured speaker
+ * buckets and section counts. The `typical_speakers` field is removed; use
  * `speakers.ancestries` instead.
  */
 export interface LanguageOutput {
@@ -103,10 +100,10 @@ export interface LanguageOutput {
   /** Written script name (e.g. "Common", "Iobaric"). Null when AON omits. */
   script:           string | null;
 
-  // ─── Speaker slice (Wave 6 replacement for typical_speakers) ─────────────
+  // ─── Speaker slice ────────────────────────────────────────────────────────
   /**
    * Structured speaker buckets harvested from h2 sections on the language
-   * page. Replaces the Wave 5 `typical_speakers` flat list.
+   * page. Replaces the deprecated `typical_speakers` flat list.
    */
   speakers:         LanguageSpeakers;
   /**
@@ -116,7 +113,7 @@ export interface LanguageOutput {
    */
   section_counts:   Record<string, number>;
 
-  // ─── PFS note (Wave 6 new field) ─────────────────────────────────────────
+  // ─── PFS note ─────────────────────────────────────────────────────────────
   /**
    * Inline PFS Note text extracted from the pre-body annotation.
    * Null when the page has no PFS Note element.
@@ -503,14 +500,14 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
     // `state.output`; this finalize node layers in the meta slice only.
     if (c === undefined) return { output: 'success' };
 
-    // Read meta tags from the Wave 4 H5 shared `extract:meta-tags` capability
-    // instead of calling `extractMetaDescription` / `extractMetaKeywords` here.
+    // Read meta tags from the shared `extract:meta-tags` capability instead of
+    // calling `extractMetaDescription` / `extractMetaKeywords` here.
     const meta = state.getMetadata<AonprdMetaTags>('aonprdMetaTags');
 
     // Read the slices the upstream extract nodes wrote and assemble the
     // full LanguageOutput literal. The `satisfies LanguageOutput` clause is
-    // the load-bearing compile-time check that closes Wave 4 H9 — a
-    // misspelled key anywhere in the literal below fails `tsc`.
+    // the load-bearing compile-time check — a misspelled key anywhere in
+    // the literal below fails `tsc`.
     const acc = (state.output ?? {}) as Partial<LanguageOutput>;
 
     const assembled = {

@@ -1,7 +1,6 @@
 //
-// Byte-equivalent to Wave 5 shape — monster-ability pages are simple definition
-// pages (Trigger / Requirements / Frequency / Effect labels plus prose) that
-// the Wave 5 helpers already fully cover. Adds cross-reference harvest for
+// Monster-ability pages are simple definition pages (Trigger / Requirements /
+// Frequency / Effect labels plus prose). Adds cross-reference harvest for
 // related MonsterAbilities.aspx links.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -28,8 +27,7 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: monster-ability.ts ──────────────────────────────────
-// ─── Output type ──────────────────────────────────────────────────────────────
+// ─── Output type ─────────────────────────────────────────────────────────────
 
 /** Reference to another MonsterAbilities.aspx entry harvested from prose links. */
 export interface MonsterAbilityRef {

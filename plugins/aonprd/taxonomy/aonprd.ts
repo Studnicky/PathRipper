@@ -86,11 +86,11 @@ import type { ConceptDecl }     from '../taxonomy.js';
 // fallback — structurally divergent pages that do not present a standard
 // target span).
 //
-// Wave 1 (Wave 6 audit): `entity` was lifted out of `thing` to keep the three
-// shared entity capabilities (`extract:label-pair-block`,
-// `extract:section-walker`, `extract:source-ref`) off the rule chain. Their
-// `hardRequired: ['aonprdTarget']` would otherwise short-circuit through the
-// make-unknown terminal when `loadAndCommonNode` returns early for rule pages.
+// `entity` is lifted out of `thing` to keep the three shared entity
+// capabilities (`extract:label-pair-block`, `extract:section-walker`,
+// `extract:source-ref`) off the rule chain. Their `hardRequired: ['aonprdTarget']`
+// would otherwise short-circuit through the make-unknown terminal when
+// `loadAndCommonNode` returns early for rule pages.
 //
 // Interior concepts have no output of their own — they exist to share
 // capability chains downward. Declared with the default (`unknown`) TOutput.
@@ -113,9 +113,9 @@ const entityConcept: ConceptDecl = {
     // `extractMetaKeywords` calls. Every entity-style page benefits. Soft-fails
     // when `aonprdCheerio` is absent (rule pages, generic fallback).
     metaTagsNode,
-    // Wave 6 phase: lifted from curse, disease, spell/affliction, ritual, and
-    // weather-hazard inlined parsers. Soft-fails when `aonprdCommon` is absent
-    // or the Saving Throw field is missing.
+    // Lifted from per-concept inlined parsers (curse, disease, spell/affliction,
+    // ritual, weather-hazard). Soft-fails when `aonprdCommon` is absent or the
+    // Saving Throw field is missing.
     savingThrowNode,
   ],
 };

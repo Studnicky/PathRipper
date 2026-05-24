@@ -741,12 +741,11 @@ export function extractMetaKeywords($: CheerioAPI): string | null {
 /**
  * Run the full shared extraction pipeline over a parsed page.
  *
- * Wave 5 H15/H16: the source-citation walk and the section harvester are
- * supplied via {@link CommonStrategy}. The remaining helpers (`findContentSpan`,
+ * The source-citation walk and the section harvester are supplied via
+ * {@link CommonStrategy}. The remaining helpers (`findContentSpan`,
  * `extractTitle`, `extractTraits`, `harvestFields`, `harvestLinks`,
- * `detectPageType`) remain AON-shaped today and are scoped to be lifted to
- * strategies in a later wave when a second source plugin materialises a
- * concrete need.
+ * `detectPageType`) remain AON-shaped and are candidates for promotion to
+ * strategies when a second source plugin surfaces a concrete need.
  */
 export function extractCommon(
   $:        CheerioAPI,

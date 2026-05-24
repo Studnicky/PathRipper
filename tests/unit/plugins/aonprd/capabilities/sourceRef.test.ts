@@ -1,5 +1,5 @@
 // Unit tests for extract:source-ref capability.
-// Proves byte-equivalence with extractSources() from common.ts (Wave 5 source of truth).
+// Proves byte-equivalence with extractSources() from common.ts.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 

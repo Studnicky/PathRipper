@@ -34,7 +34,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: ancestry.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 export interface AncestryMechanics {
@@ -480,8 +479,8 @@ export const ancestryFeaturesNode: NodeInterface<ScrapeState, AncestryFeaturesOu
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Node: finalize:ancestry
-// Assembles raw_fields + meta. Calls the Wave 5 finalizeAncestry helper which
-// computes the raw_fields strip incorporating proficiency key claims.
+// Assembles raw_fields + meta. Computes the raw_fields strip incorporating
+// proficiency key claims.
 
 export type FinalizeAncestryOutput = 'success';
 

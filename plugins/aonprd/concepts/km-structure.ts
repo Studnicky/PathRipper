@@ -1,8 +1,7 @@
 //
 // Kingmaker settlement structure pages (KMStructures.aspx) carry lots, cost,
 // construction requirements, upgrade paths, item bonuses, and effect prose.
-// This concept delegates to Wave 5 slice helpers in km-structure.ts for
-// correctness. Output is byte-equivalent to the Wave 5 baseline.
+// Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-structure/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -31,7 +30,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: km-structure.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
 /** Reference to another KMStructures entry (upgrade path). */

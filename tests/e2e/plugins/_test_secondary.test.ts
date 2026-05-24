@@ -1,4 +1,4 @@
-// Wave 5 proof-of-concept e2e test for the `_test_secondary` plugin.
+// E2e test for the `_test_secondary` plugin.
 //
 // Demonstrates the AONPRD Layer-1 capability binaries
 // (`labelPairBlockNode`, `sectionWalkerNode`, `sourceRefNode`,
@@ -29,7 +29,7 @@ interface SampleOutputShape {
   sections: ReadonlyArray<{ heading: string; level: 2 | 3 }>;
 }
 
-describe('_test_secondary plugin — Wave 5 strategy reuse', () => {
+describe('_test_secondary plugin — strategy reuse', () => {
   it('parses a non-AON fixture through the shared AONPRD Layer-1 capabilities', async () => {
     const html = await readFile(resolve(FIXTURE_DIR, 'sample.html'), 'utf-8');
     const url  = 'https://secondary.test/Articles.aspx?ID=1';

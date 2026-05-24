@@ -1,9 +1,7 @@
 //
 // Kingmaker Companion Guide camp action pages (CampActivities.aspx) carry an
 // optional action-cost glyph, requirements and frequency head labels, a prose
-// description, and degree-of-success outcomes. This concept delegates to Wave 5
-// slice helpers in camp-activity.ts for correctness. Output is byte-equivalent
-// to the Wave 5 baseline.
+// description, and degree-of-success outcomes. Helpers are inlined.
 //
 // bespoke node-folder under nodes/camp-activity/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -33,7 +31,6 @@ import {
 } from '../common.js';
 import { parseOutcomesBlock, outcomesBlockToCampActivity } from '../capabilities/outcomesBlock.js';
 
-// ─── Inlined from Wave 5: camp-activity.ts ──────────────────────────────────
 export interface CampActivityOutcome {
   tier: 'critical-success' | 'success' | 'failure' | 'critical-failure';
   text: string;

@@ -2,7 +2,7 @@
 // Kingmaker mass-combat tactic pages (KMWarTactics.aspx) carry army-type tags
 // in traits (Infantry/Skirmisher/Cavalry/Siege), a level marker, optional
 // prerequisites/requirements/frequency head labels, and prose effect text. This
-// concept delegates to Wave 5 slice helpers in km-war-tactic.ts for correctness.
+// Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-war-tactic/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
@@ -30,7 +30,6 @@ import {
   stripStructuredKeys,
 } from '../common.js';
 
-// ─── Inlined from Wave 5: km-war-tactic.ts ──────────────────────────────────
 export interface KmWarTacticOutput {
   url:             string;
   tactic_id:       number | null;

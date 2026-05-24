@@ -1,5 +1,5 @@
-// Typecheck-only test for Wave 4 H9 — `setConceptOutput` + `satisfies`
-// guarantees on assembled output literals.
+// Typecheck-only test for `setConceptOutput` + `satisfies` guarantees on
+// assembled output literals.
 //
 // This file is NOT a runtime test. It is compiled by `tsc --noEmit` via the
 // dedicated `tsconfig.typecheck.json`. Each `@ts-expect-error` line asserts

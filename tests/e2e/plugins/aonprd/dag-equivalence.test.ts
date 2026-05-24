@@ -1,11 +1,10 @@
-// DAG-vs-direct equivalence — Wave 1 (Wave 6 audit B2).
+// DAG-vs-direct equivalence regression oracle.
 //
 // Permanent regression oracle: each fixture is dispatched through the
 // registered `aonprdParseDAG` against a real `RipperDagonizer`, and the
 // resulting `state.output` is deep-compared against the direct-call output
 // from `parseAonHtml(html, url)`. Any divergence proves the production DAG
-// path and the direct-call path have drifted — the exact gap that hid the
-// Wave 6 B1 rule-page regression.
+// path and the direct-call path have drifted.
 //
 // The rule fixture is the named oracle for the B1 fix: the entity-prefix
 // capabilities must soft-fail on rule pages so the DAG produces `_type: 'rule'`
@@ -120,10 +119,9 @@ const CASES: readonly FixtureCase[] = [
 describe('aonprdParseDAG vs parseAonHtml — equivalence', () => {
   // ── Rule fixture (B1 regression oracle) ─────────────────────────────────────
   // The rule page exercises the soft-fail open-world contract for the entity
-  // capabilities (label-pair / section-walker / source-ref). Before Wave 1
-  // those capabilities returned `'error'` when `aonprdTarget` was missing —
-  // routing the rule page to `aonprd:make-unknown` through the DAG path. This
-  // test asserts the DAG path produces `_type: 'rule'` and matches direct-call.
+  // capabilities (label-pair / section-walker / source-ref) must soft-fail on
+  // rule pages so the DAG produces `_type: 'rule'` instead of `_type: 'unknown'`.
+  // This test asserts the DAG path produces `_type: 'rule'` and matches direct-call.
   it('B1 regression oracle — rule page routes through DAG to _type=rule', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const url  = 'https://2e.aonprd.com/Rules.aspx?ID=100';
