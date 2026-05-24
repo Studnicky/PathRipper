@@ -41,7 +41,6 @@ describe('extract:class-kit-base — class-kit-alchemist', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ClassKitOutput;
-    assert.equal(out._type, 'class-kit');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.class_kit_id, 1);
   });
@@ -92,7 +91,6 @@ describe('full class-kit pipeline — class-kit-alchemist', () => {
   it('produces a complete ClassKitOutput with all required fields', async () => {
     const out = await primeAndRunFull('class-kit-alchemist.html', 'https://2e.aonprd.com/ClassKits.aspx?ID=1');
 
-    assert.equal(out._type, 'class-kit');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.armor), 'armor missing');
     assert.ok(Array.isArray(out.weapons), 'weapons missing');

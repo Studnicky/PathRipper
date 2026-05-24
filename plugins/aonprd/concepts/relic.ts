@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -68,7 +68,7 @@ export interface RelicMilestone {
   ability: string;
 }
 
-export interface RelicOutputFields {
+export interface RelicOutput {
   url:              string;
   /** Numeric AON Relics.aspx ID (?ID=N) — null for aspect aggregator pages. */
   relic_id:         number | null;
@@ -100,9 +100,6 @@ export interface RelicOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type RelicOutput = ConceptOutputBase<'relic'> & RelicOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface RelicBaseSlice {
@@ -116,7 +113,7 @@ export interface RelicBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          RelicOutputFields['source'];
+  source:          RelicOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -303,7 +300,7 @@ export function finalizeRelic(
   milestones:  RelicMilestonesSlice,
   _meta:       RelicMetaSlice,
   $:           CheerioAPI,
-): RelicOutputFields {
+): RelicOutput {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -318,7 +315,7 @@ export function finalizeRelic(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies RelicOutputFields;
+  } satisfies RelicOutput;
 }
 
 /**
@@ -332,7 +329,7 @@ export function extractRelic(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): RelicOutputFields {
+): RelicOutput {
   void _span;
   const base       = extractRelicBase(c);
   const gift       = extractRelicGift(c);
@@ -341,7 +338,6 @@ export function extractRelic(
   const meta       = extractRelicMeta(c);
   return finalizeRelic(c, base, gift, aspects, milestones, meta, $);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -440,5 +436,4 @@ export const relicConcept: ConceptDecl<RelicOutput> = {
     relicGiftNode,
     finalizeRelicNode,
   ],
-  discriminator: { _type: 'relic' },
 };

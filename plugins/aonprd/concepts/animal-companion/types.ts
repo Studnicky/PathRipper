@@ -7,7 +7,6 @@ import type {
   Section,
   SourceRef,
 } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 /** Companion page variant inferred from the `Type=` URL parameter. */
 export type AnimalCompanionVariant = 'base' | 'unique' | 'specialized' | 'advancement';
@@ -58,7 +57,7 @@ export interface AnimalCompanionModification {
   html:  string;
 }
 
-export interface AnimalCompanionOutputFields {
+export interface AnimalCompanionOutput {
   url:             string;
   /** Numeric AON Companions.aspx ID extracted from the URL query string. */
   companion_id:    number | null;
@@ -115,9 +114,6 @@ export interface AnimalCompanionOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type AnimalCompanionOutput = ConceptOutputBase<'animal-companion'> & AnimalCompanionOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────
 
 export interface AnimalCompanionBaseSlice {
@@ -131,7 +127,7 @@ export interface AnimalCompanionBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          AnimalCompanionOutputFields['source'];
+  source:          AnimalCompanionOutput['source'];
   sources:         SourceRef[];
   base_companion:  AnimalCompanionRef | null;
   description:     string | null;

@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -41,7 +41,7 @@ export interface MonsterFamilyMember {
   kind:       string;
 }
 
-export interface MonsterFamilyOutputFields {
+export interface MonsterFamilyOutput {
   url:              string;
   monster_family_id:        number | null;
   name:             string;
@@ -64,9 +64,6 @@ export interface MonsterFamilyOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type MonsterFamilyOutput = ConceptOutputBase<'monster-family'> & MonsterFamilyOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-monster-family-base`. */
@@ -80,7 +77,7 @@ export interface MonsterFamilyBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          MonsterFamilyOutputFields['source'];
+  source:          MonsterFamilyOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -172,7 +169,7 @@ export function finalizeMonsterFamily(
   base:    MonsterFamilyBaseSlice,
   members: MonsterFamilyMembersSlice,
   $:       CheerioAPI,
-): MonsterFamilyOutputFields {
+): MonsterFamilyOutput {
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
@@ -184,7 +181,7 @@ export function finalizeMonsterFamily(
     members:          members.members,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies MonsterFamilyOutputFields;
+  } satisfies MonsterFamilyOutput;
 }
 
 /**
@@ -198,13 +195,12 @@ export function extractMonsterFamily(
   c:    CommonExtraction,
   $:    CheerioAPI,
   _span: CheerioNode,
-): MonsterFamilyOutputFields {
+): MonsterFamilyOutput {
   void _span;
   const base    = extractMonsterFamilyBase(c);
   const members = extractMonsterFamilyMembers(c);
   return finalizeMonsterFamily(c, base, members, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -299,5 +295,4 @@ export const monsterFamilyConcept: ConceptDecl<MonsterFamilyOutput> = {
     monsterFamilyMembersNode,
     finalizeMonsterFamilyNode,
   ],
-  discriminator: { _type: 'monster-family' },
 };

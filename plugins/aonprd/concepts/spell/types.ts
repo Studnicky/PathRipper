@@ -5,7 +5,6 @@
  * Constants: TRADITIONS, ACTION_LABEL_MAP, ORDINAL_MAP.
  */
 import type { ActionCost, Rarity, PfsLegality, SourceRef, LinkRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 export type SpellKind = 'spell' | 'cantrip' | 'focus' | 'ritual';
 export type Tradition = 'arcane' | 'divine' | 'occult' | 'primal' | 'elemental';
@@ -42,7 +41,7 @@ export interface HeightenedEntry {
   body_html: string;
 }
 
-export interface SpellOutputFields {
+export interface SpellOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   spell_id: number | null;
@@ -136,9 +135,6 @@ export interface SpellOutputFields {
   meta_keywords: string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type SpellOutput = ConceptOutputBase<'spell'> & SpellOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-spell-base`. */
@@ -155,19 +151,19 @@ export interface SpellBaseSlice {
   action_cost:     ActionCost | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SpellOutputFields['source'];
+  source:          SpellOutput['source'];
   sources:         SourceRef[];
 }
 
 /** Fields owned by `extract-spell-cast`. */
 export interface SpellCastSlice {
-  cast:         SpellOutputFields['cast'];
+  cast:         SpellOutput['cast'];
   trigger:      string | null;
   range:        string | null;
   area:         string | null;
   targets:      string | null;
   defense:      string | null;
-  saving_throw: SpellOutputFields['saving_throw'];
+  saving_throw: SpellOutput['saving_throw'];
   duration:     string | null;
   cost:         string | null;
   requirements: string | null;
@@ -197,14 +193,14 @@ export interface SpellHeightenedSlice {
 export interface SpellMetaSlice {
   traditions:     Tradition[];
   spell_list:     string | null;
-  bloodlines:     SpellOutputFields['bloodlines'];
-  cult:           SpellOutputFields['cult'];
-  domain:         SpellOutputFields['domain'];
-  deities:        SpellOutputFields['deities'];
-  mysteries:      SpellOutputFields['mysteries'];
-  patron_themes:  SpellOutputFields['patron_themes'];
-  catalysts:      SpellOutputFields['catalysts'];
-  lesson:         SpellOutputFields['lesson'];
+  bloodlines:     SpellOutput['bloodlines'];
+  cult:           SpellOutput['cult'];
+  domain:         SpellOutput['domain'];
+  deities:        SpellOutput['deities'];
+  mysteries:      SpellOutput['mysteries'];
+  patron_themes:  SpellOutput['patron_themes'];
+  catalysts:      SpellOutput['catalysts'];
+  lesson:         SpellOutput['lesson'];
   access:         string | null;
   spoiler_source: string | null;
 }

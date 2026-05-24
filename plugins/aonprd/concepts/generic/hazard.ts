@@ -20,7 +20,6 @@ import {
 } from './helpers.js';
 import type {
   HazardOutput,
-  HazardOutputFields,
   HazardBaseSlice,
   HazardDefensesSlice,
   HazardRoutinesSlice,
@@ -80,7 +79,7 @@ export function finalizeHazard(
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
   $:         CheerioAPI,
-): HazardOutputFields {
+): HazardOutput {
   // Collect component labels for stripping (e.g. "Main Hardness", "Door HP").
   const componentLabels: string[] = [];
   for (const comp of [...defenses.defenses.hardness, ...defenses.defenses.hp]) {
@@ -117,10 +116,10 @@ export function finalizeHazard(
     defenses:        defenses.defenses,
     routines:        routines.routines,
     reset:           reset.reset,
-  } satisfies HazardOutputFields;
+  } satisfies HazardOutput;
 }
 
-export function extractHazard(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): HazardOutputFields {
+export function extractHazard(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): HazardOutput {
   void _span;
   const base     = extractHazardBase(c);
   const defenses = extractHazardDefenses(c);

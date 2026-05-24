@@ -81,5 +81,4 @@ export const conditionConcept: ConceptDecl<ConditionOutput> = {
     conditionBaseNode,
     finalizeConditionNode,
   ],
-  discriminator: { _type: 'condition' },
 };

@@ -50,7 +50,6 @@ describe('extract:animal-companion-base — cave-pterosaur', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as AnimalCompanionOutput;
-    assert.equal(out._type, 'animal-companion');
     assert.equal(out.companion_id, 14);
     assert.equal(out.variant, 'base');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
@@ -124,7 +123,6 @@ describe('extract:animal-companion-advancement — cave-pterosaur', () => {
 describe('finalize:animal-companion — cave-pterosaur (base)', () => {
   it('produces complete AnimalCompanionOutput', async () => {
     const out = await primeAndRunFull(FIXTURE_BASE, BASE_URL_BASE);
-    assert.equal(out._type, 'animal-companion');
     assert.equal(out.companion_id, 14);
     assert.equal(out.variant, 'base');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
@@ -143,7 +141,6 @@ describe('finalize:animal-companion — cave-pterosaur (base)', () => {
 describe('full pipeline — wind-chaser (specialized)', () => {
   it('variant is specialized', async () => {
     const out = await primeAndRunFull(FIXTURE_ADVANCED, BASE_URL_ADVANCED);
-    assert.equal(out._type, 'animal-companion');
     assert.equal(out.variant, 'specialized');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
@@ -152,7 +149,6 @@ describe('full pipeline — wind-chaser (specialized)', () => {
 describe('full pipeline — fiery-leopard (unique)', () => {
   it('variant is unique and has base_companion reference or modifications', async () => {
     const out = await primeAndRunFull(FIXTURE_UNIQUE, BASE_URL_UNIQUE);
-    assert.equal(out._type, 'animal-companion');
     assert.equal(out.variant, 'unique');
     // Unique pages have base_companion ref or modifications
     const hasUniqueContent = out.base_companion !== null || out.modifications.length > 0;

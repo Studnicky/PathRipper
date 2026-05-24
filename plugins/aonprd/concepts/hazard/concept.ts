@@ -108,5 +108,4 @@ export const hazardConcept: ConceptDecl<HazardOutput> = {
     hazardDefensesNode,
     finalizeHazardNode,
   ],
-  discriminator: { _type: 'hazard' },
 };

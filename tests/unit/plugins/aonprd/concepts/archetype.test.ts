@@ -43,7 +43,6 @@ describe('extract:archetype-base — archetype-geomancer', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ArchetypeOutput;
-    assert.equal(out._type, 'archetype');
     assert.equal(out.name, 'Geomancer');
     assert.equal(out.archetype_id, 264);
   });
@@ -120,7 +119,6 @@ describe('full archetype pipeline — archetype-geomancer', () => {
   it('produces a complete ArchetypeOutput with all required fields', async () => {
     const out = await primeAndRunFull('archetype-geomancer.html', 'https://2e.aonprd.com/Archetypes.aspx?ID=264');
 
-    assert.equal(out._type, 'archetype');
     assert.equal(out.name, 'Geomancer');
     assert.ok(typeof out.introduction === 'string', 'introduction missing');
     assert.ok(Array.isArray(out.feats) && out.feats.length > 0, 'feats missing');

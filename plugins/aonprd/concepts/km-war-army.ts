@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -55,7 +55,7 @@ export interface KmWarArmyAttack {
   shots: number | null;
 }
 
-export interface KmWarArmyOutputFields {
+export interface KmWarArmyOutput {
   url:             string;
   army_id:         number | null;
   name:            string;
@@ -97,9 +97,6 @@ export interface KmWarArmyOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type KmWarArmyOutput = ConceptOutputBase<'km-war-army'> & KmWarArmyOutputFields;
-
 export interface KmWarArmyBaseSlice {
   url:             string;
   army_id:         number | null;
@@ -109,7 +106,7 @@ export interface KmWarArmyBaseSlice {
   trait_ids:       Record<string, number>;
   level:           number | null;
   ancestry:        string | null;
-  source:          KmWarArmyOutputFields['source'];
+  source:          KmWarArmyOutput['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -316,7 +313,7 @@ export function finalizeKmWarArmy(
   abilities: KmWarArmyAbilitiesSlice,
   _meta:     KmWarArmyMetaSlice,
   $:         CheerioAPI,
-): KmWarArmyOutputFields {
+): KmWarArmyOutput {
   void _meta;
   return {
     ...base,
@@ -329,10 +326,10 @@ export function finalizeKmWarArmy(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies KmWarArmyOutputFields;
+  } satisfies KmWarArmyOutput;
 }
 
-export function extractKmWarArmy(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmWarArmyOutputFields {
+export function extractKmWarArmy(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmWarArmyOutput {
   void target;
   const base      = extractKmWarArmyBase(c);
   const stat      = extractKmWarArmyStatblock(c);
@@ -340,7 +337,6 @@ export function extractKmWarArmy(c: CommonExtraction, $: CheerioAPI, target: Che
   const meta      = extractKmWarArmyMeta(c);
   return finalizeKmWarArmy(c, base, stat, abilities, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -468,5 +464,4 @@ export const kmWarArmyConcept: ConceptDecl<KmWarArmyOutput> = {
     kmWarArmyAbilitiesNode,
     finalizeKmWarArmyNode,
   ],
-  discriminator: { _type: 'km-war-army' },
 };

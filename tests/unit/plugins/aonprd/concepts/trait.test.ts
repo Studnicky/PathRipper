@@ -37,7 +37,6 @@ describe('extract:trait-base — trait-magical', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as TraitOutput;
-    assert.equal(out._type, 'trait');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.trait_id, 103);
   });
@@ -82,7 +81,6 @@ describe('finalize:trait — trait-magical', () => {
 describe('full trait pipeline — trait-magical', () => {
   it('produces complete TraitOutput', async () => {
     const out = await primeAndRunFull('trait-magical.html', 'https://2e.aonprd.com/Traits.aspx?ID=103');
-    assert.equal(out._type, 'trait');
     assert.equal(out.trait_id, 103);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.body_text === 'string', 'body_text missing');

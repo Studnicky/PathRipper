@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -34,7 +34,7 @@ import {
 // ─── Inlined from Wave 5: background.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface BackgroundOutputFields {
+export interface BackgroundOutput {
   url:                     string;
   background_id:               number | null;
   name:                    string;
@@ -64,9 +64,6 @@ export interface BackgroundOutputFields {
    */
   related_sources:         Array<{ name: string; source_id: number | null }>;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type BackgroundOutput = ConceptOutputBase<'background'> & BackgroundOutputFields;
 
 // ─── Per-slice shapes ─────────────────────────────────────────────────────────
 
@@ -201,7 +198,7 @@ export function finalizeBackground(
   base:     BackgroundBaseSlice,
   benefits: BackgroundBenefitsSlice,
   $:        CheerioAPI,
-): BackgroundOutputFields {
+): BackgroundOutput {
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
 
   return {
@@ -214,7 +211,7 @@ export function finalizeBackground(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies BackgroundOutputFields;
+  } satisfies BackgroundOutput;
 }
 
 /**
@@ -224,12 +221,11 @@ export function finalizeBackground(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed background extraction nodes.
  */
-export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): BackgroundOutputFields {
+export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): BackgroundOutput {
   const base     = extractBackgroundBase(c, $, span);
   const benefits = extractBackgroundBenefits(c);
   return finalizeBackground(c, base, benefits, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -340,5 +336,4 @@ export const backgroundConcept: ConceptDecl<BackgroundOutput> = {
     backgroundBenefitsNode,
     finalizeBackgroundNode,
   ],
-  discriminator: { _type: 'background' },
 };

@@ -12,7 +12,6 @@ import {
 } from '../_helpers.js';
 import type {
   TraitOutput,
-  TraitOutputFields,
   TraitBaseSlice,
 } from './types.js';
 
@@ -40,7 +39,7 @@ export function finalizeTrait(
   c:    CommonExtraction,
   base: TraitBaseSlice,
   $:    CheerioAPI,
-): TraitOutputFields {
+): TraitOutput {
   // AON includes the trait's filter category (e.g. weapon/spell/creature) only
   // implicitly via the listing page; we infer from inbound link kinds.
   const linkKinds = new Set(c.links.map((l) => l.kind));
@@ -65,10 +64,10 @@ export function finalizeTrait(
     sources:         base.sources,
     raw_fields:      stripStructuredKeys(c.field_map, TRAIT_CLAIMED_LABELS),
     category,
-  } satisfies TraitOutputFields;
+  } satisfies TraitOutput;
 }
 
-export function extractTrait(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): TraitOutputFields {
+export function extractTrait(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): TraitOutput {
   void _span;
   const base = extractTraitBase(c);
   return finalizeTrait(c, base, $);

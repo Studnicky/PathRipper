@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -30,7 +30,7 @@ import {
 // ─── Inlined from Wave 5: article.ts ──────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
-export interface ArticleOutputFields {
+export interface ArticleOutput {
   url:              string;
   /** Numeric AON Articles.aspx ID extracted from the URL query string. */
   article_id:       number | null;
@@ -59,9 +59,6 @@ export interface ArticleOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ArticleOutput = ConceptOutputBase<'article'> & ArticleOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-article-base`. */
@@ -75,7 +72,7 @@ export interface ArticleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ArticleOutputFields['source'];
+  source:          ArticleOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -139,7 +136,7 @@ export function finalizeArticle(
   _meta:    ArticleMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ArticleOutputFields {
+): ArticleOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -153,7 +150,7 @@ export function finalizeArticle(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ArticleOutputFields;
+  } satisfies ArticleOutput;
 }
 
 /**
@@ -167,13 +164,12 @@ export function extractArticle(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ArticleOutputFields {
+): ArticleOutput {
   const base    = extractArticleBase(c);
   const content = extractArticleContent(c);
   const meta    = extractArticleMeta(c);
   return finalizeArticle(c, base, content, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -271,5 +267,4 @@ export const articleConcept: ConceptDecl<ArticleOutput> = {
     articleBaseNode,
     finalizeArticleNode,
   ],
-  discriminator: { _type: 'article' },
 };

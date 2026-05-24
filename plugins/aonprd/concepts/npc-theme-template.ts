@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -47,7 +47,7 @@ export interface NpcThemeTemplateTier {
   text_html: string;
 }
 
-export interface NpcThemeTemplateOutputFields {
+export interface NpcThemeTemplateOutput {
   url:                    string;
   /** Numeric AON NPCThemeTemplates.aspx ID extracted from the URL query string. */
   npc_theme_template_id:  number | null;
@@ -81,9 +81,6 @@ export interface NpcThemeTemplateOutputFields {
   meta_keywords:           string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type NpcThemeTemplateOutput = ConceptOutputBase<'npc-theme-template'> & NpcThemeTemplateOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-npc-theme-template-base`. */
@@ -97,7 +94,7 @@ export interface NpcThemeTemplateBaseSlice {
   alt_edition_url:       string | null;
   traits:                string[];
   trait_ids:             Record<string, number>;
-  source:                NpcThemeTemplateOutputFields['source'];
+  source:                NpcThemeTemplateOutput['source'];
   sources:               SourceRef[];
 }
 
@@ -228,7 +225,7 @@ export function finalizeNpcThemeTemplate(
   _meta:       NpcThemeTemplateMetaSlice,
   $:           CheerioAPI,
   _target:     CheerioNode,
-): NpcThemeTemplateOutputFields {
+): NpcThemeTemplateOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -242,7 +239,7 @@ export function finalizeNpcThemeTemplate(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies NpcThemeTemplateOutputFields;
+  } satisfies NpcThemeTemplateOutput;
 }
 
 /**
@@ -256,13 +253,12 @@ export function extractNpcThemeTemplate(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): NpcThemeTemplateOutputFields {
+): NpcThemeTemplateOutput {
   const base       = extractNpcThemeTemplateBase(c);
   const traitsMods = extractNpcThemeTemplateTraitsMods(c);
   const meta       = extractNpcThemeTemplateMeta(c);
   return finalizeNpcThemeTemplate(c, base, traitsMods, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -373,5 +369,4 @@ export const npcThemeTemplateConcept: ConceptDecl<NpcThemeTemplateOutput> = {
     npcThemeTemplateTraitsModsNode,
     finalizeNpcThemeTemplateNode,
   ],
-  discriminator: { _type: 'npc-theme-template' },
 };

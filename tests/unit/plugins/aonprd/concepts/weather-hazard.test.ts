@@ -37,7 +37,6 @@ describe('extract:weather-hazard-base — weather-hazard-blizzard', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as WeatherHazardOutput;
-    assert.equal(out._type, 'weather-hazard');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.weather_hazard_id, 1);
     assert.ok(Array.isArray(out.effects), 'effects should be an array');
@@ -94,7 +93,6 @@ describe('finalize:weather-hazard — weather-hazard-blizzard', () => {
 describe('full weather-hazard pipeline — weather-hazard-blizzard', () => {
   it('produces complete WeatherHazardOutput', async () => {
     const out = await primeAndRunFull('weather-hazard-blizzard.html', 'https://2e.aonprd.com/WeatherHazards.aspx?ID=1');
-    assert.equal(out._type, 'weather-hazard');
     assert.equal(out.weather_hazard_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.effects), 'effects missing');

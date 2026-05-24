@@ -29,5 +29,4 @@ export const monsterConcept: ConceptDecl<MonsterOutput> = {
     monsterMetaNode,
     finalizeMonsterNode,
   ],
-  discriminator: { _type: 'monster' },
 };

@@ -12,7 +12,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -61,7 +61,7 @@ export interface PlaneInhabitantRef {
   href:          string | null;
 }
 
-export interface PlaneOutputFields {
+export interface PlaneOutput {
   url:              string;
   /** Numeric AON Planes.aspx ID extracted from the URL query string. */
   plane_id:         number | null;
@@ -101,9 +101,6 @@ export interface PlaneOutputFields {
   meta_keywords:      string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type PlaneOutput = ConceptOutputBase<'plane'> & PlaneOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-plane-base`. */
@@ -117,7 +114,7 @@ export interface PlaneBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          PlaneOutputFields['source'];
+  source:          PlaneOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -334,7 +331,7 @@ export function finalizePlane(
   characteristics:  PlaneCharacteristicsSlice,
   meta:             PlaneMetaSlice,
   $:                CheerioAPI,
-): PlaneOutputFields {
+): PlaneOutput {
   return {
     ...base,
     ...denizens,
@@ -348,7 +345,7 @@ export function finalizePlane(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies PlaneOutputFields;
+  } satisfies PlaneOutput;
 }
 
 /**
@@ -362,7 +359,7 @@ export function extractPlane(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): PlaneOutputFields {
+): PlaneOutput {
   void target;
   const base            = extractPlaneBase(c);
   const denizens        = extractPlaneDenizens(c);
@@ -370,7 +367,6 @@ export function extractPlane(
   const meta            = extractPlaneMeta(c);
   return finalizePlane(c, base, denizens, characteristics, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -502,5 +498,4 @@ export const planeConcept: ConceptDecl<PlaneOutput> = {
     planeCharacteristicsNode,
     finalizePlaneNode,
   ],
-  discriminator: { _type: 'plane' },
 };

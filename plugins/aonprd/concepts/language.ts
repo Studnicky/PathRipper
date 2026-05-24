@@ -35,7 +35,7 @@ import {
   extractPfsNote,
 } from '../common.js';
 import type { AonprdMetaTags } from '../capabilities/metaTags.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 
 import { setConceptOutput } from './_helpers.js';
 // ─── Speaker types ─────────────────────────────────────────────────────────────
@@ -84,7 +84,7 @@ export type LanguageKind =
  * extraction). The `typical_speakers` field from Wave 5 is gone; use
  * `speakers.ancestries` instead.
  */
-export interface LanguageOutputFields {
+export interface LanguageOutput {
   url:              string;
   /** Numeric AON Languages.aspx ID extracted from the URL query string. */
   language_id:      number | null;
@@ -143,9 +143,6 @@ export interface LanguageOutputFields {
   /** `<meta name="keywords">` content. */
   meta_keywords:    string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type LanguageOutput = ConceptOutputBase<'language'> & LanguageOutputFields;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -323,7 +320,7 @@ export const languageBaseNode: NodeInterface<ScrapeState, LanguageBaseOutput, Ri
     const kindRaw   = c.field_map['Type'] ?? c.field_map['Kind'] ?? null;
     const scriptRaw = c.field_map['Script'] ?? null;
 
-    const base: Partial<LanguageOutputFields> = {
+    const base: Partial<LanguageOutput> = {
       url:             c.url,
       language_id:     extractEntityId(c.url),
       name:            c.title.name,
@@ -515,7 +512,7 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
     // full LanguageOutput literal. The `satisfies LanguageOutput` clause is
     // the load-bearing compile-time check that closes Wave 4 H9 — a
     // misspelled key anywhere in the literal below fails `tsc`.
-    const acc = (state.output ?? {}) as Partial<LanguageOutputFields>;
+    const acc = (state.output ?? {}) as Partial<LanguageOutput>;
 
     const assembled = {
       url:              c.url,
@@ -552,7 +549,7 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
       body_html:        c.body_html,
       meta_description: meta?.description ?? null,
       meta_keywords:    meta?.keywords    ?? null,
-    } satisfies LanguageOutputFields;
+    } satisfies LanguageOutput;
 
     setConceptOutput(state, assembled);
 
@@ -577,5 +574,4 @@ export const languageConcept: ConceptDecl<LanguageOutput> = {
     languagePfsNoteNode,
     finalizeLanguageNode,
   ],
-  discriminator: { _type: 'language' },
 };

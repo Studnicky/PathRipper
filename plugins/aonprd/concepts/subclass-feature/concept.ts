@@ -204,5 +204,4 @@ export const subclassFeatureConcept: ConceptDecl<SubclassFeatureOutput> = {
     subclassFeatureFeaturesNode,
     finalizeSubclassFeatureNode,
   ],
-  discriminator: { _type: 'subclass-feature' },
 };

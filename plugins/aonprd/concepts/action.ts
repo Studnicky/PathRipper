@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -33,7 +33,7 @@ import { parseOutcomesBlock } from '../capabilities/outcomesBlock.js';
 // ─── Inlined from Wave 5: action.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface ActionOutputFields {
+export interface ActionOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   action_id: number | null;
@@ -74,9 +74,6 @@ export interface ActionOutputFields {
   meta_keywords: string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ActionOutput = ConceptOutputBase<'action'> & ActionOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-action-base`. */
@@ -88,7 +85,7 @@ export interface ActionBaseSlice {
   action_cost:     ActionCost | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ActionOutputFields['source'];
+  source:          ActionOutput['source'];
   sources:         SourceRef[];
   legacy:          boolean;
   alt_edition_url: string | null;
@@ -102,7 +99,7 @@ export interface ActionEffectSlice {
   cost:         string | null;
   effect_html:  string;
   effect_text:  string;
-  outcomes:     ActionOutputFields['outcomes'];
+  outcomes:     ActionOutput['outcomes'];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -119,7 +116,7 @@ function dashToNull(value: string | null): string | null {
 /**
  * Parse outcomes from the effect HTML.
  */
-function parseOutcomes(bodyHtml: string): ActionOutputFields['outcomes'] {
+function parseOutcomes(bodyHtml: string): ActionOutput['outcomes'] {
   return parseOutcomesBlock(bodyHtml);
 }
 
@@ -136,7 +133,7 @@ function buildEffect(bodyHtml: string): { html: string; text: string } {
  * The raw text is typically "SkillName (Proficiency)" — e.g. "Acrobatics (Trained)".
  * The Skills.aspx link provides the skill_id.
  */
-function parseSkill(c: CommonExtraction): ActionOutputFields['skill'] {
+function parseSkill(c: CommonExtraction): ActionOutput['skill'] {
   const html = getFieldHtml(c, 'Skill');
   if (html === null) return null;
   // Extract Skills.aspx link
@@ -222,7 +219,7 @@ export function finalizeAction(
   base:   ActionBaseSlice,
   effect: ActionEffectSlice,
   $:      CheerioAPI,
-): ActionOutputFields {
+): ActionOutput {
   const skill = parseSkill(c);
   return {
     ...base,
@@ -232,7 +229,7 @@ export function finalizeAction(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ActionOutputFields;
+  } satisfies ActionOutput;
 }
 
 // ─── Public extractor ─────────────────────────────────────────────────────────
@@ -244,13 +241,12 @@ export function finalizeAction(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed action extraction nodes.
  */
-export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ActionOutputFields {
+export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ActionOutput {
   void span;
   const base   = extractActionBase(c);
   const effect = extractActionEffect(c);
   return finalizeAction(c, base, effect, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -345,5 +341,4 @@ export const actionConcept: ConceptDecl<ActionOutput> = {
     actionEffectNode,
     finalizeActionNode,
   ],
-  discriminator: { _type: 'action' },
 };

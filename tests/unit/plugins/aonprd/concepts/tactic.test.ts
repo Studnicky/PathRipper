@@ -37,7 +37,6 @@ describe('extract:tactic-base — tactic-mirrored-wall', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as TacticOutput;
-    assert.equal(out._type, 'tactic');
     assert.equal(out.name, 'Mirrored Wall');
     assert.equal(out.tactic_id, 22);
     assert.ok('action_cost' in out, 'action_cost field present');
@@ -80,7 +79,6 @@ describe('extract:tactic-mechanics — tactic-mirrored-wall', () => {
 describe('finalize:tactic — tactic-mirrored-wall', () => {
   it('assembles complete TacticOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'tactic');
     assert.equal(out.name, 'Mirrored Wall');
     assert.equal(out.tactic_id, 22);
     assert.ok(typeof out.effect === 'string', 'effect present');

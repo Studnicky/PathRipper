@@ -197,7 +197,6 @@ describe('builtinNodes', () => {
       await JsonWriteNode.execute(state, ctx);
       const expected = join(outDir, TARGET, 'aonprd:parse', 'Feats.aspx-ID-750.json');
       const parsed   = JSON.parse(await readFile(expected, 'utf8')) as { _type: string; name: string };
-      assert.equal(parsed._type, 'feat');
       assert.equal(parsed.name,  'Dwarven Lore');
     });
 

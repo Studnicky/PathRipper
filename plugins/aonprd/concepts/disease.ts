@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -62,7 +62,7 @@ export interface DiseaseSavingThrow {
   raw:   string;
 }
 
-export interface DiseaseOutputFields {
+export interface DiseaseOutput {
   url:              string;
   /** Numeric AON Diseases.aspx ID extracted from the URL query string. */
   disease_id:       number | null;
@@ -97,9 +97,6 @@ export interface DiseaseOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type DiseaseOutput = ConceptOutputBase<'disease'> & DiseaseOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-disease-base`. */
@@ -114,7 +111,7 @@ export interface DiseaseBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          DiseaseOutputFields['source'];
+  source:          DiseaseOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -258,7 +255,7 @@ export function finalizeDisease(
   _meta:     DiseaseMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): DiseaseOutputFields {
+): DiseaseOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -286,7 +283,7 @@ export function finalizeDisease(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies DiseaseOutputFields;
+  } satisfies DiseaseOutput;
 }
 
 /** Project a Diseases.aspx page into a typed DiseaseOutput (direct-call wrapper). */
@@ -294,14 +291,13 @@ export function extractDisease(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): DiseaseOutputFields {
+): DiseaseOutput {
   const base   = extractDiseaseBase(c);
   const mech   = extractDiseaseMechanics(c);
   const stages = extractDiseaseStages(c);
   const meta   = extractDiseaseMeta(c);
   return finalizeDisease(c, base, mech, stages, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -428,5 +424,4 @@ export const diseaseConcept: ConceptDecl<DiseaseOutput> = {
     diseaseStagesNode,
     finalizeDiseaseNode,
   ],
-  discriminator: { _type: 'disease' },
 };

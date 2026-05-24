@@ -84,5 +84,4 @@ export const weaponConcept: ConceptDecl<WeaponOutput> = {
     weaponMechanicsNode,
     finalizeWeaponNode,
   ],
-  discriminator: { _type: 'weapon' },
 };

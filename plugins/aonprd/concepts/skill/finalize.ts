@@ -2,7 +2,7 @@
 import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, LinkRef } from '../../common.js';
 import { htmlToText, harvestLinks, extractMetaDescription, extractMetaKeywords, stripStructuredKeys } from '../../common.js';
-import type { SkillOutput, SkillOutputFields, SkillBaseSlice, SkillActionsSlice, SkillProficiencyTiersSlice, SkillMetaSlice } from './types.js';
+import type { SkillOutput, SkillBaseSlice, SkillActionsSlice, SkillProficiencyTiersSlice, SkillMetaSlice } from './types.js';
 import { CLAIMED_FIELD_LABELS } from './types.js';
 
 /** Extract whole-page link / body / meta projection. */
@@ -55,7 +55,7 @@ export function finalizeSkill(
   actions:  SkillActionsSlice,
   tiers:    SkillProficiencyTiersSlice,
   meta:     SkillMetaSlice,
-): SkillOutputFields {
+): SkillOutput {
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
 
   return {
@@ -70,7 +70,7 @@ export function finalizeSkill(
     links:            meta.links,
     meta_description: meta.meta_description,
     meta_keywords:    meta.meta_keywords,
-  } satisfies SkillOutputFields;
+  } satisfies SkillOutput;
 }
 
 /**
@@ -80,7 +80,7 @@ export function finalizeSkill(
  * tests. The DAG pipeline calls the per-slice helpers individually through the
  * decomposed skill extraction nodes.
  */
-export function extractSkill(c: CommonExtraction, $: CheerioAPI, span: any): SkillOutputFields {
+export function extractSkill(c: CommonExtraction, $: CheerioAPI, span: any): SkillOutput {
   const extractSkillBase = require('./base.js').extractSkillBase;
   const extractSkillActions = require('./actions.js').extractSkillActions;
   const extractSkillProficiencyTiers = require('./proficiency-tiers.js').extractSkillProficiencyTiers;

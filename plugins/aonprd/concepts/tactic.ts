@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -35,7 +35,7 @@ import {
 } from '../common.js';
 
 // ─── Inlined from Wave 5: tactic.ts ──────────────────────────────────
-export interface TacticOutputFields {
+export interface TacticOutput {
   url:             string;
   tactic_id:       number | null;
   name:            string;
@@ -69,7 +69,6 @@ export interface TacticOutputFields {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
-export type TacticOutput = ConceptOutputBase<'tactic'> & TacticOutputFields;
 
 export interface TacticBaseSlice {
   url:             string;
@@ -80,7 +79,7 @@ export interface TacticBaseSlice {
   trait_ids:       Record<string, number>;
   action_cost:     ActionCost | null;
   category:        string | null;
-  source:          TacticOutputFields['source'];
+  source:          TacticOutput['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -195,7 +194,7 @@ export function finalizeTactic(
   mech:  TacticMechanicsSlice,
   _meta: TacticMetaSlice,
   $:     CheerioAPI,
-): TacticOutputFields {
+): TacticOutput {
   void _meta;
   return {
     ...base,
@@ -207,17 +206,16 @@ export function finalizeTactic(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies TacticOutputFields;
+  } satisfies TacticOutput;
 }
 
-export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): TacticOutputFields {
+export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): TacticOutput {
   void target;
   const base = extractTacticBase(c);
   const mech = extractTacticMechanics(c);
   const meta = extractTacticMeta(c);
   return finalizeTactic(c, base, mech, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -317,5 +315,4 @@ export const tacticConcept: ConceptDecl<TacticOutput> = {
     tacticMechanicsNode,
     finalizeTacticNode,
   ],
-  discriminator: { _type: 'tactic' },
 };

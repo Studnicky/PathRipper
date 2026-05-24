@@ -39,7 +39,6 @@ describe('extract:action-base — action-hunt-prey', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ActionOutput;
-    assert.equal(out._type, 'action');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.action_id, 1);
   });
@@ -90,7 +89,6 @@ describe('finalize:action — action-with-skill', () => {
 describe('full action pipeline — action-hunt-prey', () => {
   it('produces complete ActionOutput with all required fields', async () => {
     const out = await primeAndRunFull('action-hunt-prey.html', 'https://2e.aonprd.com/Actions.aspx?ID=1');
-    assert.equal(out._type, 'action');
     assert.equal(out.action_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.effect_text === 'string', 'effect_text missing');

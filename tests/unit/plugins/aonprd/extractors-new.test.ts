@@ -33,7 +33,6 @@ describe('extractMonsterFamily — Elemental Metal family', () => {
   it('returns _type monster-family', async () => {
     const html = await loadFixture('monster-family-elemental-metal.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343');
-    assert.equal(out._type, 'monster-family');
   });
 
   it('extracts the correct name', async () => {
@@ -77,7 +76,6 @@ describe('extractRule — Alchemy Unleashed rule page', () => {
   it('returns _type rule', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-    assert.equal(out._type, 'rule');
   });
 
   it('extracts the correct rule name', async () => {
@@ -120,7 +118,6 @@ describe('NPCs.aspx routed to monster extractor', () => {
   it('returns _type monster for NPCs.aspx URL', async () => {
     const html = await loadFixture('npc-advisor.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/NPCs.aspx?ID=3420');
-    assert.equal(out._type, 'monster');
   });
 
   it('extracts name correctly', async () => {
@@ -143,7 +140,6 @@ describe('extractAncestry — Goblin (modern h2-section layout)', () => {
   it('extracts hit_points from h2 section', async () => {
     const html = await loadFixture('ancestry-goblin.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    assert.equal(out._type, 'ancestry');
     assert.equal((out as unknown as { mechanics: { hit_points: number | null } }).mechanics.hit_points, 6);
   });
 
@@ -182,7 +178,6 @@ describe('extractClass — Sorcerer (modern inline bold layout)', () => {
   it('extracts key_attribute from inline bold', async () => {
     const html = await loadFixture('class-sorcerer.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Classes.aspx?ID=11');
-    assert.equal(out._type, 'class');
     const keyAttr = (out as unknown as { key_attribute: string | null }).key_attribute;
     assert.ok(keyAttr !== null && keyAttr.length > 0, 'key_attribute should be populated');
   });

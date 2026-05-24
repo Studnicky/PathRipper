@@ -40,7 +40,6 @@ describe('extract:monster-family-base — elemental-metal', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as MonsterFamilyOutput;
-    assert.equal(out._type, 'monster-family');
     assert.equal(out.monster_family_id, 343);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
   });
@@ -73,7 +72,6 @@ describe('extract:monster-family-members — elemental-metal', () => {
 describe('finalize:monster-family — elemental-metal', () => {
   it('produces complete MonsterFamilyOutput', async () => {
     const out = await primeAndRunFull(FIXTURE, BASE_URL);
-    assert.equal(out._type, 'monster-family');
     assert.equal(out.monster_family_id, 343);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.members), 'members missing');

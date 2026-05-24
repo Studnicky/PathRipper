@@ -38,7 +38,6 @@ describe('extract:source-base — source-core-rulebook', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SourceOutput;
-    assert.equal(out._type, 'source');
     assert.equal(out.name, 'Core Rulebook');
     assert.equal(out.source_id, 1);
     assert.equal(out.url, URL);
@@ -99,7 +98,6 @@ describe('extract:source-related — source-core-rulebook', () => {
 describe('finalize:source — source-core-rulebook', () => {
   it('assembles complete SourceOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'source');
     assert.equal(out.name, 'Core Rulebook');
     assert.equal(out.source_id, 1);
     assert.equal(out.product_page, 'https://store.paizo.com/pathfinder-core-rulebook/');

@@ -39,7 +39,6 @@ describe('extract:contributor-base — contributor-devin', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ContributorOutput;
-    assert.equal(out._type, 'contributor');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.contributor_id, 1);
   });
@@ -95,7 +94,6 @@ describe('finalize:contributor — contributor-devin', () => {
 describe('full contributor pipeline — contributor-devin', () => {
   it('produces complete ContributorOutput', async () => {
     const out = await primeAndRunFull('contributor-devin.html', 'https://2e.aonprd.com/Contributors.aspx?ID=1');
-    assert.equal(out._type, 'contributor');
     assert.equal(out.contributor_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.bio_html === 'string', 'bio_html missing');
@@ -106,7 +104,6 @@ describe('full contributor pipeline — contributor-devin', () => {
 describe('full contributor pipeline — contributor-milan', () => {
   it('produces valid ContributorOutput', async () => {
     const out = await primeAndRunFull('contributor-milan.html', 'https://2e.aonprd.com/Contributors.aspx?ID=2');
-    assert.equal(out._type, 'contributor');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
 });

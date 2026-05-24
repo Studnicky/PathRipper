@@ -36,7 +36,6 @@ describe('extract:km-structure-base — km-structure-academy', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as KmStructureOutput;
-    assert.equal(out._type, 'km-structure');
     assert.equal(out.name, 'Academy');
     assert.equal(out.structure_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -77,7 +76,6 @@ describe('extract:km-structure-mechanics — km-structure-academy', () => {
 describe('finalize:km-structure — km-structure-academy', () => {
   it('assembles complete KmStructureOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'km-structure');
     assert.equal(out.name, 'Academy');
     assert.equal(out.structure_id, 1);
     assert.ok(typeof out.raw_fields === 'object', 'raw_fields present');

@@ -39,7 +39,6 @@ describe('extract:vehicle-base — vehicle-airship', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as VehicleOutput;
-    assert.equal(out._type, 'vehicle');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.vehicle_id, 1);
   });
@@ -106,7 +105,6 @@ describe('finalize:vehicle — vehicle-airship', () => {
 describe('full vehicle pipeline — vehicle-airship', () => {
   it('produces complete VehicleOutput', async () => {
     const out = await primeAndRunFull('vehicle-airship.html', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    assert.equal(out._type, 'vehicle');
     assert.equal(out.vehicle_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.operator_actions), 'operator_actions missing');

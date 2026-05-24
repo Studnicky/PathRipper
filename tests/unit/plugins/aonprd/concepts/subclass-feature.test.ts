@@ -47,7 +47,6 @@ describe('extract:subclass-feature-base — bloodline-aberrant', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SubclassFeatureOutput;
-    assert.equal(out._type, 'subclass-feature');
     assert.equal(out.subclass_family, 'bloodline');
     assert.equal(out.parent_class, 'sorcerer');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
@@ -140,7 +139,6 @@ describe('full subclass-feature pipeline — bloodline-aberrant', () => {
   it('produces a complete SubclassFeatureOutput', async () => {
     const out = await primeAndRunFull('subclass-feature-bloodline-aberrant.html', 'https://2e.aonprd.com/Bloodlines.aspx?ID=1');
 
-    assert.equal(out._type, 'subclass-feature');
     assert.equal(out.subclass_family, 'bloodline');
     assert.equal(out.parent_class, 'sorcerer');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
@@ -159,7 +157,6 @@ describe('full subclass-feature pipeline — research-field-toxicologist', () =>
     const out = await primeAndRunFull('subclass-feature-research-field-toxicologist.html', 'https://2e.aonprd.com/ResearchFields.aspx?ID=4');
     assert.equal(out.subclass_family, 'research-field');
     assert.equal(out.parent_class, 'alchemist');
-    assert.equal(out._type, 'subclass-feature');
   });
 });
 

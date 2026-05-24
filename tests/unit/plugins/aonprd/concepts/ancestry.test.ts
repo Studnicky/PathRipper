@@ -43,7 +43,6 @@ describe('extract:ancestry-base — ancestry-goblin', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as AncestryOutput;
-    assert.equal(out._type, 'ancestry');
     assert.equal(out.name, 'Goblin');
     assert.equal(out.ancestry_id, 4);
     // Rarity comes from the fixture's trait pills — accept whatever the fixture reports
@@ -142,7 +141,6 @@ describe('full ancestry pipeline — ancestry-goblin', () => {
   it('produces a complete AncestryOutput with all required fields', async () => {
     const out = await primeAndRunFull('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
 
-    assert.equal(out._type, 'ancestry');
     assert.equal(out.name, 'Goblin');
     assert.equal(out.ancestry_id, 4);
     assert.ok(typeof out.mechanics === 'object', 'mechanics missing');

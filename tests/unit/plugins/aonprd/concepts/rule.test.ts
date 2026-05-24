@@ -44,7 +44,6 @@ describe('extract:rule-base — alchemy-unleashed', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as RuleOutput;
-    assert.equal(out._type, 'rule');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('rule_id' in out, 'rule_id missing');
     assert.ok(typeof out.body_text === 'string', 'body_text missing');
@@ -96,7 +95,6 @@ describe('extract:rule-subsections — alchemy-unleashed', () => {
 describe('finalize:rule — alchemy-unleashed', () => {
   it('produces complete RuleOutput with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_RULE, URL_RULE);
-    assert.equal(out._type, 'rule');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.child_rules), 'child_rules missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');
@@ -124,7 +122,6 @@ describe('finalize:rule — alchemy-unleashed', () => {
 describe('full rule pipeline — alchemy-unleashed', () => {
   it('produces a complete RuleOutput with meta tags', async () => {
     const out = await primeAndRunFull(FIXTURE_RULE, URL_RULE);
-    assert.equal(out._type, 'rule');
     assert.ok(typeof out.name === 'string' && out.name.length > 0);
     assert.ok(typeof out.meta_description === 'string' || out.meta_description === null);
     assert.ok(typeof out.meta_keywords === 'string' || out.meta_keywords === null);

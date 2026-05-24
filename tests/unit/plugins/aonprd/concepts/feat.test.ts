@@ -45,7 +45,6 @@ describe('extract:feat-base — feat-dwarven-lore', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as FeatOutput;
-    assert.equal(out._type, 'feat');
     assert.equal(out.name, 'Dwarven Lore');
     assert.equal(out.feat_id, 17);
     assert.ok(typeof out.level === 'number' || out.level === null, 'level should be number or null');
@@ -148,7 +147,6 @@ describe('full feat pipeline — feat-dwarven-lore', () => {
   it('produces a complete FeatOutput with all required fields', async () => {
     const out = await primeAndRunFull('feat-dwarven-lore.html', 'https://2e.aonprd.com/Feats.aspx?ID=17');
 
-    assert.equal(out._type, 'feat');
     assert.equal(out.name, 'Dwarven Lore');
     assert.equal(out.feat_id, 17);
     assert.ok(typeof out.description_text === 'string' && out.description_text.length > 0, 'description_text missing');

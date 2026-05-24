@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -47,7 +47,7 @@ export interface ClassKitItem {
   note:     string | null;
 }
 
-export interface ClassKitOutputFields {
+export interface ClassKitOutput {
   url:              string;
   /** Numeric AON ClassKits.aspx ID extracted from the URL query string. */
   class_kit_id:     number | null;
@@ -89,9 +89,6 @@ export interface ClassKitOutputFields {
   meta_keywords:        string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ClassKitOutput = ConceptOutputBase<'class-kit'> & ClassKitOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-class-kit-base`. */
@@ -105,7 +102,7 @@ export interface ClassKitBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ClassKitOutputFields['source'];
+  source:          ClassKitOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -243,7 +240,7 @@ export function finalizeClassKit(
   _meta:    ClassKitMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ClassKitOutputFields {
+): ClassKitOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -257,7 +254,7 @@ export function finalizeClassKit(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ClassKitOutputFields;
+  } satisfies ClassKitOutput;
 }
 
 /**
@@ -271,13 +268,12 @@ export function extractClassKit(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ClassKitOutputFields {
+): ClassKitOutput {
   const base     = extractClassKitBase(c);
   const contents = extractClassKitContents(c);
   const meta     = extractClassKitMeta(c);
   return finalizeClassKit(c, base, contents, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -388,5 +384,4 @@ export const classKitConcept: ConceptDecl<ClassKitOutput> = {
     classKitContentsNode,
     finalizeClassKitNode,
   ],
-  discriminator: { _type: 'class-kit' },
 };

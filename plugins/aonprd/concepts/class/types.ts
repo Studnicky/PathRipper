@@ -1,9 +1,8 @@
 // Class concept types.
 
 import type { Rarity, PfsLegality, Section, SourceRef, LinkRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
-export interface ClassOutputFields {
+export interface ClassOutput {
   url:                   string;
   class_id:             number | null;
   name:                  string;
@@ -39,9 +38,6 @@ export interface ClassOutputFields {
   /** Subclass-specific feature labels lifted from bare `<b>` tags in the head. */
   subclass_features:     Array<{ name: string; description: string }>;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ClassOutput = ConceptOutputBase<'class'> & ClassOutputFields;
 
 // ─── Per-slice shapes ─────────────────────────────────────────────────────────
 

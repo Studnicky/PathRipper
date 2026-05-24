@@ -41,7 +41,6 @@ describe('extract:background-base — background-acolyte', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as BackgroundOutput;
-    assert.equal(out._type, 'background');
     assert.equal(out.name, 'Acolyte');
     assert.equal(out.background_id, 1);
   });
@@ -117,7 +116,6 @@ describe('full background pipeline — background-acolyte', () => {
   it('produces a complete BackgroundOutput with all required fields', async () => {
     const out = await primeAndRunFull('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
 
-    assert.equal(out._type, 'background');
     assert.equal(out.name, 'Acolyte');
     assert.ok(Array.isArray(out.trained_skills), 'trained_skills missing');
     assert.ok(Array.isArray(out.lore_skills), 'lore_skills missing');

@@ -20,5 +20,4 @@ export const equipmentConcept: ConceptDecl<EquipmentOutput> = {
     equipmentMechanicsNode,
     finalizeEquipmentNode,
   ],
-  discriminator: { _type: 'equipment' },
 };

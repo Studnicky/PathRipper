@@ -13,7 +13,6 @@ describe('extractAncestry — base slice (Goblin fixture)', () => {
   it('captures _type and name', async () => {
     const html = await loadFixture('ancestry-goblin.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    assert.equal(out._type, 'ancestry');
     assert.equal(out.name, 'Goblin');
   });
 

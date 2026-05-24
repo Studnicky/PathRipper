@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -52,7 +52,7 @@ export interface VehicleOperatorAction {
   text:        string;
 }
 
-export interface VehicleOutputFields {
+export interface VehicleOutput {
   url:              string;
   /** Numeric AON Vehicles.aspx ID extracted from the URL query string. */
   vehicle_id:       number | null;
@@ -115,7 +115,6 @@ export interface VehicleOutputFields {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
-export type VehicleOutput = ConceptOutputBase<'vehicle'> & VehicleOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -131,7 +130,7 @@ export interface VehicleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          VehicleOutputFields['source'];
+  source:          VehicleOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -400,7 +399,7 @@ export function finalizeVehicle(
   operation:  VehicleOperationSlice,
   _meta:      VehicleMetaSlice,
   $:          CheerioAPI,
-): VehicleOutputFields {
+): VehicleOutput {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -414,7 +413,7 @@ export function finalizeVehicle(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies VehicleOutputFields;
+  } satisfies VehicleOutput;
 }
 
 /**
@@ -428,7 +427,7 @@ export function extractVehicle(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): VehicleOutputFields {
+): VehicleOutput {
   void _span;
   const base      = extractVehicleBase(c);
   const mechanics = extractVehicleMechanics(c);
@@ -436,7 +435,6 @@ export function extractVehicle(
   const meta      = extractVehicleMeta(c);
   return finalizeVehicle(c, base, mechanics, operation, meta, $);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -533,5 +531,4 @@ export const vehicleConcept: ConceptDecl<VehicleOutput> = {
     vehicleMechanicsNode,
     finalizeVehicleNode,
   ],
-  discriminator: { _type: 'vehicle' },
 };

@@ -15,7 +15,7 @@ import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { stripStructuredKeys, extractMetaDescription, extractMetaKeywords } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
 
-import type { SpellOutput, SpellOutputFields, RitualBaseSlice, RitualCastSlice, RitualOutcomesSlice, RitualAfflictionSlice, RitualHeightenedSlice, RitualMetaSlice } from './types.js';
+import type { SpellOutput, RitualBaseSlice, RitualCastSlice, RitualOutcomesSlice, RitualAfflictionSlice, RitualHeightenedSlice, RitualMetaSlice } from './types.js';
 
 /**
  * AON labels every per-slice helper has lifted into structured fields.
@@ -52,7 +52,7 @@ export function finalizeSpell(
   heightened: RitualHeightenedSlice,
   meta:       RitualMetaSlice,
   $:          CheerioAPI,
-): SpellOutputFields {
+): SpellOutput {
   const heightenedKeys: string[] = [];
   for (const key of Object.keys(c.field_map)) {
     if (/^heightened\b/i.test(key)) heightenedKeys.push(key);
@@ -74,7 +74,7 @@ export function finalizeSpell(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SpellOutputFields;
+  } satisfies SpellOutput;
 }
 
 export type FinalizeRitualOutput = 'success';

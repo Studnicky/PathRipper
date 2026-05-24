@@ -43,7 +43,6 @@ describe('extract:skill-base — skill-acrobatics', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SkillOutput;
-    assert.equal(out._type, 'skill');
     assert.equal(out.name, 'Acrobatics');
     assert.equal(out.skill_id, 1);
     assert.ok(out.key_ability !== null, 'Acrobatics has a key ability (dex)');
@@ -120,7 +119,6 @@ describe('full skill pipeline — skill-acrobatics', () => {
   it('produces a complete SkillOutput with all required fields', async () => {
     const out = await primeAndRunFull('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
 
-    assert.equal(out._type, 'skill');
     assert.equal(out.name, 'Acrobatics');
     assert.equal(out.key_ability, 'dex');
     assert.ok(typeof out.description_text === 'string' && out.description_text.length > 0, 'description_text missing');

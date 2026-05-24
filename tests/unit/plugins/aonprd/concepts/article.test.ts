@@ -37,7 +37,6 @@ describe('extract:article-base — article-walkena', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ArticleOutput;
-    assert.equal(out._type, 'article');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.article_id, 1);
     // description is body text; may be null for minimal pages
@@ -75,7 +74,6 @@ describe('finalize:article — article-walkena', () => {
 describe('full article pipeline — article-walkena', () => {
   it('produces complete ArticleOutput', async () => {
     const out = await primeAndRunFull('article-walkena.html', 'https://2e.aonprd.com/Articles.aspx?ID=1');
-    assert.equal(out._type, 'article');
     assert.equal(out.article_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');
@@ -86,7 +84,6 @@ describe('full article pipeline — article-walkena', () => {
 describe('full article pipeline — article-swardlands-gazetteer', () => {
   it('produces valid ArticleOutput', async () => {
     const out = await primeAndRunFull('article-swardlands-gazetteer.html', 'https://2e.aonprd.com/Articles.aspx?ID=2');
-    assert.equal(out._type, 'article');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
 });

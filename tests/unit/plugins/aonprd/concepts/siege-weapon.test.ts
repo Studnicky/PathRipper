@@ -39,7 +39,6 @@ describe('extract:siege-weapon-base — siege-weapon-volley-gun', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SiegeWeaponOutput;
-    assert.equal(out._type, 'siege-weapon');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.siege_weapon_id, 1);
   });
@@ -105,7 +104,6 @@ describe('finalize:siege-weapon — siege-weapon-volley-gun', () => {
 describe('full siege-weapon pipeline — siege-weapon-volley-gun', () => {
   it('produces complete SiegeWeaponOutput', async () => {
     const out = await primeAndRunFull('siege-weapon-volley-gun.html', 'https://2e.aonprd.com/SiegeWeapons.aspx?ID=1');
-    assert.equal(out._type, 'siege-weapon');
     assert.equal(out.siege_weapon_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.operator_actions), 'operator_actions missing');

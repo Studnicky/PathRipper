@@ -25,7 +25,7 @@ import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -50,7 +50,7 @@ export interface RuleSection {
   rule_id:   number | null;
 }
 
-export interface RuleOutputFields {
+export interface RuleOutput {
   url:             string;
   rule_id:       number | null;
   /** Rule title extracted from the `<h1 class="title">` inside `<div class="rule">`. */
@@ -66,7 +66,6 @@ export interface RuleOutputFields {
   meta_description: string | null;
   meta_keywords:   string | null;
 }
-export type RuleOutput = ConceptOutputBase<'rule'> & RuleOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -271,14 +270,14 @@ export function finalizeRule(
   ctx:          RuleContext,
   base:         RuleBaseSlice,
   subsections:  RuleSubsectionsSlice,
-): RuleOutputFields {
+): RuleOutput {
   return {
     ...base,
     ...subsections,
     links:            harvestLinks(ctx.bodyHtml),
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies RuleOutputFields;
+  } satisfies RuleOutput;
 }
 
 // ─── Extractor entry points ───────────────────────────────────────────────────
@@ -291,7 +290,7 @@ export function finalizeRule(
  * tests. The DAG pipeline calls the per-slice helpers individually through the
  * decomposed rule extraction nodes.
  */
-export function extractRule($: CheerioAPI, url: string): RuleOutputFields {
+export function extractRule($: CheerioAPI, url: string): RuleOutput {
   const ctx         = buildRuleContext($);
   const base        = extractRuleBase(ctx, url);
   const subsections = extractRuleSubsections($, ctx);
@@ -299,10 +298,10 @@ export function extractRule($: CheerioAPI, url: string): RuleOutputFields {
 }
 
 /**
- * Load a full Rules.aspx page HTML and return a typed RuleOutputFields.
+ * Load a full Rules.aspx page HTML and return a typed RuleOutput.
  * This is the direct-call API used by `parseAonHtml` and unit tests.
  */
-export function parseRuleHtml(html: string, url: string): RuleOutputFields {
+export function parseRuleHtml(html: string, url: string): RuleOutput {
   const $ = load(html);
   return extractRule($, url);
 }
@@ -402,8 +401,8 @@ export const finalizeRuleConceptNode: NodeInterface<ScrapeState, FinalizeRuleOut
 
     const ctx = getOrBuildRuleContext(state, $);
 
-    const prior = (state.output ?? {}) as Partial<RuleOutputFields>;
-    const assembled: RuleOutputFields = {
+    const prior = (state.output ?? {}) as Partial<RuleOutput>;
+    const assembled: RuleOutput = {
       url:              prior.url ?? state.page.url,
       rule_id:        prior.rule_id ?? extractEntityId(state.page.url),
       name:             prior.name ?? ctx.name,
@@ -447,5 +446,4 @@ export const ruleConcept: ConceptDecl<RuleOutput> = {
     ruleSubsectionsNode,
     finalizeRuleConceptNode,
   ],
-  discriminator: { _type: 'rule' },
 };

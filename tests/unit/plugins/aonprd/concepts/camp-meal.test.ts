@@ -36,7 +36,6 @@ describe('extract:camp-meal-base — camp-meal-baked-spider-legs', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as CampMealOutput;
-    assert.equal(out._type, 'camp-meal');
     assert.equal(out.name, 'Baked Spider Legs');
     assert.equal(out.meal_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -76,7 +75,6 @@ describe('extract:camp-meal-mechanics — camp-meal-baked-spider-legs', () => {
 describe('finalize:camp-meal — camp-meal-baked-spider-legs', () => {
   it('assembles complete CampMealOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'camp-meal');
     assert.equal(out.name, 'Baked Spider Legs');
     assert.equal(out.meal_id, 1);
     assert.ok(Array.isArray(out.outcomes), 'outcomes present');

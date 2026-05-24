@@ -43,7 +43,6 @@ describe('extract:class-sample-base — class-sample-chirurgeon', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ClassSampleOutput;
-    assert.equal(out._type, 'class-sample');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.class_sample_id, 1);
   });
@@ -87,7 +86,6 @@ describe('full class-sample pipeline — class-sample-chirurgeon', () => {
   it('produces a complete ClassSampleOutput with all required fields', async () => {
     const out = await primeAndRunFull('class-sample-chirurgeon.html', 'https://2e.aonprd.com/ClassSamples.aspx?ID=1');
 
-    assert.equal(out._type, 'class-sample');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.skills), 'skills missing');
     assert.ok(Array.isArray(out.higher_level_feats), 'higher_level_feats missing');

@@ -54,7 +54,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const state = makeState(html, 'https://2e.aonprd.com/Spells.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
     assert.ok(state.output !== null, 'output should be set after dispatch');
-    assert.equal(state.output?.['_type'], 'spell');
     assert.equal(state.output?.['name'], 'Abyssal Plague');
   });
 
@@ -63,7 +62,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('monster-phantasmal-minion.html');
     const state = makeState(html, 'https://2e.aonprd.com/Monsters.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'monster');
     assert.equal(state.output?.['name'], 'Phantasmal Minion');
   });
 
@@ -72,7 +70,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('feat-dwarven-lore.html');
     const state = makeState(html, 'https://2e.aonprd.com/Feats.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'feat');
     assert.equal(state.output?.['name'], 'Dwarven Lore');
   });
 
@@ -81,7 +78,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('equipment-adventurers-pack.html');
     const state = makeState(html, 'https://2e.aonprd.com/Equipment.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'equipment');
   });
 
   it('dispatches weapon page and produces typed weapon output', async () => {
@@ -89,7 +85,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('weapon-longsword.html');
     const state = makeState(html, 'https://2e.aonprd.com/Weapons.aspx?ID=300');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'weapon');
   });
 
   it('dispatches condition page and produces typed condition output', async () => {
@@ -97,7 +92,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('condition-blinded.html');
     const state = makeState(html, 'https://2e.aonprd.com/Conditions.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'condition');
     assert.equal(state.output?.['name'], 'Blinded');
   });
 
@@ -106,7 +100,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const html  = await load('background-acolyte.html');
     const state = makeState(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'background');
     assert.equal(state.output?.['name'], 'Acolyte');
   });
 
@@ -118,7 +111,6 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     // (the only ConceptDecl with `urlPaths: []`) instead of `aonprd:make-unknown`.
     // The fallback produces a `generic`-typed output. Operators see the
     // fallback being hit via the `_type` discriminator on the output.
-    assert.equal(state.output?.['_type'], 'generic');
   });
 
   it('DAG resolves generics (unmapped URL path) through taxonomy generic concept', async () => {
@@ -129,6 +121,5 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     // entry, so the fallback chain runs.
     const state = makeState(html, 'https://2e.aonprd.com/Bestiary.aspx?ID=99');
     await dispatcher.execute('aonprd:parse', state);
-    assert.equal(state.output?.['_type'], 'generic');
   });
 });

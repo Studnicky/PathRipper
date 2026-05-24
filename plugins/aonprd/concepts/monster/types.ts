@@ -6,7 +6,6 @@
  * KNOWN_LABELS, STAGE_LABEL_RE, SPELL_LIST_LABEL_RE, ABILITY_NAMES.
  */
 import type { ActionCost, SourceRef, LinkRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 export type AbilityScore = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
 export type SaveName = 'fort' | 'ref' | 'will';
@@ -44,7 +43,7 @@ export interface MonsterSpellList {
   slots: Array<{ rank: string; spells: Array<{ name: string; frequency: string | null; count: number | null }> }>;
 }
 
-export interface MonsterOutputFields {
+export interface MonsterOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   monster_id: number | null;
@@ -107,9 +106,6 @@ export interface MonsterOutputFields {
   /** `<meta name="keywords">` content. */
   meta_keywords: string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type MonsterOutput = ConceptOutputBase<'monster'> & MonsterOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 

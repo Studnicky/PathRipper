@@ -7,7 +7,6 @@ import type {
   Section,
   SourceRef,
 } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 /** Reference to another familiar ability (`Familiars.aspx?ID=N`). */
 export interface FamiliarAbilityRef {
@@ -44,7 +43,7 @@ export interface FamiliarSubAbility {
   body_html:   string;
 }
 
-export interface FamiliarOutputFields {
+export interface FamiliarOutput {
   url:                            string;
   /** Numeric AON ID extracted from the URL (`?ID=N`). */
   familiar_id:                    number | null;
@@ -96,9 +95,6 @@ export interface FamiliarOutputFields {
   meta_description:               string | null;
   meta_keywords:                  string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type FamiliarOutput = ConceptOutputBase<'familiar'> & FamiliarOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────
 

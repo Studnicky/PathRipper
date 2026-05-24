@@ -58,7 +58,6 @@ describe('extract:monster-base — phantasmal-minion', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as MonsterOutput;
-    assert.equal(out._type, 'monster');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.ok(typeof out.perception === 'object', 'perception missing');
     assert.ok(typeof out.abilities === 'object', 'abilities missing');
@@ -161,7 +160,6 @@ describe('extract:monster-meta — phantasmal-minion', () => {
 describe('finalize:monster — phantasmal-minion', () => {
   it('produces complete MonsterOutput with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_MINION, BASE_URL_MINION);
-    assert.equal(out._type, 'monster');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.ac === 'object', 'ac missing');
     assert.ok(typeof out.saves === 'object', 'saves missing');
@@ -185,7 +183,6 @@ describe('finalize:monster — phantasmal-minion', () => {
 describe('full pipeline — goblin-war-chanter', () => {
   it('extracts a humanoid NPC with skills and languages', async () => {
     const out = await primeAndRunFull(FIXTURE_GOBLIN, BASE_URL_GOBLIN);
-    assert.equal(out._type, 'monster');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.languages === 'object', 'languages missing');
     assert.ok(Array.isArray(out.languages.languages), 'languages.languages missing');
@@ -196,7 +193,6 @@ describe('full pipeline — goblin-war-chanter', () => {
 describe('full pipeline — young-red-dragon', () => {
   it('extracts a dragon with strikes, spell lists, and abilities', async () => {
     const out = await primeAndRunFull(FIXTURE_DRAGON, BASE_URL_DRAGON);
-    assert.equal(out._type, 'monster');
     assert.ok(out.strikes.length > 0, 'young red dragon should have strikes');
     assert.ok(typeof out.level === 'number', 'level should be a number');
   });
@@ -205,7 +201,6 @@ describe('full pipeline — young-red-dragon', () => {
 describe('full pipeline — monster-with-regeneration', () => {
   it('handles special HP format (regeneration in special field)', async () => {
     const out = await primeAndRunFull(FIXTURE_REGEN, BASE_URL_REGEN);
-    assert.equal(out._type, 'monster');
     // HP value should be numeric
     assert.ok(out.hp.value !== null, 'hp.value should be non-null');
   });
@@ -214,7 +209,6 @@ describe('full pipeline — monster-with-regeneration', () => {
 describe('full pipeline — monster-with-family', () => {
   it('extracts family_links when related groups present', async () => {
     const out = await primeAndRunFull(FIXTURE_FAMILY, BASE_URL_FAMILY);
-    assert.equal(out._type, 'monster');
     // Monster with a family should have at least one family link
     assert.ok(out.family_links.length > 0, 'should have at least one family link');
   });

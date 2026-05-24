@@ -17,7 +17,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -40,7 +40,7 @@ import {
 // ─── Inlined from Wave 5: feat.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface FeatOutputFields {
+export interface FeatOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   feat_id: number | null;
@@ -91,9 +91,6 @@ export interface FeatOutputFields {
   /** `<meta name="keywords">` content. */
   meta_keywords: string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type FeatOutput = ConceptOutputBase<'feat'> & FeatOutputFields;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -260,7 +257,7 @@ export interface FeatBaseSlice {
   action_cost:      ActionCost | null;
   traits:           string[];
   trait_ids:        Record<string, number>;
-  source:           FeatOutputFields['source'];
+  source:           FeatOutput['source'];
   sources:          SourceRef[];
   is_mythic:        boolean;
   meta_description: string | null;
@@ -269,9 +266,9 @@ export interface FeatBaseSlice {
 
 /** Fields owned by `extract-feat-prerequisites`. */
 export interface FeatPrerequisitesSlice {
-  archetypes:           FeatOutputFields['archetypes'];
+  archetypes:           FeatOutput['archetypes'];
   archetype_footnotes:  string[];
-  class_archetypes:     FeatOutputFields['class_archetypes'];
+  class_archetypes:     FeatOutput['class_archetypes'];
   spoiler_source:       string | null;
   prerequisites:        string | null;
 }
@@ -290,9 +287,9 @@ export interface FeatEffectSlice {
 
 /** Fields owned by `extract-feat-meta`. */
 export interface FeatMetaSlice {
-  leads_to:        FeatOutputFields['leads_to'];
-  related_feats:   FeatOutputFields['related_feats'];
-  trait_glossary:  FeatOutputFields['trait_glossary'];
+  leads_to:        FeatOutput['leads_to'];
+  related_feats:   FeatOutput['related_feats'];
+  trait_glossary:  FeatOutput['trait_glossary'];
   links:           LinkRef[];
 }
 
@@ -423,7 +420,7 @@ export function finalizeFeat(
   prerequisites: FeatPrerequisitesSlice,
   effect:        FeatEffectSlice,
   meta:          FeatMetaSlice,
-): FeatOutputFields {
+): FeatOutput {
   const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   const raw_fields: Record<string, string> = {};
   for (const [k, v] of Object.entries(stripped)) {
@@ -437,7 +434,7 @@ export function finalizeFeat(
     ...effect,
     ...meta,
     raw_fields,
-  } satisfies FeatOutputFields;
+  } satisfies FeatOutput;
 }
 
 // ─── Public extractor ─────────────────────────────────────────────────────────
@@ -449,14 +446,13 @@ export function finalizeFeat(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed feat extraction nodes.
  */
-export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatOutputFields {
+export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatOutput {
   const base          = extractFeatBase(c, $, span);
   const prerequisites = extractFeatPrerequisites(c, $, span);
   const effect        = extractFeatEffect(c);
   const meta          = extractFeatMeta(c, $, span);
   return finalizeFeat(c, base, prerequisites, effect, meta);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -634,5 +630,4 @@ export const featConcept: ConceptDecl<FeatOutput> = {
     featMetaNode,
     finalizeFeatNode,
   ],
-  discriminator: { _type: 'feat' },
 };

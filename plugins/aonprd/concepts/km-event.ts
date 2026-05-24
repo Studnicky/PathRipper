@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -40,7 +40,7 @@ export interface KmEventOutcome {
   text: string;
 }
 
-export interface KmEventOutputFields {
+export interface KmEventOutput {
   url:             string;
   event_id:        number | null;
   name:            string;
@@ -76,9 +76,6 @@ export interface KmEventOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type KmEventOutput = ConceptOutputBase<'km-event'> & KmEventOutputFields;
-
 export interface KmEventBaseSlice {
   url:             string;
   event_id:        number | null;
@@ -87,7 +84,7 @@ export interface KmEventBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   level:           number | null;
-  source:          KmEventOutputFields['source'];
+  source:          KmEventOutput['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -240,7 +237,7 @@ export function finalizeKmEvent(
   mech:  KmEventMechanicsSlice,
   _meta: KmEventMetaSlice,
   $:     CheerioAPI,
-): KmEventOutputFields {
+): KmEventOutput {
   void _meta;
   return {
     ...base,
@@ -252,17 +249,16 @@ export function finalizeKmEvent(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies KmEventOutputFields;
+  } satisfies KmEventOutput;
 }
 
-export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmEventOutputFields {
+export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmEventOutput {
   void target;
   const base = extractKmEventBase(c);
   const mech = extractKmEventMechanics(c);
   const meta = extractKmEventMeta(c);
   return finalizeKmEvent(c, base, mech, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -362,5 +358,4 @@ export const kmEventConcept: ConceptDecl<KmEventOutput> = {
     kmEventMechanicsNode,
     finalizeKmEventNode,
   ],
-  discriminator: { _type: 'km-event' },
 };

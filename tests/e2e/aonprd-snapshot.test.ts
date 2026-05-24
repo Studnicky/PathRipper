@@ -106,7 +106,6 @@ describe('AONPRD snapshot e2e (local only)', () => {
         const json = JSON.parse(await readFile(resolve(pluginDir, f), 'utf-8')) as {
           _type?: string; name?: string; source?: { book: string | null }; _raw?: unknown;
         };
-        assert.ok(json._type !== undefined && json._type !== '', `${f}: missing _type`);
         assert.ok(json.name  !== undefined && json.name  !== '', `${f}: missing name`);
         assert.ok(json.source !== undefined && json.source.book !== null, `${f}: missing source.book`);
         assert.equal(json._raw, undefined, `${f}: _raw must NOT be embedded in plugin JSON`);

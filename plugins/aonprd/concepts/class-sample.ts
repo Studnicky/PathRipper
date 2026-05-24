@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -58,7 +58,7 @@ export interface ClassSampleNamedRef {
   kind: string;
 }
 
-export interface ClassSampleOutputFields {
+export interface ClassSampleOutput {
   url:              string;
   /** Numeric AON ClassSamples.aspx ID extracted from the URL query string. */
   class_sample_id:  number | null;
@@ -104,9 +104,6 @@ export interface ClassSampleOutputFields {
   meta_keywords:        string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ClassSampleOutput = ConceptOutputBase<'class-sample'> & ClassSampleOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-class-sample-base`. */
@@ -120,7 +117,7 @@ export interface ClassSampleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ClassSampleOutputFields['source'];
+  source:          ClassSampleOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -349,7 +346,7 @@ export function finalizeClassSample(
   _meta:    ClassSampleMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ClassSampleOutputFields {
+): ClassSampleOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -364,7 +361,7 @@ export function finalizeClassSample(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ClassSampleOutputFields;
+  } satisfies ClassSampleOutput;
 }
 
 /**
@@ -378,14 +375,13 @@ export function extractClassSample(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ClassSampleOutputFields {
+): ClassSampleOutput {
   const base     = extractClassSampleBase(c);
   const identity = extractClassSampleIdentity(c);
   const build    = extractClassSampleBuild(c);
   const meta     = extractClassSampleMeta(c);
   return finalizeClassSample(c, base, identity, build, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -527,5 +523,4 @@ export const classSampleConcept: ConceptDecl<ClassSampleOutput> = {
     classSampleBuildNode,
     finalizeClassSampleNode,
   ],
-  discriminator: { _type: 'class-sample' },
 };

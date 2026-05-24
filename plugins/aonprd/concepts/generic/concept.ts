@@ -60,5 +60,4 @@ export const genericConcept: ConceptDecl<GenericOutput> = {
   parent:       'thing',
   urlPaths:     [],
   capabilities: [genericExtractNode],
-  discriminator: { _type: 'generic' },
 };

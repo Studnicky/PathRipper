@@ -39,7 +39,6 @@ describe('extract:equipment-base — equipment-adventurers-pack', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as EquipmentOutput;
-    assert.equal(out._type, 'equipment');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.equipment_id, 1);
   });
@@ -103,7 +102,6 @@ describe('finalize:equipment — equipment-adventurers-pack', () => {
 describe('full equipment pipeline — equipment-adventurers-pack', () => {
   it('produces complete EquipmentOutput', async () => {
     const out = await primeAndRunFull('equipment-adventurers-pack.html', 'https://2e.aonprd.com/Equipment.aspx?ID=1');
-    assert.equal(out._type, 'equipment');
     assert.equal(out.equipment_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('price' in out, 'price missing');

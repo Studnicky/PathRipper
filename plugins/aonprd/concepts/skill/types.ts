@@ -1,6 +1,5 @@
 // Skill concept — output types and constants.
 import type { Rarity, PfsLegality, SourceRef, ActionCost } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 /** A single action listed under a skill (Balance, Tumble Through, Squeeze, …). */
 export interface SkillAction {
@@ -51,7 +50,7 @@ export interface SkillProficiencyTier {
   action: string | null;
 }
 
-export interface SkillOutputFields {
+export interface SkillOutput {
   url:                 string;
   /** Numeric AON ID extracted from the URL query string. */
   skill_id:            number | null;
@@ -89,9 +88,6 @@ export interface SkillOutputFields {
   /** `<meta name="keywords">` content. */
   meta_keywords:       string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type SkillOutput = ConceptOutputBase<'skill'> & SkillOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 

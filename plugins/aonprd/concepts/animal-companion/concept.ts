@@ -20,5 +20,4 @@ export const animalCompanionConcept: ConceptDecl<AnimalCompanionOutput> = {
     animalCompanionAdvancementNode,
     finalizeAnimalCompanionNode,
   ],
-  discriminator: { _type: 'animal-companion' },
 };

@@ -39,7 +39,6 @@ describe('extract:plane-base — plane-earth', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as PlaneOutput;
-    assert.equal(out._type, 'plane');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.plane_id, 3);
     assert.ok(Array.isArray(out.divinities), 'divinities should be an array');
@@ -99,7 +98,6 @@ describe('finalize:plane — plane-earth', () => {
 describe('full plane pipeline — plane-earth', () => {
   it('produces complete PlaneOutput with all required fields', async () => {
     const out = await primeAndRunFull('plane-earth.html', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    assert.equal(out._type, 'plane');
     assert.equal(out.plane_id, 3);
     assert.ok(Array.isArray(out.divinities), 'divinities missing');
     assert.ok(Array.isArray(out.native_inhabitants), 'native_inhabitants missing');
@@ -112,7 +110,6 @@ describe('full plane pipeline — plane-earth', () => {
 describe('full plane pipeline — plane-outer-rifts', () => {
   it('produces valid PlaneOutput', async () => {
     const out = await primeAndRunFull('plane-outer-rifts.html', 'https://2e.aonprd.com/Planes.aspx?ID=15');
-    assert.equal(out._type, 'plane');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
 });

@@ -5,11 +5,11 @@ import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { extractEntityId } from '../../common.js';
 import { baseFrom } from '../_helpers.js';
 import type {
-  GenericOutputFields,
+  GenericOutput,
   UnknownOutput,
 } from './types.js';
 
-export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): GenericOutputFields {
+export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): GenericOutput {
   void _span;
   return {
     ...baseFrom(c, _$),
@@ -22,7 +22,6 @@ export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: Cheer
 /** Last-ditch shape used when even the content span couldn't be located. */
 export function makeUnknown(url: string): UnknownOutput {
   return {
-    _type:           'unknown',
     url,
     unknown_id:      extractEntityId(url),
     name:            '',

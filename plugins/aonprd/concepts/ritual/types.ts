@@ -6,8 +6,6 @@
  * Affliction, HeightenedEntry) and per-slice discriminators.
  */
 
-import type { ConceptOutputBase } from '../../taxonomy.js';
-
 export type SpellKind = 'spell' | 'cantrip' | 'focus' | 'ritual';
 export type Tradition = 'arcane' | 'divine' | 'occult' | 'primal' | 'elemental';
 
@@ -44,21 +42,13 @@ export interface HeightenedEntry {
 }
 
 /**
- * Ritual output — structurally identical to SpellOutputFields plus the
- * `_type: 'ritual'` discriminator stamped by the router at chain entry.
- * AON renders rituals using the spell page template, so the extraction code
- * reuses every spell helper; only the discriminator differs.
+ * Ritual output — structurally identical to SpellOutput. AON renders
+ * rituals using the spell page template, so the extraction code reuses
+ * every spell helper. Concept identity comes from the URL/router.
  */
-export type RitualOutput = ConceptOutputBase<'ritual'> & SpellOutputFields;
+export type RitualOutput = SpellOutput;
 
-/**
- * Full spell output shape — `_type` discriminator stamped by the router at
- * chain entry. Kept locally so ritual is self-contained (does not import
- * across concept boundaries).
- */
-export type SpellOutput = ConceptOutputBase<'spell'> & SpellOutputFields;
-
-export interface SpellOutputFields {
+export interface SpellOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   spell_id: number | null;
@@ -166,19 +156,19 @@ export interface RitualBaseSlice {
   action_cost:     import('../../common.js').ActionCost | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SpellOutputFields['source'];
+  source:          SpellOutput['source'];
   sources:         import('../../common.js').SourceRef[];
 }
 
 /** Fields owned by `extract-ritual-cast`. */
 export interface RitualCastSlice {
-  cast:         SpellOutputFields['cast'];
+  cast:         SpellOutput['cast'];
   trigger:      string | null;
   range:        string | null;
   area:         string | null;
   targets:      string | null;
   defense:      string | null;
-  saving_throw: SpellOutputFields['saving_throw'];
+  saving_throw: SpellOutput['saving_throw'];
   duration:     string | null;
   cost:         string | null;
   requirements: string | null;
@@ -208,14 +198,14 @@ export interface RitualHeightenedSlice {
 export interface RitualMetaSlice {
   traditions:     Tradition[];
   spell_list:     string | null;
-  bloodlines:     SpellOutputFields['bloodlines'];
-  cult:           SpellOutputFields['cult'];
-  domain:         SpellOutputFields['domain'];
-  deities:        SpellOutputFields['deities'];
-  mysteries:      SpellOutputFields['mysteries'];
-  patron_themes:  SpellOutputFields['patron_themes'];
-  catalysts:      SpellOutputFields['catalysts'];
-  lesson:         SpellOutputFields['lesson'];
+  bloodlines:     SpellOutput['bloodlines'];
+  cult:           SpellOutput['cult'];
+  domain:         SpellOutput['domain'];
+  deities:        SpellOutput['deities'];
+  mysteries:      SpellOutput['mysteries'];
+  patron_themes:  SpellOutput['patron_themes'];
+  catalysts:      SpellOutput['catalysts'];
+  lesson:         SpellOutput['lesson'];
   access:         string | null;
   spoiler_source: string | null;
 }

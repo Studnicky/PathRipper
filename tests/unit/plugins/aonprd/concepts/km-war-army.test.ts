@@ -38,7 +38,6 @@ describe('extract:km-war-army-base — km-war-army-greengripe-bombardiers', () =
     assert.equal(r.output, 'success');
 
     const out = state.output as KmWarArmyOutput;
-    assert.equal(out._type, 'km-war-army');
     assert.equal(out.name, 'Greengripe Bombardiers');
     assert.equal(out.army_id, 12);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -101,7 +100,6 @@ describe('extract:km-war-army-abilities — km-war-army-greengripe-bombardiers',
 describe('finalize:km-war-army — km-war-army-greengripe-bombardiers', () => {
   it('assembles complete KmWarArmyOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'km-war-army');
     assert.equal(out.name, 'Greengripe Bombardiers');
     assert.equal(out.army_id, 12);
     assert.ok(Array.isArray(out.abilities), 'abilities present');

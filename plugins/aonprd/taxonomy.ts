@@ -187,33 +187,8 @@ export function chain(...nodes: readonly ContractedCapability[]): readonly Contr
  * bulbapedia/torreya plugin can supply its own `ConceptDecl<BulbaXxxOutput>`
  * declarations with no changes to this module.
  */
-/**
- * Base shape every concept Output type extends. The `_type` discriminator is
- * provided structurally at runtime by the taxonomy router (via the concept's
- * `discriminator` field on `ConceptDecl`), NOT by per-concept slice literals.
- *
- * Concept Output interfaces should be defined as:
- *
- * ```ts
- * export interface LanguageOutputFields { url: string; language_id: number | null; ... }
- * export type LanguageOutput = ConceptOutputBase<'language'> & LanguageOutputFields;
- * ```
- *
- * This keeps the `_type` field as a single source of truth: the router (via
- * the discriminator) stamps it once at chain entry; per-concept slice helpers
- * never hand-stamp it. The intersection preserves the `_type` literal-type
- * guarantee for consumers that pattern-match on the discriminated union
- * (e.g. `if (out._type === 'language') { ... }`).
- *
- * Plugin-agnostic: bulbapedia/torreya plugins use the same `ConceptOutputBase`
- * to define their own output types.
- */
-export interface ConceptOutputBase<TType extends string> {
-  readonly _type: TType;
-}
-
 export interface ConceptDecl<TOutput = never> {
-  /** Concept name — used as the type discriminator on output AND as the router-output name. Must be unique. */
+  /** Concept name — used as the router-output name. Must be unique. */
   readonly id: string;
   /** Parent concept ID. Null only for the root. Every non-null parent must exist in the same array. */
   readonly parent: string | null;
@@ -221,12 +196,6 @@ export interface ConceptDecl<TOutput = never> {
   readonly urlPaths?: readonly string[];
   /** Capability nodes added by this concept. Inherited downward by descendant concepts. May be empty. */
   readonly capabilities: readonly CapabilityNode[];
-  /**
-   * Optional static fields layered onto state.output for this concept.
-   * Constrained to `Partial<TOutput>` so the discriminator agrees with the
-   * declared output shape at compile time.
-   */
-  readonly discriminator?: Readonly<Partial<TOutput>>;
   /**
    * Phantom marker that anchors `TOutput` in the declared object so it can be
    * recovered with `ConceptOutputFor<typeof xxxConcept>`. Never set at runtime;
@@ -420,7 +389,6 @@ export class Taxonomy {
   readonly #urlMap:             ReadonlyMap<string, string>;
   readonly #allNodesList:       readonly CapabilityNode[];
   readonly #annotations:        DAGDeriverAnnotations;
-  readonly #discriminatorMap:   ReadonlyMap<string, Readonly<Record<string, unknown>>>;
   readonly #fallbackConceptId:  string | null;
 
   private constructor(
@@ -431,7 +399,6 @@ export class Taxonomy {
     urlMap:             ReadonlyMap<string, string>,
     allNodesList:       readonly CapabilityNode[],
     annotations:        DAGDeriverAnnotations,
-    discriminatorMap:   ReadonlyMap<string, Readonly<Record<string, unknown>>>,
     fallbackConceptId:  string | null,
   ) {
     this.#router             = router;
@@ -441,7 +408,6 @@ export class Taxonomy {
     this.#urlMap             = urlMap;
     this.#allNodesList       = allNodesList;
     this.#annotations        = annotations;
-    this.#discriminatorMap   = discriminatorMap;
     this.#fallbackConceptId  = fallbackConceptId;
   }
 
@@ -527,19 +493,7 @@ export class Taxonomy {
       return urlMap.get(path) ?? null;
     }
 
-    // Wave 6 M1: discriminator map keyed by concept ID. Empty objects for
-    // concepts without a declared discriminator (e.g. interior concepts).
-    const discriminatorMap = new Map<string, Readonly<Record<string, unknown>>>();
-    for (const concept of concepts) {
-      discriminatorMap.set(
-        concept.id,
-        (concept.discriminator as Readonly<Record<string, unknown>> | undefined) ?? {},
-      );
-    }
-    const discriminatorFor = (conceptId: string): Readonly<Record<string, unknown>> =>
-      discriminatorMap.get(conceptId) ?? {};
-
-    const router = makeTaxonomyRouter(routeUrl, leafIds, discriminatorFor, fallbackConceptId);
+    const router = makeTaxonomyRouter(routeUrl, leafIds, fallbackConceptId);
 
     // Deduplicate all capability nodes by name across all chains
     const allCapsByName = new Map<string, CapabilityNode>();
@@ -591,11 +545,11 @@ export class Taxonomy {
 
     const conceptIds = concepts.map((c) => c.id);
 
-    return new Taxonomy(router, conceptIds, leafIds, chainMap, urlMap, allNodesList, annotations, discriminatorMap, fallbackConceptId);
+    return new Taxonomy(router, conceptIds, leafIds, chainMap, urlMap, allNodesList, annotations, fallbackConceptId);
   }
 
   static #buildEmpty(): Taxonomy {
-    const router          = makeTaxonomyRouter(() => null, [], () => ({}));
+    const router          = makeTaxonomyRouter(() => null, []);
     const conceptDispatch = makeConceptDispatch([]);
 
     const allNodesList: CapabilityNode[] = [
@@ -622,7 +576,6 @@ export class Taxonomy {
       new Map(),
       allNodesList,
       annotations,
-      new Map(),
       null,
     );
   }
@@ -720,9 +673,7 @@ export class Taxonomy {
    *    - `flow:terminate` (the cap is the tail of its chain or unused).
    *    Open-world: a capability emitting `'error'` means its hardRequired
    *    metadata was absent or its slice failed; downstream caps handle
-   *    absence themselves. The chain proceeds. The only failure mode is
-   *    "chain completed without producing a `_type`", caught at end-of-chain
-   *    in `parse.taxonomic.ts`.
+   *    absence themselves. The chain proceeds.
    * 3. Each concept-dispatch node routes per `aonprdConceptId` to the next
    *    cap for that concept (from `branchPoints`).
    * 4. Tail caps route to `flow:terminate`.
@@ -774,19 +725,13 @@ export class Taxonomy {
         downstreamTarget = 'flow:terminate';
       }
 
-      // Open-world routing (Wave 3 H10): BOTH `'success'` and `'error'` route
-      // to the same downstream target. A capability that emits `'error'`
-      // means its hardRequired metadata was absent or its slice failed —
-      // downstream caps that depend on that cap's produces handle the
-      // absence themselves (typically soft-failing, per Wave 1). The chain
-      // proceeds. The only failure mode is "chain completed without
-      // producing a `_type`", which is caught at the end of the chain in
-      // `parse.taxonomic.ts` (and emits a contract warning).
-      //
-      // This harmonizes the DAG-dispatch path with the direct-call path in
-      // `parse.taxonomic.ts`, which already discards individual node
-      // outcomes and continues. See
-      // `docs/taxonomic-extraction-redesign.md` Layer 4 item 3.
+      // Open-world routing: BOTH `'success'` and `'error'` route to the same
+      // downstream target. A capability that emits `'error'` means its
+      // hardRequired metadata was absent or its slice failed — downstream
+      // caps that depend on that cap's produces handle the absence themselves
+      // (typically soft-failing). The chain proceeds. This harmonizes the
+      // DAG-dispatch path with the direct-call path in `parse.taxonomic.ts`,
+      // which already discards individual node outcomes and continues.
       if ((cap.outputs as readonly string[]).includes('success')) {
         terminals.push({ outcome: 'success', target: downstreamTarget });
       }
@@ -862,21 +807,9 @@ export class Taxonomy {
   }
 
   /**
-   * Static fields layered onto `state.output` for a concept (Wave 6 M1).
-   * Returns the concept's declared `discriminator` (typically
-   * `{ _type: '<concept>' }`) or an empty object for concepts without one.
-   *
-   * Direct-call entry points (e.g. `parse.taxonomic.ts`) consume this to
-   * stamp the discriminator at the same logical point the DAG router does.
-   */
-  discriminatorFor(conceptId: string): Readonly<Record<string, unknown>> {
-    return this.#discriminatorMap.get(conceptId) ?? {};
-  }
-
-  /**
    * The fallback concept id (one with `urlPaths: []`), or null if none is
    * declared. The URL router emits this outcome when a URL doesn't match any
-   * leaf; direct-call entry points use it the same way (Wave 7 M7).
+   * leaf; direct-call entry points use it the same way.
    */
   fallbackConceptId(): string | null {
     return this.#fallbackConceptId;

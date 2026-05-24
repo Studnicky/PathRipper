@@ -15,7 +15,6 @@ describe('extractClass — base slice (Sorcerer fixture)', () => {
   it('captures _type and name', async () => {
     const html = await loadFixture('class-sorcerer.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Classes.aspx?ID=11');
-    assert.equal(out._type, 'class');
     assert.equal(out.name, 'Sorcerer');
   });
 

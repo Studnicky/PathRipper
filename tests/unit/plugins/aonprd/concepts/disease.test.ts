@@ -38,7 +38,6 @@ describe('extract:disease-base — disease-bubonic-plague', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as DiseaseOutput;
-    assert.equal(out._type, 'disease');
     assert.equal(out.name, 'Bubonic Plague');
     assert.equal(out.disease_id, 1);
     assert.equal(out.level, 7);
@@ -102,7 +101,6 @@ describe('extract:disease-stages — disease-bubonic-plague', () => {
 describe('finalize:disease — disease-bubonic-plague', () => {
   it('assembles complete DiseaseOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'disease');
     assert.equal(out.name, 'Bubonic Plague');
     assert.equal(out.disease_id, 1);
     assert.ok(Array.isArray(out.stages), 'stages present');

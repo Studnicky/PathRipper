@@ -36,7 +36,6 @@ describe('extract:km-event-base — km-event-archaeological-find', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as KmEventOutput;
-    assert.equal(out._type, 'km-event');
     assert.equal(out.name, 'Archaeological Find');
     assert.equal(out.event_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -74,7 +73,6 @@ describe('extract:km-event-mechanics — km-event-archaeological-find', () => {
 describe('finalize:km-event — km-event-archaeological-find', () => {
   it('assembles complete KmEventOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'km-event');
     assert.equal(out.name, 'Archaeological Find');
     assert.equal(out.event_id, 1);
     assert.ok(Array.isArray(out.outcomes), 'outcomes present');

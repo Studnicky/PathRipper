@@ -39,7 +39,6 @@ describe('extract:weapon-group-base — weapon-group-axe', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as WeaponGroupOutput;
-    assert.equal(out._type, 'weapon-group');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.group_id, 1);
   });
@@ -87,7 +86,6 @@ describe('extract:weapon-group-content — weapon-group-axe', () => {
 describe('full weapon-group pipeline — weapon-group-axe', () => {
   it('produces complete WeaponGroupOutput', async () => {
     const out = await primeAndRunFull('weapon-group-axe.html', 'https://2e.aonprd.com/WeaponGroups.aspx?ID=1');
-    assert.equal(out._type, 'weapon-group');
     assert.equal(out.group_id, 1);
     assert.ok(out.critical_specialization_text.length > 0, 'critical_specialization_text should be non-empty');
     assert.ok(out.weapons.length > 0, 'weapons should be non-empty');
@@ -98,7 +96,6 @@ describe('full weapon-group pipeline — weapon-group-axe', () => {
 describe('full weapon-group pipeline — weapon-group-club', () => {
   it('produces valid WeaponGroupOutput', async () => {
     const out = await primeAndRunFull('weapon-group-club.html', 'https://2e.aonprd.com/WeaponGroups.aspx?ID=2');
-    assert.equal(out._type, 'weapon-group');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
 });

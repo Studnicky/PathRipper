@@ -155,5 +155,4 @@ export const classConcept: ConceptDecl<ClassOutput> = {
     classSubclassesNode,
     finalizeClassNode,
   ],
-  discriminator: { _type: 'class' },
 };

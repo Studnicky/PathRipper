@@ -41,7 +41,6 @@ describe('extract:domain-base — domain-zeal', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as DomainOutput;
-    assert.equal(out._type, 'domain');
     assert.equal(out.domain_id, 100);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name non-empty');
     assert.ok(typeof out.rarity === 'string', 'rarity is string');
@@ -124,7 +123,6 @@ describe('extract:domain-meta — domain-zeal', () => {
 describe('finalize:domain — domain-zeal', () => {
   it('assembles complete DomainOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'domain');
     assert.equal(out.domain_id, 100);
     assert.ok(out.domain_spell !== null, 'domain_spell carried through');
     assert.ok(out.advanced_domain_spell !== null, 'advanced_domain_spell carried through');

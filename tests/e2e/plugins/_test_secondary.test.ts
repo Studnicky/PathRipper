@@ -35,7 +35,6 @@ describe('_test_secondary plugin — Wave 5 strategy reuse', () => {
     const url  = 'https://secondary.test/Articles.aspx?ID=1';
     const out  = await parseSecondaryHtml(html, url) as unknown as SampleOutputShape;
 
-    assert.equal(out._type, 'sample', 'concept should route to the sample finalize node');
     assert.equal(out.url,   url);
     assert.equal(out.name,  'Sample Article');
 

@@ -15,29 +15,19 @@ import type { CapabilityNode } from '../taxonomy.js';
 export const CONCEPT_ID_KEY = 'aonprdConceptId' as const;
 
 /**
- * Factory that produces the `aonprd:taxonomy-route` router node.
- * Called once by `Taxonomy.compile`; the closure captures the routing table
- * so no global mutable state is required.
- *
- * Stores the resolved concept ID in `state.metadata[CONCEPT_ID_KEY]` so the
- * companion `aonprd:concept-dispatch` node can dispatch to concept-specific
- * chains after the shared capability prefix runs.
- *
- * Wave 6 M1: when routing resolves to a known concept, the concept's static
- * `discriminator` (declared on `ConceptDecl`) is stamped onto `state.output`
- * before downstream capabilities run. This implements the discriminator
- * contract structurally — concept extract/finalize nodes no longer need to
- * hand-stamp `_type` literals.
+ * Factory that produces the `aonprd:taxonomy-route` router node. Called once
+ * by `Taxonomy.compile`; the closure captures the routing table so no global
+ * mutable state is required. Stores the resolved concept ID in
+ * `state.metadata[CONCEPT_ID_KEY]` so the companion `aonprd:concept-dispatch`
+ * node can dispatch to concept-specific chains after the shared capability
+ * prefix runs. When URL doesn't resolve, routes to the fallback concept
+ * (typically `generic`) instead of `make-unknown` when one is configured.
  */
 export function makeTaxonomyRouter(
   routeUrl:        (url: string) => string | null,
   leafConceptIds:  readonly string[],
-  discriminatorFor: (conceptId: string) => Readonly<Record<string, unknown>>,
   fallbackConceptId: string | null = null,
 ): CapabilityNode {
-  // Wave 7 M7: include the fallback concept ID as a valid output so the DAG
-  // annotations can route to its chain. If no fallback is configured, the
-  // 'unknown' outcome routes to `aonprd:make-unknown` as before.
   const outputs: readonly string[] = fallbackConceptId !== null
     ? [...leafConceptIds, fallbackConceptId, 'unknown']
     : [...leafConceptIds, 'unknown'];
@@ -55,20 +45,8 @@ export function makeTaxonomyRouter(
       _ctx:     NodeContextInterface<RipperServices>,
     ): Promise<{ output: string }> {
       const conceptId = routeUrl(state.page.url);
-      // Wave 7 M7: when URL doesn't resolve, route to the fallback concept
-      // (typically `generic`) instead of `make-unknown`. Operators see the
-      // fallback being hit via the concept's `_type` discriminator + the
-      // contract warning emitted in parse.taxonomic.ts end-of-chain.
       const resolved  = conceptId ?? fallbackConceptId ?? 'unknown';
-      // Store for aonprd:concept-dispatch to re-route after shared prefix.
       state.setMetadata(CONCEPT_ID_KEY, resolved);
-      // Wave 6 M1: stamp the concept's discriminator (e.g. `{ _type: 'language' }`)
-      // onto state.output so downstream caps can read it. No-op for 'unknown'
-      // or concepts without a declared discriminator.
-      const discriminator = discriminatorFor(resolved);
-      if (Object.keys(discriminator).length > 0) {
-        state.output = { ...state.output, ...discriminator };
-      }
       return { output: resolved };
     },
   };

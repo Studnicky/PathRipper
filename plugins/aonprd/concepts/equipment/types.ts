@@ -5,11 +5,10 @@
  * EquipmentOutput, and all per-slice type interfaces.
  */
 import type { ActionCost, LinkRef, Rarity, PfsLegality, SourceRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 // ─── Output types ─────────────────────────────────────────────────────────────
 
-export interface WeaponOutputFields {
+export interface WeaponOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   weapon_id: number | null;
@@ -53,10 +52,7 @@ export interface WeaponOutputFields {
   meta_keywords: string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type WeaponOutput = ConceptOutputBase<'weapon'> & WeaponOutputFields;
-
-export interface ArmorOutputFields {
+export interface ArmorOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   armor_id: number | null;
@@ -101,9 +97,6 @@ export interface ArmorOutputFields {
   meta_keywords: string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ArmorOutput = ConceptOutputBase<'armor'> & ArmorOutputFields;
-
 export interface EquipmentVariant {
   name: string;
   item_level: number | null;
@@ -119,7 +112,7 @@ export interface Activation {
   text: string | null;
 }
 
-export interface EquipmentOutputFields {
+export interface EquipmentOutput {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   equipment_id: number | null;
@@ -180,9 +173,6 @@ export interface EquipmentOutputFields {
   /** PFS Note text harvested from the inline `<u><a href="PFS.aspx">…</a></u>` block, null when absent. Optional — populated by the finalize node when present, omitted otherwise. */
   pfs_note?: string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type EquipmentOutput = ConceptOutputBase<'equipment'> & EquipmentOutputFields;
 
 // ─── Per-slice types ──────────────────────────────────────────────────────────
 

@@ -43,7 +43,6 @@ describe('extract:monster-template-base — elite', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as MonsterTemplateOutput;
-    assert.equal(out._type, 'monster-template');
     assert.equal(out.template_id, 22);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
   });
@@ -82,7 +81,6 @@ describe('extract:monster-template-modifications — elite', () => {
 describe('finalize:monster-template — elite', () => {
   it('produces complete MonsterTemplateOutput', async () => {
     const out = await primeAndRunFull(FIXTURE_ELITE, BASE_URL_ELITE);
-    assert.equal(out._type, 'monster-template');
     assert.equal(out.template_id, 22);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.adjustments), 'adjustments missing');
@@ -101,7 +99,6 @@ describe('finalize:monster-template — elite', () => {
 describe('full pipeline — undead template', () => {
   it('handles subsection-heavy template (no level_change from prose)', async () => {
     const out = await primeAndRunFull(FIXTURE_UNDEAD, BASE_URL_UNDEAD);
-    assert.equal(out._type, 'monster-template');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     // Undead template uses subsections for adjustments, not level delta prose
     assert.ok(Array.isArray(out.subsections), 'subsections missing');

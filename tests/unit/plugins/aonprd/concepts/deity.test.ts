@@ -47,7 +47,6 @@ describe('extract:deity-base — abadar', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as DeityOutput;
-    assert.equal(out._type, 'deity');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('deity_id' in out, 'deity_id missing');
     assert.ok(Array.isArray(out.traits), 'traits missing');
@@ -163,7 +162,6 @@ describe('extract:deity-relationships — abadar', () => {
 describe('finalize:deity — abadar', () => {
   it('produces complete DeityOutput with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_ABADAR, URL_ABADAR);
-    assert.equal(out._type, 'deity');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.domains), 'domains missing');
     assert.ok(Array.isArray(out.cleric_spells), 'cleric_spells missing');
@@ -187,7 +185,6 @@ describe('finalize:deity — abadar', () => {
 describe('full deity pipeline — abadar', () => {
   it('produces a complete DeityOutput with all major structural fields', async () => {
     const out = await primeAndRunFull(FIXTURE_ABADAR, URL_ABADAR);
-    assert.equal(out._type, 'deity');
     assert.ok(typeof out.name === 'string' && out.name.length > 0);
     assert.ok(typeof out.meta_description === 'string' || out.meta_description === null);
     assert.ok(typeof out.meta_keywords === 'string' || out.meta_keywords === null);

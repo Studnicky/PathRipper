@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -39,7 +39,7 @@ export interface WeaponGroupWeapon {
   weapon_id: number | null;
 }
 
-export interface WeaponGroupOutputFields {
+export interface WeaponGroupOutput {
   url:                          string;
   /** Numeric AON WeaponGroups.aspx ID extracted from the URL query string. */
   group_id:                     number | null;
@@ -69,7 +69,6 @@ export interface WeaponGroupOutputFields {
   meta_description:             string | null;
   meta_keywords:                string | null;
 }
-export type WeaponGroupOutput = ConceptOutputBase<'weapon-group'> & WeaponGroupOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -84,7 +83,7 @@ export interface WeaponGroupBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          WeaponGroupOutputFields['source'];
+  source:          WeaponGroupOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -191,7 +190,7 @@ export function finalizeWeaponGroup(
   content: WeaponGroupContentSlice,
   $:       CheerioAPI,
   _target: CheerioNode,
-): WeaponGroupOutputFields {
+): WeaponGroupOutput {
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -206,7 +205,7 @@ export function finalizeWeaponGroup(
     body_html:                    c.body_html,
     meta_description:             extractMetaDescription($),
     meta_keywords:                extractMetaKeywords($),
-  } satisfies WeaponGroupOutputFields;
+  } satisfies WeaponGroupOutput;
 }
 
 /**
@@ -218,12 +217,11 @@ export function extractWeaponGroup(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): WeaponGroupOutputFields {
+): WeaponGroupOutput {
   const base    = extractWeaponGroupBase(c);
   const content = extractWeaponGroupContent(c, $, target);
   return finalizeWeaponGroup(c, base, content, $, target);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -348,5 +346,4 @@ export const weaponGroupConcept: ConceptDecl<WeaponGroupOutput> = {
     weaponGroupContentNode,
     finalizeWeaponGroupNode,
   ],
-  discriminator: { _type: 'weapon-group' },
 };

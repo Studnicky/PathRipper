@@ -39,7 +39,6 @@ describe('extract:weapon-base — weapon-longsword', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as WeaponOutput;
-    assert.equal(out._type, 'weapon');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.weapon_id, 300);
   });
@@ -107,7 +106,6 @@ describe('finalize:weapon — weapon-longsword', () => {
 describe('full weapon pipeline — weapon-longsword', () => {
   it('produces complete WeaponOutput', async () => {
     const out = await primeAndRunFull('weapon-longsword.html', 'https://2e.aonprd.com/Weapons.aspx?ID=300');
-    assert.equal(out._type, 'weapon');
     assert.equal(out.weapon_id, 300);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('price' in out, 'price missing');

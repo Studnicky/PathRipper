@@ -39,7 +39,6 @@ describe('extract:set-relic-base — set-relic-duelists-blazon', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SetRelicOutput;
-    assert.equal(out._type, 'set-relic');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.set_relic_id, 1);
   });
@@ -104,7 +103,6 @@ describe('finalize:set-relic — set-relic-duelists-blazon', () => {
 describe('full set-relic pipeline — set-relic-duelists-blazon', () => {
   it('produces complete SetRelicOutput', async () => {
     const out = await primeAndRunFull('set-relic-duelists-blazon.html', 'https://2e.aonprd.com/SetRelics.aspx?ID=1');
-    assert.equal(out._type, 'set-relic');
     assert.equal(out.set_relic_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.aspects), 'aspects missing');

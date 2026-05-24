@@ -16,5 +16,4 @@ export const familiarConcept: ConceptDecl<FamiliarOutput> = {
     familiarPrerequisitesNode,
     finalizeFamiliarNode,
   ],
-  discriminator: { _type: 'familiar' },
 };

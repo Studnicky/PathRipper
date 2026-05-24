@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -65,7 +65,7 @@ export interface SetRelicFeature {
   text:       string;
 }
 
-export interface SetRelicOutputFields {
+export interface SetRelicOutput {
   url:              string;
   /** Numeric AON SetRelics.aspx ID extracted from the URL query string. */
   set_relic_id:     number | null;
@@ -100,7 +100,6 @@ export interface SetRelicOutputFields {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
-export type SetRelicOutput = ConceptOutputBase<'set-relic'> & SetRelicOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -114,7 +113,7 @@ export interface SetRelicBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SetRelicOutputFields['source'];
+  source:          SetRelicOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -307,7 +306,7 @@ export function finalizeSetRelic(
   components:  SetRelicComponentsSlice,
   _meta:       SetRelicMetaSlice,
   $:           CheerioAPI,
-): SetRelicOutputFields {
+): SetRelicOutput {
   void _meta;
   void getField;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -321,7 +320,7 @@ export function finalizeSetRelic(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SetRelicOutputFields;
+  } satisfies SetRelicOutput;
 }
 
 /**
@@ -335,14 +334,13 @@ export function extractSetRelic(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): SetRelicOutputFields {
+): SetRelicOutput {
   void _span;
   const base       = extractSetRelicBase(c);
   const components = extractSetRelicComponents(c);
   const meta       = extractSetRelicMeta(c);
   return finalizeSetRelic(c, base, components, meta, $);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -437,5 +435,4 @@ export const setRelicConcept: ConceptDecl<SetRelicOutput> = {
     setRelicComponentsNode,
     finalizeSetRelicNode,
   ],
-  discriminator: { _type: 'set-relic' },
 };

@@ -46,7 +46,6 @@ describe('extract:deity-category-base — gods-of-the-inner-sea', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as DeityCategoryOutput;
-    assert.equal(out._type, 'deity-category');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('deity_category_id' in out, 'deity_category_id missing');
     assert.ok(Array.isArray(out.traits), 'traits missing');
@@ -120,7 +119,6 @@ describe('extract:deity-category-aspects — gods-of-the-inner-sea', () => {
 describe('finalize:deity-category — gods-of-the-inner-sea', () => {
   it('produces complete DeityCategoryOutput with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    assert.equal(out._type, 'deity-category');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.members), 'members missing');
     assert.ok('aspects' in out, 'aspects missing');
@@ -142,7 +140,6 @@ describe('finalize:deity-category — gods-of-the-inner-sea', () => {
 describe('full deity-category pipeline — gods-of-the-inner-sea', () => {
   it('produces a complete DeityCategoryOutput', async () => {
     const out = await primeAndRunFull(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    assert.equal(out._type, 'deity-category');
     assert.ok(typeof out.name === 'string' && out.name.length > 0);
     assert.ok(out.members.length > 0, 'members should be populated');
     assert.ok(typeof out.meta_description === 'string' || out.meta_description === null);
@@ -152,7 +149,6 @@ describe('full deity-category pipeline — gods-of-the-inner-sea', () => {
 describe('full deity-category pipeline — empyreal-lords', () => {
   it('produces a complete DeityCategoryOutput for a second fixture', async () => {
     const out = await primeAndRunFull(FIXTURE_EMPYREAL, URL_EMPYREAL);
-    assert.equal(out._type, 'deity-category');
     assert.ok(typeof out.name === 'string' && out.name.length > 0);
     assert.ok(Array.isArray(out.members), 'members should be an array');
   });

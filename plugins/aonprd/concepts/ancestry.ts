@@ -15,7 +15,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import { parseGrantedFeatures } from '../capabilities/grantedFeatures.js';
 import {
@@ -55,7 +55,7 @@ export interface AncestryMechanics {
   granted:           string[];
 }
 
-export interface AncestryOutputFields {
+export interface AncestryOutput {
   url:                   string;
   ancestry_id:             number | null;
   name:                  string;
@@ -84,9 +84,6 @@ export interface AncestryOutputFields {
   /** Free-form ancestry feature sections (anything h2 not claimed by mechanics). */
   features:              Array<{ name: string; description: string }>;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type AncestryOutput = ConceptOutputBase<'ancestry'> & AncestryOutputFields;
 
 // ─── Per-slice shapes ─────────────────────────────────────────────────────────
 
@@ -353,7 +350,7 @@ export function finalizeAncestry(
   features:  AncestryFeaturesSlice,
   meta:      AncestryMetaSlice,
   $:         CheerioAPI,
-): AncestryOutputFields {
+): AncestryOutput {
   const claimedProfKeys = Object.keys(features.initial_proficiencies);
   const raw_fields = stripStructuredKeys(c.field_map, [
     ...CLAIMED_FIELD_LABELS,
@@ -372,7 +369,7 @@ export function finalizeAncestry(
     heritages:             heritages.heritages,
     initial_proficiencies: features.initial_proficiencies,
     features:              features.features,
-  } satisfies AncestryOutputFields;
+  } satisfies AncestryOutput;
 }
 
 /**
@@ -382,14 +379,13 @@ export function finalizeAncestry(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed ancestry extraction nodes.
  */
-export function extractAncestry(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): AncestryOutputFields {
+export function extractAncestry(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): AncestryOutput {
   const base      = extractAncestryBase(c, $, span);
   const heritages = extractAncestryHeritages(c);
   const features  = extractAncestryFeatures(c);
   const meta      = extractAncestryMeta(c);
   return finalizeAncestry(c, base, heritages, features, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -534,5 +530,4 @@ export const ancestryConcept: ConceptDecl<AncestryOutput> = {
     ancestryFeaturesNode,
     finalizeAncestryNode,
   ],
-  discriminator: { _type: 'ancestry' },
 };

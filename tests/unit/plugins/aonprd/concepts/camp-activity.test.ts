@@ -36,7 +36,6 @@ describe('extract:camp-activity-base — camp-activity-camouflage-campsite', () 
     assert.equal(r.output, 'success');
 
     const out = state.output as CampActivityOutput;
-    assert.equal(out._type, 'camp-activity');
     assert.equal(out.name, 'Camouflage Campsite');
     assert.equal(out.activity_id, 1472);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -75,7 +74,6 @@ describe('extract:camp-activity-mechanics — camp-activity-camouflage-campsite'
 describe('finalize:camp-activity — camp-activity-camouflage-campsite', () => {
   it('assembles complete CampActivityOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'camp-activity');
     assert.equal(out.name, 'Camouflage Campsite');
     assert.equal(out.activity_id, 1472);
     assert.ok(Array.isArray(out.outcomes), 'outcomes present');

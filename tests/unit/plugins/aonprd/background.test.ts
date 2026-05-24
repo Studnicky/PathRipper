@@ -13,7 +13,6 @@ describe('extractBackground — base slice (Acolyte fixture)', () => {
   it('captures _type and name', async () => {
     const html = await loadFixture('background-acolyte.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    assert.equal(out._type, 'background');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be populated');
   });
 

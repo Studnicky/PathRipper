@@ -43,7 +43,6 @@ describe('extract:class-base — class-sorcerer', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ClassOutput;
-    assert.equal(out._type, 'class');
     assert.equal(out.name, 'Sorcerer');
     assert.equal(out.class_id, 11);
   });
@@ -128,7 +127,6 @@ describe('full class pipeline — class-sorcerer', () => {
   it('produces a complete ClassOutput with all required fields', async () => {
     const out = await primeAndRunFull('class-sorcerer.html', 'https://2e.aonprd.com/Classes.aspx?ID=11');
 
-    assert.equal(out._type, 'class');
     assert.equal(out.name, 'Sorcerer');
     assert.ok(typeof out.hp_per_level === 'number', 'hp_per_level missing');
     assert.ok(Array.isArray(out.progression), 'progression missing');

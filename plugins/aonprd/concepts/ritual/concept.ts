@@ -28,5 +28,4 @@ export const ritualConcept: ConceptDecl<RitualOutput> = {
     ritualMetaNode,
     finalizeRitualNode,
   ],
-  discriminator: { _type: 'ritual' },
 };

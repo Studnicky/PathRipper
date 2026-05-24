@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -60,7 +60,7 @@ export interface KmStructureCostComponent {
   label: string;
 }
 
-export interface KmStructureOutputFields {
+export interface KmStructureOutput {
   url:             string;
   structure_id:    number | null;
   name:            string;
@@ -108,9 +108,6 @@ export interface KmStructureOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type KmStructureOutput = ConceptOutputBase<'km-structure'> & KmStructureOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface KmStructureBaseSlice {
@@ -121,7 +118,7 @@ export interface KmStructureBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   level:           number | null;
-  source:          KmStructureOutputFields['source'];
+  source:          KmStructureOutput['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -317,7 +314,7 @@ export function finalizeKmStructure(
   mech:     KmStructureMechanicsSlice,
   _meta:    KmStructureMetaSlice,
   $:        CheerioAPI,
-): KmStructureOutputFields {
+): KmStructureOutput {
   void _meta;
   void getField;
   return {
@@ -330,21 +327,20 @@ export function finalizeKmStructure(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies KmStructureOutputFields;
+  } satisfies KmStructureOutput;
 }
 
 /**
  * Project a KMStructures.aspx page into a typed KmStructureOutput. Thin
  * assembly wrapper for `parseAonHtml` and unit-test direct-call paths.
  */
-export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmStructureOutputFields {
+export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmStructureOutput {
   void target;
   const base = extractKmStructureBase(c);
   const mech = extractKmStructureMechanics(c);
   const meta = extractKmStructureMeta(c);
   return finalizeKmStructure(c, base, mech, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -444,5 +440,4 @@ export const kmStructureConcept: ConceptDecl<KmStructureOutput> = {
     kmStructureMechanicsNode,
     finalizeKmStructureNode,
   ],
-  discriminator: { _type: 'km-structure' },
 };

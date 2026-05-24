@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -62,7 +62,7 @@ export interface CurseSavingThrow {
   raw:   string;
 }
 
-export interface CurseOutputFields {
+export interface CurseOutput {
   url:              string;
   /** Numeric AON Curses.aspx ID extracted from the URL query string. */
   curse_id:         number | null;
@@ -97,9 +97,6 @@ export interface CurseOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type CurseOutput = ConceptOutputBase<'curse'> & CurseOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-curse-base`. */
@@ -114,7 +111,7 @@ export interface CurseBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          CurseOutputFields['source'];
+  source:          CurseOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -275,7 +272,7 @@ export function finalizeCurse(
   _meta:     CurseMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): CurseOutputFields {
+): CurseOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -303,7 +300,7 @@ export function finalizeCurse(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies CurseOutputFields;
+  } satisfies CurseOutput;
 }
 
 /** Project a Curses.aspx page into a typed CurseOutput (direct-call wrapper). */
@@ -311,14 +308,13 @@ export function extractCurse(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): CurseOutputFields {
+): CurseOutput {
   const base   = extractCurseBase(c);
   const mech   = extractCurseMechanics(c);
   const stages = extractCurseStages(c);
   const meta   = extractCurseMeta(c);
   return finalizeCurse(c, base, mech, stages, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -445,5 +441,4 @@ export const curseConcept: ConceptDecl<CurseOutput> = {
     curseStagesNode,
     finalizeCurseNode,
   ],
-  discriminator: { _type: 'curse' },
 };

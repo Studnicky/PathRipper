@@ -38,7 +38,6 @@ describe('extract:curse-base — curse-mummy-rot', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as CurseOutput;
-    assert.equal(out._type, 'curse');
     assert.equal(out.name, 'Mummy Rot');
     assert.equal(out.curse_id, 57);
     assert.equal(out.level, 11);
@@ -102,7 +101,6 @@ describe('extract:curse-stages — curse-mummy-rot', () => {
 describe('finalize:curse — curse-mummy-rot', () => {
   it('assembles complete CurseOutput with all required fields', async () => {
     const out = await primeAndRunFull();
-    assert.equal(out._type, 'curse');
     assert.equal(out.name, 'Mummy Rot');
     assert.equal(out.curse_id, 57);
     assert.ok(Array.isArray(out.stages), 'stages present');

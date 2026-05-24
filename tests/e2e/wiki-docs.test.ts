@@ -101,9 +101,6 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
       await wikiDocsParseNode.execute(state, ctx);
 
       assert.ok(state.output !== null, `expected output for "${page.title}", got null`);
-      const output = state.output as Record<string, unknown>;
-      assert.equal(output['_type'], 'ripperoni_component',
-        `expected _type=ripperoni_component for "${page.title}", got "${String(output['_type'])}"`);
 
       outputs.push(state.output as RipperoniComponentOutput);
     }
@@ -158,7 +155,6 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
 
       const c = state.output as RipperoniComponentOutput | null;
       assert.ok(c !== null, `"${page.title}" produced null output`);
-      assert.equal(c._type, 'ripperoni_component');
       assert.ok(c.name.length > 0,        `"${page.title}": name is empty`);
       assert.ok(c.kind.length > 0,        `"${page.title}": kind is empty`);
       assert.ok(c.since.length > 0,       `"${page.title}": since is empty`);

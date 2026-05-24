@@ -39,7 +39,6 @@ describe('extract:armor-group-base — armor-group-chain', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ArmorGroupOutput;
-    assert.equal(out._type, 'armor-group');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.group_id, 1);
   });
@@ -75,7 +74,6 @@ describe('extract:armor-group-content — armor-group-chain', () => {
 describe('full armor-group pipeline — armor-group-chain', () => {
   it('produces complete ArmorGroupOutput', async () => {
     const out = await primeAndRunFull('armor-group-chain.html', 'https://2e.aonprd.com/ArmorGroups.aspx?ID=1');
-    assert.equal(out._type, 'armor-group');
     assert.equal(out.group_id, 1);
     assert.ok(out.armor_specialization_text.length > 0, 'armor_specialization_text should be non-empty');
     assert.ok(Array.isArray(out.armors), 'armors missing');
@@ -86,7 +84,6 @@ describe('full armor-group pipeline — armor-group-chain', () => {
 describe('full armor-group pipeline — armor-group-composite', () => {
   it('produces valid ArmorGroupOutput', async () => {
     const out = await primeAndRunFull('armor-group-composite.html', 'https://2e.aonprd.com/ArmorGroups.aspx?ID=2');
-    assert.equal(out._type, 'armor-group');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
   });
 });

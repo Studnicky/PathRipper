@@ -22,7 +22,6 @@ describe('monster extractor — is_legacy', () => {
     // Goblin War Chanter — Bestiary (legacy), has <h3 class="title legacy-content-warning">
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.is_legacy, true, 'Goblin War Chanter (OGL) should be flagged as legacy');
   });
 
@@ -30,7 +29,6 @@ describe('monster extractor — is_legacy', () => {
     // Bikkhasura — Monster Core 2 (remaster), no legacy-content-warning
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.is_legacy, false, 'Bikkhasura (remaster) should not be flagged as legacy');
   });
 });
@@ -42,7 +40,6 @@ describe('monster extractor — creature_art', () => {
     // Bikkhasura has <a class="monster-art-link" href="Images\Monsters\Asura_Bikkhasura.webp">
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.creature_art !== null, 'creature_art should be non-null when monster-art-link is present');
     assert.ok(
       /Asura_Bikkhasura/i.test(r.creature_art ?? ''),
@@ -54,7 +51,6 @@ describe('monster extractor — creature_art', () => {
     // Goblin War Chanter (legacy) — no monster-art-link
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.creature_art, null, 'legacy monster without art link should have null creature_art');
   });
 });
@@ -66,7 +62,6 @@ describe('monster extractor — flavor_text', () => {
     // Goblin War Chanter has lore text in <span class="hide-on-print">
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.flavor_text !== null, 'flavor_text should be present');
     assert.ok(
       /goblin/i.test(r.flavor_text ?? ''),
@@ -78,7 +73,6 @@ describe('monster extractor — flavor_text', () => {
     // Bikkhasura has lore text
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.flavor_text !== null, 'Bikkhasura should have flavor_text');
     assert.ok(
       /asura|reincarnated/i.test(r.flavor_text ?? ''),
@@ -94,7 +88,6 @@ describe('monster extractor — recall_knowledge', () => {
     // HTML: <b><u><a href="…">Recall Knowledge</a></u></b> DC 15 • Humanoid (Society)
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.recall_knowledge.dc, 15, 'Goblin War Chanter recall DC should be 15');
     assert.equal(r.recall_knowledge.lores.length, 1, 'should have 1 lore entry');
     assert.equal(r.recall_knowledge.lores[0]?.trait, 'Humanoid');
@@ -105,7 +98,6 @@ describe('monster extractor — recall_knowledge', () => {
     // Phantasmal Minion: <b><u><a>Recall Knowledge</a></u></b> DC 13 (no bullet lores)
     const html = await load('monster-phantasmal-minion.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=2750');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.recall_knowledge.dc, 13, 'Phantasmal Minion recall DC should be 13');
     assert.equal(r.recall_knowledge.lores.length, 0, 'should have no lore entries');
   });
@@ -114,7 +106,6 @@ describe('monster extractor — recall_knowledge', () => {
     // Bikkhasura: DC 40 • Spirit (Occultism)
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.recall_knowledge.dc, 40, 'Bikkhasura recall DC should be 40');
     assert.equal(r.recall_knowledge.lores.length, 1);
     assert.equal(r.recall_knowledge.lores[0]?.trait, 'Spirit');
@@ -129,7 +120,6 @@ describe('monster extractor — strikes', () => {
     // Goblin War Chanter: dogslicer +8 [+4/+0] (agile, backstabber, finesse), Damage 1d6+2 slashing
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const melee = r.strikes.find((s) => s.kind === 'melee');
     assert.ok(melee !== undefined, 'should have a melee strike');
     assert.equal(melee.weapon, 'dogslicer');
@@ -142,7 +132,6 @@ describe('monster extractor — strikes', () => {
     // Goblin War Chanter: shortbow +8 [+3/-2] (deadly 1d10, range 60 ft, reload 0), Damage 1d6 piercing
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const ranged = r.strikes.find((s) => s.kind === 'ranged');
     assert.ok(ranged !== undefined, 'should have a ranged strike');
     assert.equal(ranged.weapon, 'shortbow');
@@ -153,7 +142,6 @@ describe('monster extractor — strikes', () => {
   it('parses damage dice and type for each strike', async () => {
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const melee = r.strikes.find((s) => s.kind === 'melee');
     assert.ok(melee !== undefined);
     assert.equal(melee.damage.length, 1, 'should have 1 damage entry');
@@ -165,7 +153,6 @@ describe('monster extractor — strikes', () => {
     // Young Red Dragon: jaws, claw, tail, wing — 4 melee strikes
     const html = await load('monster-young-red-dragon.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=136');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.strikes.length >= 3, `expected ≥3 strikes, got ${r.strikes.length.toString()}`);
     const jaws = r.strikes.find((s) => s.weapon === 'jaws');
     assert.ok(jaws !== undefined, 'should have jaws strike');
@@ -178,7 +165,6 @@ describe('monster extractor — strikes', () => {
     // Bikkhasura: spirit blade +37 [+32/+27]
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const strike = r.strikes[0];
     assert.ok(strike !== undefined, 'should have at least one strike');
     assert.ok(strike.attack_bonus !== null && strike.attack_bonus >= 30,
@@ -193,7 +179,6 @@ describe('monster extractor — hp.special for regeneration', () => {
     // Bikkhasura: HP 380, regeneration 20 (deactivated by holy)
     const html = await load('monster-with-regeneration.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4088');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.hp.value, 380);
     assert.ok(r.hp.special !== null, 'hp.special should be non-null for regenerating monster');
     assert.ok(
@@ -206,7 +191,6 @@ describe('monster extractor — hp.special for regeneration', () => {
     // Goblin War Chanter: HP 16 (no regeneration)
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.hp.value, 16);
     assert.equal(r.hp.special, null, 'plain HP with no extra clause should have null special');
   });
@@ -219,7 +203,6 @@ describe('monster extractor — spell_lists slots', () => {
     // Goblin War Chanter: Occult Spontaneous Spells DC 17, attack +7; 1st bless, soothe; Cantrips …
     const html = await load('monster-goblin-war-chanter.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=235');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.spell_lists.length >= 1, `expected ≥1 spell list, got ${r.spell_lists.length.toString()}`);
     const spells = r.spell_lists.find((sl) => sl.kind === 'spells');
     assert.ok(spells !== undefined, 'should have a spells list');
@@ -236,7 +219,6 @@ describe('monster extractor — spell_lists slots', () => {
     // Monster with rituals: Rituals DC 37; 4th atone; 1st angelic messenger
     const html = await load('monster-with-rituals.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=4030');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const rituals = r.spell_lists.find((sl) => sl.kind === 'rituals');
     assert.ok(rituals !== undefined, 'should have a rituals list');
     assert.equal(rituals.dc, 37);
@@ -257,7 +239,6 @@ describe('monster extractor — top_abilities bare-bold extraction', () => {
     // with no <span class="hanging-indent"> wrapper.
     const html = await load('monster-phantasmal-minion.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=2750');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.ok(r.top_abilities.length >= 1,
       `expected ≥1 top ability, got ${r.top_abilities.length.toString()}`);
     const forceBody = r.top_abilities.find((a) => a.name === 'Force Body');
@@ -271,7 +252,6 @@ describe('monster extractor — top_abilities bare-bold extraction', () => {
     // longer appear in raw_fields.
     const html = await load('monster-phantasmal-minion.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=2750');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     assert.equal(r.raw_fields['Force Body'], undefined,
       'Force Body should not be a raw_fields key after extraction');
   });
@@ -281,7 +261,6 @@ describe('monster extractor — top_abilities bare-bold extraction', () => {
     // at the top of the stat block.
     const html = await load('monster-young-red-dragon.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=136');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const smokeVision = r.top_abilities.find((a) => a.name === 'Smoke Vision');
     assert.ok(smokeVision !== undefined, 'should include a Smoke Vision ability');
     assert.equal(r.raw_fields['Smoke Vision'], undefined,
@@ -294,7 +273,6 @@ describe('monster extractor — top_abilities bare-bold extraction', () => {
     // should have no repeated names.
     const html = await load('monster-young-red-dragon.html');
     const r = await parseAonHtml(html, 'https://2e.aonprd.com/Monsters.aspx?ID=136');
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
     const names = r.top_abilities.map((a) => a.name);
     const unique = new Set(names);
     assert.equal(names.length, unique.size,

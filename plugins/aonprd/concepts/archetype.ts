@@ -17,7 +17,7 @@ import type { Element } from 'domhandler';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import { parseGrantedFeatures } from '../capabilities/grantedFeatures.js';
 import {
@@ -58,7 +58,7 @@ export interface ArchetypeFeat {
   body_text:   string;
 }
 
-export interface ArchetypeOutputFields {
+export interface ArchetypeOutput {
   url:              string;
   /** Numeric AON Archetypes.aspx ID extracted from the URL query string. */
   archetype_id:     number | null;
@@ -100,9 +100,6 @@ export interface ArchetypeOutputFields {
   meta_keywords:        string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ArchetypeOutput = ConceptOutputBase<'archetype'> & ArchetypeOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-archetype-base`. */
@@ -116,7 +113,7 @@ export interface ArchetypeBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ArchetypeOutputFields['source'];
+  source:          ArchetypeOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -397,7 +394,7 @@ export function finalizeArchetype(
   _meta:    ArchetypeMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ArchetypeOutputFields {
+): ArchetypeOutput {
   void _meta;
   void _target;
   const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -419,7 +416,7 @@ export function finalizeArchetype(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ArchetypeOutputFields;
+  } satisfies ArchetypeOutput;
 }
 
 /**
@@ -433,14 +430,13 @@ export function extractArchetype(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ArchetypeOutputFields {
+): ArchetypeOutput {
   const base  = extractArchetypeBase(c);
   const intro = extractArchetypeIntroduction(c, $, target);
   const feats = extractArchetypeFeats(c, $, target);
   const meta  = extractArchetypeMeta(c);
   return finalizeArchetype(c, base, intro, feats, meta, $, target);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -586,5 +582,4 @@ export const archetypeConcept: ConceptDecl<ArchetypeOutput> = {
     archetypeFeatsNode,
     finalizeArchetypeNode,
   ],
-  discriminator: { _type: 'archetype' },
 };

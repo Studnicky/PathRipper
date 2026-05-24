@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -31,7 +31,7 @@ import {
 // ─── Inlined from Wave 5: contributor.ts ──────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
-export interface ContributorOutputFields {
+export interface ContributorOutput {
   url:              string;
   /** Numeric AON Contributors.aspx ID extracted from the URL query string. */
   contributor_id:   number | null;
@@ -69,9 +69,6 @@ export interface ContributorOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ContributorOutput = ConceptOutputBase<'contributor'> & ContributorOutputFields;
-
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface ContributorBaseSlice {
@@ -84,7 +81,7 @@ export interface ContributorBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ContributorOutputFields['source'];
+  source:          ContributorOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -225,7 +222,7 @@ export function finalizeContributor(
   profile: ContributorProfileSlice,
   $:       CheerioAPI,
   _target: CheerioNode,
-): ContributorOutputFields {
+): ContributorOutput {
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -243,7 +240,7 @@ export function finalizeContributor(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ContributorOutputFields;
+  } satisfies ContributorOutput;
 }
 
 /**
@@ -255,12 +252,11 @@ export function extractContributor(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ContributorOutputFields {
+): ContributorOutput {
   const base    = extractContributorBase(c);
   const profile = extractContributorProfile(c, $, target);
   return finalizeContributor(c, base, profile, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -385,5 +381,4 @@ export const contributorConcept: ConceptDecl<ContributorOutput> = {
     contributorProfileNode,
     finalizeContributorNode,
   ],
-  discriminator: { _type: 'contributor' },
 };

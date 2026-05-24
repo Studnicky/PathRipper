@@ -1,35 +1,18 @@
-// Concept helpers — Wave 4 H9, Wave 6 L5.
+// Concept helpers — shared output shapes + the typed setConceptOutput accessor.
 //
-// Plugin-agnostic typed-output infrastructure for concept finalize nodes.
-// The `setConceptOutput` helper carries the compile-time `satisfies` check
-// that prevents misspelled keys from leaking through `state.output`.
+// `SourceShape` and `BaseShape` are the single source of truth for the
+// per-page projection that every entity-style concept extends.
 //
-// Wave 6 L5 / M4: `SourceShape` and `BaseShape` are lifted here as the single
-// source of truth for the per-page projection that every entity-style concept
-// extends. Four concept files (generic.ts, condition.ts, hazard.ts, trait.ts)
-// previously redeclared them inline. The shared `BaseShape` no longer carries
-// `entity_id` — Wave 6 M4 standardised ID naming to `<concept>_id` so the
-// generic alias is no longer needed.
-//
-// Today every finalize node hand-merges `assembled` into `state.output` with
-// a `{ ...state.output, ...assembled }` literal. The merge is untyped — TS
-// has no way to verify that `assembled` matches the concept's declared
-// `*Output` shape. A misspelled key compiles cleanly.
-//
-// Finalize nodes opt into the typed accessor by calling:
+// Finalize nodes call:
 //
 //   const assembled = {
-//     _type: 'language' as const,
-//     // ... all required fields ...
+//     url: c.url, name: c.title.name, // ... all required fields ...
 //   } satisfies LanguageOutput;
 //   setConceptOutput(state, assembled);
 //
-// The `satisfies` clause at the literal anchors the shape; `setConceptOutput`
-// is a thin, monomorphic merge. Both pieces together produce the compile-time
-// guarantee that's been documented but unenforced through Wave 3.
-//
-// The helper is generic over `TOutput` (no plugin coupling) — a future
-// bulbapedia/torreya plugin uses the same helper with its own `*Output` types.
+// The `satisfies` clause anchors the shape at the literal; the helper is a
+// thin, monomorphic merge. Generic over `TOutput` so any plugin can use it
+// with its own `*Output` types.
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../src/state/ScrapeState.js';
@@ -44,14 +27,12 @@ import {
   extractMetaKeywords,
 } from '../common.js';
 
-// ─── Shared output shapes (Wave 6 L5) ─────────────────────────────────────────
+// ─── Shared output shapes ─────────────────────────────────────────────────────
 
 /**
  * Header `Source` projection used by every entity-style concept's `Output`
  * type. Mirrors `SourceRef` minus `raw` (concept outputs do not surface the
- * raw display text alongside the parsed book/page/source_id). Lifted from the
- * four files that previously redeclared it (generic, condition, hazard,
- * trait).
+ * raw display text alongside the parsed book/page/source_id).
  */
 export interface SourceShape {
   book:      string | null;
@@ -61,10 +42,8 @@ export interface SourceShape {
 
 /**
  * Base shape shared by every entity-style concept's `Output` type. Concepts
- * extend this with their own `_type` discriminator and any concept-specific
- * fields (level, stages, etc.). The `<concept>_id` for each concept lives on
- * the concept-specific output, never here — `entity_id` was removed in
- * Wave 6 M4.
+ * extend this with concept-specific fields (level, stages, etc.) and their
+ * own `<concept>_id`.
  */
 export interface BaseShape {
   url:             string;
@@ -93,7 +72,7 @@ export interface BaseShape {
 /**
  * Build a `BaseShape` from a {@link CommonExtraction} + full-page CheerioAPI.
  * Single source of truth for the per-page projection that every entity-style
- * concept extends. The four duplicates in concept files have been removed.
+ * concept extends.
  */
 export function baseFrom(c: CommonExtraction, $: CheerioAPI): BaseShape {
   return {
@@ -118,29 +97,11 @@ export function baseFrom(c: CommonExtraction, $: CheerioAPI): BaseShape {
 }
 
 /**
- * Merge a typed assembled output into `state.output` (Wave 4 H9 step 3).
- *
- * The caller's `output` literal carries a `satisfies XxxOutput` clause that
- * fails `tsc` if any required field is missing or any key is misspelled.
- * This helper itself is monomorphic — it does not validate the shape; it
- * only merges. The compile-time guarantee comes from the call-site
- * `satisfies` and the explicit `TOutput` parameter.
- *
- * The merge behaviour preserves any keys already on `state.output` that the
- * finalize node did not repopulate (Wave 6 H13 — "preserve contract slack").
- * Concepts that need overwrite semantics can `state.output = { ...assembled }`
- * directly; the helper is opt-in for the merge variant.
- *
- * @example
- * ```ts
- * const assembled = {
- *   _type: 'language' as const,
- *   url: c.url,
- *   name: c.title.name,
- *   // ... every field of LanguageOutput ...
- * } satisfies LanguageOutput;
- * setConceptOutput(state, assembled);
- * ```
+ * Merge a typed assembled output into `state.output`. The caller's `output`
+ * literal carries a `satisfies XxxOutput` clause that fails `tsc` if any
+ * required field is missing or any key is misspelled. The merge preserves
+ * any keys already on `state.output` that the finalize node did not
+ * repopulate.
  */
 export function setConceptOutput<TOutput extends object>(
   state:  ScrapeState,

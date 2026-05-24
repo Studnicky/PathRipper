@@ -246,5 +246,4 @@ export const deityConcept: ConceptDecl<DeityOutput> = {
     deityRelationshipsNode,
     finalizeDeityNode,
   ],
-  discriminator: { _type: 'deity' },
 };

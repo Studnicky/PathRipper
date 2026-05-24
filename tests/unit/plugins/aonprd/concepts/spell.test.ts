@@ -56,7 +56,6 @@ describe('extract:spell-base — abyssal-plague', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as SpellOutput;
-    assert.equal(out._type, 'spell');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(out.spell_id !== null || out.spell_id === null, 'spell_id must exist');
     assert.ok(out.traits !== undefined, 'traits missing');
@@ -222,7 +221,6 @@ describe('extract:spell-meta — spell-with-lesson (has lesson field)', () => {
 describe('finalize:spell — abyssal-plague', () => {
   it('produces complete SpellOutput with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_PLAGUE, URL_PLAGUE);
-    assert.equal(out._type, 'spell');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.cast === 'object', 'cast missing');
     assert.ok(typeof out.outcomes === 'object', 'outcomes missing');
@@ -261,7 +259,6 @@ describe('finalize:spell — abyssal-plague', () => {
 describe('full spell pipeline — abyssal-plague', () => {
   it('produces complete typed SpellOutput', async () => {
     const out = await primeAndRunFull(FIXTURE_PLAGUE, URL_PLAGUE);
-    assert.equal(out._type, 'spell');
     assert.ok(typeof out.name === 'string' && out.name.length > 0);
     assert.ok(typeof out.description_html === 'string');
     assert.ok(typeof out.meta_description === 'string' || out.meta_description === null);
@@ -272,7 +269,6 @@ describe('full spell pipeline — abyssal-plague', () => {
 describe('full spell pipeline — spell-with-deities', () => {
   it('populates deities array from deity-granted spell', async () => {
     const out = await primeAndRunFull(FIXTURE_DEITIES, URL_DEITIES);
-    assert.equal(out._type, 'spell');
     assert.ok(out.deities.length > 0, 'should have at least one deity');
   });
 });

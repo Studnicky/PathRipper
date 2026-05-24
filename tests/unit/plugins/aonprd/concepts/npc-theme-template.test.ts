@@ -41,7 +41,6 @@ describe('extract:npc-theme-template-base — npc-theme-template-firebrands', ()
     assert.equal(r.output, 'success');
 
     const out = state.output as NpcThemeTemplateOutput;
-    assert.equal(out._type, 'npc-theme-template');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.npc_theme_template_id, 1);
   });
@@ -97,7 +96,6 @@ describe('full npc-theme-template pipeline — npc-theme-template-firebrands', (
   it('produces a complete NpcThemeTemplateOutput with all required fields', async () => {
     const out = await primeAndRunFull('npc-theme-template-firebrands.html', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
 
-    assert.equal(out._type, 'npc-theme-template');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.tiers) && out.tiers.length > 0, 'tiers missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');

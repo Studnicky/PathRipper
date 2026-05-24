@@ -39,7 +39,6 @@ describe('extract:hazard-base — hazard-haunted-bridge', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as HazardOutput;
-    assert.equal(out._type, 'hazard');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.hazard_id, 1);
     assert.ok('complexity' in out, 'complexity field missing');
@@ -117,7 +116,6 @@ describe('finalize:hazard — hazard-haunted-bridge', () => {
 describe('full hazard pipeline — hazard-haunted-bridge', () => {
   it('produces complete HazardOutput', async () => {
     const out = await primeAndRunFull('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    assert.equal(out._type, 'hazard');
     assert.equal(out.hazard_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.equal(out.complexity, 'simple');

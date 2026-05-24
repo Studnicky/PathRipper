@@ -37,7 +37,6 @@ describe('extract:condition-base — condition-blinded', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ConditionOutput;
-    assert.equal(out._type, 'condition');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.condition_id, 59);
     assert.ok(Array.isArray(out.stages), 'stages should be an array');
@@ -102,7 +101,6 @@ describe('finalize:condition — condition-blinded', () => {
 describe('full condition pipeline — condition-blinded', () => {
   it('produces complete ConditionOutput', async () => {
     const out = await primeAndRunFull('condition-blinded.html', 'https://2e.aonprd.com/Conditions.aspx?ID=59');
-    assert.equal(out._type, 'condition');
     assert.equal(out.condition_id, 59);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.stages), 'stages missing');

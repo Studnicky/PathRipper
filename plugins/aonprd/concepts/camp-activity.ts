@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -41,7 +41,7 @@ export interface CampActivityOutcome {
   text: string;
 }
 
-export interface CampActivityOutputFields {
+export interface CampActivityOutput {
   url:             string;
   activity_id:     number | null;
   name:            string;
@@ -72,9 +72,6 @@ export interface CampActivityOutputFields {
   meta_keywords:    string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type CampActivityOutput = ConceptOutputBase<'camp-activity'> & CampActivityOutputFields;
-
 export interface CampActivityBaseSlice {
   url:             string;
   activity_id:     number | null;
@@ -83,7 +80,7 @@ export interface CampActivityBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   action_cost:     ActionCost | null;
-  source:          CampActivityOutputFields['source'];
+  source:          CampActivityOutput['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -165,7 +162,7 @@ export function finalizeCampActivity(
   mech:  CampActivityMechanicsSlice,
   _meta: CampActivityMetaSlice,
   $:     CheerioAPI,
-): CampActivityOutputFields {
+): CampActivityOutput {
   void _meta;
   return {
     ...base,
@@ -177,17 +174,16 @@ export function finalizeCampActivity(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies CampActivityOutputFields;
+  } satisfies CampActivityOutput;
 }
 
-export function extractCampActivity(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): CampActivityOutputFields {
+export function extractCampActivity(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): CampActivityOutput {
   void target;
   const base = extractCampActivityBase(c);
   const mech = extractCampActivityMechanics(c);
   const meta = extractCampActivityMeta(c);
   return finalizeCampActivity(c, base, mech, meta, $);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -287,5 +283,4 @@ export const campActivityConcept: ConceptDecl<CampActivityOutput> = {
     campActivityMechanicsNode,
     finalizeCampActivityNode,
   ],
-  discriminator: { _type: 'camp-activity' },
 };

@@ -43,7 +43,6 @@ describe('extract:monster-ability-base — grab', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as MonsterAbilityOutput;
-    assert.equal(out._type, 'monster-ability');
     assert.equal(out.monster_ability_id, 45);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
   });
@@ -79,7 +78,6 @@ describe('extract:monster-ability-definition — grab', () => {
 describe('finalize:monster-ability — grab', () => {
   it('produces complete MonsterAbilityOutput', async () => {
     const out = await primeAndRunFull(FIXTURE_GRAB, BASE_URL_GRAB);
-    assert.equal(out._type, 'monster-ability');
     assert.equal(out.monster_ability_id, 45);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.related_abilities), 'related_abilities missing');
@@ -98,7 +96,6 @@ describe('finalize:monster-ability — grab', () => {
 describe('full pipeline — all-around-vision', () => {
   it('extracts a passive ability with no definition labels', async () => {
     const out = await primeAndRunFull(FIXTURE_VISION, BASE_URL_VISION);
-    assert.equal(out._type, 'monster-ability');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     // Passive abilities have no trigger/requirements/frequency/effect
     assert.equal(out.trigger, null);

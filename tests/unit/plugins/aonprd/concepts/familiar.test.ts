@@ -39,7 +39,6 @@ describe('extract:familiar-base — familiar-amphibious', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as FamiliarOutput;
-    assert.equal(out._type, 'familiar');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.familiar_id, 1);
     assert.ok(out.familiar_kind === 'ability' || out.familiar_kind === 'specific', 'familiar_kind should be ability or specific');
@@ -104,7 +103,6 @@ describe('finalize:familiar — familiar-amphibious', () => {
 describe('full familiar pipeline — familiar-ceru (specific familiar)', () => {
   it('produces complete FamiliarOutput for specific familiar', async () => {
     const out = await primeAndRunFull('familiar-ceru.html', 'https://2e.aonprd.com/Familiars.aspx?ID=1&Specific=true');
-    assert.equal(out._type, 'familiar');
     assert.equal(out.familiar_kind, 'specific', 'ceru should be specific familiar');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.abilities), 'abilities missing');
@@ -115,7 +113,6 @@ describe('full familiar pipeline — familiar-ceru (specific familiar)', () => {
 describe('full familiar pipeline — familiar-amphibious (ability)', () => {
   it('produces complete FamiliarOutput for ability', async () => {
     const out = await primeAndRunFull('familiar-amphibious.html', 'https://2e.aonprd.com/Familiars.aspx?ID=1');
-    assert.equal(out._type, 'familiar');
     assert.equal(out.familiar_kind, 'ability');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.raw_fields === 'object', 'raw_fields missing');

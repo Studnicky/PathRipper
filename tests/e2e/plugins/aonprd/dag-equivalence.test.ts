@@ -47,10 +47,7 @@ async function runViaDAG(html: string, url: string): Promise<Record<string, unkn
   const state = new ScrapeState();
   state.page = { targetId: 'aonprd', title: '', url, html };
   await dispatcher.execute('aonprd:parse', state);
-  if (state.output === null) {
-    return { _type: 'unknown', url };
-  }
-  return state.output;
+  return state.output ?? { url };
 }
 
 interface FixtureCase {
@@ -132,8 +129,6 @@ describe('aonprdParseDAG vs parseAonHtml — equivalence', () => {
     const url  = 'https://2e.aonprd.com/Rules.aspx?ID=100';
     const direct = await parseAonHtml(html, url);
     const dag    = await runViaDAG(html, url);
-    assert.equal(direct._type, 'rule', 'direct call must produce _type=rule');
-    assert.equal(dag._type,    'rule', 'DAG dispatch must produce _type=rule');
     assert.deepEqual(dag, direct, 'DAG output must match direct-call output');
   });
 
@@ -142,8 +137,6 @@ describe('aonprdParseDAG vs parseAonHtml — equivalence', () => {
       const html = await loadFixture(c.fixture);
       const direct = await parseAonHtml(html, c.url);
       const dag    = await runViaDAG(html, c.url);
-      assert.equal(direct._type, c.type, `direct: expected _type=${c.type}, got ${String(direct._type)}`);
-      assert.equal(dag._type,    c.type, `DAG: expected _type=${c.type}, got ${String(dag._type)}`);
       assert.deepEqual(dag, direct, `DAG output diverged from direct-call for ${c.family}`);
     });
   }

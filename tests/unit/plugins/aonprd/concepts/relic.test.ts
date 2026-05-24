@@ -39,7 +39,6 @@ describe('extract:relic-base — relic-righteous-call', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as RelicOutput;
-    assert.equal(out._type, 'relic');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.relic_id, 1);
   });
@@ -105,7 +104,6 @@ describe('finalize:relic — relic-righteous-call', () => {
 describe('full relic pipeline — relic-righteous-call', () => {
   it('produces complete RelicOutput', async () => {
     const out = await primeAndRunFull('relic-righteous-call.html', 'https://2e.aonprd.com/Relics.aspx?ID=1');
-    assert.equal(out._type, 'relic');
     assert.equal(out.relic_id, 1);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('gift' in out, 'gift missing');

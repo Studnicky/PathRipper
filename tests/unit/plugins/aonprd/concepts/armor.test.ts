@@ -39,7 +39,6 @@ describe('extract:armor-base — armor-leather', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as ArmorOutput;
-    assert.equal(out._type, 'armor');
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.armor_id, 4);
   });
@@ -113,7 +112,6 @@ describe('finalize:armor — armor-leather', () => {
 describe('full armor pipeline — armor-leather', () => {
   it('produces complete ArmorOutput', async () => {
     const out = await primeAndRunFull('armor-leather.html', 'https://2e.aonprd.com/Armor.aspx?ID=4');
-    assert.equal(out._type, 'armor');
     assert.equal(out.armor_id, 4);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('ac_bonus' in out, 'ac_bonus missing');

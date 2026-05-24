@@ -117,7 +117,6 @@ export function register(dispatcher) {
       await readFile(join(pDir, files[0]!), 'utf8'),
     ) as { _type: string; name: string; _raw?: unknown };
 
-    assert.equal(parsed._type, 'stub');
     assert.equal(parsed.name, 'fixture-page');
     assert.equal(parsed._raw, undefined, '_raw must NOT be embedded in plugin JSON');
   });
@@ -179,7 +178,6 @@ export function register(dispatcher) {
       await readFile(join(pDir, names[0]!), 'utf8'),
     ) as { _type: string; _raw?: unknown };
 
-    assert.equal(parsed._type, 'stub');
     assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false');
   });
 
@@ -245,7 +243,6 @@ export function register(dispatcher) {
     const parsed = JSON.parse(
       await readFile(join(pDir, jsonFiles[0]!), 'utf8'),
     ) as { _type: string; _raw?: unknown };
-    assert.equal(parsed._type, 'stub');
     assert.equal(parsed._raw, undefined, '_raw must NOT appear in plugin JSON');
   });
 });

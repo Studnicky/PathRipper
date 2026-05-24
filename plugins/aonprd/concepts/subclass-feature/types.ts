@@ -1,6 +1,5 @@
 // Subclass-feature concept — output types and constants.
 import type { Rarity, PfsLegality, SourceRef, Section, LinkRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 /** A spell entry referenced from a subclass-feature spell list. */
 export interface SubclassFeatureSpellRef {
@@ -30,7 +29,7 @@ export interface SubclassFeatureGrantedFeature {
   body_text: string;
 }
 
-export interface SubclassFeatureOutputFields {
+export interface SubclassFeatureOutput {
   url:             string;
   subclass_feature_id:       number | null;
   name:            string;
@@ -61,9 +60,6 @@ export interface SubclassFeatureOutputFields {
   meta_description: string | null;
   meta_keywords:   string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type SubclassFeatureOutput = ConceptOutputBase<'subclass-feature'> & SubclassFeatureOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 

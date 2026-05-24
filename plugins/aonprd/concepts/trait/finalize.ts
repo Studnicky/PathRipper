@@ -2,7 +2,7 @@ import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
 import { baseFrom, setConceptOutput } from '../_helpers.js';
-import type { TraitOutput, TraitOutputFields, TraitBaseSlice } from './types.js';
+import type { TraitOutput, TraitBaseSlice } from './types.js';
 import { inferTraitCategory } from './helpers.js';
 
 /** AON labels every trait-slice helper has lifted into structured fields. */
@@ -15,7 +15,7 @@ export function finalizeTrait(
   c:    CommonExtraction,
   base: TraitBaseSlice,
   $:    CheerioAPI,
-): TraitOutputFields {
+): TraitOutput {
   const category = inferTraitCategory(c);
   const baseShape = baseFrom(c, $);
   return {
@@ -33,7 +33,7 @@ export function finalizeTrait(
     sources:         base.sources,
     raw_fields:      stripStructuredKeys(c.field_map, TRAIT_CLAIMED_LABELS),
     category,
-  } satisfies TraitOutputFields;
+  } satisfies TraitOutput;
 }
 
 export function finalizeTraitWithSections(
@@ -41,7 +41,7 @@ export function finalizeTraitWithSections(
   base:     TraitBaseSlice,
   sections: Section[],
   $:        CheerioAPI,
-): TraitOutputFields {
+): TraitOutput {
   const output = finalizeTrait(c, base, $);
   return {
     ...output,

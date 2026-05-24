@@ -11,7 +11,7 @@ import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { extractMetaDescription, extractMetaKeywords, extractPfsNote, stripStructuredKeys } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
-import type { WeaponOutput, WeaponOutputFields, WeaponBaseSlice, WeaponMechanicsSlice, WeaponMetaSlice } from './types.js';
+import type { WeaponOutput, WeaponBaseSlice, WeaponMechanicsSlice, WeaponMetaSlice } from './types.js';
 import { extractWeaponMeta } from './meta.js';
 
 /** AON header labels claimed by the weapon slices (stripped from raw_fields). */
@@ -29,7 +29,7 @@ export function finalizeWeapon(
   mechanics: WeaponMechanicsSlice,
   meta:      WeaponMetaSlice,
   $:         CheerioAPI,
-): WeaponOutputFields {
+): WeaponOutput {
   const raw_fields = stripStructuredKeys(c.field_map, WEAPON_CLAIMED_LABELS);
   return {
     ...base,
@@ -39,7 +39,7 @@ export function finalizeWeapon(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies WeaponOutputFields;
+  } satisfies WeaponOutput;
 }
 
 export type FinalizeWeaponOutput = 'success';
@@ -60,7 +60,7 @@ export const finalizeWeaponNode: NodeInterface<ScrapeState, FinalizeWeaponOutput
     const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
     if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
-    const acc = (state.output ?? {}) as unknown as WeaponOutputFields;
+    const acc = (state.output ?? {}) as unknown as WeaponOutput;
     const meta = extractWeaponMeta(c, $, target);
     const pfs_note = extractPfsNote($, target);
     const assembled = finalizeWeapon(c, acc, acc, meta, $);
@@ -70,7 +70,7 @@ export const finalizeWeaponNode: NodeInterface<ScrapeState, FinalizeWeaponOutput
       links: c.links,
       meta_description: extractMetaDescription($),
       meta_keywords:    extractMetaKeywords($),
-    } satisfies WeaponOutputFields);
+    } satisfies WeaponOutput);
 
     return { output: 'success' };
   },

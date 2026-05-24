@@ -76,5 +76,4 @@ export const traitConcept: ConceptDecl<TraitOutput> = {
     traitBaseNode,
     finalizeTraitNode,
   ],
-  discriminator: { _type: 'trait' },
 };

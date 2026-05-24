@@ -131,7 +131,6 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
 
     const firstSection = sections[0];
     assert.ok(firstSection !== undefined, 'expected at least one section');
-    assert.equal(firstSection._type, 'docs_section');
     assert.ok(firstSection.component.length > 0, 'section should have a component identifier');
     assert.ok(firstSection.title.length > 0, 'section should have a title');
     assert.ok(firstSection.description.length > 0, 'section should have a description');

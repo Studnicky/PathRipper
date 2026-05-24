@@ -1,7 +1,6 @@
 // Generic/condition/trait/hazard concept types.
 
 import type { Rarity, PfsLegality, SourceRef, Section, LinkRef } from '../../common.js';
-import type { ConceptOutputBase } from '../../taxonomy.js';
 
 // ─── BaseShape (shared across generic, condition, trait, hazard) ─────────────
 
@@ -39,16 +38,13 @@ export interface ConditionStage {
   duration:  string | null;
 }
 
-export interface ConditionOutputFields extends BaseShape {
+export interface ConditionOutput extends BaseShape {
   /** Numeric AON condition ID extracted from the URL query string. */
   condition_id: number | null;
   stages:   ConditionStage[];
   /** Other conditions referenced from the body. */
   related_conditions: Array<{ name: string; condition_id: number | null }>;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type ConditionOutput = ConceptOutputBase<'condition'> & ConditionOutputFields;
 
 /** Fields owned by `extract-condition-base`. */
 export interface ConditionBaseSlice {
@@ -75,14 +71,11 @@ export interface ConditionStagesSlice {
 
 // ─── Trait ────────────────────────────────────────────────────────────────────
 
-export interface TraitOutputFields extends BaseShape {
+export interface TraitOutput extends BaseShape {
   /** Numeric AON trait ID from the URL query string. */
   trait_id: number | null;
   category: string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type TraitOutput = ConceptOutputBase<'trait'> & TraitOutputFields;
 
 /** Fields owned by `extract-trait-base`. */
 export interface TraitBaseSlice {
@@ -115,7 +108,7 @@ export interface HazardRoutine {
   actions:      string | null;
 }
 
-export interface HazardOutputFields extends BaseShape {
+export interface HazardOutput extends BaseShape {
   /** Numeric AON hazard ID from the URL query string. */
   hazard_id:    number | null;
   level:        number | null;
@@ -135,9 +128,6 @@ export interface HazardOutputFields extends BaseShape {
   routines:     HazardRoutine[];
   reset:        string | null;
 }
-
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type HazardOutput = ConceptOutputBase<'hazard'> & HazardOutputFields;
 
 /** Fields owned by `extract-hazard-base`. */
 export interface HazardBaseSlice {
@@ -160,7 +150,7 @@ export interface HazardBaseSlice {
 
 /** Fields owned by `extract-hazard-defenses`. */
 export interface HazardDefensesSlice {
-  defenses: HazardOutputFields['defenses'];
+  defenses: HazardOutput['defenses'];
 }
 
 /** Fields owned by `extract-hazard-routines`. */
@@ -176,20 +166,15 @@ export interface HazardResetSlice {
 
 // ─── Generic / Unknown ────────────────────────────────────────────────────────
 
-export interface GenericOutputFields extends BaseShape {
+export interface GenericOutput extends BaseShape {
   /** Numeric AON entity ID extracted from the URL query string. */
   generic_id: number | null;
   level: number | null;
   level_kind: string | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type GenericOutput = ConceptOutputBase<'generic'> & GenericOutputFields;
-
-export interface UnknownOutputFields extends BaseShape {
+export interface UnknownOutput extends BaseShape {
   /** Numeric AON entity ID extracted from the URL query string. */
   unknown_id: number | null;
 }
 
-/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
-export type UnknownOutput = ConceptOutputBase<'unknown'> & UnknownOutputFields;

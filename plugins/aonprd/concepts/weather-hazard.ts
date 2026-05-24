@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -39,7 +39,7 @@ export interface WeatherHazardEffect {
   body: string;
 }
 
-export interface WeatherHazardOutputFields {
+export interface WeatherHazardOutput {
   url:              string;
   /** Numeric AON WeatherHazards.aspx ID extracted from the URL query string. */
   weather_hazard_id: number | null;
@@ -72,7 +72,6 @@ export interface WeatherHazardOutputFields {
   /** `<meta name="keywords">` content. */
   meta_keywords:    string | null;
 }
-export type WeatherHazardOutput = ConceptOutputBase<'weather-hazard'> & WeatherHazardOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -88,7 +87,7 @@ export interface WeatherHazardBaseSlice {
   alt_edition_url:   string | null;
   traits:            string[];
   trait_ids:         Record<string, number>;
-  source:            WeatherHazardOutputFields['source'];
+  source:            WeatherHazardOutput['source'];
   sources:           SourceRef[];
 }
 
@@ -205,7 +204,7 @@ export function finalizeWeatherHazard(
   _meta:     WeatherHazardMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): WeatherHazardOutputFields {
+): WeatherHazardOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -231,21 +230,20 @@ export function finalizeWeatherHazard(
     body_html:         c.body_html,
     meta_description:  extractMetaDescription($),
     meta_keywords:     extractMetaKeywords($),
-  } satisfies WeatherHazardOutputFields;
+  } satisfies WeatherHazardOutput;
 }
 
-/** Project a WeatherHazards.aspx page into a typed WeatherHazardOutputFields. */
+/** Project a WeatherHazards.aspx page into a typed WeatherHazardOutput. */
 export function extractWeatherHazard(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): WeatherHazardOutputFields {
+): WeatherHazardOutput {
   const base    = extractWeatherHazardBase(c);
   const effects = extractWeatherHazardEffects(c);
   const meta    = extractWeatherHazardMeta(c);
   return finalizeWeatherHazard(c, base, effects, meta, $, target);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -336,7 +334,7 @@ export const finalizeWeatherHazardNode: NodeInterface<ScrapeState, FinalizeWeath
       body_html:         c.body_html,
       meta_description,
       meta_keywords,
-    } satisfies WeatherHazardOutputFields);
+    } satisfies WeatherHazardOutput);
 
     return { output: 'success' };
   },
@@ -352,5 +350,4 @@ export const weatherHazardConcept: ConceptDecl<WeatherHazardOutput> = {
     weatherHazardBaseNode,
     finalizeWeatherHazardNode,
   ],
-  discriminator: { _type: 'weather-hazard' },
 };

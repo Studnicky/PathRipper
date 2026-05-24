@@ -76,7 +76,6 @@ describe('extract:language-base — language-common', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as LanguageOutput;
-    assert.equal(out._type, 'language');
     assert.equal(out.name, 'Common');
     assert.equal(out.rarity, 'common');
     assert.equal(out.legacy, true, 'Common fixture has legacy-content-warning');
@@ -314,7 +313,6 @@ describe('full language pipeline — language-common', () => {
   it('produces a complete LanguageOutput with all required fields', async () => {
     const out = await primeAndRunFull('language-common.html', 'https://2e.aonprd.com/Languages.aspx?ID=1');
 
-    assert.equal(out._type, 'language');
     assert.equal(out.name, 'Common');
     assert.ok(out.speakers !== undefined, 'speakers missing');
     assert.ok(typeof out.section_counts === 'object', 'section_counts missing');
@@ -337,7 +335,6 @@ describe('full language pipeline — language-osiriani', () => {
   it('produces a complete LanguageOutput with PFS Note', async () => {
     const out = await primeAndRunFull('language-osiriani.html', 'https://2e.aonprd.com/Languages.aspx?ID=36');
 
-    assert.equal(out._type, 'language');
     assert.equal(out.name, 'Osiriani');
     assert.ok(out.pfs_note !== null, 'Osiriani should have pfs_note');
     assert.ok(out.speakers.creatures.length > 0, 'creatures bucket should be populated');

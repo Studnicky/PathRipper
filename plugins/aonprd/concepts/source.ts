@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -54,7 +54,7 @@ export interface SourceRelated {
   category: string;
 }
 
-export interface SourceOutputFields {
+export interface SourceOutput {
   url:                 string;
   /** Numeric AON Sources.aspx ID extracted from the URL query string. */
   source_id:           number | null;
@@ -95,7 +95,6 @@ export interface SourceOutputFields {
   meta_description:    string | null;
   meta_keywords:       string | null;
 }
-export type SourceOutput = ConceptOutputBase<'source'> & SourceOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -110,7 +109,7 @@ export interface SourceBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SourceOutputFields['source'];
+  source:          SourceOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -264,7 +263,7 @@ export function finalizeSource(
   _meta:     SourceMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): SourceOutputFields {
+): SourceOutput {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -286,7 +285,7 @@ export function finalizeSource(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SourceOutputFields;
+  } satisfies SourceOutput;
 }
 
 /**
@@ -299,14 +298,13 @@ export function extractSource(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): SourceOutputFields {
+): SourceOutput {
   const base     = extractSourceBase(c);
   const metadata = extractSourceMetadata(c);
   const related  = extractSourceRelated($, target);
   const meta     = extractSourceMeta(c);
   return finalizeSource(c, base, metadata, related, meta, $, target);
 }
-
 
 // Re-export output type so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -434,5 +432,4 @@ export const sourceConcept: ConceptDecl<SourceOutput> = {
     sourceRelatedNode,
     finalizeSourceNode,
   ],
-  discriminator: { _type: 'source' },
 };

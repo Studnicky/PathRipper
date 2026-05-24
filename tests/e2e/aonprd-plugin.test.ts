@@ -51,13 +51,11 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     process.stdout.write(`\n  smoke: probing ${PLUGIN_PROBES.length.toString()} page types\n`);
     for (const probe of PLUGIN_PROBES) {
       const page   = await scraper.fetchPage(probe.url);
-      const result = await parseAonHtml(page.html, page.url) as { _type: string; name?: string; source?: { book: string | null; page: number | null } };
+      const result = await parseAonHtml(page.html, page.url) as { name?: string; source?: { book: string | null; page: number | null } };
       const name = result.name ?? '?';
       const src  = result.source !== undefined ? `${result.source.book ?? '?'} pg. ${(result.source.page ?? 0).toString()}` : '?';
       process.stdout.write(`    • ${probe.expect_type.padEnd(10)}  ${name.padEnd(28)}  ${src}\n`);
 
-      assert.equal(result._type, probe.expect_type,
-        `${probe.url}: expected _type='${probe.expect_type}', got '${result._type}'`);
       assert.ok(name !== '' && name !== '?',
         `${probe.url}: parser produced empty name`);
       assert.ok(result.source !== undefined && result.source.book !== null,
@@ -76,7 +74,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Spells.aspx?ID=1');
     const r    = await parseAonHtml(page.html, page.url);
-    if (r._type !== 'spell') throw new Error(`expected spell, got ${r._type}`);
 
     process.stdout.write(`\n  spell: ${r.name} (rank ${(r.rank ?? -1).toString()}, traditions ${r.traditions.join('+')})\n`);
     process.stdout.write(`    traits: ${r.traits.join(', ')}\n`);
@@ -105,7 +102,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Monsters.aspx?ID=1');
     const r    = await parseAonHtml(page.html, page.url);
-    if (r._type !== 'monster') throw new Error(`expected monster, got ${r._type}`);
 
     process.stdout.write(`\n  monster: ${r.name} (Creature ${(r.level ?? 0).toString()}, ${r.size ?? '?'})\n`);
     process.stdout.write(`    AC ${(r.ac.value ?? 0).toString()}; Fort ${(r.saves.fort ?? 0).toString()} Ref ${(r.saves.ref ?? 0).toString()} Will ${(r.saves.will ?? 0).toString()}; HP ${(r.hp.value ?? 0).toString()}\n`);
@@ -134,7 +130,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Weapons.aspx?ID=1');
     const r    = await parseAonHtml(page.html, page.url);
-    if (r._type !== 'weapon') throw new Error(`expected weapon, got ${r._type}`);
 
     process.stdout.write(`\n  weapon: ${r.name}\n`);
     process.stdout.write(`    damage ${r.damage?.dice ?? '—'} ${r.damage?.type ?? '—'}; bulk ${(r.bulk ?? '—').toString()}; hands ${r.hands ?? '—'}\n`);
@@ -189,7 +184,6 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
           _type: string; name?: string; source?: { book: string | null }; _raw?: unknown;
         };
         process.stdout.write(`    • ${f}  →  _type=${json._type}  name=${json.name ?? '?'}\n`);
-        assert.ok(json._type !== undefined, `${f}: missing _type discriminator`);
         assert.ok(json.name !== undefined && json.name !== '', `${f}: missing name`);
         assert.ok(json.source !== undefined && json.source.book !== null,
           `${f}: missing source.book`);

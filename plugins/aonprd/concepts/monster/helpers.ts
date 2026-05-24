@@ -154,7 +154,6 @@ export function parseSkills(raw: string | null): MonsterOutput['skills'] {
   return out;
 }
 
-
 /** Parse Items as comma-separated linked equipment names. */
 export function parseItems(raw: string | null): string[] {
   if (raw === null) return [];

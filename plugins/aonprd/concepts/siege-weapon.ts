@@ -10,7 +10,7 @@ import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
+import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -57,7 +57,7 @@ export interface SiegeWeaponOperatorAction {
   text:        string;
 }
 
-export interface SiegeWeaponOutputFields {
+export interface SiegeWeaponOutput {
   url:              string;
   /** Numeric AON SiegeWeapons.aspx ID extracted from the URL query string. */
   siege_weapon_id:  number | null;
@@ -118,7 +118,6 @@ export interface SiegeWeaponOutputFields {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
-export type SiegeWeaponOutput = ConceptOutputBase<'siege-weapon'> & SiegeWeaponOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
@@ -133,7 +132,7 @@ export interface SiegeWeaponBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SiegeWeaponOutputFields['source'];
+  source:          SiegeWeaponOutput['source'];
   sources:         SourceRef[];
 }
 
@@ -409,7 +408,7 @@ export function finalizeSiegeWeapon(
   operation:  SiegeWeaponOperationSlice,
   _meta:      SiegeWeaponMetaSlice,
   $:          CheerioAPI,
-): SiegeWeaponOutputFields {
+): SiegeWeaponOutput {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -423,7 +422,7 @@ export function finalizeSiegeWeapon(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SiegeWeaponOutputFields;
+  } satisfies SiegeWeaponOutput;
 }
 
 /**
@@ -437,7 +436,7 @@ export function extractSiegeWeapon(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): SiegeWeaponOutputFields {
+): SiegeWeaponOutput {
   void _span;
   const base      = extractSiegeWeaponBase(c);
   const mechanics = extractSiegeWeaponMechanics(c);
@@ -445,7 +444,6 @@ export function extractSiegeWeapon(
   const meta      = extractSiegeWeaponMeta(c);
   return finalizeSiegeWeapon(c, base, mechanics, operation, meta, $);
 }
-
 
 // Re-export output types so tests can import from here.
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -542,5 +540,4 @@ export const siegeWeaponConcept: ConceptDecl<SiegeWeaponOutput> = {
     siegeWeaponMechanicsNode,
     finalizeSiegeWeaponNode,
   ],
-  discriminator: { _type: 'siege-weapon' },
 };
