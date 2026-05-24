@@ -1,6 +1,4 @@
-// Action concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in action.ts for correctness.
 // Byte-equivalent to Wave 5 shape — action pages are well-structured;
 // the Wave 5 helpers already handle all significant data including skill refs,
 // four-tier outcome blocks, and trigger/frequency/requirements fields.

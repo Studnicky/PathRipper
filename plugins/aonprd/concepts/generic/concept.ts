@@ -1,4 +1,3 @@
-// Generic concept — Phase 6.4 taxonomic extraction.
 //
 // Wraps extractGeneric, extractCondition, extractTrait, and extractHazard
 // helpers in contract-carrying capability nodes.

@@ -3,7 +3,7 @@
 // `aonprdCommon` to top-level metadata keys for downstream nodes whose
 // hardRequired declares `source`/`sources`.
 //
-// Wave 2 H1: re-extraction is gone. `extractCommon` is the sole producer of
+// re-extraction is gone. `extractCommon` is the sole producer of
 // the source reference list; this capability is a pure projection.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -20,7 +20,7 @@ export const sourceRefNode: NodeInterface<ScrapeState, SourceRefOutput, RipperSe
   outputs: CAPABILITY_OUTPUTS,
   contract: {
     hardRequired: ['aonprdCommon'] as const,
-    // Wave 3 H7: `source`/`sources` are projections of `aonprdCommon` for
+    // `source`/`sources` are projections of `aonprdCommon` for
     // any future Layer-1 consumer — concept-specific nodes today read
     // `aonprdCommon.source`/`.sources` directly. Omit from declared produces
     // so the `ContractRegistryValidator` registration check stays at "zero

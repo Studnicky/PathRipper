@@ -1,11 +1,8 @@
-// NPC-theme-template concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in npc-theme-template.ts for correctness.
 // Two decomposed slices: base (identity + sources) and traits-mods (flavor
 // blurb + All Creatures baseline + per-tier level benefits). Finalize
 // assembles raw_fields + meta.
 //
-// Improvement vs Wave 5: individually composable nodes; the `tiers` array
 // is a first-class slice rather than being embedded inside a monolithic
 // finalize function.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

@@ -1,4 +1,4 @@
-// Plugin DAG: aonprd:parse — Phase 6.4 cut-over.
+// Plugin DAG: aonprd:parse.
 //
 // Replaces the 435-line hand-written contract table with a taxonomy-derived
 // DAG. `DAGDeriver.derive` receives the node list and routing annotations

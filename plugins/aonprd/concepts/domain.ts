@@ -1,12 +1,9 @@
-// Domain concept — Phase 6.4 taxonomic extraction.
 //
 // Domain pages (Domains.aspx) are short divine-domain entries: name, source,
 // deity list, domain spell + advanced domain spell, optional Apocryphal Domain
 // Spells subsection, and a brief flavor description. This concept delegates to
 // the Wave 5 slice helpers in domain.ts for correctness; output is
-// byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: no bespoke node-folder; capabilities are co-located
 // in this file with inline contracts.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

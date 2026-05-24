@@ -1,12 +1,9 @@
-// Tactic concept — Phase 6.4 taxonomic extraction.
 //
 // Commander class squad-tactic pages (Tactics.aspx) carry an action-cost glyph,
 // a category/tier marker, optional prerequisites/requirements/trigger/frequency
 // head labels, an effect body, and an optional Special callout. This concept
 // delegates to Wave 5 slice helpers in tactic.ts for correctness. Output is
-// byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/tactic/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

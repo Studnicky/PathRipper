@@ -1,11 +1,9 @@
-// KM-structure concept — Phase 6.4 taxonomic extraction.
 //
 // Kingmaker settlement structure pages (KMStructures.aspx) carry lots, cost,
 // construction requirements, upgrade paths, item bonuses, and effect prose.
 // This concept delegates to Wave 5 slice helpers in km-structure.ts for
 // correctness. Output is byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/km-structure/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

@@ -1,12 +1,10 @@
-// AONPRD Taxonomy — Phase 6.4.
+// AONPRD Taxonomy.
 //
 // Declares the compiled concept tree for the aonprd plugin taxonomy.
-// Phase 6.3 added the `thing` root + `language` leaf concept.
-// Phase 6.4 batch A adds 10 further leaf concepts (plane, contributor,
 // weapon-group, armor-group, article, condition, trait, action, hazard,
 // weather-hazard).
 //
-// Wave 3 M2: `loadAndCommonNode` now carries its inline contract directly
+// `loadAndCommonNode` now carries its inline contract directly
 // (per λ "no wrapper helpers around class/module methods — fix the source
 // method"). The `loadAndCommonTaxonomyNode` wrapper that previously layered
 // the contract here has been removed.
@@ -111,7 +109,7 @@ const entityConcept: ConceptDecl = {
     labelPairBlockNode,
     sectionWalkerNode,
     sourceRefNode,
-    // Wave 4 H5: lifted from per-finalize inlined `extractMetaDescription` /
+    // lifted from per-finalize inlined `extractMetaDescription` /
     // `extractMetaKeywords` calls. Every entity-style page benefits. Soft-fails
     // when `aonprdCheerio` is absent (rule pages, generic fallback).
     metaTagsNode,
@@ -125,7 +123,7 @@ const entityConcept: ConceptDecl = {
 /**
  * AONPRD concept declaration tuple. Declared with `as const satisfies` so the
  * literal tuple type is preserved — `ConceptOutputUnion<typeof AONPRD_TAXONOMY>`
- * resolves to the union of every leaf concept's `*Output` type (Wave 4 H9).
+ * resolves to the union of every leaf concept's `*Output` type.
  *
  * Interior concepts (`thing`, `entity`) contribute their default `unknown`
  * `TOutput`, which is identity in the resulting union and therefore does not

@@ -1,11 +1,8 @@
-// Class-sample concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in class-sample.ts for correctness.
 // Three decomposed slices: base (identity + sources), identity (italic flavor
 // blurb), and build (ability scores + skills + research field + feats +
 // implements + extra_sections). Finalize assembles raw_fields + meta.
 //
-// Improvement vs Wave 5: individually composable nodes; extra_sections
 // captures any unclassified h2 sections so no data is silently dropped.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

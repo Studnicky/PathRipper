@@ -1,4 +1,3 @@
-// Camp-meal concept — Phase 6.4 taxonomic extraction.
 //
 // Kingmaker Companion Guide camp recipe pages (CampMeals.aspx) carry recipe
 // price, ingredients, preparation, favorite_meal head labels, a flavor prose
@@ -6,7 +5,6 @@
 // slice helpers in camp-meal.ts for correctness. Output is byte-equivalent to
 // the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/camp-meal/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

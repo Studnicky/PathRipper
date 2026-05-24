@@ -1,6 +1,4 @@
-// Monster-family concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in monster-family.ts for correctness.
 // Byte-equivalent to Wave 5 shape — monster-family pages are lore + member-list
 // pages with minimal structured data; the Wave 5 helpers already handle the
 // Members framing section harvest and family identity.

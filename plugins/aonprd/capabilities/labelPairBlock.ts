@@ -3,7 +3,7 @@
 // `aonprd:load-and-common`) to top-level metadata keys for downstream nodes
 // whose hardRequired declares `field_map`/`fields`.
 //
-// Wave 2 H1: re-extraction is gone. `extractCommon` is the sole producer of
+// re-extraction is gone. `extractCommon` is the sole producer of
 // the harvested header data; this capability is a pure projection.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
@@ -20,7 +20,7 @@ export const labelPairBlockNode = {
   outputs: CAPABILITY_OUTPUTS,
   contract: {
     hardRequired: ['aonprdCommon'] as const,
-    // Wave 3 H7: `field_map`/`fields` are projections of `aonprdCommon` for
+    // `field_map`/`fields` are projections of `aonprdCommon` for
     // the (currently unregistered) Layer-1 `finalize:strip-claimed-keys` cap
     // — downstream concept-specific nodes read `aonprdCommon.field_map`
     // directly. To keep the `ContractRegistryValidator` registration check

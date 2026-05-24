@@ -1,11 +1,8 @@
-// Class-kit concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in class-kit.ts for correctness.
 // Two decomposed slices: base (identity + sources) and contents (Price, Bulk,
 // Money Left Over scalars + Armor/Weapons/Gear/Options item lists).
 // Finalize assembles raw_fields + meta.
 //
-// Improvement vs Wave 5: individually composable nodes expose the structured
 // equipment-list slices for downstream consumers without re-running the full
 // pipeline.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

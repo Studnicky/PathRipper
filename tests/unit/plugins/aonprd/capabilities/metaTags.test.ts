@@ -1,4 +1,4 @@
-// Unit tests for `extract:meta-tags` capability (Wave 4 H5).
+// Unit tests for `extract:meta-tags` capability.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 

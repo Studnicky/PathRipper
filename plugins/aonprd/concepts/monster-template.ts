@@ -1,6 +1,4 @@
-// Monster-template concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in monster-template.ts for correctness.
 // Byte-equivalent to Wave 5 shape — monster-template pages describe creature
 // adjustment templates (Elite, Weak, Undead, etc.) with bullet adjustments,
 // optional subsections, HP tables, and best-effort numeric delta parsing.

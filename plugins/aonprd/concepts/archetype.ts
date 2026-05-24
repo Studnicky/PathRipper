@@ -1,13 +1,10 @@
-// Archetype concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in archetype.ts for correctness.
 // Four decomposed slices: base (identity + sources), introduction (flavor prose
 // between Source line and first feat heading + optional Rules.aspx cross-link),
 // feats (every h2.title feat section projected into structured ArchetypeFeat
 // records), and finalize (raw_fields strip with feat-name + flavor-label
 // heuristics + meta).
 //
-// Improvement vs Wave 5: feat-level structured data (feat_ids,
 // dedication_feat_id) is individually accessible; the introduction slice
 // captures the rules_link cross-reference as a typed field.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

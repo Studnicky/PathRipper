@@ -1,4 +1,3 @@
-// Rule concept — Phase 6.4 taxonomic extraction.
 //
 // Rule pages (Rules.aspx) differ structurally from entity pages: content lives
 // in `<div class="rule">` rather than `<span>`. Because of this, `extractCommon`
@@ -12,7 +11,7 @@
 //   extract:rule-subsections — child_rules (h2.title sub-topic links) + sections
 //   finalize:rule            — pure assembler over state.output + ctx (no re-runs)
 //
-// Wave 2 H4: `buildRuleContext` is DOM-based (cheerio traversal, no regex for
+// `buildRuleContext` is DOM-based (cheerio traversal, no regex for
 // structural walking). The context is memoized on
 // `state.metadata['aonprdRuleContext']` so the three rule nodes share one
 // build. Numeric ID parsing from text uses targeted regex on small attribute
@@ -92,7 +91,7 @@ export interface RuleSubsectionsSlice {
  * Resolved cheerio handles for a rule page. Computed once by `ruleBaseNode`
  * (or `extractRule` for direct-call paths) and reused across slice helpers.
  *
- * Wave 2 H4: all members are derived through DOM traversal. The body HTML is
+ * all members are derived through DOM traversal. The body HTML is
  * captured by removing the `<h1>` and `<div class="sources">` DOM nodes from a
  * cloned tree, then serialising — no regex slicing.
  */
@@ -319,7 +318,7 @@ export const ruleBaseNode: NodeInterface<ScrapeState, RuleBaseOutput, RipperServ
   outputs: CAPABILITY_OUTPUTS,
   contract: {
     hardRequired: ['aonprdCheerio'] as const,
-    // Wave 3 H7: `aonprdRuleContext` is memoized on `state.metadata` for the
+    // `aonprdRuleContext` is memoized on `state.metadata` for the
     // companion rule nodes to pick up via `getOrBuildRuleContext`, but their
     // declared `hardRequired` is `['aonprdCheerio']` — they re-derive the
     // context if the memo is absent. Omit from declared produces so the

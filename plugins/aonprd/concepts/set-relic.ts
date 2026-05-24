@@ -1,6 +1,4 @@
-// Set-relic concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in set-relic.ts for correctness.
 // Byte-equivalent to Wave 5 SetRelicOutput shape.
 // SetRelics.aspx pages describe linked relic sets with tiered benefits.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

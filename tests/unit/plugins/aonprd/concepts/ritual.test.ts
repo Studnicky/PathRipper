@@ -48,7 +48,7 @@ describe('extract:ritual-base — awaken-animal', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as RitualOutput;
-    // `_type` is stamped by the taxonomy router (Wave 6 M1), not by the slice
+    // `_type` is stamped by the taxonomy router, not by the slice
     // extractor — so we only assert structural fields here.
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(Array.isArray(out.traits), 'traits missing');
@@ -87,7 +87,7 @@ describe('extract:ritual-affliction — awaken-animal (ritual check fields)', ()
 describe('finalize:ritual — awaken-animal', () => {
   it('produces complete output with all required fields', async () => {
     const out = await primeAndRunFull(FIXTURE_RITUAL, URL_RITUAL);
-    // `_type` is router-stamped (Wave 6 M1), not part of the slice extractor output.
+    // `_type` is router-stamped, not part of the slice extractor output.
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok(typeof out.cast === 'object', 'cast missing');
     assert.ok(typeof out.outcomes === 'object', 'outcomes missing');

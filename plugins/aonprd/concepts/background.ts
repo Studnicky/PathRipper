@@ -1,11 +1,8 @@
-// Background concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in background.ts for correctness.
 // Two decomposed slices: base (identity + sources) and benefits
 // (attribute boosts, trained skills, lore skills, granted feat, flavor,
 // related sources), plus a finalize step for raw_fields + meta.
 //
-// Improvement vs Wave 5: slices are individually composable; finalize is
 // a single taxonomy node rather than an inline switch arm.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

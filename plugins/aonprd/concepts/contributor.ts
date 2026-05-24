@@ -1,4 +1,3 @@
-// Contributor concept — Phase 6.4 taxonomic extraction.
 //
 // Delegates to the Wave 5 slice helpers in contributor.ts for correctness.
 // Byte-equivalent to Wave 5 shape — contributor pages have minimal structured

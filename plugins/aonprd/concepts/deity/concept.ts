@@ -1,6 +1,4 @@
-// Deity concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in deity.ts for correctness.
 // Deity pages have rich structure: five decomposed slices plus a finalize step.
 //
 // Per-slice:

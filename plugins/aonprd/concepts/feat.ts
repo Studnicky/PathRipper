@@ -1,6 +1,4 @@
-// Feat concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in feat.ts for correctness.
 // Four decomposed slices: base (identity + meta SEO tags), prerequisites
 // (archetype links, class scoping, spoiler notice), effect (activation fields
 // + description prose), and meta (Leads To, Related Feats, trait glossary).
@@ -8,7 +6,6 @@
 // Covers both `feats` and `mythicfeats` URL paths — mythic detection is via
 // the `level_kind === "Mythic"` check inside extractFeatBase.
 //
-// Improvement vs Wave 5: individual capability nodes allow selective
 // re-execution in the taxonomy pipeline; myth-feat disambiguation is
 // transparent via the `is_mythic` field rather than a separate type.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

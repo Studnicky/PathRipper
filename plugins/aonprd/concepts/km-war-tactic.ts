@@ -1,12 +1,9 @@
-// KM-war-tactic concept — Phase 6.4 taxonomic extraction.
 //
 // Kingmaker mass-combat tactic pages (KMWarTactics.aspx) carry army-type tags
 // in traits (Infantry/Skirmisher/Cavalry/Siege), a level marker, optional
 // prerequisites/requirements/frequency head labels, and prose effect text. This
 // concept delegates to Wave 5 slice helpers in km-war-tactic.ts for correctness.
-// Output is byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/km-war-tactic/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

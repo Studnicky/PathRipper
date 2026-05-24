@@ -1,6 +1,4 @@
-// Relic concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in relic.ts for correctness.
 // Byte-equivalent to Wave 5 RelicOutput shape, which covers both single-gift
 // pages (?ID=N) and aspect-aggregator pages (?Aspect=N) under one concept.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

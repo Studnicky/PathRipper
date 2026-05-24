@@ -1,6 +1,4 @@
-// DeityCategory concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in deity-category.ts for correctness.
 // DeityCategories.aspx pages describe pantheon groupings. Structure mirrors the
 // standard AON entity page but introduces a non-standard `<h3 class="framing">
 // Members</h3>` block harvested via DOM walking.

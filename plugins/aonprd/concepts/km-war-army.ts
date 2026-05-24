@@ -1,4 +1,3 @@
-// KM-war-army concept — Phase 6.4 taxonomic extraction.
 //
 // Kingmaker mass-combat army stat-block pages (KMWarArmies.aspx) carry
 // scouting, recruitment, consumption, a description prose line, AC, maneuver,
@@ -6,7 +5,6 @@
 // delegates to Wave 5 slice helpers in km-war-army.ts for correctness. Output
 // is byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/km-war-army/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

@@ -103,11 +103,11 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     assert.equal(state.output?.['name'], 'Acolyte');
   });
 
-  it('dispatches unmapped URL through the generic fallback (Wave 7 M7)', async () => {
+  it('dispatches unmapped URL through the generic fallback', async () => {
     const dispatcher = buildDispatcher();
     const state = makeState('<html><body>nothing</body></html>', 'https://2e.aonprd.com/X.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    // Wave 7 M7: the URL router now routes unmatched URLs to `genericConcept`
+    // the URL router now routes unmatched URLs to `genericConcept`
     // (the only ConceptDecl with `urlPaths: []`) instead of `aonprd:make-unknown`.
     // The fallback produces a `generic`-typed output. Operators see the
     // fallback being hit via the `_type` discriminator on the output.
@@ -116,7 +116,7 @@ describe('aonprd:parse plugin DAG dispatch', () => {
   it('DAG resolves generics (unmapped URL path) through taxonomy generic concept', async () => {
     const dispatcher = buildDispatcher();
     const html  = await load('spell-abyssal-plague.html');
-    // Wave 7 M7: unmatched URL → routes to `genericConcept`. Even though the
+    // unmatched URL → routes to `genericConcept`. Even though the
     // HTML is a spell page, the URL path (`Bestiary.aspx`) has no taxonomy
     // entry, so the fallback chain runs.
     const state = makeState(html, 'https://2e.aonprd.com/Bestiary.aspx?ID=99');

@@ -1,11 +1,8 @@
-// Curse concept — Phase 6.4 taxonomic extraction.
 //
 // Affliction pages (Curses.aspx) carry a statblock with Saving Throw, Onset,
 // Maximum Duration, and Stage N progression markers. This concept delegates
 // to the Wave 5 slice helpers in curse.ts for correctness; output is
-// byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: no bespoke node-folder; capabilities are co-located
 // in this file with inline contracts. Wave 6 M4 dropped the `entity_id` alias
 // in favour of the concept-specific `curse_id`.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

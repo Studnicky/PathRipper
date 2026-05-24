@@ -98,7 +98,7 @@ export function makeLoadAndCommonNode(
 
 /**
  * `aonprd:load-and-common` — the AONPRD taxonomy's first capability after the
- * URL router. Singleton bound to the AON strategy (Wave 5 H15/H16); preserves
+ * URL router. Singleton bound to the AON strategy; preserves
  * the pre-Wave-5 import surface so concept-level unit tests continue to
  * `import { loadAndCommonNode }` from this path.
  */

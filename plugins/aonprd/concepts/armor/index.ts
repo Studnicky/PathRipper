@@ -1,6 +1,4 @@
-// Armor concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers for correctness.
 // Byte-equivalent to Wave 5 ArmorOutput shape.
 // URL paths: ['armor', 'shields'] — both Armor.aspx and Shields.aspx pages
 // use the same structure and ArmorOutput shape.

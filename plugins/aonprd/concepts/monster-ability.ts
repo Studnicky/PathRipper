@@ -1,6 +1,4 @@
-// Monster-ability concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in monster-ability.ts for correctness.
 // Byte-equivalent to Wave 5 shape — monster-ability pages are simple definition
 // pages (Trigger / Requirements / Frequency / Effect labels plus prose) that
 // the Wave 5 helpers already fully cover. Adds cross-reference harvest for

@@ -1,4 +1,4 @@
-// AON-specific Layer-1 strategy (Wave 5 H15 / H16).
+// AON-specific Layer-1 strategy.
 //
 // Binds the framework-level `CommonStrategy` interface to the AON markup
 // patterns. The strategy's behaviour is identical to the pre-Wave-5

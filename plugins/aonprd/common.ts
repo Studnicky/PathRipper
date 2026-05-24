@@ -62,27 +62,27 @@ const URL_TO_TYPE_ENTRIES = [
   ['weapongroups',     'weapon-group'],
   ['armorgroups',      'armor-group'],
   ['contributors',     'contributor'],
-  // ── Monster-adjacent typed extractors (Wave 5 B1) ────────────────────────
+  // ── Monster-adjacent typed extractors ────────────────────────
   ['companions',       'animal-companion'],
   ['monsterabilities', 'monster-ability'],
   ['monstertemplates', 'monster-template'],
-  // ── Character / class aggregators (Wave 5 B2) ────────────────────────────
+  // ── Character / class aggregators ────────────────────────────
   ['classsamples',      'class-sample'],
   ['classkits',         'class-kit'],
   ['npcthemetemplates', 'npc-theme-template'],
-  // ── Equipment-adjacent (Wave 5 B4) ───────────────────────────────────────
+  // ── Equipment-adjacent ───────────────────────────────────────
   ['relics',        'relic'],
   ['setrelics',     'set-relic'],
   ['siegeweapons',  'siege-weapon'],
   ['vehicles',      'vehicle'],
-  // ── World-meta (Wave 5 B5) ───────────────────────────────────────────────
+  // ── World-meta ───────────────────────────────────────────────
   ['languages', 'language'],
   ['planes',    'plane'],
-  // ── Afflictions (Wave 5 B6) ──────────────────────────────────────────────
+  // ── Afflictions ──────────────────────────────────────────────
   ['curses',         'curse'],
   ['diseases',       'disease'],
   ['weatherhazards', 'weather-hazard'],
-  // ── Kingmaker subsystem (Wave 5 B7) ──────────────────────────────────────
+  // ── Kingmaker subsystem ──────────────────────────────────────
   ['kmstructures',   'km-structure'],
   ['kmevents',       'km-event'],
   ['tactics',        'tactic'],
@@ -90,7 +90,7 @@ const URL_TO_TYPE_ENTRIES = [
   ['campactivities', 'camp-activity'],
   ['kmwartactics',   'km-war-tactic'],
   ['kmwararmies',    'km-war-army'],
-  // ── Long-tail class subclasses (Wave 5 B8) ───────────────────────────────
+  // ── Long-tail class subclasses ───────────────────────────────
   // 34 URL kinds collapse to one shared `subclass-feature` typed extractor
   // discriminated at runtime by `subclass_family` + `parent_class` fields.
   ['bloodlines',         'subclass-feature'],
@@ -425,7 +425,7 @@ function parseSourceText(raw: string): { book: string | null; page: number | nul
 /**
  * Capture every `<b>Source</b>` reference on the page (header + body footnotes).
  *
- * Wave 5 H15: this is the AON-specific implementation of the
+ * this is the AON-specific implementation of the
  * `SourceRefStrategy.extractSources` contract. The hardcoded
  * `<b>Source</b>` literal and `Sources.aspx?ID=` URL pattern below are AON
  * markup — non-AON plugins must supply their own implementation via a
@@ -627,7 +627,7 @@ function isDecorativeHeading(el: Element): boolean {
 }
 
 /**
- * Wave 5 H16: AON-specific implementation of the
+ * AON-specific implementation of the
  * `SectionWalkerStrategy.harvestSections` contract. The `.title` CSS class
  * filter is AON markup — non-AON plugins supply their own implementation.
  */
@@ -986,7 +986,7 @@ export function collectBareBoldBlocks(headHtml: string): BareBoldBlock[] {
   return out;
 }
 
-// ─── Shared section / PFS helpers (Wave 6 H11, H12) ───────────────────────────
+// ─── Shared section / PFS helpers ───────────────────────────
 
 /**
  * Heading text patterns AON uses for legacy-content-warning sub-sections.
@@ -1002,14 +1002,14 @@ export const LEGACY_HEADING_RE = /legacy[\s-]content[\s-]warning/i;
 /**
  * Drop `<h3 class="title legacy-content-warning">` entries from a sections
  * array. Centralised here so every concept that surfaces `sections[]` in its
- * output applies the same filter (Wave 6 H11).
+ * output applies the same filter.
  */
 export function filterLegacySections(sections: readonly Section[]): Section[] {
   return sections.filter((s) => !LEGACY_HEADING_RE.test(s.heading));
 }
 
 /**
- * Extract the PFS Note text from a cheerio document (Wave 6 H12).
+ * Extract the PFS Note text from a cheerio document.
  *
  * The AON HTML pattern (with browser-repaired tag soup):
  *   `<u><a href="PFS.aspx"><b><i>PFS Note</b></u></a> <body text> <br/>`

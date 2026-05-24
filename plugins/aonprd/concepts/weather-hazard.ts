@@ -1,7 +1,4 @@
-// Weather-hazard concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in weather-hazard.ts for correctness.
-// Improvement vs Wave 5: `sections[]` filters legacy-content-warning h3 blocks;
 // the `legacy: true` flag already carries that signal from title extraction.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

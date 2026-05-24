@@ -1,6 +1,4 @@
-// Vehicle concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in vehicle.ts for correctness.
 // Byte-equivalent to Wave 5 VehicleOutput shape.
 // Vehicles.aspx pages document piloted transports with body-resident stat-block
 // fields, piloting checks, and operator action definitions.

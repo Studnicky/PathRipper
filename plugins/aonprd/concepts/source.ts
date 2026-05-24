@@ -1,4 +1,3 @@
-// Source concept — Phase 6.4 taxonomic extraction.
 //
 // Source pages (Sources.aspx) are book metadata entries: product page URL,
 // release date, product line, source group, errata version, and an extensive
@@ -6,7 +5,6 @@
 // headings. This concept delegates to the Wave 5 slice helpers in source.ts
 // for correctness; output is byte-equivalent to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: no bespoke node-folder; capabilities are co-located
 // in this file with inline contracts.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

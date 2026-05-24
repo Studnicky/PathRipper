@@ -71,7 +71,7 @@ export class RipperDagonizer<TState extends NodeStateInterface>
   }
 
   /**
-   * Surface `ContractRegistryValidator` dead-write warnings (Wave 3 H7).
+   * Surface `ContractRegistryValidator` dead-write warnings.
    *
    * `Dagonizer.registerDAG` runs `ContractRegistryValidator.validate` for
    * every DAG derived from a node registry. Dangling reads throw

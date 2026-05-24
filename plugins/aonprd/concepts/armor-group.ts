@@ -1,6 +1,4 @@
-// Armor-group concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in armor-group.ts for correctness.
 // Byte-equivalent to Wave 5 shape — armor-group pages have well-defined
 // structure that is already fully captured by the Wave 5 helpers.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

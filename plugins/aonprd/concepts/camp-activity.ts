@@ -1,4 +1,3 @@
-// Camp-activity concept — Phase 6.4 taxonomic extraction.
 //
 // Kingmaker Companion Guide camp action pages (CampActivities.aspx) carry an
 // optional action-cost glyph, requirements and frequency head labels, a prose
@@ -6,7 +5,6 @@
 // slice helpers in camp-activity.ts for correctness. Output is byte-equivalent
 // to the Wave 5 baseline.
 //
-// Improvement vs Wave 5: capabilities co-located with inline contracts; no
 // bespoke node-folder under nodes/camp-activity/.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

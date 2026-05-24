@@ -1,4 +1,4 @@
-// Taxonomy compiler — Phase 6.2.
+// Taxonomy compiler.
 //
 // Compiles a declarative concept tree (ConceptDecl[]) into a DAG-ready node
 // set plus a DAGDeriverAnnotations bundle for DAGDeriver.derive.
@@ -50,7 +50,7 @@ export type ContractedCapability = NodeInterface<NodeStateInterface, string, Rip
 };
 
 /**
- * Local `Chainable<A, B>` (Wave 3 H6). Mirrors `@noocodex/dagonizer`'s
+ * Local `Chainable<A, B>`. Mirrors `@noocodex/dagonizer`'s
  * `Chainable` but without the embedded `NodeInterface<…, undefined>`
  * constraint that excludes nodes typed with a concrete `TServices` bag
  * (such as `RipperServices`). Resolves to `true` when B's `hardRequired`
@@ -81,7 +81,7 @@ type ChainNext<
 
 /**
  * Build a capability chain with compile-time `Chainable<>` validation
- * (Wave 3 H6). Each adjacent pair `(nodes[i], nodes[i+1])` is checked: the
+ *. Each adjacent pair `(nodes[i], nodes[i+1])` is checked: the
  * latter's `hardRequired` must be a subset of the former's `produces`. Drift
  * fails `tsc` (the offending argument is required to be `never`).
  *
@@ -162,7 +162,7 @@ export function chain(...nodes: readonly ContractedCapability[]): readonly Contr
 }
 
 /**
- * Declarative concept node in the taxonomy (Wave 4 H9).
+ * Declarative concept node in the taxonomy.
  *
  * `TOutput` is the type of the assembled output this concept produces. It is
  * a phantom type parameter — never materialised at runtime — that lets
@@ -217,7 +217,7 @@ export type ConceptOutputFor<TDecl extends ConceptDecl<unknown>> =
 
 /**
  * Union of every concept's output type in a taxonomy declaration tuple
- * (Wave 4 H9 step 5).
+ *.
  *
  * Used by plugins to derive the top-level output union from
  * `typeof <PLUGIN>_TAXONOMY` without hand-listing each `*Output` import:
@@ -457,7 +457,7 @@ export class Taxonomy {
       .filter((c) => c.urlPaths !== undefined && c.urlPaths.length > 0)
       .map((c) => c.id);
 
-    // Wave 7 M7: fallback concept (one with `urlPaths: []` and `capabilities`
+    // fallback concept (one with `urlPaths: []` and `capabilities`
     // declared). Receives unmatched URLs that the router would otherwise send
     // to `make-unknown`. By convention there is at most one fallback per
     // taxonomy; if multiple are declared, the first wins.
@@ -695,7 +695,7 @@ export class Taxonomy {
       const first = chain[0]?.name ?? 'flow:terminate';
       return { outcome: id, target: first };
     });
-    // Wave 7 M7: if a fallback concept is configured (e.g. `generic`), wire
+    // if a fallback concept is configured (e.g. `generic`), wire
     // the fallback outcome to its first cap. The router emits the fallback
     // outcome instead of `'unknown'` when no URL match is found.
     if (fallbackConceptId !== null) {

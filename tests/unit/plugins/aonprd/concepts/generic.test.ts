@@ -40,7 +40,7 @@ describe('extract:generic — generic-unknown-type', () => {
     assert.equal(r.output, 'success');
 
     const out = state.output as GenericOutput;
-    // `_type` is stamped by the router via the concept's discriminator (Wave 6 M1) —
+    // `_type` is stamped by the router via the concept's discriminator —
     // not by the slice extractor — so we only assert structural fields here.
     assert.ok(typeof out.name === 'string', 'name is string');
     assert.ok(typeof out.url === 'string', 'url is string');
@@ -60,7 +60,7 @@ describe('extract:generic — generic-unknown-type', () => {
 describe('full generic pipeline — generic-unknown-type', () => {
   it('produces complete GenericOutput with all base fields', async () => {
     const out = await primeAndRunFull();
-    // `_type` is router-stamped (Wave 6 M1), not part of the slice extractor output.
+    // `_type` is router-stamped, not part of the slice extractor output.
     assert.ok(typeof out.body_html === 'string', 'body_html present');
     assert.ok(typeof out.body_text === 'string', 'body_text present');
     assert.ok(Array.isArray(out.sections), 'sections present');

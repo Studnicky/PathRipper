@@ -1,13 +1,10 @@
-// Ancestry concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in ancestry.ts for correctness.
 // Four decomposed slices: base (identity + mechanics + popular edicts/anathema),
 // heritages (h2 heritage sections), features (initial proficiencies + feature
 // sections), and finalize (raw_fields + meta). Chrome filtering: no legacy
 // section filtering is applied here (ancestry pages don't typically carry the
 // legacy-content-warning heading).
 //
-// Improvement vs Wave 5: structured slices exposed as individual nodes allow
 // partial extraction and incremental composition in the taxonomy pipeline.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

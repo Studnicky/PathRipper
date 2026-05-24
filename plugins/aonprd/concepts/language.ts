@@ -1,6 +1,5 @@
-// Language concept — Phase 6.3 taxonomic extraction.
 //
-// Defines the improved LanguageOutput shape (Wave 6) with structured speaker
+// Defines the improved LanguageOutput shape with structured speaker
 // buckets, section counts, PFS note extraction, and legacy section filtering.
 // Supersedes the Wave 5 shape in language.ts; that file remains unchanged as
 // the running pipeline still uses it.
@@ -69,7 +68,7 @@ export interface LanguageSpeakers {
   other:       readonly SpeakerRef[];
 }
 
-// ─── Language output shape (Wave 6) ──────────────────────────────────────────
+// ─── Language output shape ──────────────────────────────────────────
 
 /** Discriminator for AON Languages.aspx `kind` field, when present. */
 export type LanguageKind =

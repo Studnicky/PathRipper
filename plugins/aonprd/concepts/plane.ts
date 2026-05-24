@@ -1,9 +1,7 @@
-// Plane concept — Phase 6.4 taxonomic extraction.
 //
 // Delegates to the Wave 5 slice helpers in plane.ts for correctness, adding
 // legacy-section filtering on the `sections[]` output.
 //
-// Improvement vs Wave 5: `sections[]` filters legacy-content-warning h3 blocks
 // (mirrors the language concept pattern); the `legacy: true` flag already
 // carries that signal from the title extraction.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

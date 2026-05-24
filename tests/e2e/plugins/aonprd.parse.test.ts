@@ -179,7 +179,7 @@ describe('aonprd plugin — page-type detection', () => {
   it('returns unknown for unmapped paths', async () => {
     // Re-use the spell HTML against an unknown URL path. The taxonomy has no
     // entry for Bestiary.aspx, so the router produces 'unknown'. Wave 5
-    // Wave 7 M7: unmapped URL paths now route to `genericConcept` (the
+    // unmapped URL paths now route to `genericConcept` (the
     // taxonomy fallback) instead of `aonprd:make-unknown`. The output is
     // `_type: 'generic'` so operators can see WHICH unmatched URL is
     // hitting the fallback (vs. being silently lost as `unknown`).
@@ -189,7 +189,7 @@ describe('aonprd plugin — page-type detection', () => {
 
   it('returns generic (fallback) when no content span is present', async () => {
     const r = await parseAonHtml('<html><body>nothing</body></html>', 'https://2e.aonprd.com/X.aspx?ID=1');
-    // Wave 7 M7: unmatched URL → genericConcept fallback. The fallback
+    // unmatched URL → genericConcept fallback. The fallback
     // chain runs but produces minimal output because the input HTML has
     // no recognisable content span.
   });

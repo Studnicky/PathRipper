@@ -3,7 +3,7 @@
 // `aonprd:load-and-common`) to a top-level metadata key for downstream nodes
 // whose hardRequired declares `sections`.
 //
-// Wave 2 H1: re-extraction is gone. `extractCommon` is the sole producer of
+// re-extraction is gone. `extractCommon` is the sole producer of
 // the harvested section list; this capability is a pure projection.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

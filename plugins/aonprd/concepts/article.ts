@@ -1,6 +1,4 @@
-// Article concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in article.ts for correctness.
 // Byte-equivalent to Wave 5 shape — article pages are prose-only entries;
 // no structured improvements warranted beyond legacy-section filtering.
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';

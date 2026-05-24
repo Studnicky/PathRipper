@@ -1,4 +1,3 @@
-// Class concept — Phase 6.4 taxonomic extraction.
 
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
 import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';

@@ -1,6 +1,4 @@
-// Siege-weapon concept — Phase 6.4 taxonomic extraction.
 //
-// Delegates to Wave 5 slice helpers in siege-weapon.ts for correctness.
 // Byte-equivalent to Wave 5 SiegeWeaponOutput shape.
 // SiegeWeapons.aspx pages document large ranged engines with body-resident
 // stat-block fields and operator action definitions.
