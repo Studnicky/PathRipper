@@ -7,6 +7,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking
+
+- **`_type` discriminator removed from every AON output.** Concept identity is no longer
+  carried as a field on the output shape; it comes from the URL (the canonical
+  source) or the concept-specific `<concept>_id` field. The Wave 6 M1 router-stamping
+  indirection is gone with it: `ConceptOutputBase<T>` is deleted, `ConceptDecl.discriminator`
+  is deleted, and the per-concept `discriminator: { _type: 'X' }` field was stripped from
+  every `ConceptDecl`. The `XxxOutputFields` intermediate interface introduced during the
+  router-stamping migration was collapsed back into a single `XxxOutput` interface per
+  concept. Downstream consumers that pattern-matched on `out._type` need an alternate
+  signal — typically URL inspection or the typed `XxxOutput[id]` accessor.
+- `UnknownOutput` no longer carries `_type: 'unknown'`. The unknown fallback shape is now
+  `{ url, unknown_id, ...baseFields }`.
+- `RitualOutput` is now a structural alias for `SpellOutput` (was previously an
+  intersection that varied only by the removed discriminator).
+
+### Added
+
+- **Bounded scrapes via `--paths`.** `scrape-html --paths X Y Z` now skips the configured
+  `crawl:list-targets` node and treats the supplied paths as the bounded URL set.
+  Full-target scraping (crawl + scrape) remains the default when `--paths` is omitted.
+  `HtmlScraper.fetchPage` now normalises the base/path join — `Actions.aspx?ID=1`
+  (no leading slash) becomes the correct URL instead of the malformed
+  `https://example.comActions.aspx?ID=1`.
+
+### Removed
+
+- Plan/audit docs from `docs/`: `taxonomic-extraction-redesign.md`, `wave-6-audit-and-triage.md`,
+  `plans/DAGONIZER-NATIVE.md`, `plans/RESUME.md`. All shipped; git history is the changelog.
+- Superseded scripts: `audit-extraction-gaps.mjs`, `audit-raw-fields.mjs`,
+  `sample-monster-abilities.mjs`, `verify-monster-abilities.mjs`,
+  `verify-archetype-sections.mjs`, `verify-i18n-sample.mjs`, `reparse-cache.ts`. Two of
+  these grouped outputs by the removed `_type` field; the rest were Wave 9 spot-check
+  verifiers superseded by the corpus harness + e2e suite.
+- Every `Wave N` / `Phase 6.X` comment label across `plugins/`, `src/`, and `tests/`
+  (~263 references in ~69 files). Surrounding prose preserved or rewritten to describe
+  current behavior without historical labels.
+
+### Fixed
+
+- `plugins/aonprd/parse.dag.ts` carried a stale `NodeInterface<…, RipperServices>` →
+  `NodeInterface<…, undefined>` assignability mismatch at the `DAGDeriver.derive` boundary.
+- Wave 10A split residue: `plugins/aonprd/concepts/skill/{helpers,concept}.ts` had broken
+  cheerio Element/AnyNode imports (now from `domhandler`) and missing/redundant type
+  exports; `plugins/aonprd/concepts/subclass-feature/base.ts` missing
+  `SubclassFeatureSpellGroup` type import.
+- `tsconfig.plugins.json` now excludes the unmigrated `plugins/bulbapedia/` stub.
+
+### Quality gates
+
+- `npx tsc --noEmit -p tsconfig.plugins.json` — clean
+- `npm run typecheck:tests` — clean
+- `npm run test:unit` — 971 pass / 0 fail
+- `npm run test:e2e` — 126 pass / 0 fail
+- Full corpus extraction: 13,657 pages / 4 known content-gap failures / 0/0/170 against
+  committed Wave 5 baselines
+
 ## [3.0.0] - 2026-05-19
 
 ### Changed
