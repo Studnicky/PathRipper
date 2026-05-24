@@ -1,6 +1,15 @@
 # Roadmap
 
-v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML scraper, MediaWiki scraper, and link crawler are live.
+## Shipped (v3.x)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Dagonizer migration | live | Full migration to `@noocodex/dagonizer`. DAGs are derived via `DAGDeriver.derive` with `strategy: 'partition'` fan-out annotations and `annotations.subDAGs` for outer composition. |
+| `RipperRun` composition root | live | `runHtml(opts)` and `runWiki(opts)` in `src/run/` are the composition roots for all scrape runs. The CLI invokes them via `DispatchHtmlScrapeNode` / `DispatchWikiScrapeNode`. |
+| Explicit plugin registration | live | Plugins export `register(dispatcher: RipperDagonizer<ScrapeState>): void`. The runner imports each plugin module and calls `register(dispatcher)` explicitly — no global registry. |
+| `RipperServices` | live | Services bag interface is `RipperServices` (`src/services/RipperServices.ts`). Constructed as a plain object literal and injected via the proxy-services pattern. |
+| Taxonomic extractor (AONPRD plugin) | live | The AONPRD plugin covers 51 concepts. Each concept declares URL path patterns and capability nodes. A URL-routing DAG dispatches to the correct concept sub-DAG at parse time. |
+| Concept identity via URL | live | Concept identity is carried by the URL (e.g. `Feats.aspx`) and typed `<concept>_id` fields on the record. No discriminator property on output shapes. |
 
 ## Shipped (v2.x)
 
