@@ -35,7 +35,7 @@ import {
   extractPfsNote,
 } from '../common.js';
 import type { AonprdMetaTags } from '../capabilities/metaTags.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 
 import { setConceptOutput } from './_helpers.js';
 // ─── Speaker types ─────────────────────────────────────────────────────────────
@@ -84,8 +84,7 @@ export type LanguageKind =
  * extraction). The `typical_speakers` field from Wave 5 is gone; use
  * `speakers.ancestries` instead.
  */
-export interface LanguageOutput {
-  _type:            'language';
+export interface LanguageOutputFields {
   url:              string;
   /** Numeric AON Languages.aspx ID extracted from the URL query string. */
   language_id:      number | null;
@@ -144,6 +143,9 @@ export interface LanguageOutput {
   /** `<meta name="keywords">` content. */
   meta_keywords:    string | null;
 }
+
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type LanguageOutput = ConceptOutputBase<'language'> & LanguageOutputFields;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -321,8 +323,7 @@ export const languageBaseNode: NodeInterface<ScrapeState, LanguageBaseOutput, Ri
     const kindRaw   = c.field_map['Type'] ?? c.field_map['Kind'] ?? null;
     const scriptRaw = c.field_map['Script'] ?? null;
 
-    const base: Partial<LanguageOutput> = {
-      _type:           'language',
+    const base: Partial<LanguageOutputFields> = {
       url:             c.url,
       language_id:     extractEntityId(c.url),
       name:            c.title.name,
@@ -514,10 +515,9 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
     // full LanguageOutput literal. The `satisfies LanguageOutput` clause is
     // the load-bearing compile-time check that closes Wave 4 H9 — a
     // misspelled key anywhere in the literal below fails `tsc`.
-    const acc = (state.output ?? {}) as Partial<LanguageOutput>;
+    const acc = (state.output ?? {}) as Partial<LanguageOutputFields>;
 
     const assembled = {
-      _type:            'language' as const,
       url:              c.url,
       language_id:      acc.language_id ?? null,
       name:             acc.name ?? c.title.name,
@@ -552,7 +552,7 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
       body_html:        c.body_html,
       meta_description: meta?.description ?? null,
       meta_keywords:    meta?.keywords    ?? null,
-    } satisfies LanguageOutput;
+    } satisfies LanguageOutputFields;
 
     setConceptOutput(state, assembled);
 
