@@ -76,7 +76,18 @@ export class HtmlScraper {
    * @throws {HttpError} When the server returns a non-OK response.
    */
   async fetchPage(path: string): Promise<ScrapedPageInterface> {
-    const url = path.startsWith('http') ? path : `${this.#base}${path}`;
+    let url: string;
+    if (path.startsWith('http')) {
+      url = path;
+    } else {
+      // Normalise the join: ensure exactly one `/` between base and path,
+      // regardless of whether base has a trailing slash or path has a
+      // leading one. Tolerates the common case of users supplying
+      // `Actions.aspx?ID=1` (no leading slash) on the CLI.
+      const base = this.#base.endsWith('/') ? this.#base.slice(0, -1) : this.#base;
+      const tail = path.startsWith('/')      ? path                   : `/${path}`;
+      url = `${base}${tail}`;
+    }
     this.#log.debug('fetchPage', url);
 
     const cache    = this.#cache;

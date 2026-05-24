@@ -308,10 +308,14 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   dispatcher.registerDAG(htmlScrapePhaseDAG);
   dispatcher.registerDAG(htmlRetryPhaseDAG);
 
-  const hasCrawl   = pipelineNames.includes('crawl:list-targets');
+  // Bounded scrape: when explicit --paths are supplied, skip the crawl
+  // phase even if the pipeline declares it. The crawler is the default
+  // for a full-target scrape; --paths overrides it.
+  const hasCrawl  = pipelineNames.includes('crawl:list-targets');
+  const useCrawl  = hasCrawl && opts.paths.length === 0;
   let outerDagName: string;
 
-  if (hasCrawl) {
+  if (useCrawl) {
     const htmlCrawlPhaseDAG = DAGDeriver.derive({
       name:       HTML_CRAWL_PHASE,
       version:    '2.0',
@@ -385,6 +389,9 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   const state = new ScrapeState();
   if (opts.paths.length > 0) {
     state.urls = [...opts.paths];
+    if (hasCrawl) {
+      log.info('runHtml', `Bounded scrape: --paths supplied (${opts.paths.length.toString()} URLs) — skipping crawl phase`);
+    }
   }
 
   if (outerDagName === 'htmlScrapeDAG' && state.urls.length === 0) {

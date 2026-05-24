@@ -72,7 +72,7 @@ program
   .command('scrape')
   .description('Scrape a configured target — detects html or mediawiki mode from config')
   .requiredOption('--target <name>', 'Target name from config (checked in targets then mediawiki)')
-  .option('--paths <paths...>', 'Paths to scrape (html mode)')
+  .option('--paths <paths...>', 'Paths to scrape (html mode); bounds the scrape — when present, the crawl phase is skipped')
   .option('--category <name>', 'Category to scrape (mediawiki mode)')
   .option('--resume-failures', 'Re-scrape pages listed in the failures.json from the last run')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
@@ -101,7 +101,7 @@ program
   .command('scrape-html')
   .description('Scrape HTML pages from a configured target')
   .requiredOption('--target <name>', 'Target name from config')
-  .requiredOption('--paths <paths...>', 'Paths to scrape (relative to baseUrl)')
+  .requiredOption('--paths <paths...>', 'Paths to scrape (relative to baseUrl); bounds the scrape — the crawl phase is skipped')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
   .action(async (opts: { target: string; paths: string[]; config: string; out?: string }): Promise<void> => {
