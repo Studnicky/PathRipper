@@ -5,12 +5,12 @@ title: Orchestration
 
 # Orchestration
 
-Ripperoni uses `@noocodex/dagonizer` for all scrape orchestration. Each run is a directed acyclic graph (DAG) dispatched by `ScrapeOrchestrator`.
+Ripperoni uses `@noocodex/dagonizer` for all scrape orchestration. Each run is a directed acyclic graph (DAG) dispatched by `RipperDagonizer`.
 
 ## How it works
 
-1. `ScrapeOrchestrator.scrapeHtml` / `scrapeWiki` reads `pipeline: string[]` from the target config.
-2. Built-in nodes (`html:fetch`, `json:write`, etc.) are always registered. Non-built-in entries are loaded as plugin files.
+1. `runHtml(opts)` / `runWiki(opts)` (in `src/run/`) reads `pipeline: string[]` from the target config.
+2. Built-in nodes (`html:fetch`, `json:write`, etc.) are always registered. Non-built-in entries resolve to plugin files (`./plugins/<word>/<verb>.task.js`); each plugin's `export function register(dispatcher)` is invoked.
 3. A **composite per-item node** is built from the ordered pipeline list. It executes each configured node in sequence for one URL or wiki title.
 4. A **fan-out DAG** is built that fans over `state.urls` (HTML) or `state.titles` (wiki), running the composite node per item with configurable concurrency.
 5. `state.succeeded` and `state.failed` are populated by the `partition` fan-in strategy.

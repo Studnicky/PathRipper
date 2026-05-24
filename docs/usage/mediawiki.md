@@ -9,9 +9,9 @@ Ripperoni hits the MediaWiki JSON API directly. No mwn, no axios, no browser. Th
 
 ## Three enumeration modes
 
-Problem being solved: Different wikis have different structures. Some have a flat list of all articles (enumerate via `allpages`). Some organize content in categories (enumerate via `categorymembers`). Some have both. The orchestrator needs to support all three modes without requiring you to rewrite your config each time.
+Problem being solved: Different wikis have different structures. Some have a flat list of all articles (enumerate via `allpages`). Some organize content in categories (enumerate via `categorymembers`). Some have both. The runner needs to support all three modes without requiring you to rewrite your config each time.
 
-Decision tree: The `ScrapeOrchestrator` picks the mode based on what's present in your config or CLI:
+Decision tree: `runWiki` picks the mode based on what's present in your config or CLI:
 
 1. **`--category` CLI flag**: scrape one named category (overrides config).
 2. **`categories[]` in config**: iterate each category, deduplicate page titles across all categories, scrape the union.
@@ -94,35 +94,38 @@ These live on `WikitextParser`. In a plugin, use `state.input.parsedPage` direct
 
 ## Plugin pattern for MediaWiki
 
-Your parse task receives the pre-parsed page. Set `state.output`:
+Plugins export a `register(dispatcher)` function. Nodes set `state.output` to a plain object — concept identity comes from the URL or a typed `<concept>_id` field on the output shape, not from a discriminator property:
 
 ```ts
-import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
+import type { NodeInterface } from '@noocodex/dagonizer';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
 
-TaskRegistry.register('mywiki:parse', async (next, state) => {
-  const page = state.input['parsedPage'] as {
-    title:    string;
-    infobox:  Record<string, string>;
-    categories: string[];
-  };
-  const url = state.input['url'] as string;
+export const mywikiParseNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
+  name:    'mywiki:parse',
+  outputs: ['success', 'error'],
+  async execute(state) {
+    const wikitext = state.page.wikitext ?? '';
+    if (wikitext.length === 0) return { output: 'error' };
 
-  const level = parseInt(page.infobox['level'] ?? '', 10) || null;
+    const title = state.page.title;
+    const url   = state.page.url;
 
-  state.output = {
-    _type:  'entry',
-    url,
-    title:  page.title,
-    level,
-    cats:   page.categories,
-    _source: { target: state.targetId, url, plugin: 'mywiki:parse' },
-  };
+    state.output = {
+      url,
+      title,
+      level: parseInt(/* infobox field */ '', 10) || null,
+    };
 
-  await next();
-});
+    return { output: 'success' };
+  },
+};
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(mywikiParseNode);
+}
 ```
-
-The `_source.url` field is what Squashage reads to derive graph IRIs. Include it.
 
 ## maxPages
 
@@ -138,7 +141,7 @@ Applied after enumeration; the scraper stops processing after this many pages re
 
 `rateLimitMs` and `jitterMs` apply per API request (each batch counts as one request). For a large wiki, expect a long run at conservative rates. The cache is your friend; the first run is slow, subsequent runs skip the network entirely for cached pages.
 
-Pagination stop condition: The `fetchAllPages()` method pages through the entire namespace using the MediaWiki `allpages` API. It stops when the API returns an empty batch (no more pages in the namespace). The batch is counted toward `maxPages`; if you set `maxPages: 100` and the API returns pages in batches of 50, you get one full batch (50 pages) and then the second batch stops because you've hit the limit. The orchestrator stops calling `fetchAllPages()` once enough pages have been fetched.
+Pagination stop condition: The `fetchAllPages()` method pages through the entire namespace using the MediaWiki `allpages` API. It stops when the API returns an empty batch (no more pages in the namespace). The batch is counted toward `maxPages`; if you set `maxPages: 100` and the API returns pages in batches of 50, you get one full batch (50 pages) and then the second batch stops because you've hit the limit. The runner stops calling `fetchAllPages()` once enough pages have been fetched.
 
 `batchSize` worked example: If you set `batchSize: 50` and enumerate 1000 pages, that's 20 API requests, each with 50 page titles in the `titles` parameter. If you set `batchSize: 10`, that's 100 requests. Larger batches use less bandwidth and API calls but are riskier if a batch request times out (you lose more pages). The MediaWiki API caps individual requests at 50; Ripperoni respects that by clamping your config value.
 

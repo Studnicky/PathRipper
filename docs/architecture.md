@@ -6,16 +6,18 @@ Three independent concerns (**pipeline**, **HTTP machinery**, and **scrapers**) 
 
 ```mermaid
 graph TD
-    CLI[cli/cli.ts] --> ScrapeOrchestrator
+    CLI[cli/cli.ts] --> RipperRun
     CLI --> HtmlScraper
     CLI --> MediaWikiScraper
     CLI --> LinkLister
     CLI --> RipperConfig
 
-    ScrapeOrchestrator[orchestrators/ScrapeOrchestrator] --> Dagonizer
-    ScrapeOrchestrator --> ScrapeState
-    ScrapeOrchestrator --> BuiltinNodes
+    RipperRun[run/runHtml + run/runWiki] --> RipperDagonizer
+    RipperRun --> ScrapeState
+    RipperRun --> BuiltinNodes
+    RipperRun --> PluginRegister["plugin.register(dispatcher)"]
 
+    RipperDagonizer[dispatcher/RipperDagonizer] --> Dagonizer
     Dagonizer["@noocodex/dagonizer"] --> ScrapeState
 
     BuiltinNodes[nodes/*] --> ScrapeState
@@ -44,7 +46,7 @@ graph TD
 
 Ripperoni uses `@noocodex/dagonizer` for all orchestration. A scrape run decomposes into four nested DAG levels: an **outer flow** that composes three independent **phase** DAGs (discovery, scrape, retry) via `sub-dag` placements, and a **per-page** DAG that materialises the user's `pipeline: [...]` config as first-class nodes. Phases are independently dispatchable for tests.
 
-**Node contract:** Every built-in task (`html:fetch`, `json:write`, etc.) and every user plugin is a `NodeInterface<ScrapeState, TOutputs, AppServices>`. Nodes declare named output ports (e.g. `success | error | cached`), mutate `ScrapeState`, and return `{ output: '<port>' }`. The dispatcher routes to the next placement based on the port.
+**Node contract:** Every built-in task (`html:fetch`, `json:write`, etc.) and every user plugin is a `NodeInterface<ScrapeState, TOutputs, RipperServices>`. Nodes declare named output ports (e.g. `success | error | cached`), mutate `ScrapeState`, and return `{ output: '<port>' }`. The dispatcher routes to the next placement based on the port.
 
 **Phase composition:** The outer DAG is a sub-dag composition — each phase runs as a `DeepDAGNode` against a cloned `ScrapeState`, and `stateMapping.output` copies the relevant result buckets back to the parent. Deep-DAG placements cannot route to `null`, so each outer DAG terminates with a `flow:terminate` `SingleNode` that owns END.
 
@@ -52,7 +54,7 @@ Ripperoni uses `@noocodex/dagonizer` for all orchestration. A scrape run decompo
 
 **Result-array contract:** `ScrapeState` carries three terminal result arrays: `succeeded` (first-attempt successes), `recovered` (succeeded on retry), `failedAfterRetry` (failed both). The transient `failed` array is the retry phase's fan-out source and is meaningful only mid-flow.
 
-**Config-driven pipeline:** Users declare `pipeline: ['html:fetch', 'aonprd:parse', 'json:write']` in their config. The orchestrator compiles that list into a real dagonizer-managed per-page DAG — one `SingleNode` placement per pipeline step, chained `success → next`. Each phase's fan-out invokes a single registered dispatch node (`html:dispatch-page-dag` or `wiki:dispatch-page-dag`) per item; that node executes the per-page child DAG via `context.services.dispatcher`. The dispatch wrapper resolves its item key from `state.metadata[<itemKey>]` — `currentUrl` for the scrape phase, `currentRetryUrl` for the retry phase — and so the same wrapper serves both phases unchanged.
+**Config-driven pipeline:** Users declare `pipeline: ['html:fetch', 'aonprd:parse', 'json:write']` in their config. The runner compiles that list into a real dagonizer-managed per-page DAG — one `SingleNode` placement per pipeline step, chained `success → next`. Each phase's fan-out invokes a single registered dispatch node (`html:dispatch-page-dag` or `wiki:dispatch-page-dag`) per item; that node executes the per-page child DAG via `context.services.dispatcher`. The dispatch wrapper resolves its item key from `state.metadata[<itemKey>]` — `currentUrl` for the scrape phase, `currentRetryUrl` for the retry phase — and so the same wrapper serves both phases unchanged.
 
 ### CLI dispatch DAG
 
@@ -88,7 +90,7 @@ The outer DAG composes the phases as `sub-dag` (`DeepDAGNode`) placements with e
 
 ### Wiki member resolution DAG
 
-Before the wiki scrape fan-out begins, the orchestrator dispatches `wikiResolveMembersDAG` to determine the set of page titles to scrape. The DAG selects exactly one branch based on the run options:
+Before the wiki scrape fan-out begins, `runWiki` dispatches `wikiResolveMembersDAG` to determine the set of page titles to scrape. The DAG selects exactly one branch based on the run options:
 
 | Mode | Trigger | Branch node |
 |------|---------|-------------|
@@ -97,7 +99,7 @@ Before the wiki scrape fan-out begins, the orchestrator dispatches `wikiResolveM
 | `by-categories` | `categories[]` in config | `wiki:fetch-multiple-categories` — deduplicates across all listed categories |
 | `all-pages` | fallback | `wiki:fetch-all-pages` — calls `fetchAllPages()` |
 
-Each branch node is independently dispatchable for tests. The DAG writes `state.members` on success; the orchestrator reads it to seed the page fan-out.
+Each branch node is independently dispatchable for tests. The DAG writes `state.members` on success; `runWiki` reads it to seed the page fan-out.
 
 ```mermaid
 <!--@include: ./_generated/wikiResolveMembersDAG.mmd -->
@@ -198,7 +200,7 @@ All non-success routes terminate at `null`; `state.errors` carries the failure d
 
 Every plugin in Ripperoni is registered as a DAG (Flavor 2 universal pattern). Trivial plugins wrap a single `NodeInterface` in a 1-node DAG; complex plugins decompose into multi-node branching DAGs. The orchestrator's pipeline-name resolution checks the DAG registry first, then the node registry — plugins are interchangeable from the config-author's perspective.
 
-When a pipeline step like `aonprd:parse` resolves to a registered DAG, the orchestrator emits a `DeepDAGNode` placement in the per-page DAG. A `stateMapping.output` copies the child DAG's `state.output` back to the parent so downstream steps (e.g. `json:write`) see the parsed record.
+When a pipeline step like `aonprd:parse` resolves to a registered DAG, the runner emits a `DeepDAGNode` placement in the per-page DAG. A `stateMapping.output` copies the child DAG's `state.output` back to the parent so downstream steps (e.g. `json:write`) see the parsed record.
 
 #### Plugin DAG: AON parse
 
@@ -322,7 +324,7 @@ Direct `fetch()` calls to the MediaWiki JSON API; no mwn or axios layer. Four op
 - `fetchCategory(name)`: paginated category members list
 - `fetchAllPages()`: enumerates every article in main namespace via `action=query&list=allpages`
 
-The `ScrapeOrchestrator` selects from three modes: explicit `--category` flag → single category; `categories[]` in config → iterate and deduplicate; no categories → `fetchAllPages()`. Rate limiting and jitter applied per-request.
+`runWiki` selects from three modes: explicit `--category` flag → single category; `categories[]` in config → iterate and deduplicate; no categories → `fetchAllPages()`. Rate limiting and jitter applied per-request.
 
 ### WikitextParser
 
@@ -369,9 +371,10 @@ Complete index of every source file, its exported symbols, and the PathRipper or
 | `src/nodes/JsonlAppendNode.ts` | `JsonlAppendNode` | Ports: `success \| skipped` |
 | `src/nodes/ValidateSchemaNode.ts` | `ValidateSchemaNode` | Ports: `valid \| invalid` |
 | `src/nodes/CrawlListTargetsNode.ts` | `CrawlListTargetsNode` | Ports: `success \| error \| empty` |
-| `src/dags/htmlScrapeDAG.ts` | `buildHtmlScrapeDAG`, `buildHtmlScrapeDAGCrawl` | Fan-out over `state.urls` |
-| `src/dags/wikiScrapeDAG.ts` | `buildWikiScrapeDAG` | Fan-out over `state.titles` |
-| `src/orchestrators/ScrapeOrchestrator.ts` | `ScrapeOrchestrator`, `registerGlobalNode` | DAG dispatch, plugin loading |
+| `src/run/runHtml.ts` | `runHtml` | HTML scrape entry point; builds dispatcher, loads plugins, dispatches outer DAG |
+| `src/run/runWiki.ts` | `runWiki` | Wiki scrape entry point; member resolution, batch loop, dispatches outer DAG |
+| `src/dispatcher/RipperDagonizer.ts` | `RipperDagonizer` | `Dagonizer` subclass with lifecycle logging and contract-warning collection |
+| `src/services/RipperServices.ts` | `RipperServices` | Services bag interface injected into every node via `context.services` |
 | `src/modules/http/ErrorClassifier.ts` | `ErrorClassifier`, `ErrorCategory` | TORUS `errorClassifier.ts` |
 | `src/modules/http/RetryExecutor.ts` | `RetryExecutor` | TORUS `RetryPolicyNode` |
 | `src/modules/http/RateLimiter.ts` | `RateLimiter` | New: wraps `bottleneck` |

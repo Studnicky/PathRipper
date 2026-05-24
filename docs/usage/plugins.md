@@ -5,17 +5,27 @@ title: Plugins
 
 # Plugins
 
-A plugin is a file that exports a `NodeInterface` and calls `registerGlobalNode` at module load time. The orchestrator imports the file (side-effect), the node is registered, and it is available by name in the user's `pipeline` config array.
+A plugin is a file that exports a named `register` function. The runner imports the file and calls `register(dispatcher)` to attach all plugin nodes and DAGs to the current scrape run's dispatcher. Plugins never call any global registration function — all wiring is explicit and scoped to the dispatcher passed by the runner.
+
+## Plugin contract
+
+Every plugin file must export:
+
+```ts
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void
+```
+
+The runner resolves the plugin file path from the pipeline config entry, imports it, and calls `register` with the run's dispatcher instance. Any missing `register` export is a hard error at startup.
 
 ## Node signature
 
 ```ts
 import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { ScrapeState }   from 'ripperoni/state/ScrapeState';
-import type { AppServices }   from 'ripperoni/nodes';
-import { registerGlobalNode } from 'ripperoni/orchestrators/ScrapeOrchestrator';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
 
-export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', AppServices> = {
+export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
   name:    'mysite:parse',
   outputs: ['success', 'error'],
 
@@ -24,12 +34,14 @@ export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', AppSer
     if (html.length === 0) { return { output: 'error' }; }
 
     // extract...
-    state.output = { _type: 'article', name: 'Example' };
+    state.output = { url: state.page.url, name: 'Example' };
     return { output: 'success' };
   },
 };
 
-registerGlobalNode(myParseNode);
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myParseNode);
+}
 ```
 
 ### Output ports
@@ -42,7 +54,7 @@ Common conventions:
 - `skipped` — optional skip (e.g. `json:write` when `state.output` is null).
 - `valid` / `invalid` — used by `validate:schema` for schema-pass / schema-fail branching.
 
-In the composite per-item node the orchestrator builds from `pipeline: [...]` config, any non-`success` port short-circuits the remaining steps for that item. The `error` path is the universal failure route.
+In the composite per-item node the runner builds from `pipeline: [...]` config, any non-`success` port short-circuits the remaining steps for that item. The `error` path is the universal failure route.
 
 ### State shape
 
@@ -84,10 +96,11 @@ const res = await fetch(url, { signal: context.signal });
 ```ts
 import { load } from 'cheerio';
 import type { NodeInterface } from '@noocodex/dagonizer';
-import type { ScrapeState, AppServices } from 'ripperoni/nodes';
-import { registerGlobalNode } from 'ripperoni/orchestrators/ScrapeOrchestrator';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
 
-export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', AppServices> = {
+export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
   name:    'mysite:parse',
   outputs: ['success', 'error'],
   async execute(state) {
@@ -96,15 +109,16 @@ export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', AppSer
 
     const $ = load(html);
     state.output = {
-      _type: 'article',
-      url:   state.page.url,
-      name:  $('h1.title').first().text().trim(),
+      url:  state.page.url,
+      name: $('h1.title').first().text().trim(),
     };
     return { output: 'success' };
   },
 };
 
-registerGlobalNode(myParseNode);
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myParseNode);
+}
 ```
 
 ## MediaWiki plugin example
@@ -112,30 +126,28 @@ registerGlobalNode(myParseNode);
 ```ts
 import wtf from 'wtf_wikipedia';
 import type { NodeInterface } from '@noocodex/dagonizer';
-import type { ScrapeState, AppServices } from 'ripperoni/nodes';
-import { registerGlobalNode } from 'ripperoni/orchestrators/ScrapeOrchestrator';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
 
-export const myWikiNode: NodeInterface<ScrapeState, 'success', AppServices> = {
+export const myWikiNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
   name:    'mywiki:parse',
   outputs: ['success'],
   async execute(state) {
-    const doc   = wtf(state.page.wikitext ?? '');
-    const ibox  = doc.infobox()?.json() as Record<string, string> ?? {};
+    const doc  = wtf(state.page.wikitext ?? '');
+    const ibox = doc.infobox()?.json() as Record<string, string> ?? {};
     state.output = {
-      _type:  'entry',
-      name:   ibox['name'] ?? state.page.title,
-      level:  parseInt(ibox['level'] ?? '', 10) || null,
+      name:  ibox['name'] ?? state.page.title,
+      level: parseInt(ibox['level'] ?? '', 10) || null,
     };
     return { output: 'success' };
   },
 };
 
-registerGlobalNode(myWikiNode);
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myWikiNode);
+}
 ```
-
-## The _type discriminator convention
-
-Every record should have `_type`. Downstream tools use it for classification. Pick a string per record type and keep it consistent across your plugin.
 
 ## Loading plugins
 
@@ -152,15 +164,24 @@ Declare plugin paths in the target config (resolved relative to the config file)
 }
 ```
 
-The orchestrator automatically derives the plugin file path from non-built-in pipeline entries:
+The runner automatically derives the plugin file path from non-built-in pipeline entries:
 - Entry `mysite:parse` → loads `./plugins/mysite/parse.task.js` relative to `configDir`.
 
-Or self-register explicitly by importing the plugin before calling `scrapeHtml`:
+The runner imports the module and calls its `register(dispatcher)` export. If the export is missing, the run aborts with an error listing the expected function signature.
+
+## Multi-node plugins
+
+Plugins that need multiple nodes (e.g. a parse node and a finalize node) register all of them in `register`:
 
 ```ts
-import './plugins/mysite/parse.task.js'; // side-effect: calls registerGlobalNode
-await ScrapeOrchestrator.scrapeHtml(opts);
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(parseNode);
+  dispatcher.registerNode(finalizeNode);
+  dispatcher.registerDAG(myPluginDAG);
+}
 ```
+
+When the pipeline step resolves to a registered DAG name, the runner emits a `DeepDAGNode` placement and wires `stateMapping.output` so downstream steps (e.g. `json:write`) see the parsed record.
 
 ## Testing a plugin in isolation
 
@@ -171,7 +192,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { ScrapeState } from 'ripperoni/state/ScrapeState';
 import { myParseNode } from './my-plugin.js';
-import { Logger } from 'ripperoni/Logger';
+import { Logger } from 'ripperoni/modules/logger/logger';
 
 const state = new ScrapeState();
 state.page = { targetId: 'mysite', title: '', url: 'https://example.com/page', html: '<h1 class="title">Hello</h1>' };
@@ -191,7 +212,9 @@ No network, no file system, no DAG overhead — just the extraction logic.
 
 ## AONPRD plugin (built-in example)
 
-The `plugins/aonprd/` directory ships a full-featured example plugin that parses Archives of Nethys (2e.aonprd.com) HTML. It demonstrates URL-based type dispatch, shared extraction utilities, per-type structured output, and fixture-based unit testing.
+The `plugins/aonprd/` directory ships a full-featured example plugin that parses Archives of Nethys (2e.aonprd.com) HTML. It demonstrates URL-based concept dispatch via a taxonomy, shared extraction capabilities, per-concept structured output, and fixture-based unit testing.
+
+The entry point `plugins/aonprd/parse.task.ts` exports `register(dispatcher)` which iterates all taxonomy-compiled nodes and registers them plus the `aonprd:parse` DAG on the dispatcher.
 
 See [Architecture](/architecture) for the DAG topology and `plugins/aonprd/parse.task.ts` for the reference implementation.
 

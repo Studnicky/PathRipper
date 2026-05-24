@@ -15,7 +15,7 @@ v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML sc
 | Structured logger | live | Ported from Torreya's `@torreya/logger`. `Logger.forComponent(name)`, JSON lines, `LOG_LEVEL` gate, component + operation attribution on every entry. |
 | JSON config | live | All targets, URLs, rate limits, and output paths live in `ripperoni.config.json`. Nothing hardcoded. `RipperConfig.load(path)` validates and returns a typed interface. |
 | Concurrent pipeline | live | `ConcurrentPipeline.create(pipeline, concurrency)` fans N pages through the same pipeline simultaneously with a semaphore cap. |
-| Task registry | live | `TaskRegistry.register(name, fn)` + dynamic plugin loading via `pipeline: ["my-target:parse"]` in config. Plugins are `.js` files loaded at runtime. |
+| Plugin registration | live | Plugins export `register(dispatcher: RipperDagonizer<ScrapeState>)`. Loaded dynamically from `./plugins/<word>/<verb>.task.js` based on `pipeline: ["my-target:parse"]` config entries. |
 | Checkpoint + resume | live | Already-written slugs are detected at run start and skipped. Failed pages are written to `failures.json`; pass `--resume-failures` to retry only those. |
 | Config schema validation | live | AJV validates the config at load time. `RipperConfig.load(path)` throws with the exact field path on any violation; malformed configs fail fast and loudly. |
 
