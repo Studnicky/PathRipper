@@ -17,7 +17,7 @@ import {
   stripStructuredKeys,
 } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
-import type { MonsterOutput, MonsterBaseSlice, MonsterDefensesSlice, MonsterOffenseSlice, MonsterAbilitiesSlice, MonsterMetaSlice } from './types.js';
+import type { MonsterOutput, MonsterOutputFields, MonsterBaseSlice, MonsterDefensesSlice, MonsterOffenseSlice, MonsterAbilitiesSlice, MonsterMetaSlice } from './types.js';
 import { isVariantOverlayJunk } from './abilities.js';
 
 const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
@@ -53,7 +53,7 @@ export function finalizeMonster(
   meta:      MonsterMetaSlice,
   $:         CheerioAPI,
   _span:     CheerioNode,
-): MonsterOutput {
+): MonsterOutputFields {
   const claimedAbilityNames: string[] = [
     ...abilities.top_abilities.map((a) => a.name),
     ...abilities.defensive_abilities.map((a) => a.name),
@@ -95,7 +95,7 @@ export function finalizeMonster(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies MonsterOutput;
+  } satisfies MonsterOutputFields;
 }
 
 export type FinalizeMonsterOutput = 'success';
@@ -116,7 +116,7 @@ export const finalizeMonsterNode: NodeInterface<ScrapeState, FinalizeMonsterOutp
     const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
     if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
-    const acc = (state.output ?? {}) as unknown as MonsterOutput;
+    const acc = (state.output ?? {}) as unknown as MonsterOutputFields;
     const assembled = finalizeMonster(c, acc, acc, acc, acc, acc, $, target);
     setConceptOutput(state, assembled);
 

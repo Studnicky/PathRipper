@@ -10,7 +10,6 @@ export function extractHazardBase(c: CommonExtraction): HazardBaseSlice {
     compRaw === 'simple'  ? 'simple' :
     compRaw === 'complex' ? 'complex' : null;
   return {
-    _type:           'hazard',
     url:             c.url,
     hazard_id:       extractEntityId(c.url),
     name:            c.title.name,

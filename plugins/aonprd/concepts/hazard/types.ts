@@ -1,5 +1,6 @@
 import type { BaseShape, SourceShape } from '../_helpers.js';
 import type { Rarity, PfsLegality, SourceRef } from '../../common.js';
+import type { ConceptOutputBase } from '../../taxonomy.js';
 
 export interface HazardComponent {
   component: string;
@@ -15,8 +16,7 @@ export interface HazardRoutine {
   actions:      string | null;
 }
 
-export interface HazardOutput extends BaseShape {
-  _type:        'hazard';
+export interface HazardOutputFields extends BaseShape {
   /** Numeric AON hazard ID from the URL query string. */
   hazard_id:    number | null;
   level:        number | null;
@@ -37,9 +37,11 @@ export interface HazardOutput extends BaseShape {
   reset:        string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type HazardOutput = ConceptOutputBase<'hazard'> & HazardOutputFields;
+
 /** Fields owned by `extract-hazard-base`. */
 export interface HazardBaseSlice {
-  _type:           'hazard';
   url:             string;
   hazard_id:       number | null;
   name:            string;
@@ -59,7 +61,7 @@ export interface HazardBaseSlice {
 
 /** Fields owned by `extract-hazard-defenses`. */
 export interface HazardDefensesSlice {
-  defenses: HazardOutput['defenses'];
+  defenses: HazardOutputFields['defenses'];
 }
 
 /** Fields owned by `extract-hazard-routines`. */

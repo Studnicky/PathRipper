@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -63,8 +63,7 @@ export interface DomainApocryphalSpells {
   source: SourceRef | null;
 }
 
-export interface DomainOutput {
-  _type: 'domain';
+export interface DomainOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   domain_id: number | null;
@@ -102,22 +101,24 @@ export interface DomainOutput {
   meta_keywords: string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type DomainOutput = ConceptOutputBase<'domain'> & DomainOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-domain-base`. */
 export interface DomainBaseSlice {
-  _type:           'domain';
   url:             string;
   domain_id:       number | null;
   name:            string;
   rarity:          Rarity;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          DomainOutput['source'];
+  source:          DomainOutputFields['source'];
   sources:         SourceRef[];
   legacy:          boolean;
   alt_edition_url: string | null;
-  pfs:             DomainOutput['pfs'];
+  pfs:             DomainOutputFields['pfs'];
 }
 
 /** Fields owned by `extract-domain-spells`. */
@@ -384,7 +385,6 @@ function harvestDomainSections(bodyHtml: string): Section[] {
 /** Extract base identity slice (URL, traits, rarity, sources, pfs, legacy). */
 export function extractDomainBase(c: CommonExtraction): DomainBaseSlice {
   return {
-    _type:           'domain',
     url:             c.url,
     domain_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -457,7 +457,7 @@ export function finalizeDomain(
   spells: DomainSpellsSlice,
   meta:   DomainMetaSlice,
   $:      CheerioAPI,
-): DomainOutput {
+): DomainOutputFields {
   return {
     ...base,
     ...spells,
@@ -471,7 +471,7 @@ export function finalizeDomain(
     body_text:        c.body_text,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies DomainOutput;
+  } satisfies DomainOutputFields;
 }
 
 // ─── Public extractor ─────────────────────────────────────────────────────────
@@ -483,7 +483,7 @@ export function finalizeDomain(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed domain extraction nodes.
  */
-export function extractDomain(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): DomainOutput {
+export function extractDomain(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): DomainOutputFields {
   void span;
   const base   = extractDomainBase(c);
   const spells = extractDomainSpells(c);

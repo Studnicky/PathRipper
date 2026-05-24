@@ -7,7 +7,7 @@ import {
   stripStructuredKeys,
 } from '../../common.js';
 import type {
-  AnimalCompanionOutput,
+  AnimalCompanionOutputFields,
   AnimalCompanionBaseSlice,
   AnimalCompanionStatsSlice,
   AnimalCompanionCombatSlice,
@@ -35,7 +35,7 @@ export function finalizeAnimalCompanion(
   advancement:  AnimalCompanionAdvancementSlice,
   _meta:        AnimalCompanionMetaSlice,
   $:            CheerioAPI,
-): AnimalCompanionOutput {
+): AnimalCompanionOutputFields {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -52,5 +52,5 @@ export function finalizeAnimalCompanion(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies AnimalCompanionOutput;
+  } satisfies AnimalCompanionOutputFields;
 }

@@ -1,5 +1,6 @@
 import type { BaseShape, SourceShape } from '../_helpers.js';
 import type { Rarity, PfsLegality, SourceRef } from '../../common.js';
+import type { ConceptOutputBase } from '../../taxonomy.js';
 
 export interface ConditionStage {
   stage:     number;
@@ -7,8 +8,7 @@ export interface ConditionStage {
   duration:  string | null;
 }
 
-export interface ConditionOutput extends BaseShape {
-  _type:    'condition';
+export interface ConditionOutputFields extends BaseShape {
   /** Numeric AON condition ID extracted from the URL query string. */
   condition_id: number | null;
   stages:   ConditionStage[];
@@ -16,9 +16,11 @@ export interface ConditionOutput extends BaseShape {
   related_conditions: Array<{ name: string; condition_id: number | null }>;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ConditionOutput = ConceptOutputBase<'condition'> & ConditionOutputFields;
+
 /** Fields owned by `extract-condition-base`. */
 export interface ConditionBaseSlice {
-  _type:           'condition';
   url:             string;
   condition_id:    number | null;
   name:            string;

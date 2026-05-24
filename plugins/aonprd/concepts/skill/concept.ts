@@ -12,7 +12,7 @@ import { extractSkillBase } from './base.js';
 import { extractSkillActions } from './actions.js';
 import { extractSkillProficiencyTiers } from './proficiency-tiers.js';
 import { extractSkillMeta, finalizeSkill } from './finalize.js';
-import type { SkillOutput } from './types.js';
+import type { SkillOutput, SkillOutputFields } from './types.js';
 
 // Re-export output types for tests
 export type SkillBaseOutput = 'success' | 'error';
@@ -120,7 +120,7 @@ export const finalizeSkillNode: NodeInterface<ScrapeState, FinalizeSkillOutput, 
     const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
     if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
-    const acc = (state.output ?? {}) as unknown as SkillOutput;
+    const acc = (state.output ?? {}) as unknown as SkillOutputFields;
     const meta = extractSkillMeta(c, $, target);
     const assembled = finalizeSkill(c, acc, acc, acc, meta);
     setConceptOutput(state, assembled);

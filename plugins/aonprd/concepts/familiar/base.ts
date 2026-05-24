@@ -8,7 +8,6 @@ import { isSpecificUrl } from './helpers.js';
 export function extractFamiliarBase(c: CommonExtraction): FamiliarBaseSlice {
   const familiar_kind: 'specific' | 'ability' = isSpecificUrl(c.url) ? 'specific' : 'ability';
   return {
-    _type:           'familiar',
     url:             c.url,
     familiar_id:     extractEntityId(c.url),
     name:            c.title.name,

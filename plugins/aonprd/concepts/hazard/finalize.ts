@@ -3,7 +3,7 @@ import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
 import { baseFrom, setConceptOutput } from '../_helpers.js';
 import type {
-  HazardOutput,
+  HazardOutputFields,
   HazardBaseSlice,
   HazardDefensesSlice,
   HazardRoutinesSlice,
@@ -31,7 +31,7 @@ export function finalizeHazard(
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
   $:         CheerioAPI,
-): HazardOutput {
+): HazardOutputFields {
   const componentLabels: string[] = [];
   for (const comp of [...defenses.defenses.hardness, ...defenses.defenses.hp]) {
     if (comp.component !== 'main') {
@@ -42,7 +42,6 @@ export function finalizeHazard(
 
   const baseShape = baseFrom(c, $);
   return {
-    _type:           'hazard',
     ...baseShape,
     url:             base.url,
     hazard_id:       base.hazard_id,
@@ -68,7 +67,7 @@ export function finalizeHazard(
     defenses:        defenses.defenses,
     routines:        routines.routines,
     reset:           reset.reset,
-  } satisfies HazardOutput;
+  } satisfies HazardOutputFields;
 }
 
 export function finalizeHazardWithSections(
@@ -79,7 +78,7 @@ export function finalizeHazardWithSections(
   reset:     HazardResetSlice,
   sections:  Section[],
   $:         CheerioAPI,
-): HazardOutput {
+): HazardOutputFields {
   const output = finalizeHazard(c, base, defenses, routines, reset, $);
   return {
     ...output,

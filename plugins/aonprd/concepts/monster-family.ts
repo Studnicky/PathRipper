@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -41,8 +41,7 @@ export interface MonsterFamilyMember {
   kind:       string;
 }
 
-export interface MonsterFamilyOutput {
-  _type:            'monster-family';
+export interface MonsterFamilyOutputFields {
   url:              string;
   monster_family_id:        number | null;
   name:             string;
@@ -65,11 +64,13 @@ export interface MonsterFamilyOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type MonsterFamilyOutput = ConceptOutputBase<'monster-family'> & MonsterFamilyOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-monster-family-base`. */
 export interface MonsterFamilyBaseSlice {
-  _type:           'monster-family';
   url:             string;
   monster_family_id:       number | null;
   name:            string;
@@ -79,7 +80,7 @@ export interface MonsterFamilyBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          MonsterFamilyOutput['source'];
+  source:          MonsterFamilyOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -131,7 +132,6 @@ function parseMembers(html: string): MonsterFamilyMember[] {
 /** Extract base identity + header scalars for a monster-family page. */
 export function extractMonsterFamilyBase(c: CommonExtraction): MonsterFamilyBaseSlice {
   return {
-    _type:           'monster-family',
     url:             c.url,
     monster_family_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -172,7 +172,7 @@ export function finalizeMonsterFamily(
   base:    MonsterFamilyBaseSlice,
   members: MonsterFamilyMembersSlice,
   $:       CheerioAPI,
-): MonsterFamilyOutput {
+): MonsterFamilyOutputFields {
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
@@ -184,7 +184,7 @@ export function finalizeMonsterFamily(
     members:          members.members,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies MonsterFamilyOutput;
+  } satisfies MonsterFamilyOutputFields;
 }
 
 /**
@@ -198,7 +198,7 @@ export function extractMonsterFamily(
   c:    CommonExtraction,
   $:    CheerioAPI,
   _span: CheerioNode,
-): MonsterFamilyOutput {
+): MonsterFamilyOutputFields {
   void _span;
   const base    = extractMonsterFamilyBase(c);
   const members = extractMonsterFamilyMembers(c);

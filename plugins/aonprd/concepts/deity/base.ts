@@ -6,7 +6,6 @@ import type { DeityBaseSlice } from './types.js';
 
 export function extractDeityBase(c: CommonExtraction): DeityBaseSlice {
   return {
-    _type:           'deity',
     url:             c.url,
     deity_id:        extractEntityId(c.url),
     name:            c.title.name,

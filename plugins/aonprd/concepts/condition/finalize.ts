@@ -2,7 +2,7 @@ import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
 import { baseFrom, setConceptOutput } from '../_helpers.js';
-import type { ConditionOutput, ConditionBaseSlice, ConditionStagesSlice } from './types.js';
+import type { ConditionOutput, ConditionOutputFields, ConditionBaseSlice, ConditionStagesSlice } from './types.js';
 
 /** AON labels every condition-slice helper has lifted into structured fields. */
 const CONDITION_CLAIMED_LABELS: ReadonlyArray<string> = [
@@ -15,10 +15,9 @@ export function finalizeCondition(
   base:   ConditionBaseSlice,
   stages: ConditionStagesSlice,
   $:      CheerioAPI,
-): ConditionOutput {
+): ConditionOutputFields {
   const baseShape = baseFrom(c, $);
   return {
-    _type:              'condition',
     ...baseShape,
     url:                base.url,
     condition_id:       base.condition_id,
@@ -34,7 +33,7 @@ export function finalizeCondition(
     raw_fields:         stripStructuredKeys(c.field_map, CONDITION_CLAIMED_LABELS),
     stages:             stages.stages,
     related_conditions: stages.related_conditions,
-  } satisfies ConditionOutput;
+  } satisfies ConditionOutputFields;
 }
 
 export function finalizeConditionWithSections(
@@ -43,7 +42,7 @@ export function finalizeConditionWithSections(
   stages:   ConditionStagesSlice,
   sections: Section[],
   $:        CheerioAPI,
-): ConditionOutput {
+): ConditionOutputFields {
   const output = finalizeCondition(c, base, stages, $);
   return {
     ...output,

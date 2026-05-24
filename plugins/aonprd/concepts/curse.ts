@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -62,8 +62,7 @@ export interface CurseSavingThrow {
   raw:   string;
 }
 
-export interface CurseOutput {
-  _type:            'curse';
+export interface CurseOutputFields {
   url:              string;
   /** Numeric AON Curses.aspx ID extracted from the URL query string. */
   curse_id:         number | null;
@@ -98,11 +97,13 @@ export interface CurseOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type CurseOutput = ConceptOutputBase<'curse'> & CurseOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-curse-base`. */
 export interface CurseBaseSlice {
-  _type:           'curse';
   url:             string;
   curse_id:        number | null;
   name:            string;
@@ -113,7 +114,7 @@ export interface CurseBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          CurseOutput['source'];
+  source:          CurseOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -217,7 +218,6 @@ function parseCurseStages(html: string): CurseStage[] {
 /** Extract identity + header scalars for a curse page. */
 export function extractCurseBase(c: CommonExtraction): CurseBaseSlice {
   return {
-    _type:           'curse',
     url:             c.url,
     curse_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -275,12 +275,11 @@ export function finalizeCurse(
   _meta:     CurseMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): CurseOutput {
+): CurseOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
-    _type:            'curse',
     url:              base.url,
     curse_id:         base.curse_id,
     name:             base.name,
@@ -304,7 +303,7 @@ export function finalizeCurse(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies CurseOutput;
+  } satisfies CurseOutputFields;
 }
 
 /** Project a Curses.aspx page into a typed CurseOutput (direct-call wrapper). */
@@ -312,7 +311,7 @@ export function extractCurse(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): CurseOutput {
+): CurseOutputFields {
   const base   = extractCurseBase(c);
   const mech   = extractCurseMechanics(c);
   const stages = extractCurseStages(c);

@@ -5,7 +5,6 @@ import type { ConditionBaseSlice } from './types.js';
 /** Extract identity + header scalars for a condition page. */
 export function extractConditionBase(c: CommonExtraction): ConditionBaseSlice {
   return {
-    _type:           'condition',
     url:             c.url,
     condition_id:    extractEntityId(c.url),
     name:            c.title.name,

@@ -24,8 +24,11 @@ import {
 } from '../../common.js';
 import type {
   WeaponOutput,
+  WeaponOutputFields,
   ArmorOutput,
+  ArmorOutputFields,
   EquipmentOutput,
+  EquipmentOutputFields,
   WeaponBaseSlice,
   WeaponMechanicsSlice,
   WeaponMetaSlice,
@@ -87,7 +90,7 @@ export function finalizeWeapon(
   mechanics: WeaponMechanicsSlice,
   meta:      WeaponMetaSlice,
   $:         CheerioAPI,
-): WeaponOutput {
+): WeaponOutputFields {
   const raw_fields = stripStructuredKeys(c.field_map, WEAPON_CLAIMED_LABELS);
   return {
     ...base,
@@ -97,7 +100,7 @@ export function finalizeWeapon(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies WeaponOutput;
+  } satisfies WeaponOutputFields;
 }
 
 /** Assemble an ArmorOutput from per-slice results, stripping claimed labels from raw_fields. */
@@ -107,7 +110,7 @@ export function finalizeArmor(
   mechanics: ArmorMechanicsSlice,
   meta:      ArmorMetaSlice,
   $:         CheerioAPI,
-): ArmorOutput {
+): ArmorOutputFields {
   const raw_fields = stripStructuredKeys(c.field_map, ARMOR_CLAIMED_LABELS);
   return {
     ...base,
@@ -117,7 +120,7 @@ export function finalizeArmor(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ArmorOutput;
+  } satisfies ArmorOutputFields;
 }
 
 /** Assemble an EquipmentOutput from per-slice results, stripping claimed labels from raw_fields. */
@@ -127,7 +130,7 @@ export function finalizeEquipment(
   mechanics: EquipmentMechanicsSlice,
   meta:      EquipmentMetaSlice,
   $:         CheerioAPI,
-): EquipmentOutput {
+): EquipmentOutputFields {
   const raw_fields = stripStructuredKeys(c.field_map, EQUIPMENT_CLAIMED_LABELS);
   return {
     ...base,
@@ -137,19 +140,19 @@ export function finalizeEquipment(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies EquipmentOutput;
+  } satisfies EquipmentOutputFields;
 }
 
-/** Project a CommonExtraction of a Weapons.aspx page into a typed WeaponOutput. */
-export function extractWeapon(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): WeaponOutput {
+/** Project a CommonExtraction of a Weapons.aspx page into a typed WeaponOutputFields. */
+export function extractWeapon(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): WeaponOutputFields {
   const base      = extractWeaponBase(c);
   const mechanics = extractWeaponMechanics(c);
   const meta      = extractWeaponMeta(c, $, span);
   return finalizeWeapon(c, base, mechanics, meta, $);
 }
 
-/** Project a CommonExtraction of an Armor.aspx page into a typed ArmorOutput. */
-export function extractArmor(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ArmorOutput {
+/** Project a CommonExtraction of an Armor.aspx page into a typed ArmorOutputFields. */
+export function extractArmor(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ArmorOutputFields {
   void span;
   const base      = extractArmorBase(c);
   const mechanics = extractArmorMechanics(c);
@@ -157,8 +160,8 @@ export function extractArmor(c: CommonExtraction, $: CheerioAPI, span: CheerioNo
   return finalizeArmor(c, base, mechanics, meta, $);
 }
 
-/** Project a CommonExtraction of an Equipment.aspx page into a typed EquipmentOutput. */
-export function extractEquipment(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): EquipmentOutput {
+/** Project a CommonExtraction of an Equipment.aspx page into a typed EquipmentOutputFields. */
+export function extractEquipment(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): EquipmentOutputFields {
   void span;
   const base      = extractEquipmentBase(c);
   const mechanics = extractEquipmentMechanics(c);
@@ -233,14 +236,14 @@ export const finalizeEquipmentNode: NodeInterface<ScrapeState, FinalizeEquipment
     const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
     if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
-    const acc = (state.output ?? {}) as unknown as EquipmentOutput;
+    const acc = (state.output ?? {}) as unknown as EquipmentOutputFields;
     const meta = extractEquipmentMeta(c);
     const pfs_note = extractPfsNote($, target);
     const assembled = finalizeEquipment(c, acc, acc, meta, $);
     setConceptOutput(state, {
       ...assembled,
       pfs_note,
-    } satisfies EquipmentOutput);
+    } satisfies EquipmentOutputFields);
 
     return { output: 'success' };
   },

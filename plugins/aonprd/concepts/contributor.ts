@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -31,8 +31,7 @@ import {
 // ─── Inlined from Wave 5: contributor.ts ──────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
-export interface ContributorOutput {
-  _type:            'contributor';
+export interface ContributorOutputFields {
   url:              string;
   /** Numeric AON Contributors.aspx ID extracted from the URL query string. */
   contributor_id:   number | null;
@@ -70,10 +69,12 @@ export interface ContributorOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ContributorOutput = ConceptOutputBase<'contributor'> & ContributorOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface ContributorBaseSlice {
-  _type:           'contributor';
   url:             string;
   contributor_id:  number | null;
   name:            string;
@@ -83,7 +84,7 @@ export interface ContributorBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ContributorOutput['source'];
+  source:          ContributorOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -167,7 +168,6 @@ function extractBio(spanHtml: string): { html: string; text: string } {
 
 export function extractContributorBase(c: CommonExtraction): ContributorBaseSlice {
   return {
-    _type:           'contributor',
     url:             c.url,
     contributor_id:  extractEntityId(c.url),
     name:            c.title.name,
@@ -225,7 +225,7 @@ export function finalizeContributor(
   profile: ContributorProfileSlice,
   $:       CheerioAPI,
   _target: CheerioNode,
-): ContributorOutput {
+): ContributorOutputFields {
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -243,7 +243,7 @@ export function finalizeContributor(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ContributorOutput;
+  } satisfies ContributorOutputFields;
 }
 
 /**
@@ -255,7 +255,7 @@ export function extractContributor(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ContributorOutput {
+): ContributorOutputFields {
   const base    = extractContributorBase(c);
   const profile = extractContributorProfile(c, $, target);
   return finalizeContributor(c, base, profile, $, target);

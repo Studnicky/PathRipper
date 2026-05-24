@@ -5,7 +5,6 @@ import type { TraitBaseSlice } from './types.js';
 /** Extract identity + header scalars for a trait page. */
 export function extractTraitBase(c: CommonExtraction): TraitBaseSlice {
   return {
-    _type:           'trait',
     url:             c.url,
     trait_id:        extractEntityId(c.url),
     name:            c.title.name,

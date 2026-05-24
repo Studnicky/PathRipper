@@ -20,6 +20,7 @@ import {
 } from './helpers.js';
 import type {
   HazardOutput,
+  HazardOutputFields,
   HazardBaseSlice,
   HazardDefensesSlice,
   HazardRoutinesSlice,
@@ -34,7 +35,6 @@ export function extractHazardBase(c: CommonExtraction): HazardBaseSlice {
   const perceptionField = c.fields.find((f) => f.label.toLowerCase() === 'perception')?.value_text ?? null;
   const descField = c.fields.find((f) => f.label.toLowerCase() === 'description')?.value_text ?? null;
   return {
-    _type:           'hazard',
     url:             c.url,
     hazard_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -80,7 +80,7 @@ export function finalizeHazard(
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
   $:         CheerioAPI,
-): HazardOutput {
+): HazardOutputFields {
   // Collect component labels for stripping (e.g. "Main Hardness", "Door HP").
   const componentLabels: string[] = [];
   for (const comp of [...defenses.defenses.hardness, ...defenses.defenses.hp]) {
@@ -92,7 +92,6 @@ export function finalizeHazard(
 
   const baseShape = baseFrom(c, $);
   return {
-    _type:           'hazard',
     ...baseShape,
     url:             base.url,
     hazard_id:       base.hazard_id,
@@ -118,10 +117,10 @@ export function finalizeHazard(
     defenses:        defenses.defenses,
     routines:        routines.routines,
     reset:           reset.reset,
-  } satisfies HazardOutput;
+  } satisfies HazardOutputFields;
 }
 
-export function extractHazard(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): HazardOutput {
+export function extractHazard(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): HazardOutputFields {
   void _span;
   const base     = extractHazardBase(c);
   const defenses = extractHazardDefenses(c);

@@ -10,7 +10,7 @@ import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -57,8 +57,7 @@ export interface SiegeWeaponOperatorAction {
   text:        string;
 }
 
-export interface SiegeWeaponOutput {
-  _type:            'siege-weapon';
+export interface SiegeWeaponOutputFields {
   url:              string;
   /** Numeric AON SiegeWeapons.aspx ID extracted from the URL query string. */
   siege_weapon_id:  number | null;
@@ -119,11 +118,11 @@ export interface SiegeWeaponOutput {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
+export type SiegeWeaponOutput = ConceptOutputBase<'siege-weapon'> & SiegeWeaponOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface SiegeWeaponBaseSlice {
-  _type:           'siege-weapon';
   url:             string;
   siege_weapon_id: number | null;
   name:            string;
@@ -134,7 +133,7 @@ export interface SiegeWeaponBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SiegeWeaponOutput['source'];
+  source:          SiegeWeaponOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -341,7 +340,6 @@ function readField(
 /** Extract base identity + header scalars for a siege weapon page. */
 export function extractSiegeWeaponBase(c: CommonExtraction): SiegeWeaponBaseSlice {
   return {
-    _type:           'siege-weapon',
     url:             c.url,
     siege_weapon_id: extractEntityId(c.url),
     name:            c.title.name,
@@ -411,7 +409,7 @@ export function finalizeSiegeWeapon(
   operation:  SiegeWeaponOperationSlice,
   _meta:      SiegeWeaponMetaSlice,
   $:          CheerioAPI,
-): SiegeWeaponOutput {
+): SiegeWeaponOutputFields {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -425,7 +423,7 @@ export function finalizeSiegeWeapon(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SiegeWeaponOutput;
+  } satisfies SiegeWeaponOutputFields;
 }
 
 /**
@@ -439,7 +437,7 @@ export function extractSiegeWeapon(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): SiegeWeaponOutput {
+): SiegeWeaponOutputFields {
   void _span;
   const base      = extractSiegeWeaponBase(c);
   const mechanics = extractSiegeWeaponMechanics(c);

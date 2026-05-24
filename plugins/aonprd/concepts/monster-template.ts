@@ -11,7 +11,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -62,8 +62,7 @@ export interface MonsterTemplateSubsection {
   adjustments: MonsterTemplateAdjustment[];
 }
 
-export interface MonsterTemplateOutput {
-  _type:              'monster-template';
+export interface MonsterTemplateOutputFields {
   url:                string;
   /** Numeric AON MonsterTemplates.aspx ID extracted from the URL query string. */
   template_id:        number | null;
@@ -105,11 +104,13 @@ export interface MonsterTemplateOutput {
   meta_keywords:      string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type MonsterTemplateOutput = ConceptOutputBase<'monster-template'> & MonsterTemplateOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-monster-template-base`. */
 export interface MonsterTemplateBaseSlice {
-  _type:           'monster-template';
   url:             string;
   template_id:     number | null;
   name:            string;
@@ -119,7 +120,7 @@ export interface MonsterTemplateBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          MonsterTemplateOutput['source'];
+  source:          MonsterTemplateOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -258,7 +259,6 @@ function parseStatChange(text: string, kind: 'level' | 'attack' | 'damage'): num
 /** Extract base identity + header scalars for a monster-template page. */
 export function extractMonsterTemplateBase(c: CommonExtraction): MonsterTemplateBaseSlice {
   return {
-    _type:           'monster-template',
     url:             c.url,
     template_id:     extractEntityId(c.url),
     name:            c.title.name,
@@ -308,7 +308,7 @@ export function finalizeMonsterTemplate(
   _meta:         MonsterTemplateMetaSlice,
   $:             CheerioAPI,
   _target:       CheerioNode,
-): MonsterTemplateOutput {
+): MonsterTemplateOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -322,7 +322,7 @@ export function finalizeMonsterTemplate(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies MonsterTemplateOutput;
+  } satisfies MonsterTemplateOutputFields;
 }
 
 /**
@@ -336,7 +336,7 @@ export function extractMonsterTemplate(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): MonsterTemplateOutput {
+): MonsterTemplateOutputFields {
   const base          = extractMonsterTemplateBase(c);
   const modifications = extractMonsterTemplateModifications(c);
   const meta          = extractMonsterTemplateMeta(c);

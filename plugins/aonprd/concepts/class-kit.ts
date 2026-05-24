@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -47,8 +47,7 @@ export interface ClassKitItem {
   note:     string | null;
 }
 
-export interface ClassKitOutput {
-  _type:            'class-kit';
+export interface ClassKitOutputFields {
   url:              string;
   /** Numeric AON ClassKits.aspx ID extracted from the URL query string. */
   class_kit_id:     number | null;
@@ -90,11 +89,13 @@ export interface ClassKitOutput {
   meta_keywords:        string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ClassKitOutput = ConceptOutputBase<'class-kit'> & ClassKitOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-class-kit-base`. */
 export interface ClassKitBaseSlice {
-  _type:           'class-kit';
   url:             string;
   class_kit_id:    number | null;
   name:            string;
@@ -104,7 +105,7 @@ export interface ClassKitBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ClassKitOutput['source'];
+  source:          ClassKitOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -191,7 +192,6 @@ function parseItemList(valueHtml: string | undefined): ClassKitItem[] {
 /** Extract base identity + header scalars for a class kit page. */
 export function extractClassKitBase(c: CommonExtraction): ClassKitBaseSlice {
   return {
-    _type:           'class-kit',
     url:             c.url,
     class_kit_id:    extractEntityId(c.url),
     name:            c.title.name,
@@ -243,7 +243,7 @@ export function finalizeClassKit(
   _meta:    ClassKitMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ClassKitOutput {
+): ClassKitOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -257,7 +257,7 @@ export function finalizeClassKit(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ClassKitOutput;
+  } satisfies ClassKitOutputFields;
 }
 
 /**
@@ -271,7 +271,7 @@ export function extractClassKit(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ClassKitOutput {
+): ClassKitOutputFields {
   const base     = extractClassKitBase(c);
   const contents = extractClassKitContents(c);
   const meta     = extractClassKitMeta(c);

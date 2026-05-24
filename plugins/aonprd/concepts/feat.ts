@@ -17,7 +17,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -40,8 +40,7 @@ import {
 // ─── Inlined from Wave 5: feat.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface FeatOutput {
-  _type: 'feat';
+export interface FeatOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   feat_id: number | null;
@@ -92,6 +91,9 @@ export interface FeatOutput {
   /** `<meta name="keywords">` content. */
   meta_keywords: string | null;
 }
+
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type FeatOutput = ConceptOutputBase<'feat'> & FeatOutputFields;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -247,7 +249,6 @@ function parseFeatSpoilerSource($: CheerioAPI): string | null {
 
 /** Fields owned by `extract-feat-base`. */
 export interface FeatBaseSlice {
-  _type:            'feat';
   url:              string;
   feat_id:          number | null;
   name:             string;
@@ -259,7 +260,7 @@ export interface FeatBaseSlice {
   action_cost:      ActionCost | null;
   traits:           string[];
   trait_ids:        Record<string, number>;
-  source:           FeatOutput['source'];
+  source:           FeatOutputFields['source'];
   sources:          SourceRef[];
   is_mythic:        boolean;
   meta_description: string | null;
@@ -268,9 +269,9 @@ export interface FeatBaseSlice {
 
 /** Fields owned by `extract-feat-prerequisites`. */
 export interface FeatPrerequisitesSlice {
-  archetypes:           FeatOutput['archetypes'];
+  archetypes:           FeatOutputFields['archetypes'];
   archetype_footnotes:  string[];
-  class_archetypes:     FeatOutput['class_archetypes'];
+  class_archetypes:     FeatOutputFields['class_archetypes'];
   spoiler_source:       string | null;
   prerequisites:        string | null;
 }
@@ -289,9 +290,9 @@ export interface FeatEffectSlice {
 
 /** Fields owned by `extract-feat-meta`. */
 export interface FeatMetaSlice {
-  leads_to:        FeatOutput['leads_to'];
-  related_feats:   FeatOutput['related_feats'];
-  trait_glossary:  FeatOutput['trait_glossary'];
+  leads_to:        FeatOutputFields['leads_to'];
+  related_feats:   FeatOutputFields['related_feats'];
+  trait_glossary:  FeatOutputFields['trait_glossary'];
   links:           LinkRef[];
 }
 
@@ -305,7 +306,6 @@ export function extractFeatBase(c: CommonExtraction, $: CheerioAPI, _span: Cheer
     c.traits.traits.some((t) => t.toLowerCase() === 'mythic');
 
   return {
-    _type:            'feat',
     url:              c.url,
     feat_id:          extractEntityId(c.url),
     name:             c.title.name,
@@ -423,7 +423,7 @@ export function finalizeFeat(
   prerequisites: FeatPrerequisitesSlice,
   effect:        FeatEffectSlice,
   meta:          FeatMetaSlice,
-): FeatOutput {
+): FeatOutputFields {
   const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   const raw_fields: Record<string, string> = {};
   for (const [k, v] of Object.entries(stripped)) {
@@ -437,7 +437,7 @@ export function finalizeFeat(
     ...effect,
     ...meta,
     raw_fields,
-  } satisfies FeatOutput;
+  } satisfies FeatOutputFields;
 }
 
 // ─── Public extractor ─────────────────────────────────────────────────────────
@@ -449,7 +449,7 @@ export function finalizeFeat(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed feat extraction nodes.
  */
-export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatOutput {
+export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatOutputFields {
   const base          = extractFeatBase(c, $, span);
   const prerequisites = extractFeatPrerequisites(c, $, span);
   const effect        = extractFeatEffect(c);

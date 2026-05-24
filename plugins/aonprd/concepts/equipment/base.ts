@@ -14,7 +14,6 @@ import type {
 /** Extract weapon base slice (identity, source, traits). */
 export function extractWeaponBase(c: CommonExtraction): WeaponBaseSlice {
   return {
-    _type:           'weapon',
     url:             c.url,
     weapon_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -32,7 +31,6 @@ export function extractWeaponBase(c: CommonExtraction): WeaponBaseSlice {
 /** Extract armor base slice. */
 export function extractArmorBase(c: CommonExtraction): ArmorBaseSlice {
   return {
-    _type:           'armor',
     url:             c.url,
     armor_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -50,7 +48,6 @@ export function extractArmorBase(c: CommonExtraction): ArmorBaseSlice {
 /** Extract equipment base slice. */
 export function extractEquipmentBase(c: CommonExtraction): EquipmentBaseSlice {
   return {
-    _type:           'equipment',
     url:             c.url,
     equipment_id:    extractEntityId(c.url),
     name:            c.title.name,

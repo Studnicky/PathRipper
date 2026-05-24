@@ -22,6 +22,7 @@ import { setConceptOutput } from '../_helpers.js';
 
 import type {
   SpellOutput,
+  SpellOutputFields,
   SpellBaseSlice,
   SpellCastSlice,
   SpellOutcomesSlice,
@@ -76,7 +77,7 @@ export function finalizeSpell(
   meta:       SpellMetaSlice,
   $:          CheerioAPI,
   _span:      CheerioNode,
-): SpellOutput {
+): SpellOutputFields {
   // Heightened field-map keys appear as `Heightened (5th)`, `Heightened (+2)`,
   // etc. — capture every key that begins with "Heightened" for stripping.
   const heightenedKeys: string[] = [];
@@ -100,7 +101,7 @@ export function finalizeSpell(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SpellOutput;
+  } satisfies SpellOutputFields;
 }
 
 export type FinalizeSpellOutput = 'success';

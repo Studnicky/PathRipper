@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -65,8 +65,7 @@ export interface SetRelicFeature {
   text:       string;
 }
 
-export interface SetRelicOutput {
-  _type:            'set-relic';
+export interface SetRelicOutputFields {
   url:              string;
   /** Numeric AON SetRelics.aspx ID extracted from the URL query string. */
   set_relic_id:     number | null;
@@ -101,11 +100,11 @@ export interface SetRelicOutput {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
+export type SetRelicOutput = ConceptOutputBase<'set-relic'> & SetRelicOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface SetRelicBaseSlice {
-  _type:           'set-relic';
   url:             string;
   set_relic_id:    number | null;
   name:            string;
@@ -115,7 +114,7 @@ export interface SetRelicBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          SetRelicOutput['source'];
+  source:          SetRelicOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -265,7 +264,6 @@ function buildDescription(bodyHtml: string): string {
 /** Extract base identity + header scalars for a set-relic page. */
 export function extractSetRelicBase(c: CommonExtraction): SetRelicBaseSlice {
   return {
-    _type:           'set-relic',
     url:             c.url,
     set_relic_id:    extractEntityId(c.url),
     name:            c.title.name,
@@ -309,7 +307,7 @@ export function finalizeSetRelic(
   components:  SetRelicComponentsSlice,
   _meta:       SetRelicMetaSlice,
   $:           CheerioAPI,
-): SetRelicOutput {
+): SetRelicOutputFields {
   void _meta;
   void getField;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -323,7 +321,7 @@ export function finalizeSetRelic(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SetRelicOutput;
+  } satisfies SetRelicOutputFields;
 }
 
 /**
@@ -337,7 +335,7 @@ export function extractSetRelic(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): SetRelicOutput {
+): SetRelicOutputFields {
   void _span;
   const base       = extractSetRelicBase(c);
   const components = extractSetRelicComponents(c);

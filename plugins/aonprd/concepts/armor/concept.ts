@@ -10,7 +10,7 @@ import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
-import type { ArmorOutput, ArmorBaseSlice, ArmorMechanicsSlice, ArmorMetaSlice } from './types.js';
+import type { ArmorOutput, ArmorOutputFields, ArmorBaseSlice, ArmorMechanicsSlice, ArmorMetaSlice } from './types.js';
 import { extractArmorBase } from './base.js';
 import { extractArmorMechanics } from './mechanics.js';
 import { extractArmorMeta } from './meta.js';
@@ -83,7 +83,7 @@ export const finalizeArmorNode: NodeInterface<ScrapeState, FinalizeArmorOutput, 
     const c = state.getMetadata<CommonExtraction>('aonprdCommon');
     const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
     if (c === undefined || $ === undefined) return { output: 'success' };
-    const acc = (state.output ?? {}) as unknown as ArmorOutput;
+    const acc = (state.output ?? {}) as unknown as ArmorOutputFields;
     const meta = extractArmorMeta(c);
     const assembled = finalizeArmor(c, acc, acc, meta, $);
     setConceptOutput(state, assembled);

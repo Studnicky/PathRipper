@@ -1,16 +1,18 @@
 import type { BaseShape, SourceShape } from '../_helpers.js';
 import type { Rarity, PfsLegality, SourceRef } from '../../common.js';
+import type { ConceptOutputBase } from '../../taxonomy.js';
 
-export interface TraitOutput extends BaseShape {
-  _type:    'trait';
+export interface TraitOutputFields extends BaseShape {
   /** Numeric AON trait ID from the URL query string. */
   trait_id: number | null;
   category: string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type TraitOutput = ConceptOutputBase<'trait'> & TraitOutputFields;
+
 /** Fields owned by `extract-trait-base`. */
 export interface TraitBaseSlice {
-  _type:           'trait';
   url:             string;
   trait_id:        number | null;
   name:            string;

@@ -95,7 +95,6 @@ export function extractMonsterBase(c: CommonExtraction, $: CheerioAPI, span: Che
   const rkRaw = getField(c, 'Recall Knowledge') ?? extractRecallKnowledgeFromHead(headHtml);
 
   return {
-    _type:            'monster',
     url:              c.url,
     monster_id:       extractEntityId(c.url),
     name:             c.title.name,

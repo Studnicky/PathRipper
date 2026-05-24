@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -30,8 +30,7 @@ import {
 // ─── Inlined from Wave 5: article.ts ──────────────────────────────────
 // ─── Output type ──────────────────────────────────────────────────────────────
 
-export interface ArticleOutput {
-  _type:            'article';
+export interface ArticleOutputFields {
   url:              string;
   /** Numeric AON Articles.aspx ID extracted from the URL query string. */
   article_id:       number | null;
@@ -60,11 +59,13 @@ export interface ArticleOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ArticleOutput = ConceptOutputBase<'article'> & ArticleOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-article-base`. */
 export interface ArticleBaseSlice {
-  _type:           'article';
   url:             string;
   article_id:      number | null;
   name:            string;
@@ -74,7 +75,7 @@ export interface ArticleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ArticleOutput['source'];
+  source:          ArticleOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -94,7 +95,6 @@ export interface ArticleMetaSlice {
 /** Extract base identity + header scalars for an article page. */
 export function extractArticleBase(c: CommonExtraction): ArticleBaseSlice {
   return {
-    _type:           'article',
     url:             c.url,
     article_id:      extractEntityId(c.url),
     name:            c.title.name,
@@ -139,7 +139,7 @@ export function finalizeArticle(
   _meta:    ArticleMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ArticleOutput {
+): ArticleOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -153,7 +153,7 @@ export function finalizeArticle(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ArticleOutput;
+  } satisfies ArticleOutputFields;
 }
 
 /**
@@ -167,7 +167,7 @@ export function extractArticle(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ArticleOutput {
+): ArticleOutputFields {
   const base    = extractArticleBase(c);
   const content = extractArticleContent(c);
   const meta    = extractArticleMeta(c);

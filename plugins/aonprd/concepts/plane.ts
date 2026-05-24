@@ -12,7 +12,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -61,8 +61,7 @@ export interface PlaneInhabitantRef {
   href:          string | null;
 }
 
-export interface PlaneOutput {
-  _type:            'plane';
+export interface PlaneOutputFields {
   url:              string;
   /** Numeric AON Planes.aspx ID extracted from the URL query string. */
   plane_id:         number | null;
@@ -102,11 +101,13 @@ export interface PlaneOutput {
   meta_keywords:      string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type PlaneOutput = ConceptOutputBase<'plane'> & PlaneOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-plane-base`. */
 export interface PlaneBaseSlice {
-  _type:           'plane';
   url:             string;
   plane_id:        number | null;
   name:            string;
@@ -116,7 +117,7 @@ export interface PlaneBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          PlaneOutput['source'];
+  source:          PlaneOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -267,7 +268,6 @@ function extractDescription(c: CommonExtraction): { html: string; text: string }
 /** Extract identity + header scalars + sources + traits for a plane page. */
 export function extractPlaneBase(c: CommonExtraction): PlaneBaseSlice {
   return {
-    _type:           'plane',
     url:             c.url,
     plane_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -334,7 +334,7 @@ export function finalizePlane(
   characteristics:  PlaneCharacteristicsSlice,
   meta:             PlaneMetaSlice,
   $:                CheerioAPI,
-): PlaneOutput {
+): PlaneOutputFields {
   return {
     ...base,
     ...denizens,
@@ -348,7 +348,7 @@ export function finalizePlane(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies PlaneOutput;
+  } satisfies PlaneOutputFields;
 }
 
 /**
@@ -362,7 +362,7 @@ export function extractPlane(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): PlaneOutput {
+): PlaneOutputFields {
   void target;
   const base            = extractPlaneBase(c);
   const denizens        = extractPlaneDenizens(c);

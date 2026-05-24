@@ -8,7 +8,7 @@ import {
   stripStructuredKeys,
 } from '../../common.js';
 import type {
-  ClassOutput,
+  ClassOutputFields,
   ClassBaseSlice,
   ClassProgressionSlice,
   ClassSubclassesSlice,
@@ -43,7 +43,7 @@ export function finalizeClass(
   subclasses:   ClassSubclassesSlice,
   meta:         ClassMetaSlice,
   $:            CheerioAPI,
-): ClassOutput {
+): ClassOutputFields {
   const claimedSubclassLabels = subclasses.subclass_features.map((f) => f.name);
   const raw_fields = stripStructuredKeys(c.field_map, [
     ...CLAIMED_FIELD_LABELS,
@@ -63,5 +63,5 @@ export function finalizeClass(
     subclasses:       subclasses.subclasses,
     progression:      progression.progression,
     subclass_features: subclasses.subclass_features,
-  } satisfies ClassOutput;
+  } satisfies ClassOutputFields;
 }

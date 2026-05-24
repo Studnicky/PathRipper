@@ -26,7 +26,6 @@ export function extractClassBase(c: CommonExtraction, _$: CheerioAPI, _span: Che
   const class_dc = getField(c, 'Class DC');
 
   return {
-    _type:                 'class',
     url:                   c.url,
     class_id:             extractEntityId(c.url),
     name:                  c.title.name,

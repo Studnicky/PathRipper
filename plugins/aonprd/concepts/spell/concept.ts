@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 
-import type { SpellOutput } from './types.js';
+import type { SpellOutput, SpellOutputFields } from './types.js';
 import { spellBaseNode } from './base.js';
 import { spellCastNode } from './cast.js';
 import { spellOutcomesNode } from './outcomes.js';
@@ -37,7 +37,7 @@ import { finalizeSpell } from './finalize.js';
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed spell extraction nodes.
  */
-export function extractSpell(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): SpellOutput {
+export function extractSpell(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): SpellOutputFields {
   const base       = extractSpellBase(c, $, span);
   const cast       = extractSpellCast(c);
   const outcomes   = extractSpellOutcomes(c);

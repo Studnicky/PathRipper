@@ -16,7 +16,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -47,8 +47,7 @@ export interface DeityCategoryMember {
   href:     string;
 }
 
-export interface DeityCategoryOutput {
-  _type:               'deity-category';
+export interface DeityCategoryOutputFields {
   url:                 string;
   /** Numeric AON DeityCategories.aspx ID from the URL query string. */
   deity_category_id:   number | null;
@@ -81,11 +80,13 @@ export interface DeityCategoryOutput {
   meta_keywords:       string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type DeityCategoryOutput = ConceptOutputBase<'deity-category'> & DeityCategoryOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-deity-category-base`. */
 export interface DeityCategoryBaseSlice {
-  _type:             'deity-category';
   url:               string;
   deity_category_id: number | null;
   name:              string;
@@ -95,7 +96,7 @@ export interface DeityCategoryBaseSlice {
   alt_edition_url:   string | null;
   traits:            string[];
   trait_ids:         Record<string, number>;
-  source:            DeityCategoryOutput['source'];
+  source:            DeityCategoryOutputFields['source'];
   sources:           SourceRef[];
 }
 
@@ -174,7 +175,6 @@ function parseAspects(c: CommonExtraction): string | null {
 /** Extract base identity + header scalars for a deity-category page. */
 export function extractDeityCategoryBase(c: CommonExtraction): DeityCategoryBaseSlice {
   return {
-    _type:             'deity-category',
     url:               c.url,
     deity_category_id: extractEntityId(c.url),
     name:              c.title.name,
@@ -219,7 +219,7 @@ export function finalizeDeityCategory(
   _meta:    DeityCategoryMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): DeityCategoryOutput {
+): DeityCategoryOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -234,7 +234,7 @@ export function finalizeDeityCategory(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies DeityCategoryOutput;
+  } satisfies DeityCategoryOutputFields;
 }
 
 /**
@@ -247,7 +247,7 @@ export function extractDeityCategory(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): DeityCategoryOutput {
+): DeityCategoryOutputFields {
   const base    = extractDeityCategoryBase(c);
   const members = extractDeityCategoryMembers($, target);
   const aspects = extractDeityCategoryAspects(c);

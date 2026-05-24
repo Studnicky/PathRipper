@@ -12,7 +12,6 @@ export function extractSkillBase(c: CommonExtraction, $: CheerioAPI, span: any):
   const description = extractDescription(span);
 
   return {
-    _type:            'skill',
     url:              c.url,
     skill_id:         extractEntityId(c.url),
     name,

@@ -7,7 +7,7 @@ import {
   stripStructuredKeys,
 } from '../../common.js';
 import type {
-  FamiliarOutput,
+  FamiliarOutputFields,
   FamiliarBaseSlice,
   FamiliarPrerequisitesSlice,
   FamiliarAbilitiesSlice,
@@ -41,7 +41,7 @@ export function finalizeFamiliar(
   abilities:     FamiliarAbilitiesSlice,
   _meta:         FamiliarMetaSlice,
   $:             CheerioAPI,
-): FamiliarOutput {
+): FamiliarOutputFields {
   void _meta;
   return {
     ...base,
@@ -60,5 +60,5 @@ export function finalizeFamiliar(
     body_html:                    c.body_html,
     meta_description:             extractMetaDescription($),
     meta_keywords:                extractMetaKeywords($),
-  } satisfies FamiliarOutput;
+  } satisfies FamiliarOutputFields;
 }

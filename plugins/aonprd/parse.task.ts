@@ -52,7 +52,7 @@ export type AonOutput = ConceptOutputUnion<typeof AONPRD_TAXONOMY> | UnknownOutp
  * @param url  - Canonical URL of the page (used for concept routing).
  */
 export async function parseAonHtml(html: string, url: string): Promise<AonOutput> {
-  return parseAonHtmlTaxonomic(html, url) as Promise<AonOutput>;
+  return parseAonHtmlTaxonomic(html, url) as unknown as Promise<AonOutput>;
 }
 
 // ── Plugin contract ────────────────────────────────────────────────────────────

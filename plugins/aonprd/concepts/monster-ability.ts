@@ -11,7 +11,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -43,8 +43,7 @@ export interface MonsterAbilityRef {
   href:                string;
 }
 
-export interface MonsterAbilityOutput {
-  _type:              'monster-ability';
+export interface MonsterAbilityOutputFields {
   url:                string;
   /** Numeric AON MonsterAbilities.aspx ID extracted from the URL query string. */
   monster_ability_id: number | null;
@@ -86,11 +85,13 @@ export interface MonsterAbilityOutput {
   meta_keywords:      string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type MonsterAbilityOutput = ConceptOutputBase<'monster-ability'> & MonsterAbilityOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-monster-ability-base`. */
 export interface MonsterAbilityBaseSlice {
-  _type:              'monster-ability';
   url:                string;
   monster_ability_id: number | null;
   name:               string;
@@ -101,7 +102,7 @@ export interface MonsterAbilityBaseSlice {
   action_cost:        ActionCost | null;
   traits:             string[];
   trait_ids:          Record<string, number>;
-  source:             MonsterAbilityOutput['source'];
+  source:             MonsterAbilityOutputFields['source'];
   sources:            SourceRef[];
 }
 
@@ -166,7 +167,6 @@ function parseRelatedAbilities(c: CommonExtraction): MonsterAbilityRef[] {
 /** Extract base identity + header scalars for a monster-ability page. */
 export function extractMonsterAbilityBase(c: CommonExtraction): MonsterAbilityBaseSlice {
   return {
-    _type:              'monster-ability',
     url:                c.url,
     monster_ability_id: extractEntityId(c.url),
     name:               c.title.name,
@@ -218,7 +218,7 @@ export function finalizeMonsterAbility(
   _meta:      MonsterAbilityMetaSlice,
   $:          CheerioAPI,
   _target:    CheerioNode,
-): MonsterAbilityOutput {
+): MonsterAbilityOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -232,7 +232,7 @@ export function finalizeMonsterAbility(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies MonsterAbilityOutput;
+  } satisfies MonsterAbilityOutputFields;
 }
 
 /**
@@ -246,7 +246,7 @@ export function extractMonsterAbility(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): MonsterAbilityOutput {
+): MonsterAbilityOutputFields {
   const base       = extractMonsterAbilityBase(c);
   const definition = extractMonsterAbilityDefinition(c);
   const meta       = extractMonsterAbilityMeta(c);

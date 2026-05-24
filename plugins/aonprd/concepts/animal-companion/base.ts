@@ -52,7 +52,6 @@ export function extractAnimalCompanionBase(c: CommonExtraction, target: CheerioN
     }
   }
   return {
-    _type:           'animal-companion',
     url:             c.url,
     companion_id:    extractEntityId(c.url),
     variant,

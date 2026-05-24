@@ -8,7 +8,6 @@ import type { WeaponBaseSlice } from './types.js';
 /** Extract weapon base slice (identity, source, traits). */
 export function extractWeaponBase(c: CommonExtraction): WeaponBaseSlice {
   return {
-    _type:           'weapon',
     url:             c.url,
     weapon_id:       extractEntityId(c.url),
     name:            c.title.name,

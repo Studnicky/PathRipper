@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -39,8 +39,7 @@ export interface WeaponGroupWeapon {
   weapon_id: number | null;
 }
 
-export interface WeaponGroupOutput {
-  _type:                        'weapon-group';
+export interface WeaponGroupOutputFields {
   url:                          string;
   /** Numeric AON WeaponGroups.aspx ID extracted from the URL query string. */
   group_id:                     number | null;
@@ -70,12 +69,12 @@ export interface WeaponGroupOutput {
   meta_description:             string | null;
   meta_keywords:                string | null;
 }
+export type WeaponGroupOutput = ConceptOutputBase<'weapon-group'> & WeaponGroupOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-weapon-group-base`. */
 export interface WeaponGroupBaseSlice {
-  _type:           'weapon-group';
   url:             string;
   group_id:        number | null;
   name:            string;
@@ -85,7 +84,7 @@ export interface WeaponGroupBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          WeaponGroupOutput['source'];
+  source:          WeaponGroupOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -147,7 +146,6 @@ function parseWeapons(weaponsHtml: string): WeaponGroupWeapon[] {
 /** Extract base identity + header scalars for a weapon-group page. */
 export function extractWeaponGroupBase(c: CommonExtraction): WeaponGroupBaseSlice {
   return {
-    _type:           'weapon-group',
     url:             c.url,
     group_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -193,7 +191,7 @@ export function finalizeWeaponGroup(
   content: WeaponGroupContentSlice,
   $:       CheerioAPI,
   _target: CheerioNode,
-): WeaponGroupOutput {
+): WeaponGroupOutputFields {
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -208,7 +206,7 @@ export function finalizeWeaponGroup(
     body_html:                    c.body_html,
     meta_description:             extractMetaDescription($),
     meta_keywords:                extractMetaKeywords($),
-  } satisfies WeaponGroupOutput;
+  } satisfies WeaponGroupOutputFields;
 }
 
 /**
@@ -220,7 +218,7 @@ export function extractWeaponGroup(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): WeaponGroupOutput {
+): WeaponGroupOutputFields {
   const base    = extractWeaponGroupBase(c);
   const content = extractWeaponGroupContent(c, $, target);
   return finalizeWeaponGroup(c, base, content, $, target);

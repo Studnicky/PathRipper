@@ -19,7 +19,6 @@ import type { RitualBaseSlice } from './types.js';
 /** Extract identity, header scalars, traits, and source refs. */
 export function extractSpellBase(c: CommonExtraction): RitualBaseSlice {
   return {
-    _type:           'spell',
     url:             c.url,
     spell_id:        extractEntityId(c.url),
     name:            c.title.name,

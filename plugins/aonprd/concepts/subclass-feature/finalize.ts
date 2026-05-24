@@ -5,6 +5,7 @@ import { extractMetaDescription, extractMetaKeywords, stripStructuredKeys } from
 import { isFlavorBoldLabel } from './helpers.js';
 import type {
   SubclassFeatureOutput,
+  SubclassFeatureOutputFields,
   SubclassFeatureBaseSlice,
   SubclassFeatureFieldsSlice,
   SubclassFeatureSpellsSlice,
@@ -28,7 +29,7 @@ export function finalizeSubclassFeature(
   _meta:    SubclassFeatureMetaSlice,
   $:        CheerioAPI,
   _target:  any,
-): SubclassFeatureOutput {
+): SubclassFeatureOutputFields {
   void _meta;
   void _target;
   const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -54,7 +55,7 @@ export function finalizeSubclassFeature(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies SubclassFeatureOutput;
+  } satisfies SubclassFeatureOutputFields;
 }
 
 /**
@@ -68,7 +69,7 @@ export function extractSubclassFeature(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: any,
-): SubclassFeatureOutput {
+): SubclassFeatureOutputFields {
   const extractSubclassFeatureBase = require('./base.js').extractSubclassFeatureBase;
   const extractSubclassFeatureFields = require('./base.js').extractSubclassFeatureFields;
   const extractSubclassFeatureSpells = require('./base.js').extractSubclassFeatureSpells;

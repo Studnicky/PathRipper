@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -33,8 +33,7 @@ import { parseOutcomesBlock } from '../capabilities/outcomesBlock.js';
 // ─── Inlined from Wave 5: action.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface ActionOutput {
-  _type: 'action';
+export interface ActionOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   action_id: number | null;
@@ -75,11 +74,13 @@ export interface ActionOutput {
   meta_keywords: string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ActionOutput = ConceptOutputBase<'action'> & ActionOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-action-base`. */
 export interface ActionBaseSlice {
-  _type:           'action';
   url:             string;
   action_id:       number | null;
   name:            string;
@@ -87,7 +88,7 @@ export interface ActionBaseSlice {
   action_cost:     ActionCost | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ActionOutput['source'];
+  source:          ActionOutputFields['source'];
   sources:         SourceRef[];
   legacy:          boolean;
   alt_edition_url: string | null;
@@ -101,7 +102,7 @@ export interface ActionEffectSlice {
   cost:         string | null;
   effect_html:  string;
   effect_text:  string;
-  outcomes:     ActionOutput['outcomes'];
+  outcomes:     ActionOutputFields['outcomes'];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -118,7 +119,7 @@ function dashToNull(value: string | null): string | null {
 /**
  * Parse outcomes from the effect HTML.
  */
-function parseOutcomes(bodyHtml: string): ActionOutput['outcomes'] {
+function parseOutcomes(bodyHtml: string): ActionOutputFields['outcomes'] {
   return parseOutcomesBlock(bodyHtml);
 }
 
@@ -135,7 +136,7 @@ function buildEffect(bodyHtml: string): { html: string; text: string } {
  * The raw text is typically "SkillName (Proficiency)" — e.g. "Acrobatics (Trained)".
  * The Skills.aspx link provides the skill_id.
  */
-function parseSkill(c: CommonExtraction): ActionOutput['skill'] {
+function parseSkill(c: CommonExtraction): ActionOutputFields['skill'] {
   const html = getFieldHtml(c, 'Skill');
   if (html === null) return null;
   // Extract Skills.aspx link
@@ -167,7 +168,6 @@ function parseSkill(c: CommonExtraction): ActionOutput['skill'] {
 /** Extract base identity slice (URL, traits, rarity, action cost, sources, legacy). */
 export function extractActionBase(c: CommonExtraction): ActionBaseSlice {
   return {
-    _type:           'action',
     url:             c.url,
     action_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -222,7 +222,7 @@ export function finalizeAction(
   base:   ActionBaseSlice,
   effect: ActionEffectSlice,
   $:      CheerioAPI,
-): ActionOutput {
+): ActionOutputFields {
   const skill = parseSkill(c);
   return {
     ...base,
@@ -232,7 +232,7 @@ export function finalizeAction(
     links:            c.links,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ActionOutput;
+  } satisfies ActionOutputFields;
 }
 
 // ─── Public extractor ─────────────────────────────────────────────────────────
@@ -244,7 +244,7 @@ export function finalizeAction(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed action extraction nodes.
  */
-export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ActionOutput {
+export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ActionOutputFields {
   void span;
   const base   = extractActionBase(c);
   const effect = extractActionEffect(c);

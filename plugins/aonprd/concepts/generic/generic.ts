@@ -5,14 +5,13 @@ import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { extractEntityId } from '../../common.js';
 import { baseFrom } from '../_helpers.js';
 import type {
-  GenericOutput,
+  GenericOutputFields,
   UnknownOutput,
 } from './types.js';
 
-export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): GenericOutput {
+export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): GenericOutputFields {
   void _span;
   return {
-    _type:      'generic',
     ...baseFrom(c, _$),
     generic_id: extractEntityId(c.url),
     level:      c.title.level,

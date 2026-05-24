@@ -7,7 +7,6 @@ import type { ArmorBaseSlice } from './types.js';
 /** Extract armor base slice. */
 export function extractArmorBase(c: CommonExtraction): ArmorBaseSlice {
   return {
-    _type:           'armor',
     url:             c.url,
     armor_id:        extractEntityId(c.url),
     name:            c.title.name,

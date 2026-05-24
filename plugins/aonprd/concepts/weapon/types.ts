@@ -6,11 +6,11 @@
  * respective concepts when fully split.
  */
 import type { Rarity, PfsLegality, SourceRef, LinkRef, ActionCost } from '../../common.js';
+import type { ConceptOutputBase } from '../../taxonomy.js';
 
 // ─── Output types ─────────────────────────────────────────────────────────────
 
-export interface WeaponOutput {
-  _type: 'weapon';
+export interface WeaponOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   weapon_id: number | null;
@@ -56,8 +56,10 @@ export interface WeaponOutput {
   pfs_note?: string | null;
 }
 
-export interface ArmorOutput {
-  _type: 'armor';
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type WeaponOutput = ConceptOutputBase<'weapon'> & WeaponOutputFields;
+
+export interface ArmorOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   armor_id: number | null;
@@ -102,6 +104,9 @@ export interface ArmorOutput {
   meta_keywords: string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ArmorOutput = ConceptOutputBase<'armor'> & ArmorOutputFields;
+
 export interface EquipmentVariant {
   name: string;
   item_level: number | null;
@@ -117,8 +122,7 @@ export interface Activation {
   text: string | null;
 }
 
-export interface EquipmentOutput {
-  _type: 'equipment';
+export interface EquipmentOutputFields {
   url: string;
   /** Numeric AON ID extracted from the URL query string. */
   equipment_id: number | null;
@@ -178,11 +182,13 @@ export interface EquipmentOutput {
   meta_keywords: string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type EquipmentOutput = ConceptOutputBase<'equipment'> & EquipmentOutputFields;
+
 // ─── Per-slice types ──────────────────────────────────────────────────────────
 
 /** Fields owned by `extract-weapon-base`. */
 export interface WeaponBaseSlice {
-  _type:           'weapon';
   url:             string;
   weapon_id:       number | null;
   name:            string;
@@ -223,7 +229,6 @@ export interface WeaponMetaSlice {
 
 /** Fields owned by `extract-armor-base`. */
 export interface ArmorBaseSlice {
-  _type:           'armor';
   url:             string;
   armor_id:        number | null;
   name:            string;
@@ -260,7 +265,6 @@ export interface ArmorMetaSlice {
 
 /** Fields owned by `extract-equipment-base`. */
 export interface EquipmentBaseSlice {
-  _type:           'equipment';
   url:             string;
   equipment_id:    number | null;
   name:            string;

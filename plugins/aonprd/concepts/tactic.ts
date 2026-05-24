@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -35,8 +35,7 @@ import {
 } from '../common.js';
 
 // ─── Inlined from Wave 5: tactic.ts ──────────────────────────────────
-export interface TacticOutput {
-  _type:           'tactic';
+export interface TacticOutputFields {
   url:             string;
   tactic_id:       number | null;
   name:            string;
@@ -70,9 +69,9 @@ export interface TacticOutput {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
+export type TacticOutput = ConceptOutputBase<'tactic'> & TacticOutputFields;
 
 export interface TacticBaseSlice {
-  _type:           'tactic';
   url:             string;
   tactic_id:       number | null;
   name:            string;
@@ -81,7 +80,7 @@ export interface TacticBaseSlice {
   trait_ids:       Record<string, number>;
   action_cost:     ActionCost | null;
   category:        string | null;
-  source:          TacticOutput['source'];
+  source:          TacticOutputFields['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -129,7 +128,6 @@ export function extractTacticBase(c: CommonExtraction): TacticBaseSlice {
   // Tactics' right-floated marker is the proficiency tier or category — not a
   // level. level_kind captures the marker prefix word.
   return {
-    _type:           'tactic',
     url:             c.url,
     tactic_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -197,7 +195,7 @@ export function finalizeTactic(
   mech:  TacticMechanicsSlice,
   _meta: TacticMetaSlice,
   $:     CheerioAPI,
-): TacticOutput {
+): TacticOutputFields {
   void _meta;
   return {
     ...base,
@@ -209,10 +207,10 @@ export function finalizeTactic(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies TacticOutput;
+  } satisfies TacticOutputFields;
 }
 
-export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): TacticOutput {
+export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): TacticOutputFields {
   void target;
   const base = extractTacticBase(c);
   const mech = extractTacticMechanics(c);

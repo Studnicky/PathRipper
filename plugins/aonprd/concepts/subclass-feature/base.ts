@@ -19,7 +19,6 @@ import {
 export function extractSubclassFeatureBase(c: CommonExtraction): SubclassFeatureBaseSlice {
   const fam = resolveFamily(c.url);
   return {
-    _type:           'subclass-feature',
     url:             c.url,
     subclass_feature_id:       extractEntityId(c.url),
     name:            c.title.name,

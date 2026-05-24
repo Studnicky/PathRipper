@@ -10,7 +10,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -52,8 +52,7 @@ export interface VehicleOperatorAction {
   text:        string;
 }
 
-export interface VehicleOutput {
-  _type:            'vehicle';
+export interface VehicleOutputFields {
   url:              string;
   /** Numeric AON Vehicles.aspx ID extracted from the URL query string. */
   vehicle_id:       number | null;
@@ -116,12 +115,12 @@ export interface VehicleOutput {
   meta_description: string | null;
   meta_keywords:    string | null;
 }
+export type VehicleOutput = ConceptOutputBase<'vehicle'> & VehicleOutputFields;
 
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-vehicle-base`. */
 export interface VehicleBaseSlice {
-  _type:           'vehicle';
   url:             string;
   vehicle_id:      number | null;
   name:            string;
@@ -132,7 +131,7 @@ export interface VehicleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          VehicleOutput['source'];
+  source:          VehicleOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -329,7 +328,6 @@ function buildDescription(bodyHtml: string): { html: string; text: string; tail:
 /** Extract base identity + header scalars for a vehicle page. */
 export function extractVehicleBase(c: CommonExtraction): VehicleBaseSlice {
   return {
-    _type:           'vehicle',
     url:             c.url,
     vehicle_id:      extractEntityId(c.url),
     name:            c.title.name,
@@ -402,7 +400,7 @@ export function finalizeVehicle(
   operation:  VehicleOperationSlice,
   _meta:      VehicleMetaSlice,
   $:          CheerioAPI,
-): VehicleOutput {
+): VehicleOutputFields {
   void _meta;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -416,7 +414,7 @@ export function finalizeVehicle(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies VehicleOutput;
+  } satisfies VehicleOutputFields;
 }
 
 /**
@@ -430,7 +428,7 @@ export function extractVehicle(
   c:      CommonExtraction,
   $:      CheerioAPI,
   _span:  CheerioNode,
-): VehicleOutput {
+): VehicleOutputFields {
   void _span;
   const base      = extractVehicleBase(c);
   const mechanics = extractVehicleMechanics(c);

@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -58,8 +58,7 @@ export interface ClassSampleNamedRef {
   kind: string;
 }
 
-export interface ClassSampleOutput {
-  _type:            'class-sample';
+export interface ClassSampleOutputFields {
   url:              string;
   /** Numeric AON ClassSamples.aspx ID extracted from the URL query string. */
   class_sample_id:  number | null;
@@ -105,11 +104,13 @@ export interface ClassSampleOutput {
   meta_keywords:        string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ClassSampleOutput = ConceptOutputBase<'class-sample'> & ClassSampleOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-class-sample-base`. */
 export interface ClassSampleBaseSlice {
-  _type:           'class-sample';
   url:             string;
   class_sample_id: number | null;
   name:            string;
@@ -119,7 +120,7 @@ export interface ClassSampleBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ClassSampleOutput['source'];
+  source:          ClassSampleOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -150,7 +151,6 @@ export interface ClassSampleMetaSlice {
 /** Extract base identity + header scalars for a class sample page. */
 export function extractClassSampleBase(c: CommonExtraction): ClassSampleBaseSlice {
   return {
-    _type:           'class-sample',
     url:             c.url,
     class_sample_id: extractEntityId(c.url),
     name:            c.title.name,
@@ -349,7 +349,7 @@ export function finalizeClassSample(
   _meta:    ClassSampleMetaSlice,
   $:        CheerioAPI,
   _target:  CheerioNode,
-): ClassSampleOutput {
+): ClassSampleOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -364,7 +364,7 @@ export function finalizeClassSample(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies ClassSampleOutput;
+  } satisfies ClassSampleOutputFields;
 }
 
 /**
@@ -378,7 +378,7 @@ export function extractClassSample(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ClassSampleOutput {
+): ClassSampleOutputFields {
   const base     = extractClassSampleBase(c);
   const identity = extractClassSampleIdentity(c);
   const build    = extractClassSampleBuild(c);

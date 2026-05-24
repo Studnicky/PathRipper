@@ -9,7 +9,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -37,8 +37,7 @@ export interface ArmorGroupArmor {
   armor_id: number | null;
 }
 
-export interface ArmorGroupOutput {
-  _type:                       'armor-group';
+export interface ArmorGroupOutputFields {
   url:                         string;
   /** Numeric AON ArmorGroups.aspx ID extracted from the URL query string. */
   group_id:                    number | null;
@@ -69,10 +68,12 @@ export interface ArmorGroupOutput {
   meta_keywords:               string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type ArmorGroupOutput = ConceptOutputBase<'armor-group'> & ArmorGroupOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface ArmorGroupBaseSlice {
-  _type:           'armor-group';
   url:             string;
   group_id:        number | null;
   name:            string;
@@ -82,7 +83,7 @@ export interface ArmorGroupBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          ArmorGroupOutput['source'];
+  source:          ArmorGroupOutputFields['source'];
   sources:         SourceRef[];
 }
 
@@ -134,7 +135,6 @@ function parseArmors(armorsHtml: string): ArmorGroupArmor[] {
 
 export function extractArmorGroupBase(c: CommonExtraction): ArmorGroupBaseSlice {
   return {
-    _type:           'armor-group',
     url:             c.url,
     group_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -179,7 +179,7 @@ export function finalizeArmorGroup(
   content: ArmorGroupContentSlice,
   $:       CheerioAPI,
   _target: CheerioNode,
-): ArmorGroupOutput {
+): ArmorGroupOutputFields {
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
   return {
@@ -194,7 +194,7 @@ export function finalizeArmorGroup(
     body_html:                 c.body_html,
     meta_description:          extractMetaDescription($),
     meta_keywords:             extractMetaKeywords($),
-  } satisfies ArmorGroupOutput;
+  } satisfies ArmorGroupOutputFields;
 }
 
 /**
@@ -206,7 +206,7 @@ export function extractArmorGroup(
   c:      CommonExtraction,
   $:      CheerioAPI,
   target: CheerioNode,
-): ArmorGroupOutput {
+): ArmorGroupOutputFields {
   const base    = extractArmorGroupBase(c);
   const content = extractArmorGroupContent(c, $, target);
   return finalizeArmorGroup(c, base, content, $, target);

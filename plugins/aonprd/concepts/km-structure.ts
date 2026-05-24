@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -60,8 +60,7 @@ export interface KmStructureCostComponent {
   label: string;
 }
 
-export interface KmStructureOutput {
-  _type:           'km-structure';
+export interface KmStructureOutputFields {
   url:             string;
   structure_id:    number | null;
   name:            string;
@@ -109,10 +108,12 @@ export interface KmStructureOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type KmStructureOutput = ConceptOutputBase<'km-structure'> & KmStructureOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 export interface KmStructureBaseSlice {
-  _type:           'km-structure';
   url:             string;
   structure_id:    number | null;
   name:            string;
@@ -120,7 +121,7 @@ export interface KmStructureBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   level:           number | null;
-  source:          KmStructureOutput['source'];
+  source:          KmStructureOutputFields['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -231,7 +232,6 @@ function extractDescription(c: CommonExtraction): string {
 
 export function extractKmStructureBase(c: CommonExtraction): KmStructureBaseSlice {
   return {
-    _type:           'km-structure',
     url:             c.url,
     structure_id:    extractEntityId(c.url),
     name:            c.title.name,
@@ -317,7 +317,7 @@ export function finalizeKmStructure(
   mech:     KmStructureMechanicsSlice,
   _meta:    KmStructureMetaSlice,
   $:        CheerioAPI,
-): KmStructureOutput {
+): KmStructureOutputFields {
   void _meta;
   void getField;
   return {
@@ -330,14 +330,14 @@ export function finalizeKmStructure(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies KmStructureOutput;
+  } satisfies KmStructureOutputFields;
 }
 
 /**
  * Project a KMStructures.aspx page into a typed KmStructureOutput. Thin
  * assembly wrapper for `parseAonHtml` and unit-test direct-call paths.
  */
-export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmStructureOutput {
+export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmStructureOutputFields {
   void target;
   const base = extractKmStructureBase(c);
   const mech = extractKmStructureMechanics(c);

@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -34,8 +34,7 @@ import {
 // ─── Inlined from Wave 5: background.ts ──────────────────────────────────
 // ─── Output shape ─────────────────────────────────────────────────────────────
 
-export interface BackgroundOutput {
-  _type:                   'background';
+export interface BackgroundOutputFields {
   url:                     string;
   background_id:               number | null;
   name:                    string;
@@ -66,10 +65,12 @@ export interface BackgroundOutput {
   related_sources:         Array<{ name: string; source_id: number | null }>;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type BackgroundOutput = ConceptOutputBase<'background'> & BackgroundOutputFields;
+
 // ─── Per-slice shapes ─────────────────────────────────────────────────────────
 
 export interface BackgroundBaseSlice {
-  _type:           'background';
   url:             string;
   background_id:       number | null;
   name:            string;
@@ -107,7 +108,6 @@ export function extractBackgroundBase(c: CommonExtraction, _$: CheerioAPI, _span
   void _$;
   void _span;
   return {
-    _type:           'background',
     url:             c.url,
     background_id:       extractEntityId(c.url),
     name:            c.title.name,
@@ -201,7 +201,7 @@ export function finalizeBackground(
   base:     BackgroundBaseSlice,
   benefits: BackgroundBenefitsSlice,
   $:        CheerioAPI,
-): BackgroundOutput {
+): BackgroundOutputFields {
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
 
   return {
@@ -214,7 +214,7 @@ export function finalizeBackground(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies BackgroundOutput;
+  } satisfies BackgroundOutputFields;
 }
 
 /**
@@ -224,7 +224,7 @@ export function finalizeBackground(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed background extraction nodes.
  */
-export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): BackgroundOutput {
+export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): BackgroundOutputFields {
   const base     = extractBackgroundBase(c, $, span);
   const benefits = extractBackgroundBenefits(c);
   return finalizeBackground(c, base, benefits, $);

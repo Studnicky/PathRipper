@@ -8,7 +8,7 @@ import {
   stripStructuredKeys,
 } from '../../common.js';
 import type {
-  DeityOutput,
+  DeityOutputFields,
   DeityBaseSlice,
   DeityDevoteeBenefitsSlice,
   DeityEdictsAnathemaSlice,
@@ -48,7 +48,7 @@ export function finalizeDeity(
   _meta:     DeityMetaSlice,
   $:         CheerioAPI,
   _target:   CheerioNode,
-): DeityOutput {
+): DeityOutputFields {
   void _meta;
   void _target;
   const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
@@ -66,5 +66,5 @@ export function finalizeDeity(
     body_html:           c.body_html,
     meta_description:    extractMetaDescription($),
     meta_keywords:       extractMetaKeywords($),
-  } satisfies DeityOutput;
+  } satisfies DeityOutputFields;
 }

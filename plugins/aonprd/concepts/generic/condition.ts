@@ -13,13 +13,13 @@ import {
 import { parseConditionStages } from './helpers.js';
 import type {
   ConditionOutput,
+  ConditionOutputFields,
   ConditionBaseSlice,
   ConditionStagesSlice,
 } from './types.js';
 
 export function extractConditionBase(c: CommonExtraction): ConditionBaseSlice {
   return {
-    _type:           'condition',
     url:             c.url,
     condition_id:    extractEntityId(c.url),
     name:            c.title.name,
@@ -52,10 +52,9 @@ export function finalizeCondition(
   base:   ConditionBaseSlice,
   stages: ConditionStagesSlice,
   $:      CheerioAPI,
-): ConditionOutput {
+): ConditionOutputFields {
   const baseShape = baseFrom(c, $);
   return {
-    _type:              'condition',
     ...baseShape,
     url:                base.url,
     condition_id:       base.condition_id,
@@ -71,10 +70,10 @@ export function finalizeCondition(
     raw_fields:         stripStructuredKeys(c.field_map, CONDITION_CLAIMED_LABELS),
     stages:             stages.stages,
     related_conditions: stages.related_conditions,
-  } satisfies ConditionOutput;
+  } satisfies ConditionOutputFields;
 }
 
-export function extractCondition(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): ConditionOutput {
+export function extractCondition(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): ConditionOutputFields {
   void _span;
   const base   = extractConditionBase(c);
   const stages = extractConditionStages(c);

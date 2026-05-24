@@ -14,7 +14,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -40,8 +40,7 @@ export interface CampMealOutcome {
   text: string;
 }
 
-export interface CampMealOutput {
-  _type:           'camp-meal';
+export interface CampMealOutputFields {
   url:             string;
   meal_id:         number | null;
   name:            string;
@@ -74,8 +73,10 @@ export interface CampMealOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type CampMealOutput = ConceptOutputBase<'camp-meal'> & CampMealOutputFields;
+
 export interface CampMealBaseSlice {
-  _type:           'camp-meal';
   url:             string;
   meal_id:         number | null;
   name:            string;
@@ -83,7 +84,7 @@ export interface CampMealBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   level:           number | null;
-  source:          CampMealOutput['source'];
+  source:          CampMealOutputFields['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -154,7 +155,6 @@ function clean(s: string | null): string | null {
 
 export function extractCampMealBase(c: CommonExtraction): CampMealBaseSlice {
   return {
-    _type:           'camp-meal',
     url:             c.url,
     meal_id:         extractEntityId(c.url),
     name:            c.title.name,
@@ -200,7 +200,7 @@ export function finalizeCampMeal(
   mech:  CampMealMechanicsSlice,
   _meta: CampMealMetaSlice,
   $:     CheerioAPI,
-): CampMealOutput {
+): CampMealOutputFields {
   void _meta;
   return {
     ...base,
@@ -212,10 +212,10 @@ export function finalizeCampMeal(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies CampMealOutput;
+  } satisfies CampMealOutputFields;
 }
 
-export function extractCampMeal(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): CampMealOutput {
+export function extractCampMeal(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): CampMealOutputFields {
   void target;
   const base = extractCampMealBase(c);
   const mech = extractCampMealMechanics(c);

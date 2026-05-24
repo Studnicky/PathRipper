@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../src/services/RipperServices.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl, ConceptOutputBase } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -40,8 +40,7 @@ export interface KmEventOutcome {
   text: string;
 }
 
-export interface KmEventOutput {
-  _type:           'km-event';
+export interface KmEventOutputFields {
   url:             string;
   event_id:        number | null;
   name:            string;
@@ -77,8 +76,10 @@ export interface KmEventOutput {
   meta_keywords:    string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type KmEventOutput = ConceptOutputBase<'km-event'> & KmEventOutputFields;
+
 export interface KmEventBaseSlice {
-  _type:           'km-event';
   url:             string;
   event_id:        number | null;
   name:            string;
@@ -86,7 +87,7 @@ export interface KmEventBaseSlice {
   traits:          string[];
   trait_ids:       Record<string, number>;
   level:           number | null;
-  source:          KmEventOutput['source'];
+  source:          KmEventOutputFields['source'];
   sources:         SourceRef[];
   pfs:             PfsLegality | null;
   legacy:          boolean;
@@ -194,7 +195,6 @@ function extractDescription(body: string): string {
 
 export function extractKmEventBase(c: CommonExtraction): KmEventBaseSlice {
   return {
-    _type:           'km-event',
     url:             c.url,
     event_id:        extractEntityId(c.url),
     name:            c.title.name,
@@ -240,7 +240,7 @@ export function finalizeKmEvent(
   mech:  KmEventMechanicsSlice,
   _meta: KmEventMetaSlice,
   $:     CheerioAPI,
-): KmEventOutput {
+): KmEventOutputFields {
   void _meta;
   return {
     ...base,
@@ -252,10 +252,10 @@ export function finalizeKmEvent(
     body_html:        c.body_html,
     meta_description: extractMetaDescription($),
     meta_keywords:    extractMetaKeywords($),
-  } satisfies KmEventOutput;
+  } satisfies KmEventOutputFields;
 }
 
-export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmEventOutput {
+export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmEventOutputFields {
   void target;
   const base = extractKmEventBase(c);
   const mech = extractKmEventMechanics(c);

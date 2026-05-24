@@ -1,6 +1,7 @@
 // Deity concept types.
 
 import type { Rarity, PfsLegality, Section, SourceRef, LinkRef } from '../../common.js';
+import type { ConceptOutputBase } from '../../taxonomy.js';
 
 /** A spell rank entry from the `Cleric Spells` line. */
 export interface DeityClericSpellRank {
@@ -27,8 +28,7 @@ export interface DeityRelationship {
   href:      string;
 }
 
-export interface DeityOutput {
-  _type:            'deity';
+export interface DeityOutputFields {
   url:              string;
   /** Numeric AON Deities.aspx ID extracted from the URL query string. */
   deity_id:         number | null;
@@ -91,11 +91,13 @@ export interface DeityOutput {
   meta_keywords:        string | null;
 }
 
+/** Full output shape — `_type` discriminator stamped by the router at chain entry. */
+export type DeityOutput = ConceptOutputBase<'deity'> & DeityOutputFields;
+
 // ─── Per-node slice types ─────────────────────────────────────────────────────
 
 /** Fields owned by `extract-deity-base`. */
 export interface DeityBaseSlice {
-  _type:           'deity';
   url:             string;
   deity_id:        number | null;
   name:            string;
@@ -105,7 +107,7 @@ export interface DeityBaseSlice {
   alt_edition_url: string | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
-  source:          DeityOutput['source'];
+  source:          DeityOutputFields['source'];
   sources:         SourceRef[];
 }
 

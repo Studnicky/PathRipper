@@ -19,7 +19,6 @@ import { resolveKind } from './helpers.js';
 /** Extract identity, header scalars, traits, and source refs. */
 export function extractSpellBase(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): SpellBaseSlice {
   return {
-    _type:           'spell',
     url:             c.url,
     spell_id:        extractEntityId(c.url),
     name:            c.title.name,
