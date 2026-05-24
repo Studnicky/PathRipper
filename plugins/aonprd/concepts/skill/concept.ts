@@ -12,7 +12,7 @@ import { extractSkillBase } from './base.js';
 import { extractSkillActions } from './actions.js';
 import { extractSkillProficiencyTiers } from './proficiency-tiers.js';
 import { extractSkillMeta, finalizeSkill } from './finalize.js';
-import type { SkillOutput, SkillBaseOutput, SkillActionsOutput, SkillProficiencyTiersOutput, FinalizeSkillOutput } from './types.js';
+import type { SkillOutput } from './types.js';
 
 // Re-export output types for tests
 export type SkillBaseOutput = 'success' | 'error';

@@ -1,7 +1,9 @@
 // Skill concept — parsing helpers.
-import type { CheerioAPI, Element, AnyNode } from 'cheerio';
+import type { CheerioAPI } from 'cheerio';
+import type { Element, AnyNode } from 'domhandler';
 import { htmlToText } from '../../common.js';
-import type { SkillProficiencyRank, ActionCost, SkillAction, SkillProficiencyTier } from './types.js';
+import type { ActionCost } from '../../common.js';
+import type { SkillProficiencyRank, SkillAction, SkillProficiencyTier } from './types.js';
 import { ACTION_LABEL_TO_COST, KEY_ABILITY_RE, PROFICIENCY_RANKS, PROFICIENCY_RANK_SET } from './types.js';
 
 // ─── Title parsing ────────────────────────────────────────────────────────────
@@ -130,7 +132,7 @@ export function parseActions($: CheerioAPI, span: any): SkillAction[] {
   let currentTier: SkillProficiencyRank | 'untrained' | null = null;
 
   // Walk every h1.title (group/tier) and h2.title (action) in source order.
-  span.find('h1.title, h2.title').each((_, el: any) => {
+  span.find('h1.title, h2.title').each((_: number, el: AnyNode) => {
     const tag = (el as Element).tagName.toLowerCase();
     const $h  = $(el);
 
@@ -287,7 +289,7 @@ export function buildSkillAction(
 export function parseProficiencyTiers($: CheerioAPI, span: any): SkillProficiencyTier[] {
   const out: SkillProficiencyTier[] = [];
 
-  span.find('h3.title').each((_, el: any) => {
+  span.find('h3.title').each((_: number, el: AnyNode) => {
     const $h3 = $(el);
     const heading = $h3.text().trim();
     if (!/sample\b.*\btasks?\s*$/i.test(heading)) return;

@@ -7,6 +7,7 @@ import type {
   SubclassFeatureFieldsSlice,
   SubclassFeatureSpellsSlice,
   SubclassFeatureFeaturesSlice,
+  SubclassFeatureSpellGroup,
 } from './types.js';
 import {
   SPELL_LIST_HEADINGS,
