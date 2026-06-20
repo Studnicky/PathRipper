@@ -28,8 +28,9 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc --noEmit false && npm run build:plugins",
+    "build": "tsc --noEmit false && npm run build:plugins && npm run build:workers",
     "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
+    "build:workers": "tsc -p tsconfig.workers.json",
     "typecheck": "tsc --noEmit",
     "typecheck:tests": "tsc -p tsconfig.typecheck.json",
     "lint": "eslint 'src/**/*.ts'",
@@ -48,6 +49,7 @@
   },
   "dependencies": {
     "@studnicky/dagonizer": "^0.24.0",
+    "@studnicky/dagonizer-executor-node": "^0.24.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bottleneck": "^2.19.5",

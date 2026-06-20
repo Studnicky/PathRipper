@@ -67,21 +67,28 @@ export const htmlPageFlowName = (targetId: string): string => `htmlPageDAG:${tar
  *   - `validate:schema`→ `valid` continues; `invalid` terminates (failed).
  *   - Plugin DAG steps → `.embeddedDAG()` (`success` continues; `error` terminates failed).
  *
- * @param pipelineNames  - Ordered list of node names from the target config.
+ * @param pipelineNames       - Ordered list of node names from the target config.
  *   `crawl:list-targets` is silently filtered.
- * @param targetId       - Used to build the deterministic DAG name.
- * @param pluginDagNames - Names of pipeline entries that are registered as DAGs
- *                         (not nodes). These get `.embeddedDAG()` placements.
- *                         Defaults to empty set.
+ * @param targetId            - Used to build the deterministic DAG name.
+ * @param pluginDagNames      - Names of pipeline entries that are registered as DAGs
+ *                              (not nodes). These get `.embeddedDAG()` placements.
+ *                              Defaults to empty set.
+ * @param parseWorkerContainer - Optional container role name for plugin parse DAG
+ *                              placements. When provided, each plugin DAG `embeddedDAG`
+ *                              placement includes `container: parseWorkerContainer` so
+ *                              the sub-DAG executes in the bound container (e.g. a
+ *                              `WorkerThreadContainer`). When absent (default), all
+ *                              placements run in-process.
  * @returns A `DAGType` ready for `dispatcher.registerDAG()`.
  *
  * @category Flows
  * @since 4.0.0
  */
 export const buildHtmlPageFlow = (
-  pipelineNames:  ReadonlyArray<string>,
-  targetId:       string,
-  pluginDagNames: ReadonlySet<string> = new Set(),
+  pipelineNames:       ReadonlyArray<string>,
+  targetId:            string,
+  pluginDagNames:      ReadonlySet<string> = new Set(),
+  parseWorkerContainer?: string,
 ): DAGType => {
   const steps = pipelineNames.filter((name) => name !== 'crawl:list-targets');
 
@@ -101,9 +108,11 @@ export const buildHtmlPageFlow = (
       // Seed the child with the fetched `page` (carries html/url the plugin reads)
       // and map child `output` back to parent `output` so json:write sees the parsed result.
       // Transient `aonprd*` metadata the plugin sets already crosses the clone boundary.
+      // When parseWorkerContainer is set, route this embedded DAG through the worker pool.
       builder.embeddedDAG<ScrapeState, ScrapeState>(name, name, { success: next, error: FAILED }, {
         inputs:  { page: 'page' },
         outputs: { output: 'output' },
+        ...(parseWorkerContainer !== undefined ? { container: parseWorkerContainer } : {}),
       });
       continue;
     }
@@ -115,6 +124,7 @@ export const buildHtmlPageFlow = (
       // This covers steps registered on the dispatcher outside of BUILTIN_NODES that are
       // not explicitly declared in pluginDagNames (e.g. plugin DAGs with defaulted callers).
       // Seed the child with `page` and map child `output` back to parent `output`.
+      // Unknown steps are not plugin DAGs and do not receive the worker container role.
       builder.embeddedDAG<ScrapeState, ScrapeState>(name, name, { success: next, error: FAILED }, {
         inputs:  { page: 'page' },
         outputs: { output: 'output' },

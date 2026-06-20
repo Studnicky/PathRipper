@@ -23,6 +23,12 @@ export type ScrapeHtmlOptionsType = {
   readonly configDir: string;
   /** Validated ripperoni configuration. */
   readonly config:    NormalizedRipperConfigType;
+  /**
+   * Run the CPU-bound per-page parse in a system-sized worker-thread pool.
+   * Defaults to `true`. Falls back to in-process when the compiled worker tree
+   * (`npm run build:workers`) is absent. Set `false` to force in-process.
+   */
+  readonly enableWorkers?: boolean;
 };
 
 /**

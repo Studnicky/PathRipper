@@ -45,17 +45,6 @@ import type { ScrapeWikiOptionsType, FailuresManifestType } from '../types/Rippe
 import type { ScrapeWikiResult }       from '../types/Results.js';
 
 import {
-  HtmlFetchNode,
-  WikiFetchNode,
-  HtmlWriteRawNode,
-  WikiWriteRawNode,
-  JsonWriteNode,
-  JsonlAppendNode,
-  ValidateSchemaNode,
-  CrawlListTargetsNode,
-  TerminalNode,
-} from '../nodes/index.js';
-import {
   ChooseModeNode,
   ResumeFailuresNode,
   FetchSingleCategoryNode,
@@ -68,94 +57,11 @@ import {
   WIKI_RESOLVE_MEMBERS_FLOW,
 } from '../flows/wikiScrapeFlow.js';
 import { buildWikiPageFlow, wikiPageFlowName } from '../flows/wikiPageFlow.js';
-
-// ── Constants ──────────────────────────────────────────────────────────────────
-
-const BUILTIN_PREFIXES: ReadonlyArray<string> = [
-  'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
-];
+import { PluginLoader }                from './PluginLoader.js';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const log = Logger.forComponent('runWiki');
-
-const requirePipeline = (target: Record<string, unknown>, targetId: string): string[] => {
-  const pipeline = target['pipeline'];
-  if (!Array.isArray(pipeline) || pipeline.length === 0) {
-    throw new Error(`Target "${targetId}" must declare a non-empty pipeline: string[]`);
-  }
-  for (const name of pipeline) {
-    if (typeof name !== 'string' || name.length === 0) {
-      throw new Error(`Target "${targetId}" pipeline contains a non-string entry`);
-    }
-  }
-  return pipeline as string[];
-};
-
-const derivePluginTaskName = (pipeline: ReadonlyArray<string>): string | undefined => {
-  for (const entry of pipeline) {
-    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-    return entry;
-  }
-  return undefined;
-};
-
-const loadAndRegisterPlugins = async (
-  dispatcher:    RipperDagonizer<ScrapeState>,
-  pipelineNames: ReadonlyArray<string>,
-  configDir:     string,
-): Promise<Set<string>> => {
-  const pluginDagNames = new Set<string>();
-  const seen = new Set<string>();
-
-  for (const entry of pipelineNames) {
-    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-    const colon = entry.indexOf(':');
-    if (colon <= 0) continue;
-    const word = entry.slice(0, colon);
-    const verb = entry.slice(colon + 1);
-    const path = `./plugins/${word}/${verb}.task.js`;
-    if (seen.has(path)) continue;
-    seen.add(path);
-    const absPath = resolve(configDir, path);
-    let mod: unknown;
-    try {
-      mod = await import(absPath);
-    } catch (err) {
-      const nodeErr = err as NodeJS.ErrnoException;
-      if (
-        nodeErr.code === 'ENOENT' ||
-        nodeErr.code === 'MODULE_NOT_FOUND' ||
-        nodeErr.code === 'ERR_MODULE_NOT_FOUND'
-      ) {
-        throw new Error(`Plugin file not found: ${absPath}`, { cause: err });
-      }
-      throw err;
-    }
-    const modRecord = mod as Record<string, unknown>;
-    if (typeof modRecord['register'] !== 'function') {
-      throw new Error(
-        `Plugin at ${absPath} does not export register(dispatcher): void. `
-        + `Add: export function register(dispatcher: RipperDagonizer<ScrapeState>): void { ... }`,
-      );
-    }
-    (modRecord['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
-    pluginDagNames.add(entry);
-  }
-  return pluginDagNames;
-};
-
-const registerBuiltinNodes = (dispatcher: RipperDagonizer<ScrapeState>): void => {
-  dispatcher.registerNode(HtmlFetchNode);
-  dispatcher.registerNode(WikiFetchNode);
-  dispatcher.registerNode(HtmlWriteRawNode);
-  dispatcher.registerNode(WikiWriteRawNode);
-  dispatcher.registerNode(JsonWriteNode);
-  dispatcher.registerNode(JsonlAppendNode);
-  dispatcher.registerNode(ValidateSchemaNode);
-  dispatcher.registerNode(CrawlListTargetsNode);
-  dispatcher.registerNode(TerminalNode);
-};
 
 const toSlug = (title: string): string =>
   title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -191,8 +97,8 @@ export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
   }
 
   const targetCfg      = wikiTarget as Record<string, unknown>;
-  const pipelineNames  = requirePipeline(targetCfg, opts.target);
-  const pluginTaskName = derivePluginTaskName(pipelineNames);
+  const pipelineNames  = PluginLoader.requirePipeline(targetCfg, opts.target);
+  const pluginTaskName = PluginLoader.derivePluginTaskName(pipelineNames);
   const outputCfgWiki  = opts.config.output as Record<string, unknown>;
   const splitByTaskName: boolean | undefined =
     typeof outputCfgWiki['splitByTaskName'] === 'boolean'
@@ -334,9 +240,9 @@ export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
     };
     batchHolder.current = batchServices;
 
-    registerBuiltinNodes(batchDispatcher);
+    PluginLoader.registerBuiltinNodes(batchDispatcher);
 
-    const wikiPluginDagNames = await loadAndRegisterPlugins(batchDispatcher, pipelineNames, opts.configDir);
+    const wikiPluginDagNames = await PluginLoader.registerInto(batchDispatcher, pipelineNames, opts.configDir);
 
     // ── Phase + composition DAGs (DAGBuilder) ────────────────────────────────
     // Per-page DAG must be registered before the phase DAGs that reference it

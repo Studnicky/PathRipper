@@ -112,13 +112,33 @@ export class ScrapeState extends NodeStateBase {
   }
 
   /**
+   * Serialize state to a JSON-safe snapshot for transport or checkpointing.
+   *
+   * Overrides the base to clear transient non-serialisable plugin metadata
+   * (CheerioAPI handles, CheerioNode objects) IN PLACE on `this._metadata`
+   * before `super.snapshot()` spreads `_metadata` into the wire object.
+   * `clearTransientMetadata` deletes the keys directly from `this.metadata`
+   * via a cast — it does not operate on a copy.
+   *
+   * The cleared handles (CheerioAPI etc.) are cheaply re-derived from
+   * `state.page.html` by `aonprd:load-and-common` when a worker thread or
+   * checkpoint resumes execution for the next node in the pipeline.
+   *
+   * At the coordinator's worker-handoff point none of the transient metadata
+   * keys are set yet — `html:fetch` runs first (populating `state.page.html`),
+   * and the parse nodes that write these keys run inside the worker. The
+   * `clearTransientMetadata` call at coordinator snapshot time is therefore
+   * a no-op for the coordinator and never strips handles the coordinator
+   * still needs.
+   */
+  override snapshot(): JsonObjectType {
+    this.clearTransientMetadata();
+    return super.snapshot();
+  }
+
+  /**
    * Snapshots domain-specific fields for `Checkpoint.from()`.
    * Called by the engine automatically; do not call directly.
-   *
-   * Transient plugin metadata keys (prefixed `aonprd`) are deliberately
-   * excluded — they carry non-serialisable objects (CheerioAPI handles,
-   * CheerioNode objects) and are cheaply re-derived from `state.page.html`
-   * if a checkpoint resumes.
    */
   protected override snapshotData(): JsonObjectType {
     return {

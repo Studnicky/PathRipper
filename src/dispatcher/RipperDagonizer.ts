@@ -1,14 +1,20 @@
 import { Dagonizer } from '@studnicky/dagonizer';
-import type { ExecutionResultType, NodeStateInterface } from '@studnicky/dagonizer';
+import type { DagContainerInterface, ExecutionResultType, NodeStateInterface } from '@studnicky/dagonizer';
 
 import { Logger } from '../modules/logger/logger.js';
 import type { RipperServices } from '../services/RipperServices.js';
 
 const log = Logger.forComponent('Dispatcher');
 
-export type RipperDagonizerOptionsType = {
+export type RipperDagonizerOptionsType<TState extends NodeStateInterface = NodeStateInterface> = {
   readonly services: RipperServices;
-};;
+  /**
+   * Named container backends to bind to the dispatcher. Keys are the logical
+   * role names declared on `embeddedDAG` placements (`container: '<role>'`).
+   * When omitted, all placements run in-process (default behaviour).
+   */
+  readonly containers?: Record<string, DagContainerInterface<TState>>;
+};
 
 /**
  * `Dagonizer` subclass that logs the lifecycle hooks directly via a
@@ -23,8 +29,11 @@ export type RipperDagonizerOptionsType = {
 export class RipperDagonizer<TState extends NodeStateInterface>
   extends Dagonizer<TState, RipperServices> {
 
-  constructor(options: RipperDagonizerOptionsType) {
-    super({ services: options.services });
+  constructor(options: RipperDagonizerOptionsType<TState>) {
+    super({
+      services: options.services,
+      ...(options.containers !== undefined ? { containers: options.containers } : {}),
+    });
   }
 
   protected override onFlowStart(dagName: string, _state: TState): void {

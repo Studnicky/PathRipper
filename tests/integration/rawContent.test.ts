@@ -107,6 +107,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const pDir   = join(outDir, 'raw-default', 'stub:parse');
@@ -129,6 +130,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const rawDir   = join(outDir, 'raw-html', 'raw');
@@ -149,6 +151,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const rawDir   = join(outDir, 'raw-only', 'raw');
@@ -168,6 +171,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const pDir  = join(outDir, 'raw-off', 'stub:parse');
@@ -205,6 +209,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const failuresPath = join(outDir, 'retry-flow', 'failures.json');
@@ -228,6 +233,7 @@ export function register(dispatcher) {
       outDir,
       configDir: outDir,
       config,
+      enableWorkers: false,
     });
 
     const rawDir   = join(outDir, 'aonprd', 'raw');

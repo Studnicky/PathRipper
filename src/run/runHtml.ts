@@ -14,9 +14,14 @@
  */
 
 import { writeFile, mkdir } from 'node:fs/promises';
+import { existsSync }       from 'node:fs';
 import { resolve }          from 'node:path';
+import { fileURLToPath }    from 'node:url';
+import { availableParallelism } from 'node:os';
 
-import type { DagonizerInterface }  from '@studnicky/dagonizer';
+import type { DagContainerInterface, DagonizerInterface } from '@studnicky/dagonizer';
+import { RecommendedWorkerCountConfigDefault }             from '@studnicky/dagonizer/entities';
+import { NodeSystemInfo, WorkerThreadContainer }           from '@studnicky/dagonizer-executor-node';
 
 import {
   buildHtmlScrapePhaseDag,
@@ -37,107 +42,51 @@ import { ScrapeState }                from '../state/ScrapeState.js';
 import type { ScrapeHtmlOptionsType, FailuresManifestType } from '../types/RipperRun.js';
 import type { ScrapeHtmlResult }       from '../types/Results.js';
 
-import {
-  HtmlFetchNode,
-  WikiFetchNode,
-  HtmlWriteRawNode,
-  WikiWriteRawNode,
-  JsonWriteNode,
-  JsonlAppendNode,
-  ValidateSchemaNode,
-  CrawlListTargetsNode,
-  TerminalNode,
-} from '../nodes/index.js';
-
 import { buildHtmlPageFlow, htmlPageFlowName } from '../flows/htmlPageFlow.js';
+import { PluginLoader }                from './PluginLoader.js';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const BUILTIN_PREFIXES: ReadonlyArray<string> = [
-  'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
-];
+/**
+ * Container role name used for the parse worker pool.
+ * Matches the key in `containers: { [PARSE_WORKER_ROLE]: container }`.
+ */
+const PARSE_WORKER_ROLE = 'parseWorkers';
+
+/**
+ * Registry module URL for the plugin-agnostic worker-thread parse pool.
+ *
+ * The registry must always resolve to the COMPILED `dist/` JavaScript — never
+ * the `.ts` source. A worker thread spawned by `WorkerThreadContainer` does not
+ * apply the tsx `.js`→`.ts` loader hook to the registry module's transitive
+ * static imports (`PluginLoader`, the node graph, …), so a `.ts` registry URL
+ * fails at module-resolution time inside the worker. This mirrors the
+ * `@studnicky/dagonizer` reference (`@studnicky/dagonizer-executor-node`
+ * README, `ConformanceRegistry`): the `registryModule` is a compiled `.js`
+ * file resolved via `new URL('./registry.js', import.meta.url)`, with an import
+ * graph that resolves under plain Node — no transpiler in the worker.
+ *
+ * The registry lives in a dedicated, self-contained compiled tree under
+ * `dist-workers/` (built by `npm run build:workers` from `tsconfig.workers.json`,
+ * which preserves the `src/`↔`plugins/` relative layout). The worker loads only
+ * from that tree, so the path never depends on the in-place `src/*.js` build
+ * output. The registry is plugin-agnostic: it rebuilds whatever plugin parse DAG
+ * the run's pipeline names describe, driven by `servicesConfig.pipelineNames`.
+ *
+ * Resolution: `runHtml` is two levels under the repo root in both dev
+ * (`…/src/run/runHtml.ts`) and prod (`…/dist/run/runHtml.js`), so the compiled
+ * worker registry at `<root>/dist-workers/src/workers/parseRegistry.js` is
+ * reached with the same relative URL in both environments.
+ */
+const REGISTRY_MODULE_URL =
+  new URL('../../dist-workers/src/workers/parseRegistry.js', import.meta.url).href;
+
+/** Absolute path to the self-contained worker compile tree (the worker's `configDir`). */
+const WORKER_CONFIG_DIR = fileURLToPath(new URL('../../dist-workers/', import.meta.url));
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const log = Logger.forComponent('runHtml');
-
-const requirePipeline = (target: Record<string, unknown>, targetId: string): string[] => {
-  const pipeline = target['pipeline'];
-  if (!Array.isArray(pipeline) || pipeline.length === 0) {
-    throw new Error(`Target "${targetId}" must declare a non-empty pipeline: string[]`);
-  }
-  for (const name of pipeline) {
-    if (typeof name !== 'string' || name.length === 0) {
-      throw new Error(`Target "${targetId}" pipeline contains a non-string entry`);
-    }
-  }
-  return pipeline as string[];
-};
-
-const derivePluginTaskName = (pipeline: ReadonlyArray<string>): string | undefined => {
-  for (const entry of pipeline) {
-    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-    return entry;
-  }
-  return undefined;
-};
-
-const loadAndRegisterPlugins = async (
-  dispatcher:    RipperDagonizer<ScrapeState>,
-  pipelineNames: ReadonlyArray<string>,
-  configDir:     string,
-): Promise<Set<string>> => {
-  const pluginDagNames = new Set<string>();
-  const seen = new Set<string>();
-
-  for (const entry of pipelineNames) {
-    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-    const colon = entry.indexOf(':');
-    if (colon <= 0) continue;
-    const word = entry.slice(0, colon);
-    const verb = entry.slice(colon + 1);
-    const path = `./plugins/${word}/${verb}.task.js`;
-    if (seen.has(path)) continue;
-    seen.add(path);
-    const absPath = resolve(configDir, path);
-    let mod: unknown;
-    try {
-      mod = await import(absPath);
-    } catch (err) {
-      const nodeErr = err as NodeJS.ErrnoException;
-      if (
-        nodeErr.code === 'ENOENT' ||
-        nodeErr.code === 'MODULE_NOT_FOUND' ||
-        nodeErr.code === 'ERR_MODULE_NOT_FOUND'
-      ) {
-        throw new Error(`Plugin file not found: ${absPath}`, { cause: err });
-      }
-      throw err;
-    }
-    const modRecord = mod as Record<string, unknown>;
-    if (typeof modRecord['register'] !== 'function') {
-      throw new Error(
-        `Plugin at ${absPath} does not export register(dispatcher): void. `
-        + `Add: export function register(dispatcher: RipperDagonizer<ScrapeState>): void { ... }`,
-      );
-    }
-    (modRecord['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
-    pluginDagNames.add(entry);
-  }
-  return pluginDagNames;
-};
-
-const registerBuiltinNodes = (dispatcher: RipperDagonizer<ScrapeState>): void => {
-  dispatcher.registerNode(HtmlFetchNode);
-  dispatcher.registerNode(WikiFetchNode);
-  dispatcher.registerNode(HtmlWriteRawNode);
-  dispatcher.registerNode(WikiWriteRawNode);
-  dispatcher.registerNode(JsonWriteNode);
-  dispatcher.registerNode(JsonlAppendNode);
-  dispatcher.registerNode(ValidateSchemaNode);
-  dispatcher.registerNode(CrawlListTargetsNode);
-  dispatcher.registerNode(TerminalNode);
-};
 
 // ── runHtml ────────────────────────────────────────────────────────────────────
 
@@ -169,8 +118,8 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
   }
 
   const targetCfg      = htmlTarget as Record<string, unknown>;
-  const pipelineNames  = requirePipeline(targetCfg, opts.target);
-  const pluginTaskName = derivePluginTaskName(pipelineNames);
+  const pipelineNames  = PluginLoader.requirePipeline(targetCfg, opts.target);
+  const pluginTaskName = PluginLoader.derivePluginTaskName(pipelineNames);
   const outputCfg      = opts.config.output as Record<string, unknown>;
   const splitByTaskName: boolean | undefined =
     typeof outputCfg['splitByTaskName'] === 'boolean'
@@ -198,6 +147,57 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
   const targetDir = resolve(opts.outDir, opts.target);
   await mkdir(targetDir, { recursive: true });
 
+  // ── Parse worker pool ────────────────────────────────────────────────────
+  // Worker parsing is the default execution model: the CPU-bound per-page plugin
+  // parse `embeddedDAG` runs in a WorkerThreadContainer pool sized to system info
+  // (`recommendedWorkerCount` — cores + free memory), while fetch and write stay
+  // coordinator-side. The pool is destroyed after the run so the process exits
+  // cleanly. Set `enableWorkers: false` to force in-process.
+  //
+  // The worker cannot use tsx, so it loads the registry + plugin parse DAG from
+  // the self-contained compiled `dist-workers/` tree (`npm run build:workers`).
+  // When that tree is absent (e.g. running source via tsx without a build), the
+  // run falls back to in-process with a warning rather than failing.
+  const workersRequested = opts.enableWorkers ?? true;
+  const registryPresent  = existsSync(fileURLToPath(REGISTRY_MODULE_URL));
+  const parseWorkersEnabled = workersRequested && registryPresent;
+
+  if (workersRequested && !registryPresent) {
+    log.info('runHtml', `Worker parse pool requested but the compiled registry at `
+      + `${fileURLToPath(REGISTRY_MODULE_URL)} is missing — running in-process. `
+      + `Run \`npm run build:workers\` to enable worker parsing.`);
+  }
+
+  // System-sized pool. `recommendedWorkerCount` clamps to
+  // `min(maximumWorkers, parallelism − mainThreadReservation, memory budget)`.
+  // The config default caps `maximumWorkers` at 1, so raise it to the core count
+  // to let the parallelism/memory terms bind — the whole point of workers is to
+  // use the machine (e.g. a 16-core host runs 15 parse workers + the coordinator).
+  const parsePoolSize = parseWorkersEnabled
+    ? new NodeSystemInfo().recommendedWorkerCount({
+        ...RecommendedWorkerCountConfigDefault,
+        maximumWorkers: availableParallelism(),
+      })
+    : 0;
+
+  const parseWorkerContainer: WorkerThreadContainer | null = parseWorkersEnabled
+    ? new WorkerThreadContainer({
+        registryModule:  REGISTRY_MODULE_URL,
+        registryVersion: '1',
+        servicesConfig:  { configDir: WORKER_CONFIG_DIR, pipelineNames },
+        poolSize:        parsePoolSize,
+      })
+    : null;
+
+  const containers: Record<string, DagContainerInterface<ScrapeState>> | undefined =
+    parseWorkerContainer !== null
+      ? { [PARSE_WORKER_ROLE]: parseWorkerContainer }
+      : undefined;
+
+  if (parseWorkersEnabled) {
+    log.info('runHtml', `Parse worker pool enabled: ${parsePoolSize.toString()} workers (system-sized)`);
+  }
+
   // ── Services + dispatcher (proxy breaks construction circularity) ──────────
   const holder: { current: RipperServices | null } = { current: null };
   const dispatcher = new RipperDagonizer<ScrapeState>({
@@ -209,6 +209,7 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
         return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
       },
     }),
+    ...(containers !== undefined ? { containers } : {}),
   });
 
   const services: RipperServices = {
@@ -224,15 +225,19 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
   holder.current = services;
 
   // ── Node registration ──────────────────────────────────────────────────────
-  registerBuiltinNodes(dispatcher);
+  PluginLoader.registerBuiltinNodes(dispatcher);
 
-  const htmlPluginDagNames = await loadAndRegisterPlugins(dispatcher, pipelineNames, opts.configDir);
+  const htmlPluginDagNames = await PluginLoader.registerInto(dispatcher, pipelineNames, opts.configDir);
 
   // ── Phase and composition DAG registration (DAGBuilder) ───────────────────
   const perPageDagName = htmlPageFlowName(opts.target);
-  dispatcher.registerDAG(buildHtmlPageFlow(pipelineNames, opts.target, htmlPluginDagNames));
-  dispatcher.registerDAG(buildHtmlScrapePhaseDag(perPageDagName));
-  dispatcher.registerDAG(buildHtmlRetryPhaseDag(perPageDagName));
+  const parseWorkerRole = parseWorkerContainer !== null ? PARSE_WORKER_ROLE : undefined;
+  // Feed the per-page scatter at the worker-pool width so every worker stays
+  // busy; the in-process path keeps the flow's default concurrency.
+  const scatterConcurrency = parseWorkersEnabled ? parsePoolSize : undefined;
+  dispatcher.registerDAG(buildHtmlPageFlow(pipelineNames, opts.target, htmlPluginDagNames, parseWorkerRole));
+  dispatcher.registerDAG(buildHtmlScrapePhaseDag(perPageDagName, scatterConcurrency));
+  dispatcher.registerDAG(buildHtmlRetryPhaseDag(perPageDagName, scatterConcurrency));
 
   // Bounded scrape: when explicit --paths are supplied, skip the crawl
   // phase even if the pipeline declares it. The crawler is the default
@@ -261,10 +266,15 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
 
   if (outerDagName === HTML_SCRAPE_DAG && state.urls.length === 0) {
     log.info('runHtml', 'No URLs to scrape');
+    await parseWorkerContainer?.destroy();
     return;
   }
 
-  await dispatcher.execute(outerDagName, state);
+  try {
+    await dispatcher.execute(outerDagName, state);
+  } finally {
+    await parseWorkerContainer?.destroy();
+  }
 
   log.info('runHtml',
     `Completed ${state.succeeded.length.toString()} pages on first attempt; `

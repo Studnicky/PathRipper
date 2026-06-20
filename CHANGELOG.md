@@ -31,6 +31,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   every node class and from `NodeInterface`. `OperationContractType`, `OperationContractFragmentType`,
   and `EMPTY_CONTRACT_FRAGMENT` are removed from the dagonizer API. All node files in `src/nodes/`,
   `plugins/`, and `examples/` drop their contract declarations.
+- **Worker-thread parse execution (default on).** The CPU-bound per-page plugin parse `embeddedDAG`
+  runs in a `WorkerThreadContainer` pool (`@studnicky/dagonizer-executor-node`) sized to system info via
+  `NodeSystemInfo.recommendedWorkerCount` — the full machine's parallelism (cores + free memory), no
+  artificial cap — while fetch and write stay coordinator-side. The per-page scatter concurrency is set
+  to the pool width so every worker stays fed. Controlled by `enableWorkers` on `runHtml` (default
+  `true`); it falls back to in-process with a warning when the compiled worker tree is absent. The worker
+  registry (`src/workers/parseRegistry.ts`) is plugin-agnostic: `instantiate(servicesConfig)` rebuilds
+  whatever plugin parse DAG the run's `pipelineNames` describe via the extracted `PluginLoader` (shared by
+  `runHtml`/`runWiki`) — same source, only the container execution swaps. The worker reconstructs its own
+  services and state (`ScrapeState.restore`) in-isolate; only `page.html` (in) and `output` (out) cross
+  the boundary. Worker threads can't transpile, so the worker dependency closure compiles to a
+  self-contained `dist-workers/` tree (`npm run build:workers`, `tsconfig.workers.json`, chained into
+  `npm run build`).
 - **Link crawl is a single native cyclic DAG.** `crawl:dedupe-and-enqueue` routes `frontier-ready`
   back to `crawl:fetch-and-extract` — a back-edge the engine re-executes in place until the depth/budget
   guard routes to `crawl:exhausted`. This replaces the trampoline (`RecurseCrawlNode` dispatching a

@@ -31,16 +31,19 @@ const PHASE_OUTCOMES: Record<string, string> = {
  * registered per-page DAG named by `perPageDagName` once per URL, partitioning
  * each item's terminal outcome into `state.succeeded` / `state.failed`.
  *
- * @param perPageDagName - The registered DAG name the scatter body dispatches.
+ * @param perPageDagName    - The registered DAG name the scatter body dispatches.
+ * @param scatterConcurrency - Max pages processed concurrently. When parse runs
+ *   in a worker pool this is set to the pool size so every worker stays fed;
+ *   defaults to `SCATTER_CONCURRENCY` for the in-process path.
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildHtmlScrapePhaseDag(perPageDagName: string): DAGType {
+export function buildHtmlScrapePhaseDag(perPageDagName: string, scatterConcurrency: number = SCATTER_CONCURRENCY): DAGType {
   return new DAGBuilder(HTML_SCRAPE_PHASE, '2.0')
     .scatter('scrape-urls', 'urls', { dag: perPageDagName }, PHASE_OUTCOMES, {
       itemKey:     'currentUrl',
-      concurrency: SCATTER_CONCURRENCY,
+      concurrency: scatterConcurrency,
       gather:      { strategy: 'partition', partitions: { success: 'succeeded', error: 'failed' } },
     })
     .terminal('phase-done', { outcome: 'completed' })
@@ -52,16 +55,17 @@ export function buildHtmlScrapePhaseDag(perPageDagName: string): DAGType {
  * registered per-page DAG named by `perPageDagName` once per URL, partitioning
  * each item's terminal outcome into `state.recovered` / `state.failedAfterRetry`.
  *
- * @param perPageDagName - The registered DAG name the scatter body dispatches.
+ * @param perPageDagName    - The registered DAG name the scatter body dispatches.
+ * @param scatterConcurrency - Max pages processed concurrently (see scrape phase).
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildHtmlRetryPhaseDag(perPageDagName: string): DAGType {
+export function buildHtmlRetryPhaseDag(perPageDagName: string, scatterConcurrency: number = SCATTER_CONCURRENCY): DAGType {
   return new DAGBuilder(HTML_RETRY_PHASE, '2.0')
     .scatter('retry-urls', 'failed', { dag: perPageDagName }, PHASE_OUTCOMES, {
       itemKey:     'currentUrl',
-      concurrency: SCATTER_CONCURRENCY,
+      concurrency: scatterConcurrency,
       gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
     })
     .terminal('phase-done', { outcome: 'completed' })
