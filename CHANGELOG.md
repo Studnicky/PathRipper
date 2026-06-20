@@ -118,6 +118,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `NormalizedRipperConfigType.crawlers` type field. The e2e/unit suite migrated to the
   embedded `targets.<name>.crawler` form; fixture `pathripper-legacy.config.json` renamed
   to `aonprd-crawler.config.json`.
+- **Broken package exports** `./registry/PipelineState` and
+  `./orchestrators/ScrapeOrchestrator` — both pointed at `dist/` paths whose source was
+  removed in the dagonizer migration, so importing them failed at runtime.
 
 ### Fixed
 

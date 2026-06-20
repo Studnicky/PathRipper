@@ -20,8 +20,6 @@
     "./errors/HttpError": "./dist/errors/HttpError.js",
     "./errors/RipperConfigError": "./dist/errors/RipperConfigError.js",
     "./errors/ExternalSchemaError": "./dist/errors/ExternalSchemaError.js",
-    "./registry/PipelineState": "./dist/registry/PipelineState.js",
-    "./orchestrators/ScrapeOrchestrator": "./dist/orchestrators/ScrapeOrchestrator.js",
     "./state/ScrapeState": "./dist/state/ScrapeState.js",
     "./nodes": "./dist/nodes/index.js"
   },
