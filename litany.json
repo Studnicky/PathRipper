@@ -1,5 +1,6 @@
 {
   "codeStandards": {
     "domainCohesionMinClusterSize": 8
-  }
+  },
+  "schemaVersion": 1
 }
