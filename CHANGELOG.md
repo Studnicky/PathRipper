@@ -121,6 +121,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Broken package exports** `./registry/PipelineState` and
   `./orchestrators/ScrapeOrchestrator` — both pointed at `dist/` paths whose source was
   removed in the dagonizer migration, so importing them failed at runtime.
+- **Dead re-export barrels** `src/nodes/config/index.ts`, `src/nodes/crawl/index.ts`, and
+  `src/run/index.ts` — zero importers; consumers import the concrete modules directly.
+
+### Tooling
+
+- Added `.litany/knip.json` so `litany prune dead-code` reports accurate results. Entry
+  points cover the CLI, the worker-thread parse entry, the published subpath exports, the
+  plugin `parse.task`/`parse.dag` entries, the docs scripts, and the test suite.
 
 ### Fixed
 

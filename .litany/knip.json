@@ -1,0 +1,39 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/cli/cli.ts",
+    "src/workers/parseRegistry.ts",
+    "src/crawlers/LinkLister.ts",
+    "src/scrapers/HtmlScraper.ts",
+    "src/scrapers/MediaWikiScraper.ts",
+    "src/scrapers/WikitextParser.ts",
+    "src/modules/http/errorClassifier.ts",
+    "src/modules/http/rateLimiter.ts",
+    "src/modules/http/time.ts",
+    "src/modules/logger/logger.ts",
+    "src/config/RipperConfig.ts",
+    "src/errors/BaseError.ts",
+    "src/errors/HttpError.ts",
+    "src/errors/RipperConfigError.ts",
+    "src/errors/ExternalSchemaError.ts",
+    "src/state/ScrapeState.ts",
+    "src/nodes/index.ts",
+    "plugins/*/parse.task.ts",
+    "plugins/*/parse.dag.ts",
+    "examples/*/plugin.ts",
+    "docs/.vitepress/config.ts",
+    "docs/.vitepress/scripts/*.mjs",
+    "tests/**/*.test.ts"
+  ],
+  "project": [
+    "src/**/*.ts",
+    "plugins/**/*.ts",
+    "examples/**/*.ts"
+  ],
+  "ignore": [
+    "output/**",
+    "dist/**",
+    "dist-workers/**",
+    "docs/.vitepress/dist/**"
+  ]
+}
