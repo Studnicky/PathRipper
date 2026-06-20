@@ -97,7 +97,7 @@ These live on `WikitextParser`. In a plugin, use `state.input.parsedPage` direct
 Plugins export a `register(dispatcher)` function. Nodes set `state.output` to a plain object — concept identity comes from the URL or a typed `<concept>_id` field on the output shape, not from a discriminator property:
 
 ```ts
-import type { NodeInterface } from '@noocodex/dagonizer';
+import type { NodeInterface } from '@studnicky/dagonizer';
 import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
 import type { RipperServices } from 'ripperoni/services/RipperServices';
 import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';

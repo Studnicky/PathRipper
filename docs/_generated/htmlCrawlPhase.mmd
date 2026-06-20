@@ -2,7 +2,7 @@ flowchart LR
   %% htmlCrawlPhase (v2.0)
   crawl:list-targets
   crawl:list-targets[crawl:list-targets]
-  crawl:list-targets -->|success| END
-  crawl:list-targets -->|error| END
-  crawl:list-targets -->|empty| END
-  END([end])
+  crawl:list-targets -->|success| phase-done
+  crawl:list-targets -->|error| phase-done
+  crawl:list-targets -->|empty| phase-done
+  phase-done(((phase-done\n(completed))))

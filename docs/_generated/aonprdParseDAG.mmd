@@ -1,90 +1,668 @@
 flowchart LR
-  %% aonprd:parse (v1.0)
-  aonprd:load-and-common
-  subgraph depth_0["depth_0 (parallel)"]
-    aonprd:load-and-common[aonprd:load-and-common]
-    aonprd:extract-spell[aonprd:extract-spell]
-    aonprd:extract-monster[aonprd:extract-monster]
-    aonprd:extract-feat[aonprd:extract-feat]
-    aonprd:extract-weapon[aonprd:extract-weapon]
-    aonprd:extract-armor[aonprd:extract-armor]
-    aonprd:extract-equipment[aonprd:extract-equipment]
-    aonprd:extract-action[aonprd:extract-action]
-    aonprd:extract-ancestry[aonprd:extract-ancestry]
-    aonprd:extract-class[aonprd:extract-class]
-    aonprd:extract-background[aonprd:extract-background]
-    aonprd:extract-condition[aonprd:extract-condition]
-    aonprd:extract-trait[aonprd:extract-trait]
-    aonprd:extract-hazard[aonprd:extract-hazard]
-    aonprd:extract-generic[aonprd:extract-generic]
-    aonprd:make-unknown[aonprd:make-unknown]
-    flow:terminate[flow:terminate]
-  end
-  depth_0 -->|success| aonprd:detect-type
-  depth_0 -->|error| aonprd:detect-type
+  %% aonprd:parse (v3.0)
+  aonprd:taxonomy-route
+  aonprd:taxonomy-route[aonprd:taxonomy-route]
+  aonprd:taxonomy-route -->|language| aonprd:load-and-common
+  aonprd:taxonomy-route -->|plane| aonprd:load-and-common
+  aonprd:taxonomy-route -->|contributor| aonprd:load-and-common
+  aonprd:taxonomy-route -->|weapon-group| aonprd:load-and-common
+  aonprd:taxonomy-route -->|armor-group| aonprd:load-and-common
+  aonprd:taxonomy-route -->|article| aonprd:load-and-common
+  aonprd:taxonomy-route -->|condition| aonprd:load-and-common
+  aonprd:taxonomy-route -->|trait| aonprd:load-and-common
+  aonprd:taxonomy-route -->|action| aonprd:load-and-common
+  aonprd:taxonomy-route -->|hazard| aonprd:load-and-common
+  aonprd:taxonomy-route -->|weather-hazard| aonprd:load-and-common
+  aonprd:taxonomy-route -->|weapon| aonprd:load-and-common
+  aonprd:taxonomy-route -->|armor| aonprd:load-and-common
+  aonprd:taxonomy-route -->|equipment| aonprd:load-and-common
+  aonprd:taxonomy-route -->|relic| aonprd:load-and-common
+  aonprd:taxonomy-route -->|set-relic| aonprd:load-and-common
+  aonprd:taxonomy-route -->|siege-weapon| aonprd:load-and-common
+  aonprd:taxonomy-route -->|vehicle| aonprd:load-and-common
+  aonprd:taxonomy-route -->|familiar| aonprd:load-and-common
+  aonprd:taxonomy-route -->|monster| aonprd:load-and-common
+  aonprd:taxonomy-route -->|animal-companion| aonprd:load-and-common
+  aonprd:taxonomy-route -->|monster-ability| aonprd:load-and-common
+  aonprd:taxonomy-route -->|monster-template| aonprd:load-and-common
+  aonprd:taxonomy-route -->|monster-family| aonprd:load-and-common
+  aonprd:taxonomy-route -->|curse| aonprd:load-and-common
+  aonprd:taxonomy-route -->|disease| aonprd:load-and-common
+  aonprd:taxonomy-route -->|domain| aonprd:load-and-common
+  aonprd:taxonomy-route -->|source| aonprd:load-and-common
+  aonprd:taxonomy-route -->|ancestry| aonprd:load-and-common
+  aonprd:taxonomy-route -->|background| aonprd:load-and-common
+  aonprd:taxonomy-route -->|class| aonprd:load-and-common
+  aonprd:taxonomy-route -->|class-sample| aonprd:load-and-common
+  aonprd:taxonomy-route -->|class-kit| aonprd:load-and-common
+  aonprd:taxonomy-route -->|npc-theme-template| aonprd:load-and-common
+  aonprd:taxonomy-route -->|feat| aonprd:load-and-common
+  aonprd:taxonomy-route -->|skill| aonprd:load-and-common
+  aonprd:taxonomy-route -->|archetype| aonprd:load-and-common
+  aonprd:taxonomy-route -->|subclass-feature| aonprd:load-and-common
+  aonprd:taxonomy-route -->|spell| aonprd:load-and-common
+  aonprd:taxonomy-route -->|ritual| aonprd:load-and-common
+  aonprd:taxonomy-route -->|deity| aonprd:load-and-common
+  aonprd:taxonomy-route -->|deity-category| aonprd:load-and-common
+  aonprd:taxonomy-route -->|rule| aonprd:load-and-common
+  aonprd:taxonomy-route -->|km-structure| aonprd:load-and-common
+  aonprd:taxonomy-route -->|km-event| aonprd:load-and-common
+  aonprd:taxonomy-route -->|tactic| aonprd:load-and-common
+  aonprd:taxonomy-route -->|camp-meal| aonprd:load-and-common
+  aonprd:taxonomy-route -->|camp-activity| aonprd:load-and-common
+  aonprd:taxonomy-route -->|km-war-tactic| aonprd:load-and-common
+  aonprd:taxonomy-route -->|km-war-army| aonprd:load-and-common
+  aonprd:taxonomy-route -->|generic| aonprd:load-and-common
+  aonprd:taxonomy-route -->|unknown| aonprd:unknown-end
   aonprd:load-and-common[aonprd:load-and-common]
-  aonprd:load-and-common -->|success| aonprd:detect-type
-  aonprd:load-and-common -->|error| aonprd:make-unknown
-  aonprd:extract-spell[aonprd:extract-spell]
-  aonprd:extract-spell -->|success| flow:terminate
-  aonprd:extract-spell -->|error| aonprd:make-unknown
-  aonprd:extract-monster[aonprd:extract-monster]
-  aonprd:extract-monster -->|success| flow:terminate
-  aonprd:extract-monster -->|error| aonprd:make-unknown
-  aonprd:extract-feat[aonprd:extract-feat]
-  aonprd:extract-feat -->|success| flow:terminate
-  aonprd:extract-feat -->|error| aonprd:make-unknown
-  aonprd:extract-weapon[aonprd:extract-weapon]
-  aonprd:extract-weapon -->|success| flow:terminate
-  aonprd:extract-weapon -->|error| aonprd:make-unknown
-  aonprd:extract-armor[aonprd:extract-armor]
-  aonprd:extract-armor -->|success| flow:terminate
-  aonprd:extract-armor -->|error| aonprd:make-unknown
-  aonprd:extract-equipment[aonprd:extract-equipment]
-  aonprd:extract-equipment -->|success| flow:terminate
-  aonprd:extract-equipment -->|error| aonprd:make-unknown
-  aonprd:extract-action[aonprd:extract-action]
-  aonprd:extract-action -->|success| flow:terminate
-  aonprd:extract-action -->|error| aonprd:make-unknown
-  aonprd:extract-ancestry[aonprd:extract-ancestry]
-  aonprd:extract-ancestry -->|success| flow:terminate
-  aonprd:extract-ancestry -->|error| aonprd:make-unknown
-  aonprd:extract-class[aonprd:extract-class]
-  aonprd:extract-class -->|success| flow:terminate
-  aonprd:extract-class -->|error| aonprd:make-unknown
-  aonprd:extract-background[aonprd:extract-background]
-  aonprd:extract-background -->|success| flow:terminate
-  aonprd:extract-background -->|error| aonprd:make-unknown
-  aonprd:extract-condition[aonprd:extract-condition]
-  aonprd:extract-condition -->|success| flow:terminate
-  aonprd:extract-condition -->|error| aonprd:make-unknown
-  aonprd:extract-trait[aonprd:extract-trait]
-  aonprd:extract-trait -->|success| flow:terminate
-  aonprd:extract-trait -->|error| aonprd:make-unknown
-  aonprd:extract-hazard[aonprd:extract-hazard]
-  aonprd:extract-hazard -->|success| flow:terminate
-  aonprd:extract-hazard -->|error| aonprd:make-unknown
-  aonprd:extract-generic[aonprd:extract-generic]
-  aonprd:extract-generic -->|success| flow:terminate
-  aonprd:extract-generic -->|error| aonprd:make-unknown
-  aonprd:make-unknown[aonprd:make-unknown]
-  aonprd:make-unknown -->|success| flow:terminate
-  flow:terminate[flow:terminate]
-  flow:terminate -->|success| END
-  aonprd:detect-type[aonprd:detect-type]
-  aonprd:detect-type -->|spell| aonprd:extract-spell
-  aonprd:detect-type -->|monster| aonprd:extract-monster
-  aonprd:detect-type -->|feat| aonprd:extract-feat
-  aonprd:detect-type -->|weapon| aonprd:extract-weapon
-  aonprd:detect-type -->|armor| aonprd:extract-armor
-  aonprd:detect-type -->|equipment| aonprd:extract-equipment
-  aonprd:detect-type -->|action| aonprd:extract-action
-  aonprd:detect-type -->|ancestry| aonprd:extract-ancestry
-  aonprd:detect-type -->|class| aonprd:extract-class
-  aonprd:detect-type -->|background| aonprd:extract-background
-  aonprd:detect-type -->|condition| aonprd:extract-condition
-  aonprd:detect-type -->|trait| aonprd:extract-trait
-  aonprd:detect-type -->|hazard| aonprd:extract-hazard
-  aonprd:detect-type -->|generic| aonprd:extract-generic
-  aonprd:detect-type -->|unknown| aonprd:make-unknown
-  END([end])
+  aonprd:load-and-common -->|success| aonprd:concept-dispatch-after:aonprd:load-and-common
+  aonprd:load-and-common -->|error| aonprd:concept-dispatch-after:aonprd:load-and-common
+  extract:label-pair-block[extract:label-pair-block]
+  extract:label-pair-block -->|success| extract:section-walker
+  extract:label-pair-block -->|error| extract:section-walker
+  extract:section-walker[extract:section-walker]
+  extract:section-walker -->|success| extract:source-ref
+  extract:section-walker -->|error| extract:source-ref
+  extract:source-ref[extract:source-ref]
+  extract:source-ref -->|success| extract:meta-tags
+  extract:source-ref -->|error| extract:meta-tags
+  extract:meta-tags[extract:meta-tags]
+  extract:meta-tags -->|success| extract:saving-throw
+  extract:saving-throw[extract:saving-throw]
+  extract:saving-throw -->|success| aonprd:concept-dispatch-after:extract:saving-throw
+  extract:language-base[extract:language-base]
+  extract:language-base -->|success| extract:language-description
+  extract:language-base -->|error| extract:language-description
+  extract:language-description[extract:language-description]
+  extract:language-description -->|success| extract:language-speakers
+  extract:language-description -->|error| extract:language-speakers
+  extract:language-speakers[extract:language-speakers]
+  extract:language-speakers -->|success| extract:language-pfs-note
+  extract:language-speakers -->|error| extract:language-pfs-note
+  extract:language-pfs-note[extract:language-pfs-note]
+  extract:language-pfs-note -->|success| finalize:language
+  extract:language-pfs-note -->|error| finalize:language
+  finalize:language[finalize:language]
+  finalize:language -->|success| aonprd:completed
+  extract:plane-base[extract:plane-base]
+  extract:plane-base -->|success| extract:plane-characteristics
+  extract:plane-base -->|error| extract:plane-characteristics
+  extract:plane-characteristics[extract:plane-characteristics]
+  extract:plane-characteristics -->|success| finalize:plane
+  extract:plane-characteristics -->|error| finalize:plane
+  finalize:plane[finalize:plane]
+  finalize:plane -->|success| aonprd:completed
+  extract:contributor-base[extract:contributor-base]
+  extract:contributor-base -->|success| extract:contributor-profile
+  extract:contributor-base -->|error| extract:contributor-profile
+  extract:contributor-profile[extract:contributor-profile]
+  extract:contributor-profile -->|success| finalize:contributor
+  extract:contributor-profile -->|error| finalize:contributor
+  finalize:contributor[finalize:contributor]
+  finalize:contributor -->|success| aonprd:completed
+  extract:weapon-group-base[extract:weapon-group-base]
+  extract:weapon-group-base -->|success| extract:weapon-group-content
+  extract:weapon-group-base -->|error| extract:weapon-group-content
+  extract:weapon-group-content[extract:weapon-group-content]
+  extract:weapon-group-content -->|success| finalize:weapon-group
+  extract:weapon-group-content -->|error| finalize:weapon-group
+  finalize:weapon-group[finalize:weapon-group]
+  finalize:weapon-group -->|success| aonprd:completed
+  extract:armor-group-base[extract:armor-group-base]
+  extract:armor-group-base -->|success| extract:armor-group-content
+  extract:armor-group-base -->|error| extract:armor-group-content
+  extract:armor-group-content[extract:armor-group-content]
+  extract:armor-group-content -->|success| finalize:armor-group
+  extract:armor-group-content -->|error| finalize:armor-group
+  finalize:armor-group[finalize:armor-group]
+  finalize:armor-group -->|success| aonprd:completed
+  extract:article-base[extract:article-base]
+  extract:article-base -->|success| finalize:article
+  extract:article-base -->|error| finalize:article
+  finalize:article[finalize:article]
+  finalize:article -->|success| aonprd:completed
+  extract:condition-base[extract:condition-base]
+  extract:condition-base -->|success| finalize:condition
+  extract:condition-base -->|error| finalize:condition
+  finalize:condition[finalize:condition]
+  finalize:condition -->|success| aonprd:completed
+  extract:trait-base[extract:trait-base]
+  extract:trait-base -->|success| finalize:trait
+  extract:trait-base -->|error| finalize:trait
+  finalize:trait[finalize:trait]
+  finalize:trait -->|success| aonprd:completed
+  extract:action-base[extract:action-base]
+  extract:action-base -->|success| extract:action-effect
+  extract:action-base -->|error| extract:action-effect
+  extract:action-effect[extract:action-effect]
+  extract:action-effect -->|success| finalize:action
+  extract:action-effect -->|error| finalize:action
+  finalize:action[finalize:action]
+  finalize:action -->|success| aonprd:completed
+  extract:hazard-base[extract:hazard-base]
+  extract:hazard-base -->|success| extract:hazard-defenses
+  extract:hazard-base -->|error| extract:hazard-defenses
+  extract:hazard-defenses[extract:hazard-defenses]
+  extract:hazard-defenses -->|success| finalize:hazard
+  extract:hazard-defenses -->|error| finalize:hazard
+  finalize:hazard[finalize:hazard]
+  finalize:hazard -->|success| aonprd:completed
+  extract:weather-hazard-base[extract:weather-hazard-base]
+  extract:weather-hazard-base -->|success| finalize:weather-hazard
+  extract:weather-hazard-base -->|error| finalize:weather-hazard
+  finalize:weather-hazard[finalize:weather-hazard]
+  finalize:weather-hazard -->|success| aonprd:completed
+  extract:weapon-base[extract:weapon-base]
+  extract:weapon-base -->|success| extract:weapon-mechanics
+  extract:weapon-base -->|error| extract:weapon-mechanics
+  extract:weapon-mechanics[extract:weapon-mechanics]
+  extract:weapon-mechanics -->|success| finalize:weapon
+  extract:weapon-mechanics -->|error| finalize:weapon
+  finalize:weapon[finalize:weapon]
+  finalize:weapon -->|success| aonprd:completed
+  extract:armor-base[extract:armor-base]
+  extract:armor-base -->|success| extract:armor-mechanics
+  extract:armor-base -->|error| extract:armor-mechanics
+  extract:armor-mechanics[extract:armor-mechanics]
+  extract:armor-mechanics -->|success| finalize:armor
+  extract:armor-mechanics -->|error| finalize:armor
+  finalize:armor[finalize:armor]
+  finalize:armor -->|success| aonprd:completed
+  extract:equipment-base[extract:equipment-base]
+  extract:equipment-base -->|success| extract:equipment-mechanics
+  extract:equipment-base -->|error| extract:equipment-mechanics
+  extract:equipment-mechanics[extract:equipment-mechanics]
+  extract:equipment-mechanics -->|success| finalize:equipment
+  extract:equipment-mechanics -->|error| finalize:equipment
+  finalize:equipment[finalize:equipment]
+  finalize:equipment -->|success| aonprd:completed
+  extract:relic-base[extract:relic-base]
+  extract:relic-base -->|success| extract:relic-gift
+  extract:relic-base -->|error| extract:relic-gift
+  extract:relic-gift[extract:relic-gift]
+  extract:relic-gift -->|success| finalize:relic
+  extract:relic-gift -->|error| finalize:relic
+  finalize:relic[finalize:relic]
+  finalize:relic -->|success| aonprd:completed
+  extract:set-relic-base[extract:set-relic-base]
+  extract:set-relic-base -->|success| extract:set-relic-components
+  extract:set-relic-base -->|error| extract:set-relic-components
+  extract:set-relic-components[extract:set-relic-components]
+  extract:set-relic-components -->|success| finalize:set-relic
+  extract:set-relic-components -->|error| finalize:set-relic
+  finalize:set-relic[finalize:set-relic]
+  finalize:set-relic -->|success| aonprd:completed
+  extract:siege-weapon-base[extract:siege-weapon-base]
+  extract:siege-weapon-base -->|success| extract:siege-weapon-mechanics
+  extract:siege-weapon-base -->|error| extract:siege-weapon-mechanics
+  extract:siege-weapon-mechanics[extract:siege-weapon-mechanics]
+  extract:siege-weapon-mechanics -->|success| finalize:siege-weapon
+  extract:siege-weapon-mechanics -->|error| finalize:siege-weapon
+  finalize:siege-weapon[finalize:siege-weapon]
+  finalize:siege-weapon -->|success| aonprd:completed
+  extract:vehicle-base[extract:vehicle-base]
+  extract:vehicle-base -->|success| extract:vehicle-mechanics
+  extract:vehicle-base -->|error| extract:vehicle-mechanics
+  extract:vehicle-mechanics[extract:vehicle-mechanics]
+  extract:vehicle-mechanics -->|success| finalize:vehicle
+  extract:vehicle-mechanics -->|error| finalize:vehicle
+  finalize:vehicle[finalize:vehicle]
+  finalize:vehicle -->|success| aonprd:completed
+  extract:familiar-base[extract:familiar-base]
+  extract:familiar-base -->|success| extract:familiar-prerequisites
+  extract:familiar-base -->|error| extract:familiar-prerequisites
+  extract:familiar-prerequisites[extract:familiar-prerequisites]
+  extract:familiar-prerequisites -->|success| finalize:familiar
+  extract:familiar-prerequisites -->|error| finalize:familiar
+  finalize:familiar[finalize:familiar]
+  finalize:familiar -->|success| aonprd:completed
+  extract:monster-base[extract:monster-base]
+  extract:monster-base -->|success| extract:monster-defenses
+  extract:monster-base -->|error| extract:monster-defenses
+  extract:monster-defenses[extract:monster-defenses]
+  extract:monster-defenses -->|success| extract:monster-offense
+  extract:monster-defenses -->|error| extract:monster-offense
+  extract:monster-offense[extract:monster-offense]
+  extract:monster-offense -->|success| extract:monster-abilities
+  extract:monster-offense -->|error| extract:monster-abilities
+  extract:monster-abilities[extract:monster-abilities]
+  extract:monster-abilities -->|success| extract:monster-meta
+  extract:monster-abilities -->|error| extract:monster-meta
+  extract:monster-meta[extract:monster-meta]
+  extract:monster-meta -->|success| finalize:monster
+  extract:monster-meta -->|error| finalize:monster
+  finalize:monster[finalize:monster]
+  finalize:monster -->|success| aonprd:completed
+  extract:animal-companion-base[extract:animal-companion-base]
+  extract:animal-companion-base -->|success| extract:animal-companion-stats
+  extract:animal-companion-base -->|error| extract:animal-companion-stats
+  extract:animal-companion-stats[extract:animal-companion-stats]
+  extract:animal-companion-stats -->|success| extract:animal-companion-combat
+  extract:animal-companion-stats -->|error| extract:animal-companion-combat
+  extract:animal-companion-combat[extract:animal-companion-combat]
+  extract:animal-companion-combat -->|success| extract:animal-companion-advancement
+  extract:animal-companion-combat -->|error| extract:animal-companion-advancement
+  extract:animal-companion-advancement[extract:animal-companion-advancement]
+  extract:animal-companion-advancement -->|success| finalize:animal-companion
+  extract:animal-companion-advancement -->|error| finalize:animal-companion
+  finalize:animal-companion[finalize:animal-companion]
+  finalize:animal-companion -->|success| aonprd:completed
+  extract:monster-ability-base[extract:monster-ability-base]
+  extract:monster-ability-base -->|success| extract:monster-ability-definition
+  extract:monster-ability-base -->|error| extract:monster-ability-definition
+  extract:monster-ability-definition[extract:monster-ability-definition]
+  extract:monster-ability-definition -->|success| finalize:monster-ability
+  extract:monster-ability-definition -->|error| finalize:monster-ability
+  finalize:monster-ability[finalize:monster-ability]
+  finalize:monster-ability -->|success| aonprd:completed
+  extract:monster-template-base[extract:monster-template-base]
+  extract:monster-template-base -->|success| extract:monster-template-modifications
+  extract:monster-template-base -->|error| extract:monster-template-modifications
+  extract:monster-template-modifications[extract:monster-template-modifications]
+  extract:monster-template-modifications -->|success| finalize:monster-template
+  extract:monster-template-modifications -->|error| finalize:monster-template
+  finalize:monster-template[finalize:monster-template]
+  finalize:monster-template -->|success| aonprd:completed
+  extract:monster-family-base[extract:monster-family-base]
+  extract:monster-family-base -->|success| extract:monster-family-members
+  extract:monster-family-base -->|error| extract:monster-family-members
+  extract:monster-family-members[extract:monster-family-members]
+  extract:monster-family-members -->|success| finalize:monster-family
+  extract:monster-family-members -->|error| finalize:monster-family
+  finalize:monster-family[finalize:monster-family]
+  finalize:monster-family -->|success| aonprd:completed
+  extract:curse-base[extract:curse-base]
+  extract:curse-base -->|success| extract:curse-mechanics
+  extract:curse-base -->|error| extract:curse-mechanics
+  extract:curse-mechanics[extract:curse-mechanics]
+  extract:curse-mechanics -->|success| extract:curse-stages
+  extract:curse-mechanics -->|error| extract:curse-stages
+  extract:curse-stages[extract:curse-stages]
+  extract:curse-stages -->|success| finalize:curse
+  extract:curse-stages -->|error| finalize:curse
+  finalize:curse[finalize:curse]
+  finalize:curse -->|success| aonprd:completed
+  extract:disease-base[extract:disease-base]
+  extract:disease-base -->|success| extract:disease-mechanics
+  extract:disease-base -->|error| extract:disease-mechanics
+  extract:disease-mechanics[extract:disease-mechanics]
+  extract:disease-mechanics -->|success| extract:disease-stages
+  extract:disease-mechanics -->|error| extract:disease-stages
+  extract:disease-stages[extract:disease-stages]
+  extract:disease-stages -->|success| finalize:disease
+  extract:disease-stages -->|error| finalize:disease
+  finalize:disease[finalize:disease]
+  finalize:disease -->|success| aonprd:completed
+  extract:domain-base[extract:domain-base]
+  extract:domain-base -->|success| extract:domain-spells
+  extract:domain-base -->|error| extract:domain-spells
+  extract:domain-spells[extract:domain-spells]
+  extract:domain-spells -->|success| extract:domain-meta
+  extract:domain-spells -->|error| extract:domain-meta
+  extract:domain-meta[extract:domain-meta]
+  extract:domain-meta -->|success| finalize:domain
+  extract:domain-meta -->|error| finalize:domain
+  finalize:domain[finalize:domain]
+  finalize:domain -->|success| aonprd:completed
+  extract:source-base[extract:source-base]
+  extract:source-base -->|success| extract:source-metadata
+  extract:source-base -->|error| extract:source-metadata
+  extract:source-metadata[extract:source-metadata]
+  extract:source-metadata -->|success| extract:source-related
+  extract:source-metadata -->|error| extract:source-related
+  extract:source-related[extract:source-related]
+  extract:source-related -->|success| finalize:source
+  extract:source-related -->|error| finalize:source
+  finalize:source[finalize:source]
+  finalize:source -->|success| aonprd:completed
+  extract:ancestry-base[extract:ancestry-base]
+  extract:ancestry-base -->|success| extract:ancestry-heritages
+  extract:ancestry-base -->|error| extract:ancestry-heritages
+  extract:ancestry-heritages[extract:ancestry-heritages]
+  extract:ancestry-heritages -->|success| extract:ancestry-features
+  extract:ancestry-heritages -->|error| extract:ancestry-features
+  extract:ancestry-features[extract:ancestry-features]
+  extract:ancestry-features -->|success| finalize:ancestry
+  extract:ancestry-features -->|error| finalize:ancestry
+  finalize:ancestry[finalize:ancestry]
+  finalize:ancestry -->|success| aonprd:completed
+  extract:background-base[extract:background-base]
+  extract:background-base -->|success| extract:background-benefits
+  extract:background-base -->|error| extract:background-benefits
+  extract:background-benefits[extract:background-benefits]
+  extract:background-benefits -->|success| finalize:background
+  extract:background-benefits -->|error| finalize:background
+  finalize:background[finalize:background]
+  finalize:background -->|success| aonprd:completed
+  extract:class-base[extract:class-base]
+  extract:class-base -->|success| extract:class-progression
+  extract:class-base -->|error| extract:class-progression
+  extract:class-progression[extract:class-progression]
+  extract:class-progression -->|success| extract:class-subclasses
+  extract:class-progression -->|error| extract:class-subclasses
+  extract:class-subclasses[extract:class-subclasses]
+  extract:class-subclasses -->|success| finalize:class
+  extract:class-subclasses -->|error| finalize:class
+  finalize:class[finalize:class]
+  finalize:class -->|success| aonprd:completed
+  extract:class-sample-base[extract:class-sample-base]
+  extract:class-sample-base -->|success| extract:class-sample-identity
+  extract:class-sample-base -->|error| extract:class-sample-identity
+  extract:class-sample-identity[extract:class-sample-identity]
+  extract:class-sample-identity -->|success| extract:class-sample-build
+  extract:class-sample-identity -->|error| extract:class-sample-build
+  extract:class-sample-build[extract:class-sample-build]
+  extract:class-sample-build -->|success| finalize:class-sample
+  extract:class-sample-build -->|error| finalize:class-sample
+  finalize:class-sample[finalize:class-sample]
+  finalize:class-sample -->|success| aonprd:completed
+  extract:class-kit-base[extract:class-kit-base]
+  extract:class-kit-base -->|success| extract:class-kit-contents
+  extract:class-kit-base -->|error| extract:class-kit-contents
+  extract:class-kit-contents[extract:class-kit-contents]
+  extract:class-kit-contents -->|success| finalize:class-kit
+  extract:class-kit-contents -->|error| finalize:class-kit
+  finalize:class-kit[finalize:class-kit]
+  finalize:class-kit -->|success| aonprd:completed
+  extract:npc-theme-template-base[extract:npc-theme-template-base]
+  extract:npc-theme-template-base -->|success| extract:npc-theme-template-traits-mods
+  extract:npc-theme-template-base -->|error| extract:npc-theme-template-traits-mods
+  extract:npc-theme-template-traits-mods[extract:npc-theme-template-traits-mods]
+  extract:npc-theme-template-traits-mods -->|success| finalize:npc-theme-template
+  extract:npc-theme-template-traits-mods -->|error| finalize:npc-theme-template
+  finalize:npc-theme-template[finalize:npc-theme-template]
+  finalize:npc-theme-template -->|success| aonprd:completed
+  extract:feat-base[extract:feat-base]
+  extract:feat-base -->|success| extract:feat-prerequisites
+  extract:feat-base -->|error| extract:feat-prerequisites
+  extract:feat-prerequisites[extract:feat-prerequisites]
+  extract:feat-prerequisites -->|success| extract:feat-effect
+  extract:feat-prerequisites -->|error| extract:feat-effect
+  extract:feat-effect[extract:feat-effect]
+  extract:feat-effect -->|success| extract:feat-meta
+  extract:feat-effect -->|error| extract:feat-meta
+  extract:feat-meta[extract:feat-meta]
+  extract:feat-meta -->|success| finalize:feat
+  extract:feat-meta -->|error| finalize:feat
+  finalize:feat[finalize:feat]
+  finalize:feat -->|success| aonprd:completed
+  extract:skill-base[extract:skill-base]
+  extract:skill-base -->|success| extract:skill-actions
+  extract:skill-base -->|error| extract:skill-actions
+  extract:skill-actions[extract:skill-actions]
+  extract:skill-actions -->|success| extract:skill-proficiency-tiers
+  extract:skill-actions -->|error| extract:skill-proficiency-tiers
+  extract:skill-proficiency-tiers[extract:skill-proficiency-tiers]
+  extract:skill-proficiency-tiers -->|success| finalize:skill
+  extract:skill-proficiency-tiers -->|error| finalize:skill
+  finalize:skill[finalize:skill]
+  finalize:skill -->|success| aonprd:completed
+  extract:archetype-base[extract:archetype-base]
+  extract:archetype-base -->|success| extract:archetype-introduction
+  extract:archetype-base -->|error| extract:archetype-introduction
+  extract:archetype-introduction[extract:archetype-introduction]
+  extract:archetype-introduction -->|success| extract:archetype-feats
+  extract:archetype-introduction -->|error| extract:archetype-feats
+  extract:archetype-feats[extract:archetype-feats]
+  extract:archetype-feats -->|success| finalize:archetype
+  extract:archetype-feats -->|error| finalize:archetype
+  finalize:archetype[finalize:archetype]
+  finalize:archetype -->|success| aonprd:completed
+  extract:subclass-feature-base[extract:subclass-feature-base]
+  extract:subclass-feature-base -->|success| extract:subclass-feature-fields
+  extract:subclass-feature-base -->|error| extract:subclass-feature-fields
+  extract:subclass-feature-fields[extract:subclass-feature-fields]
+  extract:subclass-feature-fields -->|success| extract:subclass-feature-spells
+  extract:subclass-feature-fields -->|error| extract:subclass-feature-spells
+  extract:subclass-feature-spells[extract:subclass-feature-spells]
+  extract:subclass-feature-spells -->|success| extract:subclass-feature-features
+  extract:subclass-feature-spells -->|error| extract:subclass-feature-features
+  extract:subclass-feature-features[extract:subclass-feature-features]
+  extract:subclass-feature-features -->|success| finalize:subclass-feature
+  extract:subclass-feature-features -->|error| finalize:subclass-feature
+  finalize:subclass-feature[finalize:subclass-feature]
+  finalize:subclass-feature -->|success| aonprd:completed
+  extract:spell-base[extract:spell-base]
+  extract:spell-base -->|success| extract:spell-cast
+  extract:spell-base -->|error| extract:spell-cast
+  extract:spell-cast[extract:spell-cast]
+  extract:spell-cast -->|success| extract:spell-outcomes
+  extract:spell-cast -->|error| extract:spell-outcomes
+  extract:spell-outcomes[extract:spell-outcomes]
+  extract:spell-outcomes -->|success| extract:spell-affliction
+  extract:spell-outcomes -->|error| extract:spell-affliction
+  extract:spell-affliction[extract:spell-affliction]
+  extract:spell-affliction -->|success| extract:spell-heightened
+  extract:spell-affliction -->|error| extract:spell-heightened
+  extract:spell-heightened[extract:spell-heightened]
+  extract:spell-heightened -->|success| extract:spell-meta
+  extract:spell-heightened -->|error| extract:spell-meta
+  extract:spell-meta[extract:spell-meta]
+  extract:spell-meta -->|success| finalize:spell
+  extract:spell-meta -->|error| finalize:spell
+  finalize:spell[finalize:spell]
+  finalize:spell -->|success| aonprd:completed
+  extract:ritual-base[extract:ritual-base]
+  extract:ritual-base -->|success| extract:ritual-cast
+  extract:ritual-base -->|error| extract:ritual-cast
+  extract:ritual-cast[extract:ritual-cast]
+  extract:ritual-cast -->|success| extract:ritual-outcomes
+  extract:ritual-cast -->|error| extract:ritual-outcomes
+  extract:ritual-outcomes[extract:ritual-outcomes]
+  extract:ritual-outcomes -->|success| extract:ritual-affliction
+  extract:ritual-outcomes -->|error| extract:ritual-affliction
+  extract:ritual-affliction[extract:ritual-affliction]
+  extract:ritual-affliction -->|success| extract:ritual-heightened
+  extract:ritual-affliction -->|error| extract:ritual-heightened
+  extract:ritual-heightened[extract:ritual-heightened]
+  extract:ritual-heightened -->|success| extract:ritual-meta
+  extract:ritual-heightened -->|error| extract:ritual-meta
+  extract:ritual-meta[extract:ritual-meta]
+  extract:ritual-meta -->|success| finalize:ritual
+  extract:ritual-meta -->|error| finalize:ritual
+  finalize:ritual[finalize:ritual]
+  finalize:ritual -->|success| aonprd:completed
+  extract:deity-base[extract:deity-base]
+  extract:deity-base -->|success| extract:deity-devotee-benefits
+  extract:deity-base -->|error| extract:deity-devotee-benefits
+  extract:deity-devotee-benefits[extract:deity-devotee-benefits]
+  extract:deity-devotee-benefits -->|success| extract:deity-edicts-anathema
+  extract:deity-devotee-benefits -->|error| extract:deity-edicts-anathema
+  extract:deity-edicts-anathema[extract:deity-edicts-anathema]
+  extract:deity-edicts-anathema -->|success| extract:deity-cleric-spells
+  extract:deity-edicts-anathema -->|error| extract:deity-cleric-spells
+  extract:deity-cleric-spells[extract:deity-cleric-spells]
+  extract:deity-cleric-spells -->|success| extract:deity-relationships
+  extract:deity-cleric-spells -->|error| extract:deity-relationships
+  extract:deity-relationships[extract:deity-relationships]
+  extract:deity-relationships -->|success| finalize:deity
+  extract:deity-relationships -->|error| finalize:deity
+  finalize:deity[finalize:deity]
+  finalize:deity -->|success| aonprd:completed
+  extract:deity-category-base[extract:deity-category-base]
+  extract:deity-category-base -->|success| extract:deity-category-members
+  extract:deity-category-base -->|error| extract:deity-category-members
+  extract:deity-category-members[extract:deity-category-members]
+  extract:deity-category-members -->|success| extract:deity-category-aspects
+  extract:deity-category-members -->|error| extract:deity-category-aspects
+  extract:deity-category-aspects[extract:deity-category-aspects]
+  extract:deity-category-aspects -->|success| finalize:deity-category
+  extract:deity-category-aspects -->|error| finalize:deity-category
+  finalize:deity-category[finalize:deity-category]
+  finalize:deity-category -->|success| aonprd:completed
+  extract:rule-base[extract:rule-base]
+  extract:rule-base -->|success| extract:rule-subsections
+  extract:rule-base -->|error| extract:rule-subsections
+  extract:rule-subsections[extract:rule-subsections]
+  extract:rule-subsections -->|success| finalize:rule
+  extract:rule-subsections -->|error| finalize:rule
+  finalize:rule[finalize:rule]
+  finalize:rule -->|success| aonprd:completed
+  extract:km-structure-base[extract:km-structure-base]
+  extract:km-structure-base -->|success| extract:km-structure-mechanics
+  extract:km-structure-base -->|error| extract:km-structure-mechanics
+  extract:km-structure-mechanics[extract:km-structure-mechanics]
+  extract:km-structure-mechanics -->|success| finalize:km-structure
+  extract:km-structure-mechanics -->|error| finalize:km-structure
+  finalize:km-structure[finalize:km-structure]
+  finalize:km-structure -->|success| aonprd:completed
+  extract:km-event-base[extract:km-event-base]
+  extract:km-event-base -->|success| extract:km-event-mechanics
+  extract:km-event-base -->|error| extract:km-event-mechanics
+  extract:km-event-mechanics[extract:km-event-mechanics]
+  extract:km-event-mechanics -->|success| finalize:km-event
+  extract:km-event-mechanics -->|error| finalize:km-event
+  finalize:km-event[finalize:km-event]
+  finalize:km-event -->|success| aonprd:completed
+  extract:tactic-base[extract:tactic-base]
+  extract:tactic-base -->|success| extract:tactic-mechanics
+  extract:tactic-base -->|error| extract:tactic-mechanics
+  extract:tactic-mechanics[extract:tactic-mechanics]
+  extract:tactic-mechanics -->|success| finalize:tactic
+  extract:tactic-mechanics -->|error| finalize:tactic
+  finalize:tactic[finalize:tactic]
+  finalize:tactic -->|success| aonprd:completed
+  extract:camp-meal-base[extract:camp-meal-base]
+  extract:camp-meal-base -->|success| extract:camp-meal-mechanics
+  extract:camp-meal-base -->|error| extract:camp-meal-mechanics
+  extract:camp-meal-mechanics[extract:camp-meal-mechanics]
+  extract:camp-meal-mechanics -->|success| finalize:camp-meal
+  extract:camp-meal-mechanics -->|error| finalize:camp-meal
+  finalize:camp-meal[finalize:camp-meal]
+  finalize:camp-meal -->|success| aonprd:completed
+  extract:camp-activity-base[extract:camp-activity-base]
+  extract:camp-activity-base -->|success| extract:camp-activity-mechanics
+  extract:camp-activity-base -->|error| extract:camp-activity-mechanics
+  extract:camp-activity-mechanics[extract:camp-activity-mechanics]
+  extract:camp-activity-mechanics -->|success| finalize:camp-activity
+  extract:camp-activity-mechanics -->|error| finalize:camp-activity
+  finalize:camp-activity[finalize:camp-activity]
+  finalize:camp-activity -->|success| aonprd:completed
+  extract:km-war-tactic-base[extract:km-war-tactic-base]
+  extract:km-war-tactic-base -->|success| extract:km-war-tactic-mechanics
+  extract:km-war-tactic-base -->|error| extract:km-war-tactic-mechanics
+  extract:km-war-tactic-mechanics[extract:km-war-tactic-mechanics]
+  extract:km-war-tactic-mechanics -->|success| finalize:km-war-tactic
+  extract:km-war-tactic-mechanics -->|error| finalize:km-war-tactic
+  finalize:km-war-tactic[finalize:km-war-tactic]
+  finalize:km-war-tactic -->|success| aonprd:completed
+  extract:km-war-army-base[extract:km-war-army-base]
+  extract:km-war-army-base -->|success| extract:km-war-army-statblock
+  extract:km-war-army-base -->|error| extract:km-war-army-statblock
+  extract:km-war-army-statblock[extract:km-war-army-statblock]
+  extract:km-war-army-statblock -->|success| extract:km-war-army-abilities
+  extract:km-war-army-statblock -->|error| extract:km-war-army-abilities
+  extract:km-war-army-abilities[extract:km-war-army-abilities]
+  extract:km-war-army-abilities -->|success| finalize:km-war-army
+  extract:km-war-army-abilities -->|error| finalize:km-war-army
+  finalize:km-war-army[finalize:km-war-army]
+  finalize:km-war-army -->|success| aonprd:completed
+  extract:generic[extract:generic]
+  extract:generic -->|success| aonprd:completed
+  extract:generic -->|error| aonprd:completed
+  aonprd:concept-dispatch-after:aonprd:load-and-common[aonprd:concept-dispatch-after:aonprd:load-and-common]
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|language| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|plane| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|contributor| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|weapon-group| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|armor-group| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|article| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|condition| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|trait| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|action| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|hazard| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|weather-hazard| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|weapon| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|armor| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|equipment| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|relic| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|set-relic| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|siege-weapon| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|vehicle| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|familiar| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|monster| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|animal-companion| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|monster-ability| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|monster-template| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|monster-family| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|curse| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|disease| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|domain| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|source| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|ancestry| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|background| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|class| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|class-sample| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|class-kit| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|npc-theme-template| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|feat| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|skill| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|archetype| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|subclass-feature| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|spell| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|ritual| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|deity| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|deity-category| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|rule| extract:rule-base
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|km-structure| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|km-event| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|tactic| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|camp-meal| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|camp-activity| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|km-war-tactic| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|km-war-army| extract:label-pair-block
+  aonprd:concept-dispatch-after:aonprd:load-and-common -->|unknown| aonprd:unknown-end
+  aonprd:concept-dispatch-after:extract:saving-throw[aonprd:concept-dispatch-after:extract:saving-throw]
+  aonprd:concept-dispatch-after:extract:saving-throw -->|language| extract:language-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|plane| extract:plane-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|contributor| extract:contributor-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|weapon-group| extract:weapon-group-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|armor-group| extract:armor-group-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|article| extract:article-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|condition| extract:condition-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|trait| extract:trait-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|action| extract:action-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|hazard| extract:hazard-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|weather-hazard| extract:weather-hazard-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|weapon| extract:weapon-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|armor| extract:armor-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|equipment| extract:equipment-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|relic| extract:relic-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|set-relic| extract:set-relic-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|siege-weapon| extract:siege-weapon-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|vehicle| extract:vehicle-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|familiar| extract:familiar-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|monster| extract:monster-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|animal-companion| extract:animal-companion-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|monster-ability| extract:monster-ability-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|monster-template| extract:monster-template-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|monster-family| extract:monster-family-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|curse| extract:curse-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|disease| extract:disease-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|domain| extract:domain-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|source| extract:source-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|ancestry| extract:ancestry-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|background| extract:background-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|class| extract:class-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|class-sample| extract:class-sample-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|class-kit| extract:class-kit-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|npc-theme-template| extract:npc-theme-template-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|feat| extract:feat-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|skill| extract:skill-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|archetype| extract:archetype-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|subclass-feature| extract:subclass-feature-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|spell| extract:spell-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|ritual| extract:ritual-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|deity| extract:deity-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|deity-category| extract:deity-category-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|rule| aonprd:completed
+  aonprd:concept-dispatch-after:extract:saving-throw -->|km-structure| extract:km-structure-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|km-event| extract:km-event-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|tactic| extract:tactic-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|camp-meal| extract:camp-meal-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|camp-activity| extract:camp-activity-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|km-war-tactic| extract:km-war-tactic-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|km-war-army| extract:km-war-army-base
+  aonprd:concept-dispatch-after:extract:saving-throw -->|unknown| aonprd:unknown-end
+  aonprd:unknown-end(((aonprd:unknown-end\n(completed))))
+  aonprd:completed(((aonprd:completed\n(completed))))

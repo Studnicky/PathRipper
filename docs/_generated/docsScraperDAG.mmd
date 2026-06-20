@@ -2,5 +2,5 @@ flowchart LR
   %% docs:parse (v2.0)
   docs:parse-impl
   docs:parse-impl[docs:parse-impl]
-  docs:parse-impl -->|success| END
-  END([end])
+  docs:parse-impl -->|success| docs:parse:done
+  docs:parse:done(((docs:parse:done\n(completed))))

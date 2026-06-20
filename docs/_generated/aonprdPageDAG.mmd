@@ -1,12 +1,13 @@
 flowchart LR
-  %% htmlPageDAG:canonical (v2.0)
+  %% htmlPageDAG:aonprd (v2.0)
   html:fetch
   html:fetch[html:fetch]
-  html:fetch -->|success| html:write-raw
-  html:fetch -->|cached| html:write-raw
+  html:fetch -->|success| aonprd:parse
+  html:fetch -->|cached| aonprd:parse
   html:fetch -->|error| htmlPage:failed
-  html:write-raw[html:write-raw]
-  html:write-raw -->|success| json:write
+  aonprd:parse[[aonprd:parse]]
+  aonprd:parse -->|success| json:write
+  aonprd:parse -->|error| htmlPage:failed
   json:write[json:write]
   json:write -->|success| htmlPage:completed
   json:write -->|skipped| htmlPage:completed

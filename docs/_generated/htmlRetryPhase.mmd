@@ -1,9 +1,9 @@
 flowchart LR
   %% htmlRetryPhase (v2.0)
   retry-urls
-  retry-urls{{retry-urls}}
-  retry-urls -->|all-success| END
-  retry-urls -->|partial| END
-  retry-urls -->|all-error| END
-  retry-urls -->|empty| END
-  END([end])
+  retry-urls[/retry-urls/]
+  retry-urls -->|all-success| phase-done
+  retry-urls -->|partial| phase-done
+  retry-urls -->|all-error| phase-done
+  retry-urls -->|empty| phase-done
+  phase-done(((phase-done\n(completed))))

@@ -2,5 +2,5 @@ flowchart LR
   %% wiki-docs:parse (v2.0)
   wiki-docs:parse-impl
   wiki-docs:parse-impl[wiki-docs:parse-impl]
-  wiki-docs:parse-impl -->|success| END
-  END([end])
+  wiki-docs:parse-impl -->|success| wiki-docs:parse:done
+  wiki-docs:parse:done(((wiki-docs:parse:done\n(completed))))

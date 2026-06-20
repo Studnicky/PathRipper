@@ -5,7 +5,7 @@ title: Orchestration
 
 # Orchestration
 
-Ripperoni uses `@noocodex/dagonizer` for all scrape orchestration. Each run is a directed acyclic graph (DAG) dispatched by `RipperDagonizer`.
+Ripperoni uses `@studnicky/dagonizer` for all scrape orchestration. Each run is a directed acyclic graph (DAG) dispatched by `RipperDagonizer`.
 
 ## How it works
 

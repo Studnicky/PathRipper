@@ -20,7 +20,7 @@ The runner resolves the plugin file path from the pipeline config entry, imports
 ## Node signature
 
 ```ts
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import type { NodeInterface, NodeContextInterface } from '@studnicky/dagonizer';
 import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
 import type { RipperServices } from 'ripperoni/services/RipperServices';
 import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
@@ -95,7 +95,7 @@ const res = await fetch(url, { signal: context.signal });
 
 ```ts
 import { load } from 'cheerio';
-import type { NodeInterface } from '@noocodex/dagonizer';
+import type { NodeInterface } from '@studnicky/dagonizer';
 import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
 import type { RipperServices } from 'ripperoni/services/RipperServices';
 import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
@@ -125,7 +125,7 @@ export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
 
 ```ts
 import wtf from 'wtf_wikipedia';
-import type { NodeInterface } from '@noocodex/dagonizer';
+import type { NodeInterface } from '@studnicky/dagonizer';
 import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
 import type { RipperServices } from 'ripperoni/services/RipperServices';
 import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
@@ -181,7 +181,7 @@ export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
 }
 ```
 
-When the pipeline step resolves to a registered DAG name, the runner emits a `DeepDAGNode` placement and wires `stateMapping.output` so downstream steps (e.g. `json:write`) see the parsed record.
+When the pipeline step resolves to a registered DAG name, the runner emits an `embeddedDAG` placement and wires its output mapping so downstream steps (e.g. `json:write`) see the parsed record.
 
 ## Testing a plugin in isolation
 

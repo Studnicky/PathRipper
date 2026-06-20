@@ -1,9 +1,9 @@
 flowchart LR
   %% wikiScrapePhase (v2.0)
   scrape-titles
-  scrape-titles{{scrape-titles}}
-  scrape-titles -->|all-success| END
-  scrape-titles -->|partial| END
-  scrape-titles -->|all-error| END
-  scrape-titles -->|empty| END
-  END([end])
+  scrape-titles[/scrape-titles/]
+  scrape-titles -->|all-success| phase-done
+  scrape-titles -->|partial| phase-done
+  scrape-titles -->|all-error| phase-done
+  scrape-titles -->|empty| phase-done
+  phase-done(((phase-done\n(completed))))

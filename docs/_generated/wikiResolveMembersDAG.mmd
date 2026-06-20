@@ -1,30 +1,22 @@
 flowchart LR
   %% wikiResolveMembersDAG (v2.0)
   wiki:choose-mode
-  subgraph depth_0["depth_0 (parallel)"]
-    wiki:choose-mode[wiki:choose-mode]
-    wiki:resume-failures[wiki:resume-failures]
-    wiki:fetch-single-category[wiki:fetch-single-category]
-    wiki:fetch-multiple-categories[wiki:fetch-multiple-categories]
-    wiki:fetch-all-pages[wiki:fetch-all-pages]
-  end
-  depth_0 -->|success| END
-  depth_0 -->|error| END
   wiki:choose-mode[wiki:choose-mode]
   wiki:choose-mode -->|resume-failures| wiki:resume-failures
   wiki:choose-mode -->|single-category| wiki:fetch-single-category
   wiki:choose-mode -->|by-categories| wiki:fetch-multiple-categories
   wiki:choose-mode -->|all-pages| wiki:fetch-all-pages
   wiki:resume-failures[wiki:resume-failures]
-  wiki:resume-failures -->|success| END
-  wiki:resume-failures -->|error| END
+  wiki:resume-failures -->|success| resolve-done
+  wiki:resume-failures -->|error| resolve-failed
   wiki:fetch-single-category[wiki:fetch-single-category]
-  wiki:fetch-single-category -->|success| END
-  wiki:fetch-single-category -->|error| END
+  wiki:fetch-single-category -->|success| resolve-done
+  wiki:fetch-single-category -->|error| resolve-failed
   wiki:fetch-multiple-categories[wiki:fetch-multiple-categories]
-  wiki:fetch-multiple-categories -->|success| END
-  wiki:fetch-multiple-categories -->|error| END
+  wiki:fetch-multiple-categories -->|success| resolve-done
+  wiki:fetch-multiple-categories -->|error| resolve-failed
   wiki:fetch-all-pages[wiki:fetch-all-pages]
-  wiki:fetch-all-pages -->|success| END
-  wiki:fetch-all-pages -->|error| END
-  END([end])
+  wiki:fetch-all-pages -->|success| resolve-done
+  wiki:fetch-all-pages -->|error| resolve-failed
+  resolve-done(((resolve-done\n(completed))))
+  resolve-failed>resolve-failed\n(failed)]

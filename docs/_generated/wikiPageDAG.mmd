@@ -3,12 +3,11 @@ flowchart LR
   wiki:fetch
   wiki:fetch[wiki:fetch]
   wiki:fetch -->|success| wiki:write-raw
-  wiki:fetch -->|error| END
+  wiki:fetch -->|error| wikiPage:failed
   wiki:write-raw[wiki:write-raw]
   wiki:write-raw -->|success| json:write
   json:write[json:write]
-  json:write -->|success| flow:terminate
-  json:write -->|skipped| flow:terminate
-  flow:terminate[flow:terminate]
-  flow:terminate -->|success| END
-  END([end])
+  json:write -->|success| wikiPage:completed
+  json:write -->|skipped| wikiPage:completed
+  wikiPage:completed(((wikiPage:completed\n(completed))))
+  wikiPage:failed>wikiPage:failed\n(failed)]

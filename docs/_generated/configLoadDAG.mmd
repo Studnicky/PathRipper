@@ -3,18 +3,19 @@ flowchart LR
   config:read-file
   config:read-file[config:read-file]
   config:read-file -->|success| config:parse-json
-  config:read-file -->|not-found| END
-  config:read-file -->|error| END
+  config:read-file -->|not-found| config:failed
+  config:read-file -->|error| config:failed
   config:parse-json[config:parse-json]
   config:parse-json -->|success| config:validate-schema
-  config:parse-json -->|error| END
+  config:parse-json -->|error| config:failed
   config:validate-schema[config:validate-schema]
   config:validate-schema -->|valid| config:normalize-cache
-  config:validate-schema -->|invalid| END
+  config:validate-schema -->|invalid| config:failed
   config:normalize-cache[config:normalize-cache]
   config:normalize-cache -->|success| config:assert-invariants
-  config:normalize-cache -->|invariant-violated| END
+  config:normalize-cache -->|invariant-violated| config:failed
   config:assert-invariants[config:assert-invariants]
-  config:assert-invariants -->|success| END
-  config:assert-invariants -->|invariant-violated| END
-  END([end])
+  config:assert-invariants -->|success| config:completed
+  config:assert-invariants -->|invariant-violated| config:failed
+  config:completed(((config:completed\n(completed))))
+  config:failed>config:failed\n(failed)]

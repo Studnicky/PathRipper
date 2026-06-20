@@ -74,7 +74,7 @@ Plugins are TypeScript modules under `plugins/<targetId>/`. Each plugin exports 
 
 ```ts
 // plugins/my-target/parse.task.ts
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import type { NodeInterface, NodeContextInterface } from '@studnicky/dagonizer';
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { RipperServices } from '../../src/services/RipperServices.js';
 import type { ScrapeState } from '../../src/state/ScrapeState.js';

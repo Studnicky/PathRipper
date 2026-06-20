@@ -84,8 +84,9 @@ const sidebar = [
   {
     'text':  'Reference',
     'items': [
-      { 'link': '/architecture', 'text': 'Architecture' },
-      { 'link': '/roadmap',      'text': 'Roadmap'      },
+      { 'link': '/architecture',       'text': 'Architecture'       },
+      { 'link': '/aonprd-scraper-dag', 'text': 'AONPRD Scraper DAG' },
+      { 'link': '/roadmap',            'text': 'Roadmap'            },
     ],
   },
 ];

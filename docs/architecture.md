@@ -18,7 +18,7 @@ graph TD
     RipperRun --> PluginRegister["plugin.register(dispatcher)"]
 
     RipperDagonizer[dispatcher/RipperDagonizer] --> Dagonizer
-    Dagonizer["@noocodex/dagonizer"] --> ScrapeState
+    Dagonizer["@studnicky/dagonizer"] --> ScrapeState
 
     BuiltinNodes[nodes/*] --> ScrapeState
 
@@ -42,19 +42,19 @@ graph TD
 
 ## DAG dispatch
 
-<p class="summary">Directed acyclic graph orchestration powered by @noocodex/dagonizer — every node declares named output ports, fan-out handles concurrency, and state flows checkpoint-ready through the run.</p>
+<p class="summary">Directed acyclic graph orchestration powered by @studnicky/dagonizer — every node declares named output ports, scatter handles concurrency, and state flows checkpoint-ready through the run.</p>
 
-Ripperoni uses `@noocodex/dagonizer` for all orchestration. A scrape run decomposes into four nested DAG levels: an **outer flow** that composes three independent **phase** DAGs (discovery, scrape, retry) via `sub-dag` placements, and a **per-page** DAG that materialises the user's `pipeline: [...]` config as first-class nodes. Phases are independently dispatchable for tests.
+Ripperoni uses `@studnicky/dagonizer` for all orchestration. A scrape run decomposes into four nested DAG levels: an **outer flow** that composes three independent **phase** DAGs (discovery, scrape, retry) via `embeddedDAG` placements, and a **per-page** DAG that materialises the user's `pipeline: [...]` config as first-class nodes. Phases are independently dispatchable for tests.
 
-**Node contract:** Every built-in task (`html:fetch`, `json:write`, etc.) and every user plugin is a `NodeInterface<ScrapeState, TOutputs, RipperServices>`. Nodes declare named output ports (e.g. `success | error | cached`), mutate `ScrapeState`, and return `{ output: '<port>' }`. The dispatcher routes to the next placement based on the port.
+**Node contract:** Every built-in task (`html:fetch`, `json:write`, etc.) and every user plugin is a `NodeInterface<ScrapeState, TOutputs, RipperServices>`. Nodes declare named output ports (e.g. `success | error | cached`), mutate `ScrapeState`, and return `NodeOutputBuilder.of('<port>')`. The dispatcher routes to the next placement based on the port.
 
-**Phase composition:** The outer DAG is a sub-dag composition — each phase runs as a `DeepDAGNode` against a cloned `ScrapeState`, and `stateMapping.output` copies the relevant result buckets back to the parent. Deep-DAG placements cannot route to `null`, so each outer DAG terminates with a `flow:terminate` `SingleNode` that owns END.
+**Phase composition:** The outer DAG embeds each phase as an `embeddedDAG` placement with explicit `inputs`/`outputs` state mappings — the mapping seeds the child DAG's inputs and copies the relevant result buckets back to the parent. Each outer DAG ends at a `terminal` placement (`{ outcome: 'completed' }`) that owns END.
 
 **Failure retry:** Items that fail their first per-page DAG dispatch retry exactly once. The retry phase fans out over `state.failed` and partitions outcomes into `state.recovered` (succeeded on retry) and `state.failedAfterRetry` (failed both attempts). `failures.json` is written from `state.failedAfterRetry` — first-attempt failures are not a terminal state.
 
 **Result-array contract:** `ScrapeState` carries three terminal result arrays: `succeeded` (first-attempt successes), `recovered` (succeeded on retry), `failedAfterRetry` (failed both). The transient `failed` array is the retry phase's fan-out source and is meaningful only mid-flow.
 
-**Config-driven pipeline:** Users declare `pipeline: ['html:fetch', 'aonprd:parse', 'json:write']` in their config. The runner compiles that list into a real dagonizer-managed per-page DAG — one `SingleNode` placement per pipeline step, chained `success → next`. Each phase's fan-out invokes a single registered dispatch node (`html:dispatch-page-dag` or `wiki:dispatch-page-dag`) per item; that node executes the per-page child DAG via `context.services.dispatcher`. The dispatch wrapper resolves its item key from `state.metadata[<itemKey>]` — `currentUrl` for the scrape phase, `currentRetryUrl` for the retry phase — and so the same wrapper serves both phases unchanged.
+**Config-driven pipeline:** Users declare `pipeline: ['html:fetch', 'aonprd:parse', 'json:write']` in their config. The runner compiles that list into a real dagonizer-managed per-page DAG — one `SingleNode` placement per pipeline step, chained `success → next`. Each phase fans out with a native `{ dag }` **scatter** whose body is the per-page DAG — no dispatch-wrapper node. The scatter's `itemKey` names where each item lands in state: `currentUrl` for the scrape phase, `currentRetryUrl` for the retry phase; the fetch node reads its URL from that key. Scatter `concurrency` is set to the parse worker-pool width so every worker stays fed.
 
 ### CLI dispatch DAG
 
@@ -68,7 +68,7 @@ The CLI layer is itself a first-class Dagonizer DAG. Each commander action handl
 
 ### Outer flow
 
-The outer DAG composes the phases as `sub-dag` (`DeepDAGNode`) placements with explicit state mappings. Each phase runs in isolation and reports back via the configured `stateMapping.output`.
+The outer DAG composes the phases as `embeddedDAG` placements with explicit `inputs`/`outputs` state mappings. Each phase runs in isolation; its mapped outputs are copied back into the parent state.
 
 #### htmlScrapeDAG
 
@@ -107,7 +107,7 @@ Each branch node is independently dispatchable for tests. The DAG writes `state.
 
 ### Phase: discovery
 
-The discovery phase runs `crawl:list-targets` to populate `state.urls` before the scrape phase fans out. Only present in `htmlScrapeDAGCrawl`; when the user's pipeline does not reference `crawl:list-targets`, the orchestrator picks `htmlScrapeDAG` (no discovery sub-dag).
+The discovery phase runs `crawl:list-targets` to populate `state.urls` before the scrape phase fans out. Only present in `htmlScrapeDAGCrawl`; when the user's pipeline does not reference `crawl:list-targets`, the orchestrator picks `htmlScrapeDAG` (no discovery phase).
 
 #### htmlCrawlPhase
 
@@ -133,7 +133,7 @@ The scrape phase is the initial per-item run. The fan-out partitions outcomes in
 
 ### Phase: retry
 
-The retry phase fans out over `state.failed` exactly once. Successful retries land in `state.recovered`; persistent failures land in `state.failedAfterRetry`. The same dispatch wrapper is invoked; only the fan-out's `itemKey` (`currentRetryUrl` / `currentRetryTitle`) differs from the scrape phase.
+The retry phase scatters over `state.failed` exactly once. Successful retries land in `state.recovered`; persistent failures land in `state.failedAfterRetry`. The same per-page DAG runs as the scatter body; only the scatter source (`state.failed`) and `itemKey` (`currentRetryUrl` / `currentRetryTitle`) differ from the scrape phase.
 
 #### htmlRetryPhase
 
@@ -200,11 +200,11 @@ All non-success routes terminate at `null`; `state.errors` carries the failure d
 
 Every plugin in Ripperoni is registered as a DAG (Flavor 2 universal pattern). Trivial plugins wrap a single `NodeInterface` in a 1-node DAG; complex plugins decompose into multi-node branching DAGs. The orchestrator's pipeline-name resolution checks the DAG registry first, then the node registry — plugins are interchangeable from the config-author's perspective.
 
-When a pipeline step like `aonprd:parse` resolves to a registered DAG, the runner emits a `DeepDAGNode` placement in the per-page DAG. A `stateMapping.output` copies the child DAG's `state.output` back to the parent so downstream steps (e.g. `json:write`) see the parsed record.
+When a pipeline step like `aonprd:parse` resolves to a registered DAG, the runner emits an `embeddedDAG` placement in the per-page DAG. The placement's output mapping copies the child DAG's `state.output` back to the parent so downstream steps (e.g. `json:write`) see the parsed record.
 
 #### Plugin DAG: AON parse
 
-The AON plugin decomposes into 17 nodes: `load-and-common → detect-type → branch (15 page types) → extract-<type> → terminate`. Each per-type extractor is independently dispatchable for tests.
+The AON plugin is **taxonomy-routed**, not a hand-wired node list. Its entrypoint `aonprd:taxonomy-route` classifies each page from its URL and dispatches to that concept's inherited capability chain (spell, monster, feat, weapon, …); unrecognised pages route to `aonprd:make-unknown`. The whole DAG is compiled from the concept taxonomy by `TAXONOMY.buildDAG()`, so adding a concept extends the taxonomy rather than this graph by hand. See the [AONPRD Scraper DAG](/aonprd-scraper-dag) walkthrough for the full composition.
 
 ```mermaid
 <!--@include: ./_generated/aonprdParseDAG.mmd -->
