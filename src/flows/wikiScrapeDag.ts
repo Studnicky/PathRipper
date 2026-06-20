@@ -8,7 +8,7 @@ export const WIKI_SCRAPE_PHASE = 'wikiScrapePhase';
 /** Canonical name for the wiki failure-retry phase DAG. */
 export const WIKI_RETRY_PHASE = 'wikiRetryPhase';
 /** Canonical name for the outer wiki composition DAG. */
-export const WIKI_SCRAPE_DAG = 'wikiScrapeDAG';
+const WIKI_SCRAPE_DAG = 'wikiScrapeDAG';
 
 const SCATTER_CONCURRENCY = 8;
 

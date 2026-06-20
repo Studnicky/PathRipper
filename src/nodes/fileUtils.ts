@@ -15,7 +15,7 @@ export const toNodeError = (err: unknown, operation: string): NodeErrorType => {
 };
 
 /** Lower-cases the input and replaces non `[a-z0-9-]` runs with single hyphens. */
-export const toSlug = (raw: string): string => {
+const toSlug = (raw: string): string => {
   const lower     = raw.toLowerCase();
   const replaced  = lower.replace(/[^a-z0-9-]+/g, '-');
   const collapsed = replaced.replace(/-+/g, '-');
@@ -28,7 +28,7 @@ export const toSlug = (raw: string): string => {
  * Takes the path and query string, replaces `?`, `=`, `&`, `/`, `#` and other
  * non-safe characters with hyphens, collapses repeats, and trims edge hyphens.
  */
-export const urlToFilename = (url: string): string => {
+const urlToFilename = (url: string): string => {
   let parsed: URL;
   try {
     parsed = new URL(url);
