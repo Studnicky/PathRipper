@@ -1,0 +1,112 @@
+{
+  "_type": "background",
+  "url": "https://2e.aonprd.com/Backgrounds.aspx?ID=131",
+  "entity_id": 131,
+  "name": "Touched by Dahak",
+  "rarity": "rare",
+  "pfs": "limited",
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [
+    "Rare",
+    "Legacy - Age of Ashes"
+  ],
+  "trait_ids": {
+    "Rare": 137,
+    "Legacy - Age of Ashes": 270
+  },
+  "source": {
+    "book": "Pathfinder #150: Broken Promises",
+    "page": 73,
+    "source_id": 15
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #150: Broken Promises",
+      "page": 73,
+      "source_id": 15,
+      "raw": "Pathfinder #150: Broken Promises pg. 73"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Backgrounds.aspx?ID=131",
+      "text": "Touched by Dahak",
+      "kind": "Backgrounds",
+      "id": 131
+    },
+    {
+      "href": "/Traits.aspx?ID=137",
+      "text": "Rare",
+      "kind": "Traits",
+      "id": 137
+    },
+    {
+      "href": "/Traits.aspx?ID=270",
+      "text": "Legacy - Age of Ashes",
+      "kind": "Traits",
+      "id": 270
+    },
+    {
+      "href": "Sources.aspx?ID=15",
+      "text": "Pathfinder #150: Broken Promises pg. 73",
+      "kind": "Sources",
+      "id": 15
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Dragon Lore",
+      "kind": "Skills",
+      "id": 8
+    },
+    {
+      "href": "Feats.aspx?ID=854",
+      "text": "Titan Wrestler",
+      "kind": "Feats",
+      "id": 854
+    }
+  ],
+  "body_text": "As the manifestation of Dahak was destroyed, a shard of the dragon god’s wrathful nature infused you, resulting in a violent temper, strange apocalyptic dreams, an obsession with dragon hunting, or some other touch of his influence. Choose two attribute boosts. One must be to Strength or Charisma, and one is a free attribute boost. You're trained in the Athletics skill, and the Dragon Lore skill. You gain the Titan Wrestler skill feat.",
+  "body_html": "As the manifestation of Dahak was destroyed, a shard of the dragon god’s wrathful nature infused you, resulting in a violent temper, strange apocalyptic dreams, an obsession with dragon hunting, or some other touch of his influence.<br><br>Choose two attribute boosts. One must be to <b>Strength</b> or <b>Charisma</b>, and one is a free attribute boost.<br><br>You're trained in the <u><a href=\"Skills.aspx?ID=3\">Athletics</a></u> skill, and the <u><a href=\"Skills.aspx?ID=8\">Dragon Lore</a></u> skill. You gain the <u><a href=\"Feats.aspx?ID=854\">Titan Wrestler</a></u> skill feat.",
+  "meta_description": "As the manifestation of Dahak was destroyed, a shard of the dragon god’s wrathful nature infused you, resulting in a violent temper, strange apocalyptic dreams, an obsession with dragon hunting, or some other touch of his influence.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Backgrounds, Touched by Dahak",
+  "attribute_boost_choice": {
+    "fixed_options": [
+      "Strength",
+      "Charisma"
+    ],
+    "free": true
+  },
+  "trained_skills": [
+    {
+      "name": "Athletics",
+      "skill_id": 3
+    }
+  ],
+  "lore_skills": [
+    {
+      "name": "Dragon Lore",
+      "skill_id": 8
+    }
+  ],
+  "granted_feat": {
+    "name": "Titan Wrestler",
+    "feat_id": 854
+  },
+  "flavor_text": "As the manifestation of Dahak was destroyed, a shard of the dragon god’s wrathful nature infused you, resulting in a violent temper, strange apocalyptic dreams, an obsession with dragon hunting, or some other touch of his influence.",
+  "related_sources": []
+}

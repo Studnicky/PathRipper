@@ -1,0 +1,173 @@
+{
+  "_type": "armor",
+  "url": "https://2e.aonprd.com/Armor.aspx?ID=41",
+  "armor_id": 41,
+  "name": "Leather Armor",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Armor.aspx?ID=4&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 273,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 273,
+      "source_id": 216,
+      "raw": "Player Core pg. 273"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 275,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 275"
+    }
+  ],
+  "price": {
+    "gp": 2,
+    "sp": null,
+    "cp": null,
+    "raw": "2 gp"
+  },
+  "ac_bonus": 1,
+  "dex_cap": 4,
+  "check_penalty": -1,
+  "speed_penalty": null,
+  "strength": 0,
+  "bulk": 1,
+  "category": "light",
+  "group": {
+    "name": "Leather",
+    "group_id": 3
+  },
+  "description_html": "A mix of flexible and molded boiled leather, a suit of this type of armor provides some protection with maximum flexibility.<br>",
+  "description_text": "A mix of flexible and molded boiled leather, a suit of this type of armor provides some protection with maximum flexibility.",
+  "raw_fields": {
+    "Price": "2 gp",
+    "AC Bonus": "+1",
+    "Dex Cap": "+4",
+    "Check Penalty": "-1",
+    "Speed Penalty": "—",
+    "Strength": "+0",
+    "Bulk": "1",
+    "Category": "Light",
+    "Group": "Leather"
+  },
+  "links": [
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 275",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "/Equipment.aspx?ID=1528&amp;NoRedirect=1",
+      "text": "Ancestral Embrace",
+      "kind": "Equipment",
+      "id": 1528
+    },
+    {
+      "href": "/Equipment.aspx?ID=3802&amp;NoRedirect=1",
+      "text": "Ankhrav Carapace",
+      "kind": "Equipment",
+      "id": 3802
+    },
+    {
+      "href": "/Equipment.aspx?ID=1839&amp;NoRedirect=1",
+      "text": "Arachnid Harness",
+      "kind": "Equipment",
+      "id": 1839
+    },
+    {
+      "href": "/Equipment.aspx?ID=3483&amp;NoRedirect=1",
+      "text": "Assassin's Skin",
+      "kind": "Equipment",
+      "id": 3483
+    },
+    {
+      "href": "/Equipment.aspx?ID=3803&amp;NoRedirect=1",
+      "text": "Autoload Leathers",
+      "kind": "Equipment",
+      "id": 3803
+    },
+    {
+      "href": "/Equipment.aspx?ID=3806&amp;NoRedirect=1",
+      "text": "Buoyant Buckle",
+      "kind": "Equipment",
+      "id": 3806
+    },
+    {
+      "href": "/Equipment.aspx?ID=3808&amp;NoRedirect=1",
+      "text": "Crafting Leathers",
+      "kind": "Equipment",
+      "id": 3808
+    },
+    {
+      "href": "/Equipment.aspx?ID=2377&amp;NoRedirect=1",
+      "text": "Crushing Coils",
+      "kind": "Equipment",
+      "id": 2377
+    },
+    {
+      "href": "/Equipment.aspx?ID=3809&amp;NoRedirect=1",
+      "text": "Deep Pockets",
+      "kind": "Equipment",
+      "id": 3809
+    },
+    {
+      "href": "/Equipment.aspx?ID=4013&amp;NoRedirect=1",
+      "text": "Dragonaut's Wingsuit",
+      "kind": "Equipment",
+      "id": 4013
+    },
+    {
+      "href": "/Equipment.aspx?ID=3811&amp;NoRedirect=1",
+      "text": "Eagle Wing",
+      "kind": "Equipment",
+      "id": 3811
+    },
+    {
+      "href": "/Equipment.aspx?ID=2805&amp;NoRedirect=1",
+      "text": "Electric Eelskin",
+      "kind": "Equipment",
+      "id": 2805
+    },
+    {
+      "href": "/Equipment.aspx?ID=3816&amp;NoRedirect=1",
+      "text": "Lifting Leather",
+      "kind": "Equipment",
+      "id": 3816
+    },
+    {
+      "href": "/Equipment.aspx?ID=3778&amp;NoRedirect=1",
+      "text": "Lion's Pelt",
+      "kind": "Equipment",
+      "id": 3778
+    },
+    {
+      "href": "/Equipment.aspx?ID=1980&amp;NoRedirect=1",
+      "text": "Ooze Skin",
+      "kind": "Equipment",
+      "id": 1980
+    },
+    {
+      "href": "/Equipment.aspx?ID=1243&amp;NoRedirect=1",
+      "text": "Scarab Cuirass",
+      "kind": "Equipment",
+      "id": 1243
+    },
+    {
+      "href": "/Equipment.aspx?ID=3822&amp;NoRedirect=1",
+      "text": "Shadow Shroud",
+      "kind": "Equipment",
+      "id": 3822
+    }
+  ],
+  "meta_description": "A mix of flexible and molded boiled leather, a suit of this type of armor provides some protection with maximum flexibility.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Armor, Leather Armor"
+}

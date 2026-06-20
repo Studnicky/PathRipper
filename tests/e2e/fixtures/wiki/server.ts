@@ -27,12 +27,12 @@ function titleToFilename(title: string): string {
 async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const raw = req.url ?? '/';
   const qstart = raw.indexOf('?');
-  const qs = qstart >= 0 ? raw.slice(qstart + 1) : '';
-  const params = parseQs(qs) as Record<string, string | string[]>;
+  const queryStr = qstart >= 0 ? raw.slice(qstart + 1) : '';
+  const params = parseQs(queryStr) as Record<string, string | string[]>;
 
   function param(key: string): string {
-    const v = params[key];
-    return Array.isArray(v) ? (v[0] ?? '') : (v ?? '');
+    const val = params[key];
+    return Array.isArray(val) ? (val[0] ?? '') : (val ?? '');
   }
 
   const action = param('action');
@@ -76,7 +76,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
   // action=query&prop=revisions&titles=... → look up each title, merge pages
   if (prop === 'revisions') {
     const rawTitles = param('titles');
-    const titles = rawTitles.split('|').map((t: string): string => t.trim()).filter(Boolean);
+    const titles = rawTitles.split('|').map((str: string): string => str.trim()).filter(Boolean);
 
     const merged: Record<string, unknown> = {};
     let nextPageid = 1;

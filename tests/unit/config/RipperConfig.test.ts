@@ -63,8 +63,8 @@ describe('RipperConfig.load()', () => {
   });
 
   it('defaults() returns a valid config', () => {
-    const d = RipperConfig.defaults();
-    assert.equal(d.output.basePath, './output');
+    const defaults = RipperConfig.defaults();
+    assert.equal(defaults.output.basePath, './output');
   });
 
   // ── Cache default-on ────────────────────────────────────────────────────────

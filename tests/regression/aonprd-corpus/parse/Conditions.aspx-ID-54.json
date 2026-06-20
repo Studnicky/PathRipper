@@ -1,0 +1,52 @@
+{
+  "_type": "condition",
+  "url": "https://2e.aonprd.com/Conditions.aspx?ID=54",
+  "entity_id": 54,
+  "name": "Pinned",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Kingmaker Adventure Path",
+    "page": 583,
+    "source_id": 150
+  },
+  "sources": [
+    {
+      "book": "Kingmaker Adventure Path",
+      "page": 583,
+      "source_id": 150,
+      "raw": "Kingmaker Adventure Path pg. 583"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=54",
+      "text": "Pinned",
+      "kind": "Conditions",
+      "id": 54
+    },
+    {
+      "href": "Sources.aspx?ID=150",
+      "text": "Kingmaker Adventure Path pg. 583",
+      "kind": "Sources",
+      "id": 150
+    }
+  ],
+  "body_text": "The army and cannot move freely. It has the outflanked condition and cannot use any maneuver war actions. A pinned army cannot be deployed.",
+  "body_html": "The army and cannot move freely. It has the outflanked condition and cannot use any maneuver war actions. A pinned army cannot be deployed.",
+  "meta_description": "The army and cannot move freely. It has the outflanked condition and cannot use any maneuver war actions. A pinned army cannot be deployed.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Conditions, Pinned",
+  "stages": [],
+  "related_conditions": [
+    {
+      "name": "Pinned",
+      "condition_id": 54
+    }
+  ]
+}

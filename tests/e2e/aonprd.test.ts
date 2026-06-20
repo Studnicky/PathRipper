@@ -23,29 +23,29 @@ const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
 
 describe('PathRipper legacy AONPRD e2e (local only)', () => {
   it('smoke — crawl one category and collect at least 5 target URLs', async () => {
-    const fx = await RipperConfig.load(FIXTURE);
-    const c  = fx.crawlers!['aonprd']!;
+    const config = await RipperConfig.load(FIXTURE);
+    const crawler  = config.crawlers!['aonprd']!;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-smoke-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
-      domain:      new RegExp(c.domain),
-      target:      new RegExp(c.target),
-      delimiter:   new RegExp(c.delimiter),
-      rateLimitMs: c.rateLimitMs,
-      jitterMs:    c.jitterMs,
+      domain:      new RegExp(crawler.domain),
+      target:      new RegExp(crawler.target),
+      delimiter:   new RegExp(crawler.delimiter),
+      rateLimitMs: crawler.rateLimitMs,
+      jitterMs:    crawler.jitterMs,
       maxPages:    20,
       cache,
     });
     try {
-      const links = await lister.buildList([c.startUrls[0]!]);
-      process.stdout.write(`\n  smoke: collected ${links.length.toString()} target URLs from ${c.startUrls[0] ?? '?'}\n`);
+      const links = await lister.buildList([crawler.startUrls[0]!]);
+      process.stdout.write(`\n  smoke: collected ${links.length.toString()} target URLs from ${crawler.startUrls[0] ?? '?'}\n`);
       for (const link of links.slice(0, 5)) process.stdout.write(`    • ${link}\n`);
       if (links.length > 5) process.stdout.write(`    … (${(links.length - 5).toString()} more)\n`);
 
       assert.ok(links.length >= 5, `expected ≥5 target URLs, got ${links.length.toString()}`);
       for (const link of links) {
-        assert.match(link, new RegExp(c.target));
-        assert.match(link, new RegExp(c.domain));
+        assert.match(link, new RegExp(crawler.target));
+        assert.match(link, new RegExp(crawler.domain));
       }
     } finally {
       await rm(cacheDir, { recursive: true, force: true });
@@ -53,32 +53,32 @@ describe('PathRipper legacy AONPRD e2e (local only)', () => {
   });
 
   it('full — crawl all 41 categories under the configured maxPages cap', async () => {
-    const fx = await RipperConfig.load(FIXTURE);
-    const c  = fx.crawlers!['aonprd']!;
+    const config = await RipperConfig.load(FIXTURE);
+    const crawler  = config.crawlers!['aonprd']!;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-full-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
-      domain:      new RegExp(c.domain),
-      target:      new RegExp(c.target),
-      delimiter:   new RegExp(c.delimiter),
-      rateLimitMs: c.rateLimitMs,
-      jitterMs:    c.jitterMs,
-      maxPages:    c.maxPages,
+      domain:      new RegExp(crawler.domain),
+      target:      new RegExp(crawler.target),
+      delimiter:   new RegExp(crawler.delimiter),
+      rateLimitMs: crawler.rateLimitMs,
+      jitterMs:    crawler.jitterMs,
+      maxPages:    crawler.maxPages,
       cache,
     });
-    const links = await lister.buildList([...c.startUrls]);
+    const links = await lister.buildList([...crawler.startUrls]);
 
     // Distribution by category prefix (e.g., Actions.aspx vs. Spells.aspx).
     const prefixes = new Map<string, number>();
     for (const link of links) {
-      const m = /\/([A-Za-z]+)\.aspx/.exec(link);
-      if (m === null) continue;
-      const key = m[1]!;
+      const match = /\/([A-Za-z]+)\.aspx/.exec(link);
+      if (match === null) continue;
+      const key = match[1]!;
       prefixes.set(key, (prefixes.get(key) ?? 0) + 1);
     }
 
     process.stdout.write(`\n  full: collected ${links.length.toString()} target URLs across ${prefixes.size.toString()} category prefixes\n`);
-    const sorted = [...prefixes.entries()].sort(([, a], [, b]) => b - a);
+    const sorted = [...prefixes.entries()].sort(([, itemA], [, itemB]) => itemB - itemA);
     for (const [name, count] of sorted.slice(0, 10)) {
       process.stdout.write(`    ${name}: ${count.toString()}\n`);
     }

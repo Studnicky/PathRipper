@@ -1,0 +1,15 @@
+flowchart LR
+  %% htmlPageDAG:canonical (v2.0)
+  html:fetch
+  html:fetch[html:fetch]
+  html:fetch -->|success| html:write-raw
+  html:fetch -->|cached| html:write-raw
+  html:fetch -->|error| END
+  html:write-raw[html:write-raw]
+  html:write-raw -->|success| json:write
+  json:write[json:write]
+  json:write -->|success| flow:terminate
+  json:write -->|skipped| flow:terminate
+  flow:terminate[flow:terminate]
+  flow:terminate -->|success| END
+  END([end])

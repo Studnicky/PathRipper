@@ -1,61 +1,49 @@
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { RipperConfigSchema } from '../schemas/internal/RipperConfigSchema.js';
-import type { RipperConfigInterface, NormalizedRipperConfigInterface } from '../types/Config.js';
+import { Dagonizer } from '@studnicky/dagonizer';
+
+import { configLoadFlow, CONFIG_LOAD_FLOW } from '../flows/configLoadFlow.js';
+import { ReadFileNode }             from '../nodes/config/ReadFileNode.js';
+import { ParseJsonNode }            from '../nodes/config/ParseJsonNode.js';
+import { ValidateConfigSchemaNode } from '../nodes/config/ValidateConfigSchemaNode.js';
+import { NormalizeCacheNode }       from '../nodes/config/NormalizeCacheNode.js';
+import { AssertInvariantsNode }     from '../nodes/config/AssertInvariantsNode.js';
+import { ConfigLoadState }          from '../state/ConfigLoadState.js';
+import type { RipperConfigType, NormalizedRipperConfigType } from '../types/Config.js';
 import { RipperConfigError } from '../errors/RipperConfigError.js';
 
-/** Default cache mode applied when no cache block is present. */
-const DEFAULT_CACHE_MODE = 'read-write' as const;
+// Re-export RAW_CACHE_OFF_ERROR so external callers and tests can import it
+// from the canonical config module without knowing the node implementation path.
+export { RAW_CACHE_OFF_ERROR } from '../nodes/config/NormalizeCacheNode.js';
 
-/** Default cache directory template; `<targetId>` is replaced at normalization time. */
-const DEFAULT_CACHE_DIR = (targetId: string) => `output/.cache/${targetId}`;
+// ── Module-scoped dispatcher (built once, reused across calls) ─────────────────
 
-/**
- * Error message emitted when `includeRawContent` is on (default or explicit) and
- * `cache.mode` is `'off'`. Exposed as a constant so tests can assert the exact text.
- */
-export const RAW_CACHE_OFF_ERROR =
-  "Raw content output (`includeRawContent: true`) without a write-capable cache will exhaust disk on large scrapes; " +
-  "either set `includeRawContent: false` to disable raw output, or set `cache.mode` to a write-capable mode " +
-  "(`'read-write'` or `'write-only'`).";
-
-type MutableCacheConfig = { dir: string; mode: string; ttlMs?: number };
-
-/**
- * Returns a fully-resolved cache config for a target, applying the default when absent.
- */
-function resolvedCache(
-  cache: MutableCacheConfig | undefined,
-  targetId: string,
-): MutableCacheConfig {
-  if (cache !== undefined) return cache;
-  return { dir: DEFAULT_CACHE_DIR(targetId), mode: DEFAULT_CACHE_MODE };
-}
-
-/**
- * Enforces the raw-on + cache-off invariant.
- * Throws {@link RipperConfigError} when `includeRawContent !== false` and `cache.mode === 'off'`.
- */
-function assertRawCacheCompatible(
-  includeRawContent: boolean | undefined,
-  cache: MutableCacheConfig,
-  context: string,
-): void {
-  const rawOn = includeRawContent !== false; // true by default (undefined → true)
-  if (rawOn && cache.mode === 'off') {
-    throw RipperConfigError.create(
-      `[${context}] ${RAW_CACHE_OFF_ERROR}`,
-      { metadata: { context } },
-    );
-  }
-}
+const _dispatcher = new Dagonizer<ConfigLoadState>();
+_dispatcher.registerNode(ReadFileNode);
+_dispatcher.registerNode(ParseJsonNode);
+_dispatcher.registerNode(ValidateConfigSchemaNode);
+_dispatcher.registerNode(NormalizeCacheNode);
+_dispatcher.registerNode(AssertInvariantsNode);
+_dispatcher.registerDAG(configLoadFlow);
 
 /**
  * Loads and AJV-validates a ripperoni JSON config file.
  *
  * @remarks
- * Throws {@link RipperConfigError} on parse failure or schema violation.
+ * Dispatches the `configLoadDAG` through `@studnicky/dagonizer`. The five-node
+ * pipeline is:
+ *
+ * ```
+ * read-file → parse-json → validate-schema → normalize-cache → assert-invariants
+ * ```
+ *
+ * Each step routes non-success outputs to `null` (terminates the run);
+ * `state.errors` carries the collected failure details. On failure the errors
+ * are merged into a single `RipperConfigError` message and thrown.
+ *
+ * Throws {@link RipperConfigError} on any failure (file missing, parse error,
+ * schema violation, or invariant violation).
+ *
  * The config path is resolved relative to the current working directory.
  *
  * After AJV validation, normalization applies two rules:
@@ -71,8 +59,8 @@ function assertRawCacheCompatible(
  *
  * @category Configuration
  * @since 2.0.0
- * @see {@link RipperConfigInterface}
- * @see {@link NormalizedRipperConfigInterface}
+ * @see {@link RipperConfigType}
+ * @see {@link NormalizedRipperConfigType}
  * @group Core
  */
 export class RipperConfig {
@@ -80,69 +68,35 @@ export class RipperConfig {
    * Reads and AJV-validates a JSON config file, then normalizes it.
    *
    * @param configPath - Path to the config JSON file (resolved to absolute).
-   * @returns Normalized `NormalizedRipperConfigInterface` object.
+   * @returns Normalized `NormalizedRipperConfigType` object.
    * @throws {RipperConfigError} When the file is missing, unparseable, fails schema
    *   validation, or violates the raw-on + cache-off invariant.
    */
-  static async load(configPath: string): Promise<NormalizedRipperConfigInterface> {
-    const abs  = resolve(configPath);
-    const text = await readFile(abs, 'utf-8');
-    const raw  = JSON.parse(text) as unknown;
+  static async load(configPath: string): Promise<NormalizedRipperConfigType> {
+    const state = new ConfigLoadState();
+    state.path  = resolve(configPath);
 
-    const errors = RipperConfigSchema.validate(raw);
-    if (errors !== null) {
-      throw RipperConfigError.create(
-        `Invalid config at ${abs}:\n  ${errors}`,
-        { metadata: { configPath: abs } },
-      );
+    const result = await _dispatcher.execute(CONFIG_LOAD_FLOW, state);
+
+    if (result.state.normalized !== null) {
+      return result.state.normalized;
     }
 
-    return RipperConfig.normalize(raw as RipperConfigInterface);
-  }
+    // Extract errors from state and throw a single RipperConfigError.
+    const messages = result.state.errors.map((error) => error.message);
+    const combined = messages.length > 0
+      ? messages.join('\n  ')
+      : 'Config load failed (unknown error)';
 
-  /**
-   * Normalizes a validated config: applies cache defaults and enforces invariants.
-   *
-   * @param config - AJV-validated config (cache may be absent on targets/mediawiki).
-   * @returns Config with all `cache` blocks fully resolved.
-   * @throws {RipperConfigError} On raw-on + cache-off invariant violation.
-   *
-   * @since 2.6.0
-   */
-  static normalize(config: RipperConfigInterface): NormalizedRipperConfigInterface {
-    const normalized = { ...config } as NormalizedRipperConfigInterface;
-
-    if (config.targets !== undefined) {
-      const targets: Record<string, unknown> = {};
-      for (const [id, target] of Object.entries(config.targets)) {
-        const t = target as Record<string, unknown>;
-        const cache = resolvedCache(t['cache'] as MutableCacheConfig | undefined, id);
-        assertRawCacheCompatible(t['includeRawContent'] as boolean | undefined, cache, `targets.${id}`);
-        targets[id] = { ...t, cache };
-      }
-      (normalized as unknown as Record<string, unknown>)['targets'] = targets;
-    }
-
-    if (config.mediawiki !== undefined) {
-      const mediawiki: Record<string, unknown> = {};
-      for (const [id, target] of Object.entries(config.mediawiki)) {
-        const t = target as Record<string, unknown>;
-        const cache = resolvedCache(t['cache'] as MutableCacheConfig | undefined, id);
-        assertRawCacheCompatible(t['includeRawContent'] as boolean | undefined, cache, `mediawiki.${id}`);
-        mediawiki[id] = { ...t, cache };
-      }
-      (normalized as unknown as Record<string, unknown>)['mediawiki'] = mediawiki;
-    }
-
-    return normalized;
+    throw RipperConfigError.create(combined, { metadata: { configPath: state.path } });
   }
 
   /**
    * Returns a minimal valid config with sensible output defaults.
    *
-   * @returns A `RipperConfigInterface` with `output.basePath` set to `./output`.
+   * @returns A `RipperConfigType` with `output.basePath` set to `./output`.
    */
-  static defaults(): RipperConfigInterface {
+  static defaults(): RipperConfigType {
     return {
       output: { basePath: './output', format: 'json', pretty: true },
     };

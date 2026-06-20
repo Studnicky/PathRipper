@@ -61,22 +61,21 @@ Pipeline step breakdown:
 
 ## The plugin
 
-The relevant slice of `plugins/aonprd/feat.ts`:
+The relevant slice of `plugins/aonprd/` (pure extraction — no HTTP, no I/O):
 
 ```ts
 import type { CheerioAPI } from 'cheerio';
 import { getField, htmlToText, harvestLinks } from './common.js';
 
 export interface FeatOutput {
-  _type:       'feat';
   url:         string;
+  feat_id:     number | null;
   name:        string;
   level:       number | null;
   rarity:      string;
   traits:      string[];
   action_cost: string | null;
   description_text: string;
-  _source:     { target: string; url: string; plugin: string };
 }
 
 export function extractFeat($: CheerioAPI, url: string): FeatOutput {
@@ -88,20 +87,37 @@ export function extractFeat($: CheerioAPI, url: string): FeatOutput {
   const description_text = htmlToText($('#ctl00_MainContent_DetailedOutput').html() ?? '');
 
   return {
-    _type:  'feat',
     url,
+    feat_id: null,
     name,
     level,
     rarity,
     traits,
     action_cost,
     description_text,
-    _source: { target: 'aonprd', url, plugin: 'aonprd:parse' },
   };
 }
 ```
 
-This is the only domain-specific code. `getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
+`getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
+
+The plugin entry point (`plugins/aonprd/parse.task.ts`) exports `register(dispatcher)` which registers all taxonomy-compiled nodes and the `aonprd:parse` DAG:
+
+```ts
+import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
+import type { ScrapeState }     from '../../src/state/ScrapeState.js';
+import { TAXONOMY }             from './taxonomy/aonprd.js';
+import { aonprdParseDAG }       from './parse.dag.js';
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  for (const node of TAXONOMY.allNodes()) {
+    dispatcher.registerNode(node);
+  }
+  dispatcher.registerDAG(aonprdParseDAG);
+}
+```
+
+The node declares named output ports. The dispatcher routes `success` to the next step (`json:write`), `error` and `unknown` to the failure collector.
 
 ---
 
@@ -109,23 +125,18 @@ This is the only domain-specific code. `getField`, `htmlToText`, and `harvestLin
 
 ```json
 {
-  "_type":            "feat",
   "url":              "https://2e.aonprd.com/Feats.aspx?ID=750",
+  "feat_id":          750,
   "name":             "Power Attack",
   "level":            1,
   "rarity":           "common",
   "traits":           ["flourish"],
   "action_cost":      "two-actions",
-  "description_text": "You unleash a particularly powerful attack that clobbers your foe but leaves you a bit winded.",
-  "_source": {
-    "target": "aonprd",
-    "url":    "https://2e.aonprd.com/Feats.aspx?ID=750",
-    "plugin": "aonprd:parse"
-  }
+  "description_text": "You unleash a particularly powerful attack that clobbers your foe but leaves you a bit winded."
 }
 ```
 
-The `_source` block makes the record traceable back to its origin page. Downstream tools (like Squashage) use `_source.url` to derive IRIs without hardcoding a domain.
+Concept identity is carried by the URL (`Feats.aspx`) and the typed `feat_id` field — not by a discriminator property. Downstream tools (like Squashage) use the URL to derive IRIs and classify the record.
 
 ---
 
@@ -134,8 +145,9 @@ The `_source` block makes the record traceable back to its origin page. Downstre
 1. **Rate-limited fetch**: waited `rateLimitMs` (1000ms) + up to `jitterMs` (250ms) random jitter before the request.
 2. **Cache check**: first run: cache miss, HTTP GET. Subsequent runs: cache hit, no network request.
 3. **Retry logic**: on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
-4. **Plugin executed**: `aonprd:parse` called with `(next, state)`. `state.input.html` contained the raw page HTML; the extractor ran cheerio selectors against it.
-5. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/feats-750.json`.
+4. **DAG dispatch**: `RipperRun` built a fan-out DAG over the URL list via `DAGDeriver` and dispatched it through `RipperDagonizer`. The `html:fetch` node returned `success`; the `aonprd:parse` node ran next.
+5. **Plugin executed**: `aonprd:parse` ran with `state.page.html` containing the raw HTML. The extractor ran cheerio selectors and set `state.output`.
+6. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/aonprd:parse/Feats.aspx-ID-750.json`.
 
 ---
 

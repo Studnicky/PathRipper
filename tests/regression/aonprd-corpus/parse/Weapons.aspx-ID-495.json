@@ -1,0 +1,127 @@
+{
+  "_type": "weapon",
+  "url": "https://2e.aonprd.com/Weapons.aspx?ID=495",
+  "weapon_id": 495,
+  "name": "Ogre Hook",
+  "rarity": "uncommon",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Weapons.aspx?ID=86&NoRedirect=1",
+  "traits": [
+    "Uncommon",
+    "Deadly d10",
+    "Trip"
+  ],
+  "trait_ids": {
+    "Uncommon": 721,
+    "Deadly d10": 570,
+    "Trip": 716
+  },
+  "source": {
+    "book": "Tian Xia Character Guide",
+    "page": 127,
+    "source_id": 230
+  },
+  "sources": [
+    {
+      "book": "Tian Xia Character Guide",
+      "page": 127,
+      "source_id": 230,
+      "raw": "Tian Xia Character Guide pg. 127"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 283,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 283"
+    }
+  ],
+  "favored_weapon": [],
+  "price": {
+    "gp": 1,
+    "sp": null,
+    "cp": null,
+    "raw": "1 gp"
+  },
+  "damage": {
+    "dice": "1d10",
+    "type": "P",
+    "rider": null
+  },
+  "bulk": 2,
+  "hands": "2",
+  "reload": null,
+  "range": null,
+  "ammunition": null,
+  "weapon_type": "melee",
+  "category": "martial",
+  "group": {
+    "name": "Pick",
+    "group_id": 10
+  },
+  "description_html": "Ogres are known for using immense, curved picks called ogre hooks.",
+  "description_text": "Ogres are known for using immense, curved picks called ogre hooks.",
+  "critical_specialization": {
+    "source": "Core Rulebook pg. 283",
+    "by_group": {
+      "Pick": "The weapon viciously pierces the target, who takes 2 additional damage per weapon damage die."
+    }
+  },
+  "specific_magic_weapons": [
+    {
+      "name": "Gut-Ripper",
+      "equipment_id": 3512
+    }
+  ],
+  "trait_glossary": [
+    {
+      "trait": "Uncommon",
+      "description": "Something of uncommon rarity requires special training or comes from a particular culture or part of the world. Some character choices give access to uncommon options, and the GM can choose to allow access for anyone. Less is known about uncommon creatures than common creatures. They typically can't be summoned. The DC of Recall Knowledge checks related to these creature is increased by 2."
+    },
+    {
+      "trait": "Deadly d10",
+      "description": "On a critical hit, the weapon adds a weapon damage die of the listed size. Roll this after doubling the weapon’s damage. This increases to two dice if the weapon has a greater striking rune and three dice if the weapon has a major striking rune. For instance, a rapier with a greater striking rune deals 2d8 extra piercing damage on a critical hit. An ability that changes the size of the weapon’s normal damage dice doesn’t change the size of its deadly die."
+    },
+    {
+      "trait": "Trip",
+      "description": "You can use this weapon to Trip with the Athletics skill even if you don't have a free hand. This uses the weapon's reach (if different from your own) and adds the weapon's item bonus to attack rolls as an item bonus to the Athletics check. If you critically fail a check to Trip using the weapon, you can drop the weapon to take the effects of a failure instead of a critical failure."
+    }
+  ],
+  "raw_fields": {
+    "Price": "1 gp",
+    "Damage": "1d10 P",
+    "Bulk": "2",
+    "Hands": "2",
+    "Type": "Melee",
+    "Category": "Martial",
+    "Group": "Pick"
+  },
+  "links": [
+    {
+      "href": "Actions.aspx?ID=26",
+      "text": "Recall Knowledge",
+      "kind": "Actions",
+      "id": 26
+    },
+    {
+      "href": "Actions.aspx?ID=2382",
+      "text": "Trip",
+      "kind": "Actions",
+      "id": 2382
+    },
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 283",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "/Equipment.aspx?ID=3512&amp;NoRedirect=1",
+      "text": "Gut-Ripper",
+      "kind": "Equipment",
+      "id": 3512
+    }
+  ],
+  "meta_description": "Ogres are known for using immense, curved picks called ogre hooks.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Weapons, Ogre Hook"
+}

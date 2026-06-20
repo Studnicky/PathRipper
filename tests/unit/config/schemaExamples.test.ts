@@ -44,14 +44,14 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (schema.examples as unknown[])
       : [];
 
-    for (let i = 0; i < rootExamples.length; i++) {
-      const example = rootExamples[i];
-      it(`example[${i}] is a valid RipperConfig`, () => {
+    for (let idx = 0; idx < rootExamples.length; idx++) {
+      const example = rootExamples[idx];
+      it(`example[${idx}] is a valid RipperConfig`, () => {
         const errors = RipperConfigSchema.validate(example);
         assert.equal(
           errors,
           null,
-          `Root schema example[${i}] failed validation:\n  ${errors}`,
+          `Root schema example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }
@@ -68,14 +68,14 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (outputSchema.examples as unknown[])
       : [];
 
-    for (let i = 0; i < examples.length; i++) {
-      const example = examples[i];
-      it(`output example[${i}] is valid when placed in a root config`, () => {
+    for (let idx = 0; idx < examples.length; idx++) {
+      const example = examples[idx];
+      it(`output example[${idx}] is valid when placed in a root config`, () => {
         const errors = RipperConfigSchema.validate({ output: example });
         assert.equal(
           errors,
           null,
-          `output example[${i}] failed validation:\n  ${errors}`,
+          `output example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }
@@ -91,9 +91,9 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (targetDef.examples as unknown[])
       : [];
 
-    for (let i = 0; i < examples.length; i++) {
-      const example = examples[i];
-      it(`targets.additionalProperties example[${i}] is valid`, () => {
+    for (let idx = 0; idx < examples.length; idx++) {
+      const example = examples[idx];
+      it(`targets.additionalProperties example[${idx}] is valid`, () => {
         const errors = RipperConfigSchema.validate({
           output: { basePath: './output' },
           targets: { 'example-target': example },
@@ -101,7 +101,7 @@ describe('RipperConfigSchema — examples validate against their parent schema',
         assert.equal(
           errors,
           null,
-          `targets example[${i}] failed validation:\n  ${errors}`,
+          `targets example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }
@@ -117,9 +117,9 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (mwDef.examples as unknown[])
       : [];
 
-    for (let i = 0; i < examples.length; i++) {
-      const example = examples[i];
-      it(`mediawiki.additionalProperties example[${i}] is valid`, () => {
+    for (let idx = 0; idx < examples.length; idx++) {
+      const example = examples[idx];
+      it(`mediawiki.additionalProperties example[${idx}] is valid`, () => {
         const errors = RipperConfigSchema.validate({
           output: { basePath: './output' },
           mediawiki: { 'example-wiki': example },
@@ -127,7 +127,7 @@ describe('RipperConfigSchema — examples validate against their parent schema',
         assert.equal(
           errors,
           null,
-          `mediawiki example[${i}] failed validation:\n  ${errors}`,
+          `mediawiki example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }
@@ -143,9 +143,9 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (crawlerDef.examples as unknown[])
       : [];
 
-    for (let i = 0; i < examples.length; i++) {
-      const example = examples[i];
-      it(`crawlers.additionalProperties example[${i}] is valid`, () => {
+    for (let idx = 0; idx < examples.length; idx++) {
+      const example = examples[idx];
+      it(`crawlers.additionalProperties example[${idx}] is valid`, () => {
         const errors = RipperConfigSchema.validate({
           output: { basePath: './output' },
           crawlers: { 'example-crawler': example },
@@ -153,7 +153,7 @@ describe('RipperConfigSchema — examples validate against their parent schema',
         assert.equal(
           errors,
           null,
-          `crawlers example[${i}] failed validation:\n  ${errors}`,
+          `crawlers example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }
@@ -171,9 +171,9 @@ describe('RipperConfigSchema — examples validate against their parent schema',
       ? (crawlerDef.examples as unknown[])
       : [];
 
-    for (let i = 0; i < examples.length; i++) {
-      const example = examples[i];
-      it(`targets.crawler example[${i}] is valid when embedded in a target`, () => {
+    for (let idx = 0; idx < examples.length; idx++) {
+      const example = examples[idx];
+      it(`targets.crawler example[${idx}] is valid when embedded in a target`, () => {
         const errors = RipperConfigSchema.validate({
           output: { basePath: './output' },
           targets: {
@@ -187,7 +187,7 @@ describe('RipperConfigSchema — examples validate against their parent schema',
         assert.equal(
           errors,
           null,
-          `targets.crawler example[${i}] failed validation:\n  ${errors}`,
+          `targets.crawler example[${idx}] failed validation:\n  ${errors}`,
         );
       });
     }

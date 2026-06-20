@@ -1,0 +1,552 @@
+{
+  "_type": "class",
+  "url": "https://2e.aonprd.com/Classes.aspx?ID=7",
+  "entity_id": 7,
+  "name": "Fighter",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Classes.aspx?ID=7&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 136,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 136,
+      "source_id": 216,
+      "raw": "Player Core pg. 136"
+    },
+    {
+      "book": "Player Core",
+      "page": 138,
+      "source_id": 216,
+      "raw": "Player Core pg. 138"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "During Combat Encounters...",
+      "level": 2,
+      "body_html": "You strike with unmatched accuracy and use specialized combat techniques. A melee fighter stands between allies and enemies, attacking foes who try to get past. A ranged fighter delivers precise shots from a distance.<br>",
+      "body_text": "You strike with unmatched accuracy and use specialized combat techniques. A melee fighter stands between allies and enemies, attacking foes who try to get past. A ranged fighter delivers precise shots from a distance.",
+      "links": []
+    },
+    {
+      "heading": "During Social Encounters...",
+      "level": 2,
+      "body_html": "You can be an intimidating presence. This can be useful when negotiating with enemies, but is sometimes a liability in more genteel interactions.<br>",
+      "body_text": "You can be an intimidating presence. This can be useful when negotiating with enemies, but is sometimes a liability in more genteel interactions.",
+      "links": []
+    },
+    {
+      "heading": "While Exploring...",
+      "level": 2,
+      "body_html": "You keep up your defenses in preparation for combat, and keep an eye out for hidden threats. You also overcome physical challenges in your way, breaking down doors, lifting obstacles, climbing adeptly, and leaping across pits.<br>",
+      "body_text": "You keep up your defenses in preparation for combat, and keep an eye out for hidden threats. You also overcome physical challenges in your way, breaking down doors, lifting obstacles, climbing adeptly, and leaping across pits.",
+      "links": []
+    },
+    {
+      "heading": "In Downtime...",
+      "level": 2,
+      "body_html": "You might perform manual labor or craft and repair armaments. If you know techniques you no longer favor, you might train yourself in new ones. If you’ve established your reputation, you might build an organization or a stronghold of your own.<br>",
+      "body_text": "You might perform manual labor or craft and repair armaments. If you know techniques you no longer favor, you might train yourself in new ones. If you’ve established your reputation, you might build an organization or a stronghold of your own.",
+      "links": []
+    },
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Know the purpose and quality of every weapon and piece of armor you own. </li><li>Recognize that the danger of an adventurer’s life must be balanced out with great revelry or ambitious works. </li><li>Have little patience for puzzles or problems that require detailed logic or study.</li></ul>",
+      "body_text": "Know the purpose and quality of every weapon and piece of armor you own. Recognize that the danger of an adventurer’s life must be balanced out with great revelry or ambitious works. Have little patience for puzzles or problems that require detailed logic or study.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Find you intimidating until they get to know you—and maybe even after they get to know you. </li><li>Expect you’re all brawn and no brains. </li><li>Respect your expertise in the art of warfare and value your opinion on the quality of armaments.</li></ul>",
+      "body_text": "Find you intimidating until they get to know you—and maybe even after they get to know you. Expect you’re all brawn and no brains. Respect your expertise in the art of warfare and value your opinion on the quality of armaments.",
+      "links": []
+    },
+    {
+      "heading": "Perception",
+      "level": 2,
+      "body_html": "Expert in Perception<br>",
+      "body_text": "Expert in Perception",
+      "links": []
+    },
+    {
+      "heading": "Saving Throws",
+      "level": 2,
+      "body_html": "Expert in Fortitude<br>Expert in Reflex<br>Trained in Will<br>",
+      "body_text": "Expert in Fortitude Expert in Reflex Trained in Will",
+      "links": []
+    },
+    {
+      "heading": "Skills",
+      "level": 2,
+      "body_html": "Trained in your choice of <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=1\">Acrobatics</a> or <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=3\">Athletics</a><br> Trained in a number of additional skills equal to 3 plus your Intelligence modifier<br>",
+      "body_text": "Trained in your choice of Acrobatics or Athletics Trained in a number of additional skills equal to 3 plus your Intelligence modifier",
+      "links": [
+        {
+          "href": "Skills.aspx?ID=1",
+          "text": "Acrobatics",
+          "kind": "Skills",
+          "id": 1
+        },
+        {
+          "href": "Skills.aspx?ID=3",
+          "text": "Athletics",
+          "kind": "Skills",
+          "id": 3
+        }
+      ]
+    },
+    {
+      "heading": "Attacks",
+      "level": 2,
+      "body_html": "Expert in simple weapons<br> Expert in martial weapons<br> Trained in advanced weapons<br> Expert in unarmed attacks<br>",
+      "body_text": "Expert in simple weapons Expert in martial weapons Trained in advanced weapons Expert in unarmed attacks",
+      "links": []
+    },
+    {
+      "heading": "Defenses",
+      "level": 2,
+      "body_html": "Trained in all armor<br> Trained in unarmored defense<br>",
+      "body_text": "Trained in all armor Trained in unarmored defense",
+      "links": []
+    },
+    {
+      "heading": "Class DC",
+      "level": 2,
+      "body_html": "Trained in fighter class DC<br>",
+      "body_text": "Trained in fighter class DC",
+      "links": []
+    },
+    {
+      "heading": "Ancestry and Background",
+      "level": 2,
+      "body_html": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.<br>",
+      "body_text": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "In addition to what you get from your class at 1st level, you have four free boosts to different attribute modifiers.<br><br> At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost and must boost that attribute again at a later level to increase it by 1.<br>",
+      "body_text": "In addition to what you get from your class at 1st level, you have four free boosts to different attribute modifiers. At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost and must boost that attribute again at a later level to increase it by 1.",
+      "links": []
+    },
+    {
+      "heading": "Initial Proficiencies",
+      "level": 2,
+      "body_html": "At 1st level you gain a number of proficiencies that represent your basic training in attacks, defenses, Perception, skills, and other areas. These are noted at the start of this class.<br>",
+      "body_text": "At 1st level you gain a number of proficiencies that represent your basic training in attacks, defenses, Perception, skills, and other areas. These are noted at the start of this class.",
+      "links": []
+    },
+    {
+      "heading": "Reactive Strike",
+      "level": 2,
+      "body_html": "Ever watchful for weaknesses, you can quickly attack foes that leave an opening in their defenses. You gain the Reactive Strike reaction.<div class=\"calledAction\"><h3 class=\"title\"><a href=\"Actions.aspx?ID=2256\">Reactive Strike</a>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span> </h3><b>Source</b> <a href=\"Sources.aspx?ID=216\" target=\"_blank\" class=\"external-link\"><i>Player Core pg. 138</i></a><br><b>Trigger</b> A creature within your reach uses a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=104\">manipulate</a> action or a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=114\">move</a> action, makes a ranged attack, or leaves a square during a move action it's using.<hr>You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=104\">manipulate</a> action, you <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=394\">disrupt</a> that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike.</div><br>",
+      "body_text": "Ever watchful for weaknesses, you can quickly attack foes that leave an opening in their defenses. You gain the Reactive Strike reaction.Reactive Strike [reaction] Source Player Core pg. 138 Trigger A creature within your reach uses a manipulate action or a move action, makes a ranged attack, or leaves a square during a move action it's using.You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike.",
+      "links": [
+        {
+          "href": "Actions.aspx?ID=2256",
+          "text": "Reactive Strike",
+          "kind": "Actions",
+          "id": 2256
+        },
+        {
+          "href": "Sources.aspx?ID=216",
+          "text": "Player Core pg. 138",
+          "kind": "Sources",
+          "id": 216
+        },
+        {
+          "href": "Traits.aspx?ID=104",
+          "text": "manipulate",
+          "kind": "Traits",
+          "id": 104
+        },
+        {
+          "href": "Traits.aspx?ID=114",
+          "text": "move",
+          "kind": "Traits",
+          "id": 114
+        },
+        {
+          "href": "Rules.aspx?ID=394",
+          "text": "disrupt",
+          "kind": "Rules",
+          "id": 394
+        }
+      ]
+    },
+    {
+      "heading": "Reactive Strike [reaction]",
+      "level": 3,
+      "body_html": "<b>Source</b> <a href=\"Sources.aspx?ID=216\" target=\"_blank\" class=\"external-link\"><i>Player Core pg. 138</i></a><br><b>Trigger</b> A creature within your reach uses a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=104\">manipulate</a> action or a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=114\">move</a> action, makes a ranged attack, or leaves a square during a move action it's using.<hr>You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=104\">manipulate</a> action, you <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=394\">disrupt</a> that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike.",
+      "body_text": "Source Player Core pg. 138 Trigger A creature within your reach uses a manipulate action or a move action, makes a ranged attack, or leaves a square during a move action it's using.You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike.",
+      "links": [
+        {
+          "href": "Sources.aspx?ID=216",
+          "text": "Player Core pg. 138",
+          "kind": "Sources",
+          "id": 216
+        },
+        {
+          "href": "Traits.aspx?ID=104",
+          "text": "manipulate",
+          "kind": "Traits",
+          "id": 104
+        },
+        {
+          "href": "Traits.aspx?ID=114",
+          "text": "move",
+          "kind": "Traits",
+          "id": 114
+        },
+        {
+          "href": "Rules.aspx?ID=394",
+          "text": "disrupt",
+          "kind": "Rules",
+          "id": 394
+        }
+      ]
+    },
+    {
+      "heading": "Fighter Feats",
+      "level": 2,
+      "body_html": "At 1st level and every even-numbered level, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=71\">fighter class feat</a>.<br>",
+      "body_text": "At 1st level and every even-numbered level, you gain a fighter class feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=71",
+          "text": "fighter class feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Shield Block",
+      "level": 2,
+      "body_html": "You gain the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=839\">Shield Block</a> general feat, a reaction that lets you reduce damage with your shield.<br>",
+      "body_text": "You gain the Shield Block general feat, a reaction that lets you reduce damage with your shield.",
+      "links": [
+        {
+          "href": "Feats.aspx?ID=839",
+          "text": "Shield Block",
+          "kind": "Feats",
+          "id": 839
+        }
+      ]
+    },
+    {
+      "heading": "Skill FeatsLevel 2",
+      "level": 2,
+      "body_html": "At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=144\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br>",
+      "body_text": "At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=144",
+          "text": "skill feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "BraveryLevel 3",
+      "level": 2,
+      "body_html": "Having faced countless foes and the chaos of battle, you have learned how to stand strong in the face of fear. Your proficiency rank for Will saves increases to expert. When you roll a success at a Will save against a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=68\">fear</a> effect, you get a critical success instead. In addition, anytime you gain the frightened condition, reduce its value by 1.<br>",
+      "body_text": "Having faced countless foes and the chaos of battle, you have learned how to stand strong in the face of fear. Your proficiency rank for Will saves increases to expert. When you roll a success at a Will save against a fear effect, you get a critical success instead. In addition, anytime you gain the frightened condition, reduce its value by 1.",
+      "links": [
+        {
+          "href": "Traits.aspx?ID=68",
+          "text": "fear",
+          "kind": "Traits",
+          "id": 68
+        }
+      ]
+    },
+    {
+      "heading": "General FeatsLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=78\">general</a> feat.<br>",
+      "body_text": "At 3rd level and every 4 levels thereafter, you gain a general feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=78",
+          "text": "general",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Skill IncreasesLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in or become an expert in one skill in which you're already trained.<br><br> At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.<br>",
+      "body_text": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in or become an expert in one skill in which you're already trained. At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.",
+      "links": []
+    },
+    {
+      "heading": "Ancestry FeatsLevel 5",
+      "level": 2,
+      "body_html": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.<br>",
+      "body_text": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.",
+      "links": []
+    },
+    {
+      "heading": "Fighter Weapon MasteryLevel 5",
+      "level": 2,
+      "body_html": "Hours spent training with your preferred weapons, learning and developing new combat techniques, have made you particularly effective with your weapons of choice. Choose one weapon group. Your proficiency rank increases to master with the simple weapons, martial weapons, and unarmed attacks in that group, and to expert with the advanced weapons in that group. You gain access to the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=235\">critical specialization effects</a> of all weapons and unarmed attacks for which you have master proficiency.<br>",
+      "body_text": "Hours spent training with your preferred weapons, learning and developing new combat techniques, have made you particularly effective with your weapons of choice. Choose one weapon group. Your proficiency rank increases to master with the simple weapons, martial weapons, and unarmed attacks in that group, and to expert with the advanced weapons in that group. You gain access to the critical specialization effects of all weapons and unarmed attacks for which you have master proficiency.",
+      "links": [
+        {
+          "href": "Rules.aspx?ID=235",
+          "text": "critical specialization effects",
+          "kind": "Rules",
+          "id": 235
+        }
+      ]
+    },
+    {
+      "heading": "Battlefield SurveyorLevel 7",
+      "level": 2,
+      "body_html": "Whether taking stock of an enemy army or simply standing guard, you excel at observing your foes. Your proficiency rank for Perception increases to master. In addition, you gain a +2 circumstance bonus to Perception checks for initiative, making you faster to react during combat.<br>",
+      "body_text": "Whether taking stock of an enemy army or simply standing guard, you excel at observing your foes. Your proficiency rank for Perception increases to master. In addition, you gain a +2 circumstance bonus to Perception checks for initiative, making you faster to react during combat.",
+      "links": []
+    },
+    {
+      "heading": "Weapon SpecializationLevel 7",
+      "level": 2,
+      "body_html": "You've learned how to inflict greater injuries with the weapons you know best. You deal 2 additional damage with weapons and unarmed attacks in which you're an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.<br>",
+      "body_text": "You've learned how to inflict greater injuries with the weapons you know best. You deal 2 additional damage with weapons and unarmed attacks in which you're an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.",
+      "links": []
+    },
+    {
+      "heading": "Battle HardenedLevel 9",
+      "level": 2,
+      "body_html": "Your experience in battle helps protect you against magic and toxins alike. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.<br>",
+      "body_text": "Your experience in battle helps protect you against magic and toxins alike. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.",
+      "links": []
+    },
+    {
+      "heading": "Combat FlexibilityLevel 9",
+      "level": 2,
+      "body_html": "You can prepare your tactics to suit different situations. When you make your daily preparations, you gain one fighter feat of 8th level or lower that you meet the prerequisites for and don't already have. You can use that feat until your next daily preparations.<br>",
+      "body_text": "You can prepare your tactics to suit different situations. When you make your daily preparations, you gain one fighter feat of 8th level or lower that you meet the prerequisites for and don't already have. You can use that feat until your next daily preparations.",
+      "links": []
+    },
+    {
+      "heading": "Armor ExpertiseLevel 11",
+      "level": 2,
+      "body_html": "You have spent so much time in armor that you know how to make the most of its protection. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to expert. You gain the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=211\">armor specialization effects</a> of medium and heavy armor.<br>",
+      "body_text": "You have spent so much time in armor that you know how to make the most of its protection. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to expert. You gain the armor specialization effects of medium and heavy armor.",
+      "links": [
+        {
+          "href": "Rules.aspx?ID=211",
+          "text": "armor specialization effects",
+          "kind": "Rules",
+          "id": 211
+        }
+      ]
+    },
+    {
+      "heading": "Fighter ExpertiseLevel 11",
+      "level": 2,
+      "body_html": "Your practiced techniques have made you even more formidable. Your proficiency rank for your fighter class DC increases to expert.<br>",
+      "body_text": "Your practiced techniques have made you even more formidable. Your proficiency rank for your fighter class DC increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Weapon LegendLevel 13",
+      "level": 2,
+      "body_html": "You've learned fighting techniques that apply to all armaments, and you've developed unparalleled skill with your favorite weapons. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master. Your proficiency rank for advanced weapons increases to expert.<br><br> You can select one weapon group and increase your proficiency ranks to legendary for all simple weapons, martial weapons, and unarmed attacks in that weapon group, and to master for all advanced weapons in that weapon group.<br>",
+      "body_text": "You've learned fighting techniques that apply to all armaments, and you've developed unparalleled skill with your favorite weapons. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master. Your proficiency rank for advanced weapons increases to expert. You can select one weapon group and increase your proficiency ranks to legendary for all simple weapons, martial weapons, and unarmed attacks in that weapon group, and to master for all advanced weapons in that weapon group.",
+      "links": []
+    },
+    {
+      "heading": "Greater Weapon SpecializationLevel 15",
+      "level": 2,
+      "body_html": "Your damage from weapon specialization increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.<br>",
+      "body_text": "Your damage from weapon specialization increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.",
+      "links": []
+    },
+    {
+      "heading": "Improved FlexibilityLevel 15",
+      "level": 2,
+      "body_html": "Your extensive experience gives you even greater ability to adapt to each day's challenges. When you use combat flexibility, you can gain two fighter feats instead of one. While the first feat must still be 8th level or lower, the second feat can be up to 14th level, and you can use the first feat to meet the prerequisites of the second feat. You must meet all of the feats' prerequisites.<br>",
+      "body_text": "Your extensive experience gives you even greater ability to adapt to each day's challenges. When you use combat flexibility, you can gain two fighter feats instead of one. While the first feat must still be 8th level or lower, the second feat can be up to 14th level, and you can use the first feat to meet the prerequisites of the second feat. You must meet all of the feats' prerequisites.",
+      "links": []
+    },
+    {
+      "heading": "Tempered ReflexesLevel 15",
+      "level": 2,
+      "body_html": "Practiced reflexes let you find safety even in the face of cataclysmic explosions. Your proficiency rank for Reflex saves increases to master. When you roll a success on a Reflex save, you get a critical success instead.<br>",
+      "body_text": "Practiced reflexes let you find safety even in the face of cataclysmic explosions. Your proficiency rank for Reflex saves increases to master. When you roll a success on a Reflex save, you get a critical success instead.",
+      "links": []
+    },
+    {
+      "heading": "Armor MasteryLevel 17",
+      "level": 2,
+      "body_html": "Your skill with armor improves further. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to master.<br>",
+      "body_text": "Your skill with armor improves further. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to master.",
+      "links": []
+    },
+    {
+      "heading": "Versatile LegendLevel 19",
+      "level": 2,
+      "body_html": "You are nigh-unmatched with any weapon. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to legendary, and your proficiency rank for advanced weapons increases to master. Your proficiency rank for your fighter class DC increases to master.<br>",
+      "body_text": "You are nigh-unmatched with any weapon. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to legendary, and your proficiency rank for advanced weapons increases to master. Your proficiency rank for your fighter class DC increases to master.",
+      "links": []
+    }
+  ],
+  "raw_fields": {
+    "Class Features": "1Ancestry and background, attribute boosts, initial proficiencies, Reactive Strike, fighter feat, Shield Block2Fighter feat, skill feat3Bravery, general feat, skill increase4Fighter feat, skill feat5Ancestry feat, attribute boosts, fighter weapon mastery, skill increase6Fighter feat, skill feat7Battlefield surveyor, general feat, skill increase, weapon specialization8Fighter feat, skill feat9Ancestry feat, battle hardened, combat flexibility, skill increase10Attribute boosts, fighter feat, skill feat11Armor expertise, fighter expertise, general feat, skill increase12Fighter feat, skill feat13Ancestry feat, skill increase, weapon legend14Fighter feat, skill feat15Attribute boosts, general feat, greater weapon specialization, improved flexibility, skill increase, tempered reflexes16Fighter feat, skill feat17Ancestry feat, armor mastery, skill increase18Fighter feat, skill feat19General feat, skill increase, versatile legend20Attribute boosts, fighter feat, skill featAncestry and BackgroundIn addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.",
+    "Trigger": "A creature within your reach uses a manipulate action or a move action, makes a ranged attack, or leaves a square during a move action it's using."
+  },
+  "links": [
+    {
+      "href": "Classes.aspx?ID=7&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Classes",
+      "id": 7
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 136",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Traits.aspx?ID=606",
+      "text": "Flourish",
+      "kind": "Traits",
+      "id": 606
+    },
+    {
+      "href": "Traits.aspx?ID=675",
+      "text": "Press",
+      "kind": "Traits",
+      "id": 675
+    },
+    {
+      "href": "Equipment.aspx?ID=2792",
+      "text": "Ready",
+      "kind": "Equipment",
+      "id": 2792
+    },
+    {
+      "href": "Traits.aspx?ID=701",
+      "text": "Stance",
+      "kind": "Traits",
+      "id": 701
+    },
+    {
+      "href": "Skills.aspx?ID=1",
+      "text": "Acrobatics",
+      "kind": "Skills",
+      "id": 1
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    },
+    {
+      "href": "Actions.aspx?ID=2256",
+      "text": "Reactive Strike",
+      "kind": "Actions",
+      "id": 2256
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 138",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Traits.aspx?ID=104",
+      "text": "manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "Traits.aspx?ID=114",
+      "text": "move",
+      "kind": "Traits",
+      "id": 114
+    },
+    {
+      "href": "Rules.aspx?ID=394",
+      "text": "disrupt",
+      "kind": "Rules",
+      "id": 394
+    },
+    {
+      "href": "Feats.aspx?Traits=71",
+      "text": "fighter class feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?ID=839",
+      "text": "Shield Block",
+      "kind": "Feats",
+      "id": 839
+    },
+    {
+      "href": "Feats.aspx?Traits=144",
+      "text": "skill feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Traits.aspx?ID=68",
+      "text": "fear",
+      "kind": "Traits",
+      "id": 68
+    },
+    {
+      "href": "Feats.aspx?Traits=78",
+      "text": "general",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Rules.aspx?ID=235",
+      "text": "critical specialization effects",
+      "kind": "Rules",
+      "id": 235
+    },
+    {
+      "href": "Rules.aspx?ID=211",
+      "text": "armor specialization effects",
+      "kind": "Rules",
+      "id": 211
+    }
+  ],
+  "body_text": "You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a manipulate action, you disrupt that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike. Fighter FeatsAt 1st level and every even-numbered level, you gain a fighter class feat. Shield BlockYou gain the Shield Block general feat, a reaction that lets you reduce damage with your shield. Skill FeatsLevel 2At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat. BraveryLevel 3Having faced countless foes and the chaos of battle, you have learned how to stand strong in the face of fear. Your proficiency rank for Will saves increases to expert. When you roll a success at a Will save against a fear effect, you get a critical success instead. In addition, anytime you gain the frightened condition, reduce its value by 1. General FeatsLevel 3At 3rd level and every 4 levels thereafter, you gain a general feat. Skill IncreasesLevel 3At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in or become an expert in one skill in which you're already trained. At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master. Ancestry FeatsLevel 5In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry. Fighter Weapon MasteryLevel 5Hours spent training with your preferred weapons, learning and developing new combat techniques, have made you particularly effective with your weapons of choice. Choose one weapon group. Your proficiency rank increases to master with the simple weapons, martial weapons, and unarmed attacks in that group, and to expert with the advanced weapons in that group. You gain access to the critical specialization effects of all weapons and unarmed attacks for which you have master proficiency. Battlefield SurveyorLevel 7Whether taking stock of an enemy army or simply standing guard, you excel at observing your foes. Your proficiency rank for Perception increases to master. In addition, you gain a +2 circumstance bonus to Perception checks for initiative, making you faster to react during combat. Weapon SpecializationLevel 7You've learned how to inflict greater injuries with the weapons you know best. You deal 2 additional damage with weapons and unarmed attacks in which you're an expert. This damage increases to 3 if you're a master, and 4 if you're legendary. Battle HardenedLevel 9Your experience in battle helps protect you against magic and toxins alike. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead. Combat FlexibilityLevel 9You can prepare your tactics to suit different situations. When you make your daily preparations, you gain one fighter feat of 8th level or lower that you meet the prerequisites for and don't already have. You can use that feat until your next daily preparations. Armor ExpertiseLevel 11You have spent so much time in armor that you know how to make the most of its protection. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to expert. You gain the armor specialization effects of medium and heavy armor. Fighter ExpertiseLevel 11Your practiced techniques have made you even more formidable. Your proficiency rank for your fighter class DC increases to expert. Weapon LegendLevel 13You've learned fighting techniques that apply to all armaments, and you've developed unparalleled skill with your favorite weapons. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master. Your proficiency rank for advanced weapons increases to expert. You can select one weapon group and increase your proficiency ranks to legendary for all simple weapons, martial weapons, and unarmed attacks in that weapon group, and to master for all advanced weapons in that weapon group. Greater Weapon SpecializationLevel 15Your damage from weapon specialization increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary. Improved FlexibilityLevel 15Your extensive experience gives you even greater ability to adapt to each day's challenges. When you use combat flexibility, you can gain two fighter feats instead of one. While the first feat must still be 8th level or lower, the second feat can be up to 14th level, and you can use the first feat to meet the prerequisites of the second feat. You must meet all of the feats' prerequisites. Tempered ReflexesLevel 15Practiced reflexes let you find safety even in the face of cataclysmic explosions. Your proficiency rank for Reflex saves increases to master. When you roll a success on a Reflex save, you get a critical success instead. Armor MasteryLevel 17Your skill with armor improves further. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to master. Versatile LegendLevel 19You are nigh-unmatched with any weapon. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to legendary, and your proficiency rank for advanced weapons increases to master. Your proficiency rank for your fighter class DC increases to master.",
+  "body_html": "You lash out at a foe that leaves an opening. Make a melee Strike against the triggering creature. If your attack is a critical hit and the trigger was a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=104\">manipulate</a> action, you <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=394\">disrupt</a> that action. This Strike doesn't count toward your multiple attack penalty, and your multiple attack penalty doesn't apply to this Strike.</div><br><h2 class=\"title\">Fighter Feats</h2>At 1st level and every even-numbered level, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=71\">fighter class feat</a>.<br><h2 class=\"title\">Shield Block</h2>You gain the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=839\">Shield Block</a> general feat, a reaction that lets you reduce damage with your shield.<br><h2 class=\"title\">Skill Feats<span style=\"margin-left:auto; margin-right:0\">Level 2</span></h2>At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=144\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br><h2 class=\"title\">Bravery<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>Having faced countless foes and the chaos of battle, you have learned how to stand strong in the face of fear. Your proficiency rank for Will saves increases to expert. When you roll a success at a Will save against a <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=68\">fear</a> effect, you get a critical success instead. In addition, anytime you gain the frightened condition, reduce its value by 1.<br><h2 class=\"title\">General Feats<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=78\">general</a> feat.<br><h2 class=\"title\">Skill Increases<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in or become an expert in one skill in which you're already trained.<br><br> At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.<br><h2 class=\"title\">Ancestry Feats<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.<br><h2 class=\"title\">Fighter Weapon Mastery<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>Hours spent training with your preferred weapons, learning and developing new combat techniques, have made you particularly effective with your weapons of choice. Choose one weapon group. Your proficiency rank increases to master with the simple weapons, martial weapons, and unarmed attacks in that group, and to expert with the advanced weapons in that group. You gain access to the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=235\">critical specialization effects</a> of all weapons and unarmed attacks for which you have master proficiency.<br><h2 class=\"title\">Battlefield Surveyor<span style=\"margin-left:auto; margin-right:0\">Level 7</span></h2>Whether taking stock of an enemy army or simply standing guard, you excel at observing your foes. Your proficiency rank for Perception increases to master. In addition, you gain a +2 circumstance bonus to Perception checks for initiative, making you faster to react during combat.<br><h2 class=\"title\">Weapon Specialization<span style=\"margin-left:auto; margin-right:0\">Level 7</span></h2>You've learned how to inflict greater injuries with the weapons you know best. You deal 2 additional damage with weapons and unarmed attacks in which you're an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.<br><h2 class=\"title\">Battle Hardened<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>Your experience in battle helps protect you against magic and toxins alike. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.<br><h2 class=\"title\">Combat Flexibility<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>You can prepare your tactics to suit different situations. When you make your daily preparations, you gain one fighter feat of 8th level or lower that you meet the prerequisites for and don't already have. You can use that feat until your next daily preparations.<br><h2 class=\"title\">Armor Expertise<span style=\"margin-left:auto; margin-right:0\">Level 11</span></h2>You have spent so much time in armor that you know how to make the most of its protection. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to expert. You gain the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=211\">armor specialization effects</a> of medium and heavy armor.<br><h2 class=\"title\">Fighter Expertise<span style=\"margin-left:auto; margin-right:0\">Level 11</span></h2>Your practiced techniques have made you even more formidable. Your proficiency rank for your fighter class DC increases to expert.<br><h2 class=\"title\">Weapon Legend<span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>You've learned fighting techniques that apply to all armaments, and you've developed unparalleled skill with your favorite weapons. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master. Your proficiency rank for advanced weapons increases to expert.<br><br> You can select one weapon group and increase your proficiency ranks to legendary for all simple weapons, martial weapons, and unarmed attacks in that weapon group, and to master for all advanced weapons in that weapon group.<br><h2 class=\"title\">Greater Weapon Specialization<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>Your damage from weapon specialization increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.<br><h2 class=\"title\">Improved Flexibility<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>Your extensive experience gives you even greater ability to adapt to each day's challenges. When you use combat flexibility, you can gain two fighter feats instead of one. While the first feat must still be 8th level or lower, the second feat can be up to 14th level, and you can use the first feat to meet the prerequisites of the second feat. You must meet all of the feats' prerequisites.<br><h2 class=\"title\">Tempered Reflexes<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>Practiced reflexes let you find safety even in the face of cataclysmic explosions. Your proficiency rank for Reflex saves increases to master. When you roll a success on a Reflex save, you get a critical success instead.<br><h2 class=\"title\">Armor Mastery<span style=\"margin-left:auto; margin-right:0\">Level 17</span></h2>Your skill with armor improves further. Your proficiency ranks for light, medium, and heavy armor, as well as for unarmored defense, increase to master.<br><h2 class=\"title\">Versatile Legend<span style=\"margin-left:auto; margin-right:0\">Level 19</span></h2>You are nigh-unmatched with any weapon. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to legendary, and your proficiency rank for advanced weapons increases to master. Your proficiency rank for your fighter class DC increases to master.<br>",
+  "meta_description": "Fighting for honor, greed, loyalty, or simply the thrill of battle, you are an undisputed master of weaponry and combat techniques. You combine your actions through clever combinations of opening moves, finishing strikes, and counterattacks whenever your foes are unwise enough to drop their guard. Whether you are a knight, mercenary, sharpshooter, or blade master, you have honed your martial skills into an art form and perform devastating critical attacks on your enemies.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Class, Fighter",
+  "key_attribute": null,
+  "hit_points_text": null,
+  "hp_per_level": null,
+  "initial_proficiencies": {},
+  "class_dc": null,
+  "subclasses": []
+}

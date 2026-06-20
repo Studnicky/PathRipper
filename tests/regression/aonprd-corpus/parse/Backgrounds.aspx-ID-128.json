@@ -1,0 +1,118 @@
+{
+  "_type": "background",
+  "url": "https://2e.aonprd.com/Backgrounds.aspx?ID=128",
+  "entity_id": 128,
+  "name": "Hermean Heritor",
+  "rarity": "rare",
+  "pfs": "limited",
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [
+    "Rare",
+    "Legacy - Age of Ashes"
+  ],
+  "trait_ids": {
+    "Rare": 137,
+    "Legacy - Age of Ashes": 270
+  },
+  "source": {
+    "book": "Pathfinder #150: Broken Promises",
+    "page": 73,
+    "source_id": 15
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #150: Broken Promises",
+      "page": 73,
+      "source_id": 15,
+      "raw": "Pathfinder #150: Broken Promises pg. 73"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Backgrounds.aspx?ID=128",
+      "text": "Hermean Heritor",
+      "kind": "Backgrounds",
+      "id": 128
+    },
+    {
+      "href": "/Traits.aspx?ID=137",
+      "text": "Rare",
+      "kind": "Traits",
+      "id": 137
+    },
+    {
+      "href": "/Traits.aspx?ID=270",
+      "text": "Legacy - Age of Ashes",
+      "kind": "Traits",
+      "id": 270
+    },
+    {
+      "href": "Sources.aspx?ID=15",
+      "text": "Pathfinder #150: Broken Promises pg. 73",
+      "kind": "Sources",
+      "id": 15
+    },
+    {
+      "href": "Skills.aspx?ID=14",
+      "text": "Society",
+      "kind": "Skills",
+      "id": 14
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Legal Lore",
+      "kind": "Skills",
+      "id": 8
+    },
+    {
+      "href": "Feats.aspx?ID=814",
+      "text": "Multilingual",
+      "kind": "Feats",
+      "id": 814
+    },
+    {
+      "href": "Feats.aspx?ID=756",
+      "text": "Assurance",
+      "kind": "Feats",
+      "id": 756
+    }
+  ],
+  "body_text": "With the restrictions on Hermean citizenship lifted, you may have fled the city of Promise or have spent some of your childhood in the company of someone who did. Choose two attribute boosts. One must be to Constitution or Wisdom, and one is a free attribute boost. You're trained in the Society skill, and the Legal Lore skill. You gain the Multilingual skill feat or the Assurance skill feat for Society.",
+  "body_html": "With the restrictions on Hermean citizenship lifted, you may have fled the city of Promise or have spent some of your childhood in the company of someone who did.<br><br>Choose two attribute boosts. One must be to <b>Constitution</b> or <b>Wisdom</b>, and one is a free attribute boost.<br><br>You're trained in the <u><a href=\"Skills.aspx?ID=14\">Society</a></u> skill, and the <u><a href=\"Skills.aspx?ID=8\">Legal Lore</a></u> skill. You gain the <u><a href=\"Feats.aspx?ID=814\">Multilingual</a></u> skill feat or the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=756\">Assurance</a> skill feat for Society.",
+  "meta_description": "With the restrictions on Hermean citizenship lifted, you may have fled the city of Promise or have spent some of your childhood in the company of someone who did.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Backgrounds, Hermean Heritor",
+  "attribute_boost_choice": {
+    "fixed_options": [
+      "Constitution",
+      "Wisdom"
+    ],
+    "free": true
+  },
+  "trained_skills": [
+    {
+      "name": "Society",
+      "skill_id": 14
+    }
+  ],
+  "lore_skills": [
+    {
+      "name": "Legal Lore",
+      "skill_id": 8
+    }
+  ],
+  "granted_feat": {
+    "name": "Multilingual",
+    "feat_id": 814
+  },
+  "flavor_text": "With the restrictions on Hermean citizenship lifted, you may have fled the city of Promise or have spent some of your childhood in the company of someone who did.",
+  "related_sources": []
+}

@@ -1,3 +1,7 @@
+# Ripper output captures (per-plugin scrape artifacts)
+output/
+output-*/
+
 # Logs
 logs
 *.log
@@ -101,3 +105,4 @@ docs/.vitepress/dist/
 
 # Plans are local-only working documents; not published
 docs/plans/
+dist-workers/

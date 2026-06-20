@@ -1,0 +1,62 @@
+{
+  "_type": "condition",
+  "url": "https://2e.aonprd.com/Conditions.aspx?ID=12",
+  "entity_id": 12,
+  "name": "Encumbered",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 443,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 443,
+      "source_id": 216,
+      "raw": "Player Core pg. 443"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=70",
+      "text": "Encumbered",
+      "kind": "Conditions",
+      "id": 70
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 443",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Conditions.aspx?ID=3",
+      "text": "clumsy 1",
+      "kind": "Conditions",
+      "id": 3
+    }
+  ],
+  "body_text": "You are carrying more weight than you can manage. While you're encumbered, you're clumsy 1 and take a 10-foot penalty to all your Speeds. As with all penalties to your Speed, this can't reduce your Speed below 5 feet.",
+  "body_html": "You are carrying more weight than you can manage. While you're encumbered, you're <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=3\">clumsy 1</a> and take a 10-foot penalty to all your Speeds. As with all penalties to your Speed, this can't reduce your Speed below 5 feet.",
+  "meta_description": "You are carrying more weight than you can manage. While you're encumbered, you're clumsy 1 and take a 10-foot penalty to all your Speeds. As with all penalties to your Speed, this can't reduce your Speed below 5 feet.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Conditions, Encumbered",
+  "stages": [],
+  "related_conditions": [
+    {
+      "name": "Encumbered",
+      "condition_id": 70
+    },
+    {
+      "name": "clumsy 1",
+      "condition_id": 3
+    }
+  ]
+}

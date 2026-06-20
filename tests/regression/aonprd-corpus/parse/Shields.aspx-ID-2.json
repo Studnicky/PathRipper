@@ -1,0 +1,107 @@
+{
+  "_type": "armor",
+  "url": "https://2e.aonprd.com/Shields.aspx?ID=2",
+  "armor_id": 2,
+  "name": "Wooden Shield",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Shields.aspx?ID=2&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 274,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 274,
+      "source_id": 216,
+      "raw": "Player Core pg. 274"
+    }
+  ],
+  "price": {
+    "gp": 1,
+    "sp": null,
+    "cp": null,
+    "raw": "1 gp"
+  },
+  "ac_bonus": 2,
+  "dex_cap": null,
+  "check_penalty": null,
+  "speed_penalty": null,
+  "strength": null,
+  "bulk": 1,
+  "category": null,
+  "group": null,
+  "description_html": "Though they come in a variety of shapes and sizes, the protection offered by wooden shields comes from the stoutness of their materials. While wooden shields are less expensive than steel shields, they break more easily.",
+  "description_text": "Though they come in a variety of shapes and sizes, the protection offered by wooden shields comes from the stoutness of their materials. While wooden shields are less expensive than steel shields, they break more easily.",
+  "raw_fields": {
+    "Price": "1 gp",
+    "AC Bonus": "+2",
+    "Speed Penalty": "—",
+    "Bulk": "1",
+    "Hardness": "3",
+    "HP (BT)": "12 (6)"
+  },
+  "links": [
+    {
+      "href": "/Equipment.aspx?ID=317&amp;NoRedirect=1",
+      "text": "Arrow-Catching Shield",
+      "kind": "Equipment",
+      "id": 317
+    },
+    {
+      "href": "/Equipment.aspx?ID=3610&amp;NoRedirect=1",
+      "text": "Bloodroot Shield",
+      "kind": "Equipment",
+      "id": 3610
+    },
+    {
+      "href": "/Equipment.aspx?ID=1044&amp;NoRedirect=1",
+      "text": "Burr Shield",
+      "kind": "Equipment",
+      "id": 1044
+    },
+    {
+      "href": "/Equipment.aspx?ID=3278&amp;NoRedirect=1",
+      "text": "Exploding Shield",
+      "kind": "Equipment",
+      "id": 3278
+    },
+    {
+      "href": "/Equipment.aspx?ID=1574&amp;NoRedirect=1",
+      "text": "Shining Shield",
+      "kind": "Equipment",
+      "id": 1574
+    },
+    {
+      "href": "/Equipment.aspx?ID=1079&amp;NoRedirect=1",
+      "text": "Staff-Storing Shield",
+      "kind": "Equipment",
+      "id": 1079
+    },
+    {
+      "href": "/Equipment.aspx?ID=3831&amp;NoRedirect=1",
+      "text": "Sun Slayer",
+      "kind": "Equipment",
+      "id": 3831
+    },
+    {
+      "href": "/Equipment.aspx?ID=3833&amp;NoRedirect=1",
+      "text": "Tiger Shield",
+      "kind": "Equipment",
+      "id": 3833
+    },
+    {
+      "href": "/Equipment.aspx?ID=1378&amp;NoRedirect=1",
+      "text": "Wovenwood Shield",
+      "kind": "Equipment",
+      "id": 1378
+    }
+  ],
+  "meta_description": "Though they come in a variety of shapes and sizes, the protection offered by wooden shields comes from the stoutness of their materials. While wooden shields are less expensive than steel shields, they break more easily.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Shield, Equipment, Wooden Shield"
+}

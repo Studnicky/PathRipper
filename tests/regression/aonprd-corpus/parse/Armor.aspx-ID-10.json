@@ -1,0 +1,101 @@
+{
+  "_type": "armor",
+  "url": "https://2e.aonprd.com/Armor.aspx?ID=10",
+  "armor_id": 10,
+  "name": "Breastplate",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Armor.aspx?ID=10&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 273,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 273,
+      "source_id": 216,
+      "raw": "Player Core pg. 273"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 275,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 275"
+    }
+  ],
+  "price": {
+    "gp": 8,
+    "sp": null,
+    "cp": null,
+    "raw": "8 gp"
+  },
+  "ac_bonus": 4,
+  "dex_cap": 1,
+  "check_penalty": -2,
+  "speed_penalty": -5,
+  "strength": 3,
+  "bulk": 2,
+  "category": "medium",
+  "group": {
+    "name": "Plate",
+    "group_id": 4
+  },
+  "description_html": "Though referred to as a breastplate, this type of armor consists of several pieces of plate or half-plate armor (see below) that protect the torso, chest, neck, and sometimes the hips and lower legs. It strategically grants some of the protection of plate while allowing greater flexibility and speed.<br>",
+  "description_text": "Though referred to as a breastplate, this type of armor consists of several pieces of plate or half-plate armor (see below) that protect the torso, chest, neck, and sometimes the hips and lower legs. It strategically grants some of the protection of plate while allowing greater flexibility and speed.",
+  "raw_fields": {
+    "Price": "8 gp",
+    "AC Bonus": "+4",
+    "Dex Cap": "+1",
+    "Check Penalty": "-2",
+    "Speed Penalty": "-5 ft.",
+    "Strength": "+3",
+    "Bulk": "2",
+    "Category": "Medium",
+    "Group": "Plate"
+  },
+  "links": [
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 275",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "/Equipment.aspx?ID=2137&amp;NoRedirect=1",
+      "text": "Breastplate of the Mountain",
+      "kind": "Equipment",
+      "id": 2137
+    },
+    {
+      "href": "/Equipment.aspx?ID=811&amp;NoRedirect=1",
+      "text": "Numerian Steel Breastplate",
+      "kind": "Equipment",
+      "id": 811
+    },
+    {
+      "href": "/Equipment.aspx?ID=1383&amp;NoRedirect=1",
+      "text": "Prismatic Plate",
+      "kind": "Equipment",
+      "id": 1383
+    },
+    {
+      "href": "/Equipment.aspx?ID=1070&amp;NoRedirect=1",
+      "text": "Rebounding Breastplate",
+      "kind": "Equipment",
+      "id": 1070
+    },
+    {
+      "href": "/Equipment.aspx?ID=3277&amp;NoRedirect=1",
+      "text": "Warleader's Bulwark",
+      "kind": "Equipment",
+      "id": 3277
+    }
+  ],
+  "meta_description": "Though referred to as a breastplate, this type of armor consists of several pieces of plate or half-plate armor (see below) that protect the torso, chest, neck, and sometimes the hips and lower legs. It strategically grants some of the protection of plate while allowing greater flexibility and speed.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Armor, Breastplate"
+}

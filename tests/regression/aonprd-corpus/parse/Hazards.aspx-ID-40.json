@@ -1,0 +1,95 @@
+{
+  "_type": "hazard",
+  "url": "https://2e.aonprd.com/Hazards.aspx?ID=40",
+  "entity_id": 40,
+  "name": "Green Slime",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [
+    "Environmental"
+  ],
+  "trait_ids": {
+    "Environmental": 62
+  },
+  "source": {
+    "book": "Gamemastery Guide",
+    "page": 78,
+    "source_id": 22
+  },
+  "sources": [
+    {
+      "book": "Gamemastery Guide",
+      "page": 78,
+      "source_id": 22,
+      "raw": "Gamemastery Guide pg. 78"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Complexity": "Simple",
+    "Stealth": "DC 30 (expert)",
+    "Description": "A caustic green film clings to the ceiling above, watching for prey to pass beneath it."
+  },
+  "links": [
+    {
+      "href": "Hazards.aspx?ID=40",
+      "text": "Green Slime",
+      "kind": "Hazards",
+      "id": 40
+    },
+    {
+      "href": "/Traits.aspx?ID=62",
+      "text": "Environmental",
+      "kind": "Traits",
+      "id": 62
+    },
+    {
+      "href": "Sources.aspx?ID=22",
+      "text": "Gamemastery Guide pg. 78",
+      "kind": "Sources",
+      "id": 22
+    },
+    {
+      "href": "Skills.aspx?ID=16",
+      "text": "Survival",
+      "kind": "Skills",
+      "id": 16
+    },
+    {
+      "href": "Conditions.aspx?ID=10",
+      "text": "drained 1",
+      "kind": "Conditions",
+      "id": 10
+    }
+  ],
+  "body_text": "Disable DC 33 Survival (expert) to carefully peel the slime off the ceiling without touching it AC 20; Fort +25, Ref +15 HP 200 (BT 100); Immunities critical hits, object immunities, precision damage, Weaknesses cold 20, fire 20 Dissolving Ambush [reaction] Trigger A creature walks beneath the slime; Effect The green slime drops on top of the creature, attempting to dissolve it into a nutritious slurry. The target must attempt a DC 28 Reflex save. Critical Success The target leaps out of the way, and it is unaffected. Success A small amount of the slime splashes onto the target. The target is drained 1. Failure The slime lands on its target. The target is drained 1, and this condition value increases by 1 at the end of its turn each round until the slime is removed. If the target reaches drained 4, the next time its drained value would increase, it dies and collapses into a slurry of nutrients. A slime covering a target can no longer be removed through Survival checks, and damage dealt to the slime is also dealt to the target (applying the target’s immunities, weaknesses, and resistances rather than those of the green slime). Critical Failure The slime completely coats its target. This has the same effect as a failure, except the target is immediately drained 2, becomes drained 4 after 1 round, and dies after 2 rounds.Reset 1 hour, as the slime feasts and then slowly creeps back up to the ceiling",
+  "body_html": "<b>Disable</b> DC 33 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=16\">Survival</a> (expert) to carefully peel the slime off the ceiling without touching it<br><b>AC</b> 20; <b>Fort</b> +25, <b>Ref</b> +15<br><b>HP</b> 200 (BT 100); <b>Immunities</b> critical hits, object immunities, precision damage, <b>Weaknesses</b> cold 20, fire 20<br><b>Dissolving Ambush</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  <b>Trigger</b> A creature walks beneath the slime; <b>Effect</b> The green slime drops on top of the creature, attempting to dissolve it into a nutritious slurry. The target must attempt a DC 28 Reflex save.<br><br><b>Critical Success</b> The target leaps out of the way, and it is unaffected.<br><b>Success</b> A small amount of the slime splashes onto the target. The target is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=10\">drained 1</a>.<br><b>Failure</b> The slime lands on its target. The target is drained 1, and this condition value increases by 1 at the end of its turn each round until the slime is removed. If the target reaches drained 4, the next time its drained value would increase, it dies and collapses into a slurry of nutrients. A slime covering a target can no longer be removed through Survival checks, and damage dealt to the slime is also dealt to the target (applying the target’s immunities, weaknesses, and resistances rather than those of the green slime).<br><b>Critical Failure</b> The slime completely coats its target. This has the same effect as a failure, except the target is immediately drained 2, becomes drained 4 after 1 round, and dies after 2 rounds.<hr><b>Reset</b> 1 hour, as the slime feasts and then slowly creeps back up to the ceiling",
+  "meta_description": "A caustic green film clings to the ceiling above, watching for prey to pass beneath it.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Hazard, Green Slime",
+  "level": 9,
+  "complexity": "simple",
+  "stealth": {
+    "dc": 30,
+    "notes": "(expert)",
+    "raw": "DC 30 (expert)"
+  },
+  "description_text": "A caustic green film clings to the ceiling above, watching for prey to pass beneath it.",
+  "disable": [],
+  "defenses": {
+    "ac": null,
+    "saves": {
+      "fort": null,
+      "ref": null,
+      "will": null
+    },
+    "hardness": [],
+    "hp": [],
+    "immunities": [],
+    "weaknesses": [],
+    "resistances": []
+  },
+  "routines": [],
+  "reset": null
+}

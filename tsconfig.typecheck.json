@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "plugins/aonprd/taxonomy.ts",
+    "plugins/aonprd/taxonomy/**/*.ts",
+    "plugins/aonprd/nodes/**/*.ts",
+    "plugins/aonprd/capabilities/**/*.ts",
+    "plugins/aonprd/strategies/**/*.ts",
+    "plugins/aonprd/concepts/**/*.ts",
+    "plugins/aonprd/parse.taxonomic.ts",
+    "plugins/aonprd/common.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

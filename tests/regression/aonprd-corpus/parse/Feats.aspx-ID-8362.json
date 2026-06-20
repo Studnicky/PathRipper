@@ -1,0 +1,100 @@
+{
+  "_type": "feat",
+  "url": "https://2e.aonprd.com/Feats.aspx?ID=8362",
+  "feat_id": 8362,
+  "name": "Turn Away Misfortune",
+  "level": 2,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Feats.aspx?ID=3707&NoRedirect=1",
+  "action_cost": "reaction",
+  "traits": [
+    "Esoterica",
+    "Fortune",
+    "Manipulate",
+    "Occult",
+    "Thaumaturge"
+  ],
+  "trait_ids": {
+    "Esoterica": 899,
+    "Fortune": 612,
+    "Manipulate": 645,
+    "Occult": 662,
+    "Thaumaturge": 895
+  },
+  "source": {
+    "book": "Dark Archives (Remastered)",
+    "page": 43,
+    "source_id": 293
+  },
+  "sources": [
+    {
+      "book": "Dark Archives (Remastered)",
+      "page": 43,
+      "source_id": 293,
+      "raw": "Dark Archives (Remastered) pg. 43"
+    }
+  ],
+  "archetypes": [],
+  "archetype_footnotes": [],
+  "prerequisites": null,
+  "frequency": null,
+  "trigger": "You would attempt a roll affected by a misfortune effect.",
+  "requirements": null,
+  "cost": null,
+  "access": null,
+  "is_mythic": false,
+  "description_html": "You perform a superstition, such as casting salt over your shoulder to ward off bad luck. Turn Away Misfortune's fortune trait cancels out the misfortune effect, causing you to roll normally. As normal, you can apply only one fortune ability to a roll, so if you Turned Away Misfortune on an attack roll, you couldn't also use an ability like <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=4458\">Halfling Luck</a> to alter the roll further.",
+  "description_text": "You perform a superstition, such as casting salt over your shoulder to ward off bad luck. Turn Away Misfortune's fortune trait cancels out the misfortune effect, causing you to roll normally. As normal, you can apply only one fortune ability to a roll, so if you Turned Away Misfortune on an attack roll, you couldn't also use an ability like Halfling Luck to alter the roll further.",
+  "special": null,
+  "leads_to": [],
+  "related_feats": [],
+  "trait_glossary": [
+    {
+      "trait": "Esoterica",
+      "description": "The esoterica trait is present in many thaumaturge feats and class features that incorporate the various talismans, supernatural trinkets, and other objects you carry with you. Abilities that have the esoterica trait require you to be in possession of your esoterica to use them. Normally, you're assumed to always have your esoterica with you, but in some rare circumstances, you might either not have them on hand or have your gear stripped from you."
+    },
+    {
+      "trait": "Fortune",
+      "description": "A fortune effect beneficially alters how you roll your dice. You can never have more than one fortune effect alter a single roll. If multiple fortune effects would apply, you have to pick which to use. If a fortune effect and a misfortune effect would apply to the same roll, the two cancel each other out, and you roll normally."
+    },
+    {
+      "trait": "Manipulate",
+      "description": "You must physically manipulate an item or make gestures to use an action with this trait. Creatures without a suitable appendage can’t perform actions with this trait. Manipulate actions often trigger reactions."
+    },
+    {
+      "trait": "Occult",
+      "description": "This magic comes from the occult tradition, calling upon bizarre and ephemeral mysteries. Anything with this trait is magical. A creature with this trait is primarily constituted of or has a strong connection to occult magic."
+    },
+    {
+      "trait": "Thaumaturge",
+      "description": "This indicates abilities from the thaumaturge class."
+    }
+  ],
+  "raw_fields": {
+    "Trigger": "You would attempt a roll affected by a misfortune effect."
+  },
+  "links": [
+    {
+      "href": "Feats.aspx?ID=4458",
+      "text": "Halfling Luck",
+      "kind": "Feats",
+      "id": 4458
+    },
+    {
+      "href": "Traits.aspx?ID=110",
+      "text": "misfortune",
+      "kind": "Traits",
+      "id": 110
+    },
+    {
+      "href": "Classes.aspx?ID=69",
+      "text": "thaumaturge",
+      "kind": "Classes",
+      "id": 69
+    }
+  ],
+  "meta_description": "You perform a superstition, such as casting salt over your shoulder to ward off bad luck. Turn Away Misfortune's fortune trait cancels out the misfortune effect, causing you to roll normally. As normal, you can apply only one fortune ability to a roll, so if you Turned Away Misfortune on an attack roll, you couldn't also use an ability like Halfling Luck to alter the roll further.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, FeatTurn Away Misfortune"
+}

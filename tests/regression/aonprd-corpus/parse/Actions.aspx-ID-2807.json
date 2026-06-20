@@ -1,0 +1,74 @@
+{
+  "_type": "action",
+  "url": "https://2e.aonprd.com/Actions.aspx?ID=2807",
+  "action_id": 2807,
+  "name": "Retributive Strike",
+  "rarity": "common",
+  "action_cost": "reaction",
+  "traits": [
+    "Champion",
+    "Divine"
+  ],
+  "trait_ids": {
+    "Champion": 811,
+    "Divine": 579
+  },
+  "source": {
+    "book": "Player Core 2",
+    "page": 92,
+    "source_id": 227
+  },
+  "sources": [
+    {
+      "book": "Player Core 2",
+      "page": 92,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 92"
+    }
+  ],
+  "legacy": false,
+  "alt_edition_url": null,
+  "trigger": "An enemy damages your ally, and both are in your champion’s aura",
+  "frequency": null,
+  "requirements": null,
+  "cost": null,
+  "effect_html": "You protect your ally and strike your enemy. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the enemy is within reach, make a melee Strike against it.",
+  "effect_text": "You protect your ally and strike your enemy. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the enemy is within reach, make a melee Strike against it.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "raw_fields": {
+    "Trigger": "An enemy damages your ally, and both are in your champion’s aura"
+  },
+  "links": [
+    {
+      "href": "Actions.aspx?ID=2807",
+      "text": "Retributive Strike",
+      "kind": "Actions",
+      "id": 2807
+    },
+    {
+      "href": "/Traits.aspx?ID=811",
+      "text": "Champion",
+      "kind": "Traits",
+      "id": 811
+    },
+    {
+      "href": "/Traits.aspx?ID=579",
+      "text": "Divine",
+      "kind": "Traits",
+      "id": 579
+    },
+    {
+      "href": "Sources.aspx?ID=227",
+      "text": "Player Core 2 pg. 92",
+      "kind": "Sources",
+      "id": 227
+    }
+  ],
+  "meta_description": "You protect your ally and strike your enemy. The ally gains resistance to all damage against the triggering damage equal to 2 + your level. If the enemy is within reach, make a melee Strike against it.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Actions, Retributive Strike"
+}

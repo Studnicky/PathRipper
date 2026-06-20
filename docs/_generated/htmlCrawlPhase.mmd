@@ -1,0 +1,8 @@
+flowchart LR
+  %% htmlCrawlPhase (v2.0)
+  crawl:list-targets
+  crawl:list-targets[crawl:list-targets]
+  crawl:list-targets -->|success| END
+  crawl:list-targets -->|error| END
+  crawl:list-targets -->|empty| END
+  END([end])

@@ -1,4 +1,4 @@
-import type { RetryConfigInterface } from './RetryExecutor.js';
+import type { HttpRetryConfigType } from '../modules/http/httpRetryPolicy.js';
 import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 /**
@@ -13,7 +13,7 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @example
  * ```ts
- * const config: LinkListerConfigInterface = {
+ * const config: LinkListerConfigType = {
  *   domain: /^https:\/\/example\.com/,
  *   target: /\/items\/[^/]+$/,
  *   delimiter: /\/items\//,
@@ -25,10 +25,10 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @category Crawlers
  * @since 2.0.0
- * @see {@link RetryConfigInterface}
+ * @see {@link HttpRetryConfigType}
  * @group Types
  */
-export interface LinkListerConfigInterface {
+export type LinkListerConfigType = {
   /** Pattern that every link must match to be followed. */
   readonly domain: RegExp;
   /** Pattern that a link must match to be collected as a result. */
@@ -42,9 +42,9 @@ export interface LinkListerConfigInterface {
   /** Maximum number of target links to collect before stopping. */
   readonly maxPages?:    number | undefined;
   /** Retry configuration for failed requests. */
-  readonly retry?: RetryConfigInterface | undefined;
+  readonly retry?: HttpRetryConfigType | undefined;
   /** HTTP headers sent with every request; passed identically to scrapers for cache-key parity. */
   readonly headers?: Readonly<Record<string, string>> | undefined;
   /** Shared content store; bodies fetched here become free hits for the scraper later in the same target run. */
   readonly cache: ScraperCache;
-}
+};

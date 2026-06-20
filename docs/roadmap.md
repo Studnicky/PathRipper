@@ -1,6 +1,17 @@
 # Roadmap
 
-v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML scraper, MediaWiki scraper, and link crawler are live.
+## Shipped (v3.x)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| Dagonizer | live | Runs on `@studnicky/dagonizer@0.24.0` (GitHub Packages). Nodes use the batch contract (`ScalarNode` + `executeOne`). All flows are built with native `DAGBuilder` (`.node`/`.scatter`/`.embeddedDAG`/`.terminal`) — `configLoadFlow` uses explicit `.node()`/`.terminal()` placements with exhaustive route maps; the aonprd parse DAG is produced by `Taxonomy.buildDAG()`. `DAGDeriver` and the `/derive` subpath are gone; `OperationContractType` and node-level `contract` fields are removed. Routing is read off `RoutedBatchType` (`result.has(port)`). Per-page wiki/html scrape dispatches via a native `{ dag: perPageDag }` scatter body (`itemKey` metadata → `WikiFetchNode`/`HtmlFetchNode` initialise `state.page`); `ScrapeState` uses the base metadata-only clone. |
+| `RipperRun` composition root | live | `runHtml(opts)` and `runWiki(opts)` in `src/run/` are the composition roots for all scrape runs. The CLI invokes them via `DispatchHtmlScrapeNode` / `DispatchWikiScrapeNode`. |
+| Worker-thread parse (html) | live | The CPU-bound per-page plugin parse runs in a `WorkerThreadContainer` pool (default on via `enableWorkers`), sized to the machine by `NodeSystemInfo.recommendedWorkerCount` (cores − main thread); the per-page scatter concurrency matches the pool. Fetch + write stay coordinator-side. The plugin-agnostic worker registry rebuilds the parse DAG via the shared `PluginLoader`; the worker closure compiles to a self-contained `dist-workers/` (`npm run build:workers`). Falls back to in-process when that tree is absent. |
+| Contract eslint rules | live | `eslint-rules/noocodec.mjs` enforces `interface-must-be-contract`, `logger-binding-name`, and `group-types-in-namespace` (exempting `src/types/`) at `error`. Data-shape interfaces are `type` aliases with the `*Type` suffix; logger bindings are `log`. |
+| Explicit plugin registration | live | Plugins export `register(dispatcher: RipperDagonizer<ScrapeState>): void`. The runner imports each plugin module and calls `register(dispatcher)` explicitly — no global registry. |
+| `RipperServices` | live | Services bag interface is `RipperServices` (`src/services/RipperServices.ts`). Constructed as a plain object literal and injected via the proxy-services pattern. |
+| Taxonomic extractor (AONPRD plugin) | live | The AONPRD plugin covers 51 concepts. Each concept declares URL path patterns and capability nodes. A URL-routing DAG dispatches to the correct concept sub-DAG at parse time. |
+| Concept identity via URL | live | Concept identity is carried by the URL (e.g. `Feats.aspx`) and typed `<concept>_id` fields on the record. No discriminator property on output shapes. |
 
 ## Shipped (v2.x)
 
@@ -10,12 +21,12 @@ v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML sc
 | Pipeline (Transformer modernized) | live | PathRipper's callback-based `Transformer` becomes a typed `Pipeline<TState>`. Same middleware pattern, fully typed generic state. |
 | HTML scraper | live | JSDOM replaced with native `fetch` + `cheerio`. Configurable base URL, headers, rate limit. Returns live `CheerioAPI` handle. |
 | MediaWiki scraper | live | Native `fetch()` to the MediaWiki JSON API. Category listing with full pagination, 50-page batch wikitext fetches, `wtf_wikipedia` infobox parsing. |
-| LinkLister crawler | live | PathRipper's recursive crawler rewritten. cheerio replaces JSDOM for link extraction. Concurrent traversals with `Promise.all`. Numeric-aware sort. `Set`-based deduplication. |
+| LinkLister crawler | live | PathRipper's recursive crawler rewritten. cheerio replaces JSDOM for link extraction. Concurrent traversals with `Promise.all`. Numeric-aware sort. `Set`-based deduplication. BFS frontier expansion is a single native cyclic DAG — `crawl:dedupe-and-enqueue` routes `frontier-ready` back to `crawl:fetch-and-extract` (a back-edge the engine re-executes), guarded by the depth/budget check. Design in `docs/design/crawl-native-loop.md`. |
 | HTTP machinery | live | `ErrorClassifier` + `RetryExecutor` ported from TORUS. `RateLimiter` wrapping `bottleneck`. `Retry-After` header respected. Seven error categories. Exponential + jitter backoff. |
 | Structured logger | live | Ported from Torreya's `@torreya/logger`. `Logger.forComponent(name)`, JSON lines, `LOG_LEVEL` gate, component + operation attribution on every entry. |
 | JSON config | live | All targets, URLs, rate limits, and output paths live in `ripperoni.config.json`. Nothing hardcoded. `RipperConfig.load(path)` validates and returns a typed interface. |
 | Concurrent pipeline | live | `ConcurrentPipeline.create(pipeline, concurrency)` fans N pages through the same pipeline simultaneously with a semaphore cap. |
-| Task registry | live | `TaskRegistry.register(name, fn)` + dynamic plugin loading via `pipeline: ["my-target:parse"]` in config. Plugins are `.js` files loaded at runtime. |
+| Plugin registration | live | Plugins export `register(dispatcher: RipperDagonizer<ScrapeState>)`. Loaded dynamically from `./plugins/<word>/<verb>.task.js` based on `pipeline: ["my-target:parse"]` config entries. |
 | Checkpoint + resume | live | Already-written slugs are detected at run start and skipped. Failed pages are written to `failures.json`; pass `--resume-failures` to retry only those. |
 | Config schema validation | live | AJV validates the config at load time. `RipperConfig.load(path)` throws with the exact field path on any violation; malformed configs fail fast and loudly. |
 
@@ -23,5 +34,9 @@ v2.0.0 is a ground-up rewrite of the 2019 PathRipper. The core pipeline, HTML sc
 
 | Feature | Details |
 |---------|---------|
+| Per-level crawl concurrency | Scatter the cyclic crawl's per-level frontier fetch (`crawl:fetch-and-extract`) so pages in one depth level fetch concurrently, still inside the native back-edge loop. Follow-on to the cyclic-DAG crawl now in place. |
+| Worker parsing for the wiki vertical | Mirror the html worker-parse path (`enableWorkers`, `dist-workers/`) on `runWiki` so MediaWiki per-page parse also runs in the system-sized pool. The html path is live. |
+| Streaming/reservoir scatter | Reservoir-fed scatter over an unbounded `AsyncIterable` frontier for very large target lists, once the throughput need is proven. The scatter `reservoir` option is wired in dagonizer 0.24. |
+| litany standards backlog | `litany.json` is migrated to `schemaVersion 1`, which activates `litany inspect`. It currently reports ~974 pre-existing findings across the codebase (unused exports, magic numbers, typedoc tags, type-location, dead code). A dedicated cleanup pass — out of scope for the dagonizer migration. |
 | JSDOM fallback mode | Some pages require JavaScript execution to render their content. A configurable `jsdom` mode in `HtmlScraper` would handle these without needing a full headless browser. |
 | HTML → Markdown conversion | Output mode that converts scraped HTML to clean Markdown. Useful for feeding scraped content into LLM pipelines without sending raw HTML. Likely via `turndown` or similar. |

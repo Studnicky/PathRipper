@@ -1,0 +1,277 @@
+{
+  "_type": "spell",
+  "url": "https://2e.aonprd.com/Spells.aspx?ID=584",
+  "spell_id": 584,
+  "name": "Share Lore",
+  "kind": "spell",
+  "rank": 1,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Spells.aspx?ID=584&NoRedirect=1",
+  "action_cost": null,
+  "traits": [
+    "Concentrate",
+    "Manipulate",
+    "Mental"
+  ],
+  "trait_ids": {
+    "Concentrate": 32,
+    "Manipulate": 104,
+    "Mental": 106
+  },
+  "source": {
+    "book": "Divine Mysteries",
+    "page": 259,
+    "source_id": 234
+  },
+  "sources": [
+    {
+      "book": "Divine Mysteries",
+      "page": 259,
+      "source_id": 234,
+      "raw": "Divine Mysteries pg. 259"
+    }
+  ],
+  "traditions": [
+    "arcane",
+    "occult"
+  ],
+  "spell_list": null,
+  "bloodlines": [],
+  "cult": [],
+  "domain": [],
+  "deities": [
+    {
+      "name": "Abraxas",
+      "deity_id": 425
+    },
+    {
+      "name": "Gruhastha",
+      "deity_id": 346
+    },
+    {
+      "name": "Matravash",
+      "deity_id": 617
+    },
+    {
+      "name": "Mazludeh",
+      "deity_id": 680
+    },
+    {
+      "name": "Nin",
+      "deity_id": 353
+    },
+    {
+      "name": "Saloc",
+      "deity_id": 547
+    },
+    {
+      "name": "The Endless Road",
+      "deity_id": 246
+    },
+    {
+      "name": "The Enlightened Scholar's Path",
+      "deity_id": 251
+    },
+    {
+      "name": "Vale",
+      "deity_id": 551
+    },
+    {
+      "name": "Winlas",
+      "deity_id": 656
+    },
+    {
+      "name": "Zohls",
+      "deity_id": 489
+    }
+  ],
+  "mysteries": [],
+  "patron_themes": [
+    {
+      "name": "choir politic",
+      "patron_id": 24
+    }
+  ],
+  "catalysts": [],
+  "cast": {
+    "actions": null,
+    "components": [],
+    "time": "1 minute",
+    "raw": "1 minute"
+  },
+  "trigger": null,
+  "range": "touch",
+  "area": null,
+  "targets": "up to 3 creatures",
+  "defense": null,
+  "saving_throw": null,
+  "duration": "10 minutes",
+  "cost": null,
+  "requirements": null,
+  "description_html": "You share your knowledge with the touched creatures. Choose one <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=41\">Lore</a> skill in which you’re trained. The targets become trained in that Lore skill for the duration of the spell.<ul></ul><hr>",
+  "description_text": "You share your knowledge with the touched creatures. Choose one Lore skill in which you’re trained. The targets become trained in that Lore skill for the duration of the spell.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "affliction": null,
+  "heightened": [
+    {
+      "rank_label": "3rd",
+      "rank": 3,
+      "increment": null,
+      "body_html": "The duration of the spell is 1 hour, and you can target up to five creatures.<br>",
+      "body_text": "The duration of the spell is 1 hour, and you can target up to five creatures."
+    },
+    {
+      "rank_label": "5th",
+      "rank": 5,
+      "increment": null,
+      "body_html": "The duration of the spell is 8 hours, you can target up to five creatures, and you can share up to two Lore skills in which you’re trained.",
+      "body_text": "The duration of the spell is 8 hours, you can target up to five creatures, and you can share up to two Lore skills in which you’re trained."
+    }
+  ],
+  "raw_fields": {
+    "Traditions": "arcane, occult",
+    "Deities": "Abraxas, Gruhastha, Matravash, Mazludeh, Nin, Saloc, The Endless Road, The Enlightened Scholar's Path, Vale, Winlas, Zohls",
+    "Patron Theme": "choir politic",
+    "Cast": "1 minute",
+    "Range": "touch",
+    "Targets": "up to 3 creatures",
+    "Duration": "10 minutes"
+  },
+  "links": [
+    {
+      "href": "Spells.aspx?ID=584&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Spells",
+      "id": 584
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "/Traits.aspx?ID=104",
+      "text": "Manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "/Traits.aspx?ID=106",
+      "text": "Mental",
+      "kind": "Traits",
+      "id": 106
+    },
+    {
+      "href": "Sources.aspx?ID=234",
+      "text": "Divine Mysteries pg. 259",
+      "kind": "Sources",
+      "id": 234
+    },
+    {
+      "href": "Spells.aspx?Tradition=1",
+      "text": "arcane",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?Tradition=3",
+      "text": "occult",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Deities.aspx?ID=425",
+      "text": "Abraxas",
+      "kind": "Deities",
+      "id": 425
+    },
+    {
+      "href": "Deities.aspx?ID=346",
+      "text": "Gruhastha",
+      "kind": "Deities",
+      "id": 346
+    },
+    {
+      "href": "Deities.aspx?ID=617",
+      "text": "Matravash",
+      "kind": "Deities",
+      "id": 617
+    },
+    {
+      "href": "Deities.aspx?ID=680",
+      "text": "Mazludeh",
+      "kind": "Deities",
+      "id": 680
+    },
+    {
+      "href": "Deities.aspx?ID=353",
+      "text": "Nin",
+      "kind": "Deities",
+      "id": 353
+    },
+    {
+      "href": "Deities.aspx?ID=547",
+      "text": "Saloc",
+      "kind": "Deities",
+      "id": 547
+    },
+    {
+      "href": "Deities.aspx?ID=246",
+      "text": "The Endless Road",
+      "kind": "Deities",
+      "id": 246
+    },
+    {
+      "href": "Deities.aspx?ID=251",
+      "text": "The Enlightened Scholar's Path",
+      "kind": "Deities",
+      "id": 251
+    },
+    {
+      "href": "Deities.aspx?ID=551",
+      "text": "Vale",
+      "kind": "Deities",
+      "id": 551
+    },
+    {
+      "href": "Deities.aspx?ID=656",
+      "text": "Winlas",
+      "kind": "Deities",
+      "id": 656
+    },
+    {
+      "href": "Deities.aspx?ID=489",
+      "text": "Zohls",
+      "kind": "Deities",
+      "id": 489
+    },
+    {
+      "href": "Patrons.aspx?ID=24",
+      "text": "choir politic",
+      "kind": "Patrons",
+      "id": 24
+    },
+    {
+      "href": "Skills.aspx?ID=41",
+      "text": "Lore",
+      "kind": "Skills",
+      "id": 41
+    }
+  ],
+  "meta_description": "You share your knowledge with the touched creatures. Choose one Lore skill in which you’re trained. The targets become trained in that Lore skill for the duration of the spell.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Spells, Share Lore"
+}

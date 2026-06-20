@@ -1,0 +1,14 @@
+flowchart LR
+  %% wikiPageDAG:canonical (v2.0)
+  wiki:fetch
+  wiki:fetch[wiki:fetch]
+  wiki:fetch -->|success| wiki:write-raw
+  wiki:fetch -->|error| END
+  wiki:write-raw[wiki:write-raw]
+  wiki:write-raw -->|success| json:write
+  json:write[json:write]
+  json:write -->|success| flow:terminate
+  json:write -->|skipped| flow:terminate
+  flow:terminate[flow:terminate]
+  flow:terminate -->|success| END
+  END([end])

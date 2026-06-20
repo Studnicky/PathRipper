@@ -1,4 +1,4 @@
-import type { LevelType, WriteOptsInterface } from '../../types/Logger.js';
+import type { LevelType, WriteOptsType } from '../../types/Logger.js';
 
 
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 } as const;
@@ -96,7 +96,7 @@ export class Logger {
     Logger.write({ level: 'error', component: this.#component, operation, message, context });
   }
 
-  private static write(opts: WriteOptsInterface): void {
+  private static write(opts: WriteOptsType): void {
 
     const entry: Record<string, unknown> = {
       time:      new Date().toISOString(),

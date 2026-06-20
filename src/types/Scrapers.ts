@@ -26,7 +26,7 @@ export type WtfSectionType = ReturnType<ReturnType<typeof wtf>['sections']> exte
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
- * @see ParsedPageInterface
+ * @see ParsedPageType
  */
 export type WikitextSectionType = Record<string, string | string[] | number | boolean | null>;
 
@@ -36,14 +36,14 @@ export type WikitextSectionType = Record<string, string | string[] | number | bo
  * @remarks Produced by `WikitextParser.parse` from raw wikitext content.
  * @example
  * ```ts
- * const parsed: ParsedPageInterface = WikitextParser.parse('Tarrasque', wikitext);
+ * const parsed: ParsedPageType = WikitextParser.parse('Tarrasque', wikitext);
  * ```
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
  * @see WikitextParser
  */
-export interface ParsedPageInterface {
+export type ParsedPageType = {
   /** Article title. */
   readonly title: string;
   /** Infobox fields as a flat key-value map. */
@@ -52,4 +52,4 @@ export interface ParsedPageInterface {
   readonly sections: ReadonlyArray<{ readonly title: string; readonly text: string }>;
   /** Categories the page belongs to. */
   readonly categories: readonly string[];
-}
+};

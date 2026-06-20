@@ -1,0 +1,311 @@
+{
+  "_type": "generic",
+  "url": "https://2e.aonprd.com/ClassSamples.aspx?ID=61",
+  "entity_id": 61,
+  "name": "Pharasmin",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 120,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 120,
+      "source_id": 216,
+      "raw": "Player Core pg. 120"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Ability Scores",
+      "level": 2,
+      "body_html": "Prioritize Wisdom. Charisma helps you spread the word of your faith.<br>",
+      "body_text": "Prioritize Wisdom. Charisma helps you spread the word of your faith.",
+      "links": []
+    },
+    {
+      "heading": "Skills",
+      "level": 2,
+      "body_html": "<u><a href=\"Skills.aspx?ID=39\">Diplomacy</a></u>, <u><a href=\"Skills.aspx?ID=42\">Medicine</a></u>, <u><a href=\"Skills.aspx?ID=44\">Occultism</a></u>, <u><a href=\"Skills.aspx?ID=46\">Religion</a></u><br>",
+      "body_text": "Diplomacy, Medicine, Occultism, Religion",
+      "links": [
+        {
+          "href": "Skills.aspx?ID=39",
+          "text": "Diplomacy",
+          "kind": "Skills",
+          "id": 39
+        },
+        {
+          "href": "Skills.aspx?ID=42",
+          "text": "Medicine",
+          "kind": "Skills",
+          "id": 42
+        },
+        {
+          "href": "Skills.aspx?ID=44",
+          "text": "Occultism",
+          "kind": "Skills",
+          "id": 44
+        },
+        {
+          "href": "Skills.aspx?ID=46",
+          "text": "Religion",
+          "kind": "Skills",
+          "id": 46
+        }
+      ]
+    },
+    {
+      "heading": "Deity",
+      "level": 2,
+      "body_html": "<a style=\"text-decoration:underline\" href=\"Doctrines.aspx?ID=4\">cloistered cleric</a> (<a style=\"text-decoration:underline\" href=\"Domains.aspx?ID=70\">death</a> domain)<br>",
+      "body_text": "cloistered cleric (death domain)",
+      "links": [
+        {
+          "href": "Doctrines.aspx?ID=4",
+          "text": "cloistered cleric",
+          "kind": "Doctrines",
+          "id": 4
+        },
+        {
+          "href": "Domains.aspx?ID=70",
+          "text": "death",
+          "kind": "Domains",
+          "id": 70
+        }
+      ]
+    },
+    {
+      "heading": "Doctrine",
+      "level": 2,
+      "body_html": "<a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=290\">Pharasma</a> (divine font: <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1554\"><i>heal</i></a>)<br>",
+      "body_text": "Pharasma (divine font: heal)",
+      "links": [
+        {
+          "href": "Deities.aspx?ID=290",
+          "text": "Pharasma",
+          "kind": "Deities",
+          "id": 290
+        },
+        {
+          "href": "Spells.aspx?ID=1554",
+          "text": "heal",
+          "kind": "Spells",
+          "id": 1554
+        }
+      ]
+    },
+    {
+      "heading": "Higher-Level Feats",
+      "level": 2,
+      "body_html": "<u><a href=\"Feats.aspx?ID=4650\">Panic the Dead</a></u> (2nd), <u><a href=\"Feats.aspx?ID=4665\">Selective Energy</a></u> (6th)<br>",
+      "body_text": "Panic the Dead (2nd), Selective Energy (6th)",
+      "links": [
+        {
+          "href": "Feats.aspx?ID=4650",
+          "text": "Panic the Dead",
+          "kind": "Feats",
+          "id": 4650
+        },
+        {
+          "href": "Feats.aspx?ID=4665",
+          "text": "Selective Energy",
+          "kind": "Feats",
+          "id": 4665
+        }
+      ]
+    },
+    {
+      "heading": "Prepared Spells",
+      "level": 2,
+      "body_html": "<b>1st</b> <u><i><a href=\"Spells.aspx?ID=1524\">fear</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1554\"><i>heal</i> spells from divine font</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1603\">mindlink</a></i></u>; <b>Cantrips</b> <u><i><a href=\"Spells.aspx?ID=1482\">daze</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1485\">detect magic</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1585\">light</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1689\">stabilize</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1744\">vitality lash</a></i></u>",
+      "body_text": "1st fear, heal spells from divine font, mindlink; Cantrips daze, detect magic, light, stabilize, vitality lash",
+      "links": [
+        {
+          "href": "Spells.aspx?ID=1524",
+          "text": "fear",
+          "kind": "Spells",
+          "id": 1524
+        },
+        {
+          "href": "Spells.aspx?ID=1554",
+          "text": "heal spells from divine font",
+          "kind": "Spells",
+          "id": 1554
+        },
+        {
+          "href": "Spells.aspx?ID=1603",
+          "text": "mindlink",
+          "kind": "Spells",
+          "id": 1603
+        },
+        {
+          "href": "Spells.aspx?ID=1482",
+          "text": "daze",
+          "kind": "Spells",
+          "id": 1482
+        },
+        {
+          "href": "Spells.aspx?ID=1485",
+          "text": "detect magic",
+          "kind": "Spells",
+          "id": 1485
+        },
+        {
+          "href": "Spells.aspx?ID=1585",
+          "text": "light",
+          "kind": "Spells",
+          "id": 1585
+        },
+        {
+          "href": "Spells.aspx?ID=1689",
+          "text": "stabilize",
+          "kind": "Spells",
+          "id": 1689
+        },
+        {
+          "href": "Spells.aspx?ID=1744",
+          "text": "vitality lash",
+          "kind": "Spells",
+          "id": 1744
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "ClassSamples.aspx?ID=61",
+      "text": "Pharasmin",
+      "kind": "ClassSamples",
+      "id": 61
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 120",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Skills.aspx?ID=39",
+      "text": "Diplomacy",
+      "kind": "Skills",
+      "id": 39
+    },
+    {
+      "href": "Skills.aspx?ID=42",
+      "text": "Medicine",
+      "kind": "Skills",
+      "id": 42
+    },
+    {
+      "href": "Skills.aspx?ID=44",
+      "text": "Occultism",
+      "kind": "Skills",
+      "id": 44
+    },
+    {
+      "href": "Skills.aspx?ID=46",
+      "text": "Religion",
+      "kind": "Skills",
+      "id": 46
+    },
+    {
+      "href": "Doctrines.aspx?ID=4",
+      "text": "cloistered cleric",
+      "kind": "Doctrines",
+      "id": 4
+    },
+    {
+      "href": "Domains.aspx?ID=70",
+      "text": "death",
+      "kind": "Domains",
+      "id": 70
+    },
+    {
+      "href": "Deities.aspx?ID=290",
+      "text": "Pharasma",
+      "kind": "Deities",
+      "id": 290
+    },
+    {
+      "href": "Spells.aspx?ID=1554",
+      "text": "heal",
+      "kind": "Spells",
+      "id": 1554
+    },
+    {
+      "href": "Feats.aspx?ID=4650",
+      "text": "Panic the Dead",
+      "kind": "Feats",
+      "id": 4650
+    },
+    {
+      "href": "Feats.aspx?ID=4665",
+      "text": "Selective Energy",
+      "kind": "Feats",
+      "id": 4665
+    },
+    {
+      "href": "Spells.aspx?ID=1524",
+      "text": "fear",
+      "kind": "Spells",
+      "id": 1524
+    },
+    {
+      "href": "Spells.aspx?ID=1554",
+      "text": "heal spells from divine font",
+      "kind": "Spells",
+      "id": 1554
+    },
+    {
+      "href": "Spells.aspx?ID=1603",
+      "text": "mindlink",
+      "kind": "Spells",
+      "id": 1603
+    },
+    {
+      "href": "Spells.aspx?ID=1482",
+      "text": "daze",
+      "kind": "Spells",
+      "id": 1482
+    },
+    {
+      "href": "Spells.aspx?ID=1485",
+      "text": "detect magic",
+      "kind": "Spells",
+      "id": 1485
+    },
+    {
+      "href": "Spells.aspx?ID=1585",
+      "text": "light",
+      "kind": "Spells",
+      "id": 1585
+    },
+    {
+      "href": "Spells.aspx?ID=1689",
+      "text": "stabilize",
+      "kind": "Spells",
+      "id": 1689
+    },
+    {
+      "href": "Spells.aspx?ID=1744",
+      "text": "vitality lash",
+      "kind": "Spells",
+      "id": 1744
+    }
+  ],
+  "body_text": "A follower of the Lady of Graves, you respect the sanctity of both life and death. Ability ScoresPrioritize Wisdom. Charisma helps you spread the word of your faith. SkillsDiplomacy, Medicine, Occultism, Religion Deitycloistered cleric (death domain) DoctrinePharasma (divine font: heal) Higher-Level FeatsPanic the Dead (2nd), Selective Energy (6th) Prepared Spells1st fear, heal spells from divine font, mindlink; Cantrips daze, detect magic, light, stabilize, vitality lash",
+  "body_html": "<i>A follower of the Lady of Graves, you respect the sanctity of both life and death.</i><br><h2 class=\"title\">Ability Scores</h2>Prioritize Wisdom. Charisma helps you spread the word of your faith.<br><h2 class=\"title\">Skills</h2><u><a href=\"Skills.aspx?ID=39\">Diplomacy</a></u>, <u><a href=\"Skills.aspx?ID=42\">Medicine</a></u>, <u><a href=\"Skills.aspx?ID=44\">Occultism</a></u>, <u><a href=\"Skills.aspx?ID=46\">Religion</a></u><br><h2 class=\"title\">Deity</h2><a style=\"text-decoration:underline\" href=\"Doctrines.aspx?ID=4\">cloistered cleric</a> (<a style=\"text-decoration:underline\" href=\"Domains.aspx?ID=70\">death</a> domain)<br><h2 class=\"title\">Doctrine</h2><a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=290\">Pharasma</a> (divine font: <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1554\"><i>heal</i></a>)<br><h2 class=\"title\">Higher-Level Feats</h2><u><a href=\"Feats.aspx?ID=4650\">Panic the Dead</a></u> (2nd), <u><a href=\"Feats.aspx?ID=4665\">Selective Energy</a></u> (6th)<br><h2 class=\"title\">Prepared Spells</h2><b>1st</b> <u><i><a href=\"Spells.aspx?ID=1524\">fear</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1554\"><i>heal</i> spells from divine font</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1603\">mindlink</a></i></u>; <b>Cantrips</b> <u><i><a href=\"Spells.aspx?ID=1482\">daze</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1485\">detect magic</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1585\">light</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1689\">stabilize</a></i></u>, <u><i><a href=\"Spells.aspx?ID=1744\">vitality lash</a></i></u>",
+  "meta_description": "A follower of the Lady of Graves, you respect the sanctity of both life and death.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Classes, Samples, Pharasmin",
+  "level": null,
+  "level_kind": null
+}

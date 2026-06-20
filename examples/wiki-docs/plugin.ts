@@ -3,13 +3,17 @@
 // Designed to work against the wiki fixture server in tests/e2e/fixtures/wiki/ and any
 // real MediaWiki instance that uses the same template.
 //
-// Self-registers on import so the TaskRegistry can find it by name.
+// Plugin contract: exports `register(dispatcher)` which is called by `RipperRun`
+// after importing this module. No side-effect-on-import registration.
 
 import wtf from 'wtf_wikipedia';
 
-import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
-import type { NextFnInterface } from '../../src/types/Pipeline.js';
+import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
+
+import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
+import type { ScrapeState }     from '../../src/state/ScrapeState.js';
+import type { RipperServices }  from '../../src/services/RipperServices.js';
 
 const TEMPLATE_MARKER = '{{RipperoniComponent';
 
@@ -28,34 +32,67 @@ interface RawPageOutput {
   readonly wikitext: string;
 }
 
-TaskRegistry.register('wiki-docs:parse', async (next: NextFnInterface, state: PipelineStateInterface): Promise<void> => {
-  const wikitext = state.page.wikitext ?? '';
-  const title    = state.page.title;
+class WikiDocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
+  public readonly name    = 'wiki-docs:parse-impl';
+  public readonly outputs = ['success'] as const;
 
-  if (wikitext.includes(TEMPLATE_MARKER)) {
-    const doc       = wtf(wikitext);
-    const templates = doc.templates();
+  protected override async executeOne(
+    state:    ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success'>> {
+    const wikitext = state.page.wikitext ?? '';
+    const title    = state.page.title;
 
-    for (const template of templates) {
-      const data = template.json() as Record<string, string>;
-      if (data['template'] === 'ripperonicomponent') {
-        const output: RipperoniComponentOutput = {
-          _type:       'ripperoni_component',
-          name:        data['name']        ?? title,
-          kind:        data['kind']        ?? '',
-          since:       data['since']       ?? '',
-          description: data['description'] ?? '',
-          source:      data['source']      ?? '',
-        };
-        state.output = output as unknown as Record<string, unknown>;
-        await next();
-        return;
+    if (wikitext.includes(TEMPLATE_MARKER)) {
+      const doc       = wtf(wikitext);
+      const templates = doc.templates();
+
+      for (const template of templates) {
+        const data = template.json() as Record<string, string>;
+        if (data['template'] === 'ripperonicomponent') {
+          const output: RipperoniComponentOutput = {
+            _type:       'ripperoni_component',
+            name:        data['name']        ?? title,
+            kind:        data['kind']        ?? '',
+            since:       data['since']       ?? '',
+            description: data['description'] ?? '',
+            source:      data['source']      ?? '',
+          };
+          state.output = output as unknown as Record<string, unknown>;
+          return NodeOutputBuilder.of('success');
+        }
       }
     }
-  }
 
-  // No recognized template — return raw page output
-  const fallback: RawPageOutput = { _type: 'raw_page', title, wikitext };
-  state.output = fallback as unknown as Record<string, unknown>;
-  await next();
-});
+    // No recognized template — return raw page output.
+    const fallback: RawPageOutput = { _type: 'raw_page', title, wikitext };
+    state.output = fallback as unknown as Record<string, unknown>;
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const wikiDocsParseNode = new WikiDocsParseNodeImpl();
+
+/**
+ * Contract-derived wiki-docs parse DAG.
+ *
+ * @category Flows
+ * @since 4.0.0
+ */
+export const wikiDocsParseFlow: DAGType = new DAGBuilder('wiki-docs:parse', '2.0')
+  .entrypoint('wiki-docs:parse-impl')
+  .node('wiki-docs:parse-impl', wikiDocsParseNode, { success: 'wiki-docs:parse:done' })
+  .terminal('wiki-docs:parse:done', { outcome: 'completed' })
+  .build();
+
+// ── Plugin contract ────────────────────────────────────────────────────────────
+
+/**
+ * Explicit plugin registration. Called by `RipperRun` after importing this module.
+ *
+ * @param dispatcher - The `RipperDagonizer` instance for the current scrape run.
+ */
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(wikiDocsParseNode);
+  dispatcher.registerDAG(wikiDocsParseFlow);
+}

@@ -1,0 +1,66 @@
+{
+  "_type": "action",
+  "url": "https://2e.aonprd.com/Actions.aspx?ID=925",
+  "action_id": 925,
+  "name": "Dispelling Bullet",
+  "rarity": "common",
+  "action_cost": "two-actions",
+  "traits": [
+    "Magical",
+    "Spellshot"
+  ],
+  "trait_ids": {
+    "Magical": 103,
+    "Spellshot": 414
+  },
+  "source": {
+    "book": "Guns &amp; Gears (Remastered)",
+    "page": 140,
+    "source_id": 98
+  },
+  "sources": [
+    {
+      "book": "Guns &amp; Gears (Remastered)",
+      "page": 140,
+      "source_id": 98,
+      "raw": "Guns &amp; Gears (Remastered) pg. 140"
+    }
+  ],
+  "legacy": false,
+  "alt_edition_url": null,
+  "trigger": null,
+  "frequency": null,
+  "requirements": null,
+  "cost": null,
+  "effect_html": "You imprint a bullet with a field of disruptive energy built upon your magical signature, disrupting the magic of whatever it hits. Make a <a style=\"text-decoration:underline\" href=\"WeaponGroups.aspx?ID=16\">firearm</a> or <a style=\"text-decoration:underline\" href=\"WeaponGroups.aspx?ID=17\">crossbow</a> Strike against a foe you can see. If you hit, you attempt to <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=3280\">counteract</a> a spell effect active on the target (your choice, or the highest-level effect if you don’t choose). Your counteract rank is equal to half your level (rounded up), and your counteract check modifier is equal to your class DC – 10.",
+  "effect_text": "You imprint a bullet with a field of disruptive energy built upon your magical signature, disrupting the magic of whatever it hits. Make a firearm or crossbow Strike against a foe you can see. If you hit, you attempt to counteract a spell effect active on the target (your choice, or the highest-level effect if you don’t choose). Your counteract rank is equal to half your level (rounded up), and your counteract check modifier is equal to your class DC – 10.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "WeaponGroups.aspx?ID=16",
+      "text": "firearm",
+      "kind": "WeaponGroups",
+      "id": 16
+    },
+    {
+      "href": "WeaponGroups.aspx?ID=17",
+      "text": "crossbow",
+      "kind": "WeaponGroups",
+      "id": 17
+    },
+    {
+      "href": "Rules.aspx?ID=3280",
+      "text": "counteract",
+      "kind": "Rules",
+      "id": 3280
+    }
+  ],
+  "meta_description": "You imprint a bullet with a field of disruptive energy built upon your magical signature, disrupting the magic of whatever it hits. Make a firearm or crossbow Strike against a foe you can see. If you hit, you attempt to counteract a spell effect active on the target (your choice, or the highest-level effect if you don’t choose). Your counteract rank is equal to half your level (rounded up), and your counteract check modifier is equal to your class DC – 10.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Actions, Dispelling Bullet"
+}

@@ -1,8 +1,8 @@
 import Bottleneck from 'bottleneck';
 import { Time } from './time.js';
-import type { RateLimiterConfigInterface } from '../../types/RateLimiter.js';
+import type { RateLimiterConfigType } from '../../types/RateLimiter.js';
 
-export type { RateLimiterConfigInterface };
+export type { RateLimiterConfigType };
 
 /**
  * Throttles concurrent and sequential async calls using Bottleneck with optional jitter.
@@ -19,7 +19,7 @@ export type { RateLimiterConfigInterface };
  *
  * @category HTTP
  * @since 2.0.0
- * @see {@link RetryExecutor}
+ * @see {@link HttpRetryPolicy}
  * @group Core
  */
 export class RateLimiter {
@@ -29,7 +29,7 @@ export class RateLimiter {
   /**
    * @param config - Rate limiter configuration including minimum time and optional jitter.
    */
-  private constructor(config: RateLimiterConfigInterface) {
+  private constructor(config: RateLimiterConfigType) {
     this.#limiter = new Bottleneck({
       minTime:                    config.minTimeMs,
       maxConcurrent:              config.maxConcurrent ?? 1,
@@ -46,7 +46,7 @@ export class RateLimiter {
    * @param config - Rate limiter configuration.
    * @returns A new RateLimiter.
    */
-  public static create(config: RateLimiterConfigInterface): RateLimiter {
+  public static create(config: RateLimiterConfigType): RateLimiter {
     return new RateLimiter(config);
   }
 
@@ -56,12 +56,12 @@ export class RateLimiter {
    * @param fn - Async function to schedule.
    * @returns Promise that resolves with the function's return value.
    */
-  public schedule<T extends Awaited<unknown>>(fn: () => Promise<T>): Promise<T> {
-    if (this.#jitterMs === 0) return this.#limiter.schedule(fn);
+  public schedule<T extends Awaited<unknown>>(task: () => Promise<T>): Promise<T> {
+    if (this.#jitterMs === 0) return this.#limiter.schedule(task);
     const jitter = this.#jitterMs;
     return this.#limiter.schedule(async (): Promise<T> => {
       await Time.sleep(Math.floor(Math.random() * jitter));
-      return fn();
+      return task();
     });
   }
 

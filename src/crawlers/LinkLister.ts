@@ -1,25 +1,37 @@
-import type { BuildListResult } from '../types/Results.js';
-import { load } from 'cheerio';
-import type { Element } from 'domhandler';
-import { Logger } from '../modules/logger/logger.js';
-import { RateLimiter } from '../modules/http/rateLimiter.js';
-import { RetryExecutor } from '../modules/http/retryExecutor.js';
-import { ScraperCache } from '../modules/cache/ScraperCache.js';
-import type { LinkListerConfigInterface } from '../types/LinkListerConfig.js';
+import { Dagonizer }    from '@studnicky/dagonizer';
 
-export type { LinkListerConfigInterface };
+import type { BuildListResult }         from '../types/Results.js';
+import { Logger }                       from '../modules/logger/logger.js';
+import { RateLimiter }                  from '../modules/http/rateLimiter.js';
+import { HttpRetryPolicy }              from '../modules/http/httpRetryPolicy.js';
+import type { LinkListerConfigType } from '../types/LinkListerConfig.js';
 
-const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+import { LinkCrawlState }           from '../state/LinkCrawlState.js';
+import { InitFrontierNode }         from '../nodes/crawl/InitFrontierNode.js';
+import { FetchAndExtractLinksNode } from '../nodes/crawl/FetchAndExtractLinksNode.js';
+import { DedupeAndEnqueueNode }     from '../nodes/crawl/DedupeAndEnqueueNode.js';
+import { CrawlExhaustedNode }       from '../nodes/crawl/CrawlExhaustedNode.js';
+import type { LinkCrawlServices }   from '../nodes/crawl/Services.js';
+import { buildLinkCrawlFlow, LINK_CRAWL_FLOW_NAME } from '../flows/linkCrawlFlow.js';
+
+export type { LinkListerConfigType };
+
 const DEFAULT_RATE_LIMIT_MS = 100;
 
 /**
  * Crawls a site from seed URLs and returns all matching target links, deduplicated and sorted.
  *
  * @remarks
- * Respects domain, target, and delimiter filters configured at construction time.
- * Rate limiting and retry behaviour are delegated to {@link RateLimiter} and {@link RetryExecutor}.
- * The shared {@link ScraperCache} is consulted before each network fetch so URLs already
- * fetched by sibling components (HtmlScraper, MediaWikiScraper) become free hits.
+ * Backed by a Dagonizer DAG (`linkCrawlDAG`). The crawl proceeds level-by-level:
+ * `init-frontier → [fetch-N → dedupe-N]* → exhausted`. Each level is a
+ * `FetchAndExtractLinksNode` that processes all frontier URLs and writes
+ * discovered links into accumulator fields, followed by `DedupeAndEnqueueNode`
+ * which promotes unique URLs to the next level's frontier. The DAG terminates
+ * when the frontier empties, the `maxDepth` limit is reached, or `maxPages`
+ * targets are collected.
+ *
+ * The public `LinkLister.create(cfg)` factory and `buildList(urls)` signatures
+ * are unchanged from prior versions so existing callers require no modification.
  *
  * @example
  * ```ts
@@ -29,36 +41,20 @@ const DEFAULT_RATE_LIMIT_MS = 100;
  * ```
  *
  * @category Crawlers
- * @since 2.0.0
- * @see {@link LinkListerConfigInterface}
+ * @since 3.0.0
+ * @see {@link LinkListerConfigType}
  * @group Core
  */
 export class LinkLister {
-  readonly #domain: RegExp;
-  readonly #target: RegExp;
-  readonly #delimiter: RegExp;
-  readonly #maxPages: number;
-  readonly #visited   = new Set<string>();
-  readonly #collected = new Set<string>();
+  readonly #config: LinkListerConfigType;
   readonly #log: Logger;
-  readonly #limiter: RateLimiter;
-  readonly #retry: RetryExecutor;
-  readonly #headers: Readonly<Record<string, string>>;
-  readonly #cache: ScraperCache | null;
 
   /**
    * @param config - Crawl configuration including domain, target, rate-limit settings, and a shared cache.
    */
-  private constructor(config: LinkListerConfigInterface) {
-    this.#domain    = config.domain;
-    this.#target    = config.target;
-    this.#delimiter = config.delimiter;
-    this.#maxPages  = config.maxPages ?? Number.POSITIVE_INFINITY;
-    this.#log       = Logger.forComponent('LinkLister');
-    this.#limiter   = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#retry     = RetryExecutor.create(config.retry);
-    this.#headers   = config.headers ?? {};
-    this.#cache     = config.cache ?? null;
+  private constructor(config: LinkListerConfigType) {
+    this.#config = config;
+    this.#log    = Logger.forComponent('LinkLister');
   }
 
   /**
@@ -67,7 +63,7 @@ export class LinkLister {
    * @param config - Crawl configuration.
    * @returns A new LinkLister.
    */
-  public static create(config: LinkListerConfigInterface): LinkLister {
+  public static create(config: LinkListerConfigType): LinkLister {
     return new LinkLister(config);
   }
 
@@ -84,93 +80,63 @@ export class LinkLister {
     }
     this.#log.debug('buildList', `Starting crawl from ${startUrls.length.toString()} seed(s)`);
 
-    const all: string[] = [];
-    for (const url of startUrls) {
-      if (this.#capReached()) break;
-      const found = await this.#crawl(url);
-      all.push(...found);
-    }
+    const cfg = this.#config;
 
-    const sorted = Array.from(new Set(all)).sort(collator.compare);
-    this.#log.info('buildList', `Found ${sorted.length.toString()} matching links`);
-    return sorted;
-  }
-
-  #capReached(): boolean {
-    return this.#collected.size >= this.#maxPages;
-  }
-
-  /** Fetches `url` via the shared cache (when configured); falls back to direct network on miss. */
-  async #fetchBody(url: string): Promise<string> {
-    const networkFetch = (): Promise<string> =>
-      this.#limiter.schedule((): Promise<string> =>
-        this.#retry.execute((): Promise<string> =>
-          fetch(url, { headers: this.#headers }).then((r: Response): Promise<string> => r.text())),
-      );
-
-    if (this.#cache === null) return networkFetch();
-
-    const key = ScraperCache.keyFor({ method: 'GET', url, headers: this.#headers });
-    const hit = await this.#cache.read(key);
-    if (hit !== null) {
-      this.#log.debug('fetchBody', 'cache hit', { url, key });
-      return hit.body;
-    }
-
-    const body = await networkFetch();
-    await this.#cache.write(key, body, {
-      url, method: 'GET', fetchedAt: new Date().toISOString(), status: 200,
+    // ── Build services ──────────────────────────────────────────────────────────
+    const limiter = RateLimiter.create({
+      minTimeMs: cfg.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS,
+      jitterMs:  cfg.jitterMs ?? 0,
     });
-    return body;
-  }
+    const policy = HttpRetryPolicy.create(cfg.retry);
 
-  async #crawl(url: string): Promise<string[]> {
-    if (this.#visited.has(url)) return [];
-    if (this.#capReached())     return [];
-    this.#visited.add(url);
-
-    const html = await this.#fetchBody(url);
-
-    const allLinks = LinkLister.extractLinks(html, url)
-      .filter((l: string): boolean => this.#domain.test(l))
-      .filter((l: string): boolean => this.#delimiter.test(l));
-
-    const targets:    string[] = [];
-    const traversals: string[] = [];
-
-    for (const link of allLinks) {
-      if (this.#capReached()) break;
-      if (this.#target.test(link)) {
-        if (this.#collected.has(link)) continue;
-        this.#collected.add(link);
-        targets.push(link);
-      } else if (!this.#visited.has(link)) {
-        traversals.push(link);
-      }
-    }
-
-    this.#log.debug('buildList', `${url} → ${targets.length.toString()} targets, ${traversals.length.toString()} to traverse`);
-
-    const nested: string[][] = [];
-    for (const l of traversals) {
-      if (this.#capReached()) break;
-      nested.push(await this.#crawl(l));
-    }
-    return [...targets, ...nested.flat()];
-  }
-
-  private static extractLinks(html: string, baseUrl: string): string[] {
-    const $ = load(html);
-    const links: string[] = [];
-    $('a[href]').each((_i: number, el: Element): void => {
-      const href = $(el).attr('href');
-      if (href === undefined) return;
-      try {
-        links.push(new URL(href, baseUrl).href);
-      } catch {
-        // relative or invalid — skip
-      }
+    // The services holder/proxy pattern breaks the construction circularity:
+    // dispatcher needs services, but services.dispatcher needs the dispatcher reference.
+    const holder: { current: LinkCrawlServices | null } = { current: null };
+    const dispatcher = new Dagonizer<LinkCrawlState, LinkCrawlServices>({
+      services: new Proxy({} as LinkCrawlServices, {
+        get(_target, prop) {
+          if (holder.current === null) {
+            throw new Error('LinkCrawlServices accessed before initialisation');
+          }
+          return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
+        },
+      }),
     });
-    return links;
+
+    const services: LinkCrawlServices = {
+      log:        this.#log,
+      cache:      cfg.cache ?? null,
+      limiter,
+      policy,
+      dispatcher,
+    };
+    holder.current = services;
+
+    // ── Register nodes ──────────────────────────────────────────────────────────
+    dispatcher.registerNode(InitFrontierNode);
+    dispatcher.registerNode(FetchAndExtractLinksNode);
+    dispatcher.registerNode(DedupeAndEnqueueNode);
+    dispatcher.registerNode(CrawlExhaustedNode);
+
+    // ── Register DAGs ───────────────────────────────────────────────────────────
+    dispatcher.registerDAG(buildLinkCrawlFlow());
+
+    // ── Build initial state ─────────────────────────────────────────────────────
+    const state = new LinkCrawlState();
+    state.seedUrls    = Array.from(startUrls);
+    state.domainRe    = cfg.domain.source;
+    state.targetRe    = cfg.target.source;
+    state.delimiterRe = cfg.delimiter.source;
+    state.maxPages    = cfg.maxPages;
+    state.headers     = { ...(cfg.headers ?? {}) };
+    // maxDepth is not exposed in LinkListerConfigType; leave as undefined
+    // so the DAG runs until frontier-empty or budget-exhausted.
+
+    // ── Dispatch ────────────────────────────────────────────────────────────────
+    await dispatcher.execute(LINK_CRAWL_FLOW_NAME, state);
+
+    const result = state.discovered;
+    this.#log.info('buildList', `Found ${result.length.toString()} matching links`);
+    return result;
   }
 }

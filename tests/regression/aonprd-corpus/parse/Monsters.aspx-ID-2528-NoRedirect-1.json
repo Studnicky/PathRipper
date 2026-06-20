@@ -1,0 +1,360 @@
+{
+  "_type": "monster",
+  "url": "https://2e.aonprd.com/Monsters.aspx?ID=2528&NoRedirect=1",
+  "monster_id": 2528,
+  "name": "Hadi Mob",
+  "level": 15,
+  "rarity": "rare",
+  "size": "Gargantuan",
+  "alignment": "NE",
+  "traits": [
+    "Humanoid",
+    "Ratfolk",
+    "Troop"
+  ],
+  "trait_ids": {
+    "Rare": 137,
+    "NE": 95,
+    "Gargantuan": 445,
+    "Humanoid": 91,
+    "Ratfolk": 234,
+    "Troop": 367
+  },
+  "source": {
+    "book": "Pathfinder #191: The Destiny War",
+    "page": 85,
+    "source_id": 199
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #191: The Destiny War",
+      "page": 85,
+      "source_id": 199,
+      "raw": "Pathfinder #191: The Destiny War pg. 85"
+    }
+  ],
+  "alt_edition_url": null,
+  "pfs": null,
+  "recall_knowledge": {
+    "dc": null,
+    "lores": [],
+    "raw": null
+  },
+  "perception": {
+    "modifier": 25,
+    "senses": [
+      "darkvision"
+    ],
+    "raw": "+25; darkvision"
+  },
+  "languages": {
+    "languages": [
+      "Common",
+      "Daemonic"
+    ],
+    "special": [
+      "ratspeak"
+    ],
+    "raw": "Common, Daemonic; ratspeak"
+  },
+  "skills": [
+    {
+      "name": "Athletics",
+      "modifier": 27,
+      "conditionals": [
+        {
+          "bonus": 29,
+          "context": "to Climb or Swim"
+        }
+      ]
+    },
+    {
+      "name": "Stealth",
+      "modifier": 29,
+      "conditionals": []
+    }
+  ],
+  "abilities": {
+    "str": 6,
+    "dex": 8,
+    "con": 6,
+    "int": 4,
+    "wis": 4,
+    "cha": 2
+  },
+  "items": [],
+  "ac": {
+    "value": 37,
+    "conditional": null,
+    "saves_note": null
+  },
+  "saves": {
+    "fort": 27,
+    "ref": 29,
+    "will": 23
+  },
+  "hp": {
+    "value": 270,
+    "special": "16 squares"
+  },
+  "hardness": null,
+  "immunities": [],
+  "weaknesses": [
+    {
+      "type": "area damage",
+      "value": 15
+    },
+    {
+      "type": "splash damage",
+      "value": 10
+    }
+  ],
+  "resistances": [],
+  "speed": {
+    "walk": 25,
+    "burrow": null,
+    "climb": 10,
+    "fly": null,
+    "swim": null,
+    "special": null
+  },
+  "strikes": [],
+  "spell_lists": [],
+  "top_abilities": [],
+  "defensive_abilities": [
+    {
+      "name": "Troop Defenses",
+      "actions": null,
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b><a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=44\">Troop Defenses</a></b>",
+      "body_text": "Troop Defenses"
+    }
+  ],
+  "offensive_abilities": [
+    {
+      "name": "Form Up",
+      "actions": "one-action",
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b><a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=43\">Form Up</a></b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>",
+      "body_text": "Form Up [one-action]"
+    },
+    {
+      "name": "Gnaw and Chew",
+      "actions": "one-action",
+      "traits": [],
+      "frequency": "once per round",
+      "trigger": null,
+      "requirements": null,
+      "effect": "the hadi mob bites and tears into the flesh of each enemy adjacent to the troop (DC 33 basic Reflex save). The damage depends on the number of actions. 2d8+8 slashing damage plus hadi pestilence 4d8+12 slashing damage plus hadi pestilence 6d8+12 slashing damage plus hadi pestilence",
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Gnaw and Chew</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  to  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>   <b>Frequency</b> once per round; <b>Effect</b> the hadi mob bites and tears into the flesh of each enemy adjacent to the troop (DC 33 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=329\">basic</a> Reflex save). The damage depends on the number of actions.<br>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  2d8+8 slashing damage plus hadi pestilence<br>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  4d8+12 slashing damage plus hadi pestilence<br>  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>  6d8+12 slashing damage plus hadi pestilence",
+      "body_text": "Gnaw and Chew [one-action] to [three-actions] Frequency once per round; Effect the hadi mob bites and tears into the flesh of each enemy adjacent to the troop (DC 33 basic Reflex save). The damage depends on the number of actions. [one-action] 2d8+8 slashing damage plus hadi pestilence [two-actions] 4d8+12 slashing damage plus hadi pestilence [three-actions] 6d8+12 slashing damage plus hadi pestilence"
+    },
+    {
+      "name": "Hadi Pestilence",
+      "actions": null,
+      "traits": [
+        "disease",
+        "divine",
+        "evil",
+        "necromancy"
+      ],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": {
+        "dc": 19,
+        "save": "fort",
+        "basic": false
+      },
+      "stages": [
+        {
+          "stage": 1,
+          "text": "carrier (1 day)"
+        },
+        {
+          "stage": 2,
+          "text": "sickened 1 (1 day)"
+        },
+        {
+          "stage": 3,
+          "text": "drained 1 (1 day)"
+        },
+        {
+          "stage": 4,
+          "text": "drained 2 (1 day)"
+        },
+        {
+          "stage": 5,
+          "text": "drained 3 (1 week)"
+        },
+        {
+          "stage": 6,
+          "text": "transform into a hadi (1 year). For a PC, the best way to model this is to replace ancestry Hit Points, size, Speeds, ability boosts, ability flaws, traits, and special abilities with those of the ratfolk ancestry. The character loses previous ancestry feats, selecting replacements from the ratfolk ancestry."
+        }
+      ],
+      "body_html": "<b>Hadi Pestilence</b> (<a href=\"Traits.aspx?ID=46\"><u>disease</u></a>, <a href=\"Traits.aspx?ID=48\"><u>divine</u></a>, <a href=\"Traits.aspx?ID=64\"><u>evil</u></a>, <a href=\"Traits.aspx?ID=117\"><u>necromancy</u></a>) This daemonic disease turns the victim into a hadi. <b>Saving Throw</b> DC 19 Fortitude; <b>Stage 1</b> carrier (1 day); <b>Stage 2</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=34\">sickened 1</a> (1 day); <b>Stage 3</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=10\">drained 1</a> (1 day); <b>Stage 4</b> drained 2 (1 day); <b>Stage 5</b> drained 3 (1 week); <b>Stage 6</b> transform into a hadi (1 year). For a PC, the best way to model this is to replace ancestry Hit Points, size, Speeds, ability boosts, ability flaws, traits, and special abilities with those of the <a style=\"text-decoration:underline\" href=\"Ancestries.aspx?ID=20\">ratfolk</a> ancestry. The character loses previous ancestry feats, selecting replacements from the <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=234\">ratfolk ancestry</a>.",
+      "body_text": "Hadi Pestilence (disease, divine, evil, necromancy) This daemonic disease turns the victim into a hadi. Saving Throw DC 19 Fortitude; Stage 1 carrier (1 day); Stage 2 sickened 1 (1 day); Stage 3 drained 1 (1 day); Stage 4 drained 2 (1 day); Stage 5 drained 3 (1 week); Stage 6 transform into a hadi (1 year). For a PC, the best way to model this is to replace ancestry Hit Points, size, Speeds, ability boosts, ability flaws, traits, and special abilities with those of the ratfolk ancestry. The character loses previous ancestry feats, selecting replacements from the ratfolk ancestry."
+    },
+    {
+      "name": "Troop Movement",
+      "actions": null,
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Troop Movement</b> Whenever the hadi mob Strides, they first <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=43\">Form Up</a> as a free action to condense into a 20-foot-by-20-foot area (minus any missing squares), then moves up to their Speed. This works just like a Gargantuan creature moving; for instance, if any square of the troop enters difficult terrain, the extra movement cost applies to the whole troop.",
+      "body_text": "Troop Movement Whenever the hadi mob Strides, they first Form Up as a free action to condense into a 20-foot-by-20-foot area (minus any missing squares), then moves up to their Speed. This works just like a Gargantuan creature moving; for instance, if any square of the troop enters difficult terrain, the extra movement cost applies to the whole troop."
+    }
+  ],
+  "variants": [
+    {
+      "kind": "elite",
+      "url": "Monsters.aspx?ID=2528&Elite=true&NoRedirect=1"
+    },
+    {
+      "kind": "normal",
+      "url": "Monsters.aspx?ID=2528&NoRedirect=1"
+    },
+    {
+      "kind": "weak",
+      "url": "Monsters.aspx?ID=2528&Weak=true&NoRedirect=1"
+    },
+    {
+      "kind": "pwl",
+      "url": "Monsters.aspx?ID=2528&PWL=true&NoRedirect=1"
+    }
+  ],
+  "family_links": [
+    {
+      "name": "Daemons",
+      "family_id": 26
+    },
+    {
+      "name": "daemons",
+      "family_id": 26
+    }
+  ],
+  "raw_fields": {
+    "Elite": "|",
+    "Normal": "|",
+    "Proficiency without Level": "Print Stat BlockHadi MobCreature 15Legacy ContentRare NE Gargantuan Humanoid Ratfolk Troop",
+    "Perception": "+25; darkvision",
+    "Languages": "Common, Daemonic; ratspeak",
+    "Skills": "Athletics +27 (+29 to Climb or Swim), Stealth +29",
+    "Str": "+6,",
+    "Dex": "+8,",
+    "Con": "+6,",
+    "Int": "+4,",
+    "Wis": "+4,",
+    "Cha": "+2",
+    "Ratspeak": "A hadi mob can communicate with rodents."
+  },
+  "links": [
+    {
+      "href": "Traits.aspx?ID=150",
+      "text": "splash",
+      "kind": "Traits",
+      "id": 150
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=44",
+      "text": "Troop Defenses",
+      "kind": "MonsterAbilities",
+      "id": 44
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=43",
+      "text": "Form Up",
+      "kind": "MonsterAbilities",
+      "id": 43
+    },
+    {
+      "href": "Rules.aspx?ID=329",
+      "text": "basic",
+      "kind": "Rules",
+      "id": 329
+    },
+    {
+      "href": "Traits.aspx?ID=46",
+      "text": "disease",
+      "kind": "Traits",
+      "id": 46
+    },
+    {
+      "href": "Traits.aspx?ID=48",
+      "text": "divine",
+      "kind": "Traits",
+      "id": 48
+    },
+    {
+      "href": "Traits.aspx?ID=64",
+      "text": "evil",
+      "kind": "Traits",
+      "id": 64
+    },
+    {
+      "href": "Traits.aspx?ID=117",
+      "text": "necromancy",
+      "kind": "Traits",
+      "id": 117
+    },
+    {
+      "href": "Conditions.aspx?ID=34",
+      "text": "sickened 1",
+      "kind": "Conditions",
+      "id": 34
+    },
+    {
+      "href": "Conditions.aspx?ID=10",
+      "text": "drained 1",
+      "kind": "Conditions",
+      "id": 10
+    },
+    {
+      "href": "Ancestries.aspx?ID=20",
+      "text": "ratfolk",
+      "kind": "Ancestries",
+      "id": 20
+    },
+    {
+      "href": "Feats.aspx?Traits=234",
+      "text": "ratfolk ancestry",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=26",
+      "text": "daemons",
+      "kind": "MonsterFamilies",
+      "id": 26
+    },
+    {
+      "href": "Monsters.aspx?ID=2527",
+      "text": "derhiis",
+      "kind": "Monsters",
+      "id": 2527
+    }
+  ],
+  "body_text": "AC 37; Fort +27, Ref +29, Will +23 HP 270 (16 squares); Thresholds Thresholds 180 (12 squares), 90 (8 squares); Weaknesses area damage 15, splash damage 10 Troop Defenses Speed 25 feet, climb 10 feet Form Up [one-action] Gnaw and Chew [one-action] to [three-actions] Frequency once per round; Effect the hadi mob bites and tears into the flesh of each enemy adjacent to the troop (DC 33 basic Reflex save). The damage depends on the number of actions. [one-action] 2d8+8 slashing damage plus hadi pestilence [two-actions] 4d8+12 slashing damage plus hadi pestilence [three-actions] 6d8+12 slashing damage plus hadi pestilenceHadi Pestilence (disease, divine, evil, necromancy) This daemonic disease turns the victim into a hadi. Saving Throw DC 19 Fortitude; Stage 1 carrier (1 day); Stage 2 sickened 1 (1 day); Stage 3 drained 1 (1 day); Stage 4 drained 2 (1 day); Stage 5 drained 3 (1 week); Stage 6 transform into a hadi (1 year). For a PC, the best way to model this is to replace ancestry Hit Points, size, Speeds, ability boosts, ability flaws, traits, and special abilities with those of the ratfolk ancestry. The character loses previous ancestry feats, selecting replacements from the ratfolk ancestry.Troop Movement Whenever the hadi mob Strides, they first Form Up as a free action to condense into a 20-foot-by-20-foot area (minus any missing squares), then moves up to their Speed. This works just like a Gargantuan creature moving; for instance, if any square of the troop enters difficult terrain, the extra movement cost applies to the whole troop. Hadi EvilAlthough the original hadis created by daemons in ages past were ascended from rats infused with fiendish qualities that tempered their sapience with an engineered evil, over the generations the hadi people have formed their own society. They cling to evil ways largely out of tradition or fear, but there are an increasing number of hadis who admire Kho's derhiis and seek their own paths. Others, particularly those who have traveled far from Kho, have come to understand the plight of their folk under the weight of a fiendish past. Non-evil hadi thus exist, but they are viewed by those in positions of power in Kho as dangers to the social order. These hadi do not carry the pestilence their more sinister kin do and many actively work to suppress the spread of illnesses.",
+  "body_html": "<b>AC</b> 37; <b>Fort</b> +27, <b>Ref</b> +29, <b>Will</b> +23<br><b>HP</b> 270 (16 squares); <b>Thresholds</b> <b>Thresholds</b> 180 (12 squares), 90 (8 squares); <b>Weaknesses</b> area damage 15, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=150\">splash</a> damage 10<br><span class=\"hanging-indent\"><b><a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=44\">Troop Defenses</a></b> </span><hr><b>Speed</b> 25 feet, climb 10 feet<br><span class=\"hanging-indent\"><b><a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=43\">Form Up</a></b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>   </span><span class=\"hanging-indent\"><b>Gnaw and Chew</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  to  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>   <b>Frequency</b> once per round; <b>Effect</b> the hadi mob bites and tears into the flesh of each enemy adjacent to the troop (DC 33 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=329\">basic</a> Reflex save). The damage depends on the number of actions.<br>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  2d8+8 slashing damage plus hadi pestilence<br>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  4d8+12 slashing damage plus hadi pestilence<br>  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>  6d8+12 slashing damage plus hadi pestilence</span><span class=\"hanging-indent\"><b>Hadi Pestilence</b> (<a href=\"Traits.aspx?ID=46\"><u>disease</u></a>, <a href=\"Traits.aspx?ID=48\"><u>divine</u></a>, <a href=\"Traits.aspx?ID=64\"><u>evil</u></a>, <a href=\"Traits.aspx?ID=117\"><u>necromancy</u></a>) This daemonic disease turns the victim into a hadi. <b>Saving Throw</b> DC 19 Fortitude; <b>Stage 1</b> carrier (1 day); <b>Stage 2</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=34\">sickened 1</a> (1 day); <b>Stage 3</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=10\">drained 1</a> (1 day); <b>Stage 4</b> drained 2 (1 day); <b>Stage 5</b> drained 3 (1 week); <b>Stage 6</b> transform into a hadi (1 year). For a PC, the best way to model this is to replace ancestry Hit Points, size, Speeds, ability boosts, ability flaws, traits, and special abilities with those of the <a style=\"text-decoration:underline\" href=\"Ancestries.aspx?ID=20\">ratfolk</a> ancestry. The character loses previous ancestry feats, selecting replacements from the <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=234\">ratfolk ancestry</a>.</span><span class=\"hanging-indent\"><b>Troop Movement</b> Whenever the hadi mob Strides, they first <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=43\">Form Up</a> as a free action to condense into a 20-foot-by-20-foot area (minus any missing squares), then moves up to their Speed. This works just like a Gargantuan creature moving; for instance, if any square of the troop enters difficult terrain, the extra movement cost applies to the whole troop.</span><h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Hadi Evil</h3>Although the original hadis created by <a style=\"text-decoration:underline\" href=\"MonsterFamilies.aspx?ID=26\">daemons</a> in ages past were ascended from rats infused with fiendish qualities that tempered their sapience with an engineered evil, over the generations the hadi people have formed their own society. They cling to evil ways largely out of tradition or fear, but there are an increasing number of hadis who admire Kho's <a style=\"text-decoration:underline\" href=\"Monsters.aspx?ID=2527\">derhiis</a> and seek their own paths. Others, particularly those who have traveled far from Kho, have come to understand the plight of their folk under the weight of a fiendish past. Non-evil hadi thus exist, but they are viewed by those in positions of power in Kho as dangers to the social order. These hadi do not carry the pestilence their more sinister kin do and many actively work to suppress the spread of illnesses.",
+  "meta_description": "Daemons , including leukodaemons , once ruled over part of the fallen city of Kho. While they did, they created the first hadis. Hadis look more fiendish and sinister than typical ratfolk . In hadi society, those who foster and cultivate blights and sickness are alchemists known as “tafens”. Others, known as “rajwans,” focus their training on brutal combat and barbarian rages. Individually, most hadis are no match for a high level group, but when confronted in their lair, they can gather together into a dangerous mob.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Monsters, Hadi Mob"
+}

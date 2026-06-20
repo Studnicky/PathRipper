@@ -1,0 +1,175 @@
+{
+  "_type": "ancestry",
+  "url": "https://2e.aonprd.com/Ancestries.aspx?ID=6",
+  "entity_id": 6,
+  "name": "Human",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Ancestries.aspx?ID=6&NoRedirect=1",
+  "traits": [
+    "Human",
+    "Humanoid"
+  ],
+  "trait_ids": {
+    "Human": 627,
+    "Humanoid": 628
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 63,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 63,
+      "source_id": 216,
+      "raw": "Player Core pg. 63"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Strive to achieve greatness, either in your own right or on behalf of a cause.</li><li>Seek to understand your purpose in the world.</li><li>Cherish your relationships with family and friends.</li></ul>",
+      "body_text": "Strive to achieve greatness, either in your own right or on behalf of a cause.Seek to understand your purpose in the world.Cherish your relationships with family and friends.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Respect your flexibility, your adaptability, and—in most cases—your open-mindedness.</li><li>Distrust your intentions, fearing you seek only power or wealth.</li><li>Aren't sure what to expect from you and are hesitant to assume your intentions.</li></ul>",
+      "body_text": "Respect your flexibility, your adaptability, and—in most cases—your open-mindedness.Distrust your intentions, fearing you seek only power or wealth.Aren't sure what to expect from you and are hesitant to assume your intentions.",
+      "links": []
+    },
+    {
+      "heading": "Physical Description",
+      "level": 2,
+      "body_html": "Humans' physical characteristics are as varied as the world's climes. Humans have a wide variety of skin and hair colors, body types, and facial features. Generally speaking, their skin has a darker hue the closer to the equator they or their ancestors lived.<br><br> Humans reach physical adulthood around the age of 15, though mental maturity occurs a few years later. A typical human can live to be around 90 years old. Humans have exceptionally mutable physical characteristics compared to other ancestries, with greater variance in height, weight, and other physical parameters.<br>",
+      "body_text": "Humans' physical characteristics are as varied as the world's climes. Humans have a wide variety of skin and hair colors, body types, and facial features. Generally speaking, their skin has a darker hue the closer to the equator they or their ancestors lived. Humans reach physical adulthood around the age of 15, though mental maturity occurs a few years later. A typical human can live to be around 90 years old. Humans have exceptionally mutable physical characteristics compared to other ancestries, with greater variance in height, weight, and other physical parameters.",
+      "links": []
+    },
+    {
+      "heading": "Society",
+      "level": 2,
+      "body_html": "Human variety also manifests in terms of their governments, attitudes, and social norms. Though the oldest of human cultures can trace their shared histories thousands of years into the past, when compared to the societies of the elves or dwarves, human civilizations seem in a state of constant flux as empires fragment and new kingdoms subsume the old.<br><br> <b>Popular Edicts</b> explore the world, strive for greatness, devote yourself to a moral outlook<br> <b>Popular Anathema</b> waste what little time you have<br>",
+      "body_text": "Human variety also manifests in terms of their governments, attitudes, and social norms. Though the oldest of human cultures can trace their shared histories thousands of years into the past, when compared to the societies of the elves or dwarves, human civilizations seem in a state of constant flux as empires fragment and new kingdoms subsume the old. Popular Edicts explore the world, strive for greatness, devote yourself to a moral outlook Popular Anathema waste what little time you have",
+      "links": []
+    },
+    {
+      "heading": "Names",
+      "level": 2,
+      "body_html": "Unlike many ancestral cultures, which generally cleave to specific traditions and shared histories, humanity's diversity has resulted in a near-infinite set of names. The humans of northern tribes have different names than  those dwelling in southern nation-states. Humans throughout much of the world speak Common (though some continents on Golarion have their own regional common languages), yet their names are as varied as their beliefs and appearances.",
+      "body_text": "Unlike many ancestral cultures, which generally cleave to specific traditions and shared histories, humanity's diversity has resulted in a near-infinite set of names. The humans of northern tribes have different names than those dwelling in southern nation-states. Humans throughout much of the world speak Common (though some continents on Golarion have their own regional common languages), yet their names are as varied as their beliefs and appearances.",
+      "links": []
+    },
+    {
+      "heading": "Hit Points",
+      "level": 2,
+      "body_html": "8<br>",
+      "body_text": "8",
+      "links": []
+    },
+    {
+      "heading": "Size",
+      "level": 2,
+      "body_html": "Medium<br>",
+      "body_text": "Medium",
+      "links": []
+    },
+    {
+      "heading": "Speed",
+      "level": 2,
+      "body_html": "25 feet<br>",
+      "body_text": "25 feet",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "Two free ability boosts<br>",
+      "body_text": "Two free ability boosts",
+      "links": []
+    },
+    {
+      "heading": "Languages",
+      "level": 2,
+      "body_html": "<a href=\"Languages.aspx?ID=1\">Common</a><br>Additional languages equal to 1 + your Intelligence modifier (if it's positive). Choose from the list of common languages and any other languages to which you have access (such as the languages prevalent in your region).",
+      "body_text": "Common Additional languages equal to 1 + your Intelligence modifier (if it's positive). Choose from the list of common languages and any other languages to which you have access (such as the languages prevalent in your region).",
+      "links": [
+        {
+          "href": "Languages.aspx?ID=1",
+          "text": "Common",
+          "kind": "Languages",
+          "id": 1
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Ancestries.aspx?ID=6&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Ancestries",
+      "id": 6
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Ancestries.aspx?ID=64",
+      "text": "Human",
+      "kind": "Ancestries",
+      "id": 64
+    },
+    {
+      "href": "/Traits.aspx?ID=627",
+      "text": "Human",
+      "kind": "Traits",
+      "id": 627
+    },
+    {
+      "href": "/Traits.aspx?ID=628",
+      "text": "Humanoid",
+      "kind": "Traits",
+      "id": 628
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 63",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Languages.aspx?ID=1",
+      "text": "Common",
+      "kind": "Languages",
+      "id": 1
+    }
+  ],
+  "body_text": "Humans are diverse and adaptable people with wide potential and deep ambitions. As unpredictable and varied as any of Golarion's peoples, humans have exceptional drive and the capacity to endure and expand. Though many civilizations thrived before humanity rose to prominence, humans have built some of the greatest and the most terrible societies throughout the course of history, and today they are the most populous people in the realms around the Inner Sea. Humans' ambition, versatility, and exceptional potential have led to their status as the world's predominant ancestry. Their empires and nations are vast, sprawling things, and their citizens carve names for themselves with the strength of their sword arms and the power of their spells. Humanity is diverse and tumultuous, running the gamut from nomadic to imperial, sinister to saintly. Many of them venture forth to explore, to map the expanse of the multiverse, to search for long-lost treasure, or to lead mighty armies to conquer their neighbors—for no better reason than because they can. If you want a character who can be just about anything, you should play a human.You Might...Strive to achieve greatness, either in your own right or on behalf of a cause.Seek to understand your purpose in the world.Cherish your relationships with family and friends.Others Probably...Respect your flexibility, your adaptability, and—in most cases—your open-mindedness.Distrust your intentions, fearing you seek only power or wealth.Aren't sure what to expect from you and are hesitant to assume your intentions.Physical DescriptionHumans' physical characteristics are as varied as the world's climes. Humans have a wide variety of skin and hair colors, body types, and facial features. Generally speaking, their skin has a darker hue the closer to the equator they or their ancestors lived. Humans reach physical adulthood around the age of 15, though mental maturity occurs a few years later. A typical human can live to be around 90 years old. Humans have exceptionally mutable physical characteristics compared to other ancestries, with greater variance in height, weight, and other physical parameters. SocietyHuman variety also manifests in terms of their governments, attitudes, and social norms. Though the oldest of human cultures can trace their shared histories thousands of years into the past, when compared to the societies of the elves or dwarves, human civilizations seem in a state of constant flux as empires fragment and new kingdoms subsume the old. Popular Edicts explore the world, strive for greatness, devote yourself to a moral outlook Popular Anathema waste what little time you have NamesUnlike many ancestral cultures, which generally cleave to specific traditions and shared histories, humanity's diversity has resulted in a near-infinite set of names. The humans of northern tribes have different names than those dwelling in southern nation-states. Humans throughout much of the world speak Common (though some continents on Golarion have their own regional common languages), yet their names are as varied as their beliefs and appearances.EthnicitiesA variety of human ethnic groups populates the continents within Golarion's Inner Sea region and in the lands beyond it. Human characters can be of any ethnicity, regardless of what lands they call home. Some examples of Golarion's ethnicities are presented below. Characters of human ethnicities in the Inner Sea region speak Common (also known as Taldane), and some ethnicities grant access to an uncommon regional language.Garundi span the nations along the southern shores of the Inner Sea.Keleshites trace their origins to the Keleshite Empire in the eastern deserts.Kellids live among the mountains and steppes of northern Avistan.Mwangi are spread across the vast continent of Garund.Shoanti make their homes in the harsh badlands of the Storval Plateau.Taldans occupy much of Avistan thanks to a fallen empire.Tians originally come from the far-off continent of Tian Xia.Ulfens reside in coastal towns of western Avistan.Varisians historically favored a nomadic life of roving caravans.Human MechanicsHit Points8 SizeMedium Speed25 feet Attribute BoostsTwo free ability boosts LanguagesCommon Additional languages equal to 1 + your Intelligence modifier (if it's positive). Choose from the list of common languages and any other languages to which you have access (such as the languages prevalent in your region).",
+  "body_html": "<i>Humans are diverse and adaptable people with wide potential and deep ambitions.</i><br><br>As unpredictable and varied as any of Golarion's peoples, humans have exceptional drive and the capacity to endure and expand. Though many civilizations thrived before humanity rose to prominence, humans have built some of the greatest and the most terrible societies throughout the course of history, and today they are the most populous people in the realms around the Inner Sea.<br><br> Humans' ambition, versatility, and exceptional potential have led to their status as the world's predominant ancestry. Their empires and nations are vast, sprawling things, and their citizens carve names for themselves with the strength of their sword arms and the power of their spells. Humanity is diverse and tumultuous, running the gamut from nomadic to imperial, sinister to saintly. Many of them venture forth to explore, to map the expanse of the multiverse, to search for long-lost treasure, or to lead mighty armies to conquer their neighbors—for no better reason than because they can.<br><br> If you want a character who can be just about anything, you should play a human.<h2 class=\"title\">You Might...</h2><ul><li>Strive to achieve greatness, either in your own right or on behalf of a cause.</li><li>Seek to understand your purpose in the world.</li><li>Cherish your relationships with family and friends.</li></ul><h2 class=\"title\">Others Probably...</h2><ul><li>Respect your flexibility, your adaptability, and—in most cases—your open-mindedness.</li><li>Distrust your intentions, fearing you seek only power or wealth.</li><li>Aren't sure what to expect from you and are hesitant to assume your intentions.</li></ul><h2 class=\"title\">Physical Description</h2>Humans' physical characteristics are as varied as the world's climes. Humans have a wide variety of skin and hair colors, body types, and facial features. Generally speaking, their skin has a darker hue the closer to the equator they or their ancestors lived.<br><br> Humans reach physical adulthood around the age of 15, though mental maturity occurs a few years later. A typical human can live to be around 90 years old. Humans have exceptionally mutable physical characteristics compared to other ancestries, with greater variance in height, weight, and other physical parameters.<br><h2 class=\"title\">Society</h2>Human variety also manifests in terms of their governments, attitudes, and social norms. Though the oldest of human cultures can trace their shared histories thousands of years into the past, when compared to the societies of the elves or dwarves, human civilizations seem in a state of constant flux as empires fragment and new kingdoms subsume the old.<br><br> <b>Popular Edicts</b> explore the world, strive for greatness, devote yourself to a moral outlook<br> <b>Popular Anathema</b> waste what little time you have<br><h2 class=\"title\">Names</h2>Unlike many ancestral cultures, which generally cleave to specific traditions and shared histories, humanity's diversity has resulted in a near-infinite set of names. The humans of northern tribes have different names than  those dwelling in southern nation-states. Humans throughout much of the world speak Common (though some continents on Golarion have their own regional common languages), yet their names are as varied as their beliefs and appearances.<h2 class=\"header\">Ethnicities</h2>A variety of human ethnic groups populates the continents within Golarion's Inner Sea region and in the lands beyond it. Human characters can be of any ethnicity, regardless of what lands they call home. Some examples of Golarion's ethnicities are presented below. Characters of human ethnicities in the Inner Sea region speak <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=1\">Common</a> (also known as Taldane), and some ethnicities grant access to an uncommon regional language.<ul><li><b>Garundi</b> span the nations along the southern shores of the Inner Sea.</li><li><b>Keleshites</b> trace their origins to the Keleshite Empire in the eastern deserts.</li><li><b>Kellids</b> live among the mountains and steppes of northern Avistan.</li><li><b>Mwangi</b> are spread across the vast continent of Garund.</li><li><b>Shoanti</b> make their homes in the harsh badlands of the Storval Plateau.</li><li><b>Taldans</b> occupy much of Avistan thanks to a fallen empire.</li><li><b>Tians</b> originally come from the far-off continent of Tian Xia.</li><li><b>Ulfens</b> reside in coastal towns of western Avistan.</li><li><b>Varisians</b> historically favored a nomadic life of roving caravans.</li></ul><h1 class=\"title\">Human Mechanics</h1><h2 class=\"title\">Hit Points</h2>8<br><h2 class=\"title\">Size</h2>Medium<br><h2 class=\"title\">Speed</h2>25 feet<br><h2 class=\"title\">Attribute Boosts</h2>Two free ability boosts<br><h2 class=\"title\">Languages</h2><a href=\"Languages.aspx?ID=1\">Common</a><br>Additional languages equal to 1 + your Intelligence modifier (if it's positive). Choose from the list of common languages and any other languages to which you have access (such as the languages prevalent in your region).",
+  "meta_description": "As unpredictable and varied as any of Golarion's peoples, humans have exceptional drive and the capacity to endure and expand. Though many civilizations thrived before humanity rose to prominence, humans have built some of the greatest and the most terrible societies throughout the course of history, and today they are the most populous people in the realms around the Inner Sea. Humans' ambition, versatility, and exceptional potential have led to their status as the world's predominant ancestry. Their empires and nations are vast, sprawling things, and their citizens carve names for themselves with the strength of their sword arms and the power of their spells. Humanity is diverse and tumultuous, running the gamut from nomadic to imperial, sinister to saintly. Many of them venture forth to explore, to map the expanse of the multiverse, to search for long-lost treasure, or to lead mighty armies to conquer their neighbors—for no better reason than because they can. If you want a character who can be just about anything, you should play a human.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Ancestries, Ancestry, Human",
+  "mechanics": {
+    "hit_points": null,
+    "size": null,
+    "speed": null,
+    "attribute_boosts": [],
+    "attribute_flaws": [],
+    "languages": {
+      "fixed": [],
+      "bonus_choice": [],
+      "raw": null
+    },
+    "vision": null,
+    "granted": []
+  },
+  "popular_edicts": "explore the world, strive for greatness, devote yourself to a moral outlook",
+  "popular_anathema": "waste what little time you have"
+}

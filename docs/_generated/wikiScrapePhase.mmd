@@ -1,0 +1,9 @@
+flowchart LR
+  %% wikiScrapePhase (v2.0)
+  scrape-titles
+  scrape-titles{{scrape-titles}}
+  scrape-titles -->|all-success| END
+  scrape-titles -->|partial| END
+  scrape-titles -->|all-error| END
+  scrape-titles -->|empty| END
+  END([end])

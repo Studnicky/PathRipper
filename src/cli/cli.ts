@@ -2,13 +2,25 @@ import { Command } from 'commander';
 import { readFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { resolve, dirname, join } from 'node:path';
+import { join } from 'node:path';
 
-import { RipperConfig } from '../config/RipperConfig.js';
-import { LinkLister } from '../crawlers/LinkLister.js';
-import { Logger } from '../modules/logger/logger.js';
-import { ScrapeOrchestrator } from '../orchestrators/ScrapeOrchestrator.js';
-import { ScraperCache } from '../modules/cache/ScraperCache.js';
+import { Dagonizer }        from '@studnicky/dagonizer';
+import { Logger }           from '../modules/logger/logger.js';
+import { LinkLister }       from '../crawlers/LinkLister.js';
+import { ScraperCache }     from '../modules/cache/ScraperCache.js';
+import { CliState }         from '../state/CliState.js';
+import {
+  LoadConfigNode,
+  ResolveTargetNode,
+  DispatchHtmlScrapeNode,
+  DispatchWikiScrapeNode,
+  WriteManifestNode,
+  ExitNode,
+} from '../nodes/cli/index.js';
+import type { CliServices }  from '../nodes/cli/index.js';
+import { cliScrapeFlow, CLI_SCRAPE_FLOW } from '../flows/cliScrapeFlow.js';
+
+const CLI_SCRAPE_DAG = CLI_SCRAPE_FLOW;
 
 const pkg = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf-8')) as { version: string };
 
@@ -16,7 +28,38 @@ const DEFAULT_CONFIG_PATH   = './ripperoni.config.json';
 const DEFAULT_RATE_LIMIT_MS = '200';
 const DEFAULT_JITTER_MS     = '0';
 const DECIMAL_RADIX         = 10;
-const RATE_OPTION_PATTERN   = '0..';
+
+// ── Module-level dispatcher (registered once at startup) ──────────────────────
+
+const log = Logger.forComponent('cli');
+
+const _holder: { current: CliServices | null } = { current: null };
+const _dispatcher = new Dagonizer<CliState, CliServices>({
+  services: new Proxy({} as CliServices, {
+    get(_target, prop) {
+      if (_holder.current === null) {
+        throw new Error('CliServices accessed before initialisation');
+      }
+      return (_holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
+    },
+  }),
+});
+
+_dispatcher.registerNode(LoadConfigNode);
+_dispatcher.registerNode(ResolveTargetNode);
+_dispatcher.registerNode(DispatchHtmlScrapeNode);
+_dispatcher.registerNode(DispatchWikiScrapeNode);
+_dispatcher.registerNode(WriteManifestNode);
+_dispatcher.registerNode(ExitNode);
+_dispatcher.registerDAG(cliScrapeFlow);
+
+/** Initialises the services bag and returns the ready dispatcher. */
+const initServices = (): Dagonizer<CliState, CliServices> => {
+  _holder.current = { log };
+  return _dispatcher;
+};
+
+// ── Commander program ─────────────────────────────────────────────────────────
 
 const program = new Command();
 
@@ -29,61 +72,52 @@ program
   .command('scrape')
   .description('Scrape a configured target — detects html or mediawiki mode from config')
   .requiredOption('--target <name>', 'Target name from config (checked in targets then mediawiki)')
-  .option('--paths <paths...>', 'Paths to scrape (html mode)')
+  .option('--paths <paths...>', 'Paths to scrape (html mode); bounds the scrape — when present, the crawl phase is skipped')
   .option('--category <name>', 'Category to scrape (mediawiki mode)')
   .option('--resume-failures', 'Re-scrape pages listed in the failures.json from the last run')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
   .action(async (opts: { target: string; paths?: string[]; category?: string; resumeFailures?: boolean; config: string; out?: string }): Promise<void> => {
-    const config    = await RipperConfig.load(opts.config);
-    const configDir = dirname(resolve(opts.config));
-    const outDir    = opts.out ?? config.output.basePath;
-    const log       = Logger.forComponent('cli');
+    const dispatcher = initServices();
+    const ctrl = new AbortController();
+    process.on('SIGINT', () => { ctrl.abort(); });
 
-    const htmlTarget = config.targets?.[opts.target];
-    const wikiTarget = config.mediawiki?.[opts.target];
+    const state = new CliState();
+    state.command    = 'scrape';
+    state.configPath = opts.config;
+    state.targetId   = opts.target;
+    state.outDir     = opts.out ?? '';
+    state.options    = {
+      paths:          opts.paths,
+      category:       opts.category,
+      resumeFailures: opts.resumeFailures,
+    };
 
-    if (htmlTarget !== undefined) {
-      const pipeline = (htmlTarget as Record<string, unknown>)['pipeline'];
-      const hasCrawler = Array.isArray(pipeline) && (pipeline as string[]).includes('crawl:list-targets');
-      if (!opts.paths?.length && !hasCrawler) { log.error('scrape', '--paths required for html targets (or add crawl:list-targets to the pipeline)'); process.exit(1); }
-      await ScrapeOrchestrator.scrapeHtml({ target: opts.target, paths: opts.paths ?? [], outDir, configDir, config });
-      return;
-    }
-    if (wikiTarget !== undefined) {
-      await ScrapeOrchestrator.scrapeWiki({
-        target:         opts.target,
-        category:       opts.category,
-        outDir,
-        configDir,
-        config,
-        resumeFailures: opts.resumeFailures,
-      });
-      return;
-    }
-    log.error('scrape', `Unknown target: ${opts.target}`);
-    process.exit(1);
+    await dispatcher.execute(CLI_SCRAPE_DAG, state, { signal: ctrl.signal });
+    process.exit(state.exitCode);
   });
 
 program
   .command('scrape-html')
   .description('Scrape HTML pages from a configured target')
   .requiredOption('--target <name>', 'Target name from config')
-  .requiredOption('--paths <paths...>', 'Paths to scrape (relative to baseUrl)')
+  .requiredOption('--paths <paths...>', 'Paths to scrape (relative to baseUrl); bounds the scrape — the crawl phase is skipped')
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
   .action(async (opts: { target: string; paths: string[]; config: string; out?: string }): Promise<void> => {
-    const config    = await RipperConfig.load(opts.config);
-    const configDir = dirname(resolve(opts.config));
-    const outDir    = opts.out ?? config.output.basePath;
-    const log       = Logger.forComponent('cli');
+    const dispatcher = initServices();
+    const ctrl = new AbortController();
+    process.on('SIGINT', () => { ctrl.abort(); });
 
-    if (config.targets?.[opts.target] === undefined) {
-      log.error('scrape-html', `Unknown target: ${opts.target}`);
-      process.exit(1);
-    }
+    const state = new CliState();
+    state.command    = 'scrape-html';
+    state.configPath = opts.config;
+    state.targetId   = opts.target;
+    state.outDir     = opts.out ?? '';
+    state.options    = { paths: opts.paths };
 
-    await ScrapeOrchestrator.scrapeHtml({ target: opts.target, paths: opts.paths, outDir, configDir, config });
+    await dispatcher.execute(CLI_SCRAPE_DAG, state, { signal: ctrl.signal });
+    process.exit(state.exitCode);
   });
 
 program
@@ -95,24 +129,22 @@ program
   .option('--config <path>', 'Config file path', DEFAULT_CONFIG_PATH)
   .option('--out <dir>', 'Output directory override')
   .action(async (opts: { target: string; category?: string; resumeFailures?: boolean; config: string; out?: string }): Promise<void> => {
-    const config    = await RipperConfig.load(opts.config);
-    const configDir = dirname(resolve(opts.config));
-    const outDir    = opts.out ?? config.output.basePath;
-    const log       = Logger.forComponent('cli');
+    const dispatcher = initServices();
+    const ctrl = new AbortController();
+    process.on('SIGINT', () => { ctrl.abort(); });
 
-    if (config.mediawiki?.[opts.target] === undefined) {
-      log.error('scrape-wiki', `Unknown mediawiki target: ${opts.target}`);
-      process.exit(1);
-    }
-
-    await ScrapeOrchestrator.scrapeWiki({
-      target:         opts.target,
+    const state = new CliState();
+    state.command    = 'scrape-wiki';
+    state.configPath = opts.config;
+    state.targetId   = opts.target;
+    state.outDir     = opts.out ?? '';
+    state.options    = {
       category:       opts.category,
-      outDir,
-      configDir,
-      config,
       resumeFailures: opts.resumeFailures,
-    });
+    };
+
+    await dispatcher.execute(CLI_SCRAPE_DAG, state, { signal: ctrl.signal });
+    process.exit(state.exitCode);
   });
 
 program
@@ -123,10 +155,9 @@ program
   .requiredOption('--target <regex>', 'Target URL pattern to collect')
   .requiredOption('--delimiter <regex>', 'Traversal pattern (pages to follow)')
   .option('--rate <ms>',   'Rate limit in ms between requests', DEFAULT_RATE_LIMIT_MS)
-  .option('--jitter <ms>', `Random jitter (${RATE_OPTION_PATTERN}N ms) added to each request`, DEFAULT_JITTER_MS)
+  .option('--jitter <ms>', `Random jitter (0..N ms) added to each request`, DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
   .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }): Promise<void> => {
-    const log   = Logger.forComponent('cli');
     const max   = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
     // Ad-hoc CLI crawl: ephemeral cache in tmp; not shared with any scraper run.
     const cacheDir = mkdtempSync(join(tmpdir(), 'ripperoni-crawl-'));

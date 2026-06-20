@@ -6,13 +6,21 @@ Three independent concerns (**pipeline**, **HTTP machinery**, and **scrapers**) 
 
 ```mermaid
 graph TD
-    CLI[cli/cli.ts] --> Pipeline
+    CLI[cli/cli.ts] --> RipperRun
     CLI --> HtmlScraper
     CLI --> MediaWikiScraper
     CLI --> LinkLister
     CLI --> RipperConfig
 
-    Pipeline[pipeline/Pipeline] --> Logger
+    RipperRun[run/runHtml + run/runWiki] --> RipperDagonizer
+    RipperRun --> ScrapeState
+    RipperRun --> BuiltinNodes
+    RipperRun --> PluginRegister["plugin.register(dispatcher)"]
+
+    RipperDagonizer[dispatcher/RipperDagonizer] --> Dagonizer
+    Dagonizer["@noocodex/dagonizer"] --> ScrapeState
+
+    BuiltinNodes[nodes/*] --> ScrapeState
 
     HtmlScraper[scrapers/HtmlScraper] --> RateLimiter
     HtmlScraper --> RetryExecutor
@@ -32,66 +40,199 @@ graph TD
 
 <section data-component="pipeline">
 
-## Pipeline pattern
+## DAG dispatch
 
-<p class="summary">Typed async middleware chain where every task receives (next, state) and advances the queue by calling next().</p>
+<p class="summary">Directed acyclic graph orchestration powered by @noocodex/dagonizer — every node declares named output ports, fan-out handles concurrency, and state flows checkpoint-ready through the run.</p>
 
-Typed async middleware chain where every task receives `(next, state)` and advances the queue by calling `next()`.
+Ripperoni uses `@noocodex/dagonizer` for all orchestration. A scrape run decomposes into four nested DAG levels: an **outer flow** that composes three independent **phase** DAGs (discovery, scrape, retry) via `sub-dag` placements, and a **per-page** DAG that materialises the user's `pipeline: [...]` config as first-class nodes. Phases are independently dispatchable for tests.
 
-The core architecture is a typed middleware chain inherited from PathRipper's `Transformer` class, rewritten in TypeScript. Every task receives `(next, state)`. Calling `next()` advances to the next task; not calling it terminates the chain.
+**Node contract:** Every built-in task (`html:fetch`, `json:write`, etc.) and every user plugin is a `NodeInterface<ScrapeState, TOutputs, RipperServices>`. Nodes declare named output ports (e.g. `success | error | cached`), mutate `ScrapeState`, and return `{ output: '<port>' }`. The dispatcher routes to the next placement based on the port.
 
-Problem being solved: Ripperoni scrapes multiple pages from multiple sources with domain-specific extraction logic per site. The pipeline decouples HTTP machinery from parsing logic. A task either advances the queue or terminates early to skip remaining tasks (e.g. if parsing fails, don't write to disk). The same `state` object flows through the entire chain; no copying, no callbacks collecting results.
+**Phase composition:** The outer DAG is a sub-dag composition — each phase runs as a `DeepDAGNode` against a cloned `ScrapeState`, and `stateMapping.output` copies the relevant result buckets back to the parent. Deep-DAG placements cannot route to `null`, so each outer DAG terminates with a `flow:terminate` `SingleNode` that owns END.
 
-State mutation contract: `TState extends Record<string, unknown>`. Tasks mutate the state reference directly. The pipeline passes the same object to every task in sequence; the caller receives the mutated reference after `execute()` returns. This avoids async callback nesting and lets each task read what previous tasks wrote.
+**Failure retry:** Items that fail their first per-page DAG dispatch retry exactly once. The retry phase fans out over `state.failed` and partitions outcomes into `state.recovered` (succeeded on retry) and `state.failedAfterRetry` (failed both attempts). `failures.json` is written from `state.failedAfterRetry` — first-attempt failures are not a terminal state.
 
-Early termination semantics: A task that doesn't call `await next()` stops the chain. This is how you halt processing without throwing: set an error flag on state, skip `next()`, and the write task sees the flag and decides whether to write. The pipeline doesn't inspect state; it just runs whatever tasks called `next()` in their callbacks.
+**Result-array contract:** `ScrapeState` carries three terminal result arrays: `succeeded` (first-attempt successes), `recovered` (succeeded on retry), `failedAfterRetry` (failed both). The transient `failed` array is the retry phase's fan-out source and is meaningful only mid-flow.
+
+**Config-driven pipeline:** Users declare `pipeline: ['html:fetch', 'aonprd:parse', 'json:write']` in their config. The runner compiles that list into a real dagonizer-managed per-page DAG — one `SingleNode` placement per pipeline step, chained `success → next`. Each phase's fan-out invokes a single registered dispatch node (`html:dispatch-page-dag` or `wiki:dispatch-page-dag`) per item; that node executes the per-page child DAG via `context.services.dispatcher`. The dispatch wrapper resolves its item key from `state.metadata[<itemKey>]` — `currentUrl` for the scrape phase, `currentRetryUrl` for the retry phase — and so the same wrapper serves both phases unchanged.
+
+### CLI dispatch DAG
+
+The CLI layer is itself a first-class Dagonizer DAG. Each commander action handler sets up a `CliState`, registers the six CLI nodes and the `cliScrapeDAG`, dispatches via `dispatcher.execute()`, and reads `state.exitCode` for `process.exit()`. The action handler has no orchestration logic of its own.
 
 ```mermaid
-sequenceDiagram
-    participant Caller
-    participant Pipeline
-    participant FetchTask as html:fetch
-    participant ParseTask as mysite:parse (plugin)
-    participant WriteTask as json:write
-
-    Caller->>Pipeline: execute(state)
-    Pipeline->>FetchTask: (next, state)
-    FetchTask->>FetchTask: fetch URL, load HTML
-    FetchTask->>FetchTask: state.input.html = body
-    FetchTask->>Pipeline: await next()
-    Pipeline->>ParseTask: (next, state)
-    ParseTask->>ParseTask: $ = cheerio(html)
-    ParseTask->>ParseTask: state.output = {...}
-    ParseTask->>Pipeline: await next()
-    Pipeline->>WriteTask: (next, state)
-    WriteTask->>WriteTask: write state.output to disk
-    WriteTask->>Pipeline: await next()
-    Pipeline-->>Caller: state
+<!--@include: ./_generated/cliScrapeDAG.mmd -->
 ```
 
-The `ScrapeOrchestrator` builds the pipeline per page. A user-registered `<targetId>:parse` task (from a plugin file declared in config) runs first and sets `state.output`. If no parse task is registered the orchestrator falls back to raw `WikitextParser` output. A write-to-disk task is always added last by the orchestrator.
+**Branching:** `load-config` routes `error → exit` (bad config file). `resolve-target` routes to `dispatch-html-scrape` or `dispatch-wiki-scrape` based on which config collection contains `targetId`, or to `exit` when the target is unknown. Both dispatch nodes route all outcomes (`success | partial | error`) to `write-manifest`, which logs the failure summary. `exit` sets `state.exitCode` (0 = clean, 1 = error, 2 = partial) and routes to `null`.
+
+### Outer flow
+
+The outer DAG composes the phases as `sub-dag` (`DeepDAGNode`) placements with explicit state mappings. Each phase runs in isolation and reports back via the configured `stateMapping.output`.
+
+#### htmlScrapeDAG
+
+```mermaid
+<!--@include: ./_generated/htmlScrapeDAG.mmd -->
+```
+
+#### htmlScrapeDAGCrawl (with discovery)
+
+```mermaid
+<!--@include: ./_generated/htmlScrapeDAGCrawl.mmd -->
+```
+
+#### wikiScrapeDAG
+
+```mermaid
+<!--@include: ./_generated/wikiScrapeDAG.mmd -->
+```
+
+### Wiki member resolution DAG
+
+Before the wiki scrape fan-out begins, `runWiki` dispatches `wikiResolveMembersDAG` to determine the set of page titles to scrape. The DAG selects exactly one branch based on the run options:
+
+| Mode | Trigger | Branch node |
+|------|---------|-------------|
+| `resume-failures` | `--resume-failures` flag | `wiki:resume-failures` — reads `failures.json` |
+| `single-category` | `--category <name>` flag | `wiki:fetch-single-category` — calls `fetchCategory()` |
+| `by-categories` | `categories[]` in config | `wiki:fetch-multiple-categories` — deduplicates across all listed categories |
+| `all-pages` | fallback | `wiki:fetch-all-pages` — calls `fetchAllPages()` |
+
+Each branch node is independently dispatchable for tests. The DAG writes `state.members` on success; `runWiki` reads it to seed the page fan-out.
+
+```mermaid
+<!--@include: ./_generated/wikiResolveMembersDAG.mmd -->
+```
+
+### Phase: discovery
+
+The discovery phase runs `crawl:list-targets` to populate `state.urls` before the scrape phase fans out. Only present in `htmlScrapeDAGCrawl`; when the user's pipeline does not reference `crawl:list-targets`, the orchestrator picks `htmlScrapeDAG` (no discovery sub-dag).
+
+#### htmlCrawlPhase
+
+```mermaid
+<!--@include: ./_generated/htmlCrawlPhase.mmd -->
+```
+
+### Phase: scrape
+
+The scrape phase is the initial per-item run. The fan-out partitions outcomes into `succeeded` / `failed` based on the dispatch node's output port.
+
+#### htmlScrapePhase
+
+```mermaid
+<!--@include: ./_generated/htmlScrapePhase.mmd -->
+```
+
+#### wikiScrapePhase
+
+```mermaid
+<!--@include: ./_generated/wikiScrapePhase.mmd -->
+```
+
+### Phase: retry
+
+The retry phase fans out over `state.failed` exactly once. Successful retries land in `state.recovered`; persistent failures land in `state.failedAfterRetry`. The same dispatch wrapper is invoked; only the fan-out's `itemKey` (`currentRetryUrl` / `currentRetryTitle`) differs from the scrape phase.
+
+#### htmlRetryPhase
+
+```mermaid
+<!--@include: ./_generated/htmlRetryPhase.mmd -->
+```
+
+#### wikiRetryPhase
+
+```mermaid
+<!--@include: ./_generated/wikiRetryPhase.mmd -->
+```
+
+### Per-page child DAG
+
+Each target's `pipeline: [...]` config is compiled into a first-class dagonizer DAG at startup. The diagram below shows the decomposed HTML pipeline `['html:fetch', 'html:write-raw', 'json:write']` — each step is a separate node with its own output ports, registered on the same dispatcher.
+
+#### htmlPageDAG (per-URL steps)
+
+```mermaid
+<!--@include: ./_generated/htmlPageDAG.mmd -->
+```
+
+#### wikiPageDAG (per-title steps)
+
+```mermaid
+<!--@include: ./_generated/wikiPageDAG.mmd -->
+```
+
+### Link crawler DAG
+
+`LinkLister.buildList(urls)` dispatches the `linkCrawlDAG` — a bounded, level-by-level BFS crawler. Each depth level is a pair of nodes: `FetchAndExtractLinksNode` (processes all frontier URLs, writes discovered links to accumulator fields) and `DedupeAndEnqueueNode` (deduplicates, promotes to next frontier, routes to `exhausted` on empty or budget/depth limit). Up to 16 levels are unrolled at compile time; `DedupeAndEnqueueNode` enforces `maxPages` and `maxDepth` at runtime.
+
+```mermaid
+<!--@include: ./_generated/linkCrawlDAG.mmd -->
+```
+
+| Node | Output ports | Responsibility |
+|------|-------------|----------------|
+| `init-frontier` | `ready \| empty` | Sets `state.frontier = state.seedUrls`, resets accumulators |
+| `fetch-N` | `success \| empty \| error \| permanent` | Fetches all frontier URLs, writes traversable links to `nextFrontierRaw`, targets to `discoveredRaw` |
+| `dedupe-N` | `frontier-ready \| frontier-empty \| budget-exhausted` | Deduplicates, promotes accumulators, advances `state.depth` |
+| `exhausted` | `success` | Final sort + dedup of `state.discovered`; numerically-aware collation |
+
+### Config load DAG
+
+`RipperConfig.load(path)` dispatches the `configLoadDAG` — a five-node linear pipeline that keeps each concern independently testable. `state.path` is the only input; `state.normalized` is the output.
+
+```mermaid
+<!--@include: ./_generated/configLoadDAG.mmd -->
+```
+
+| Node | Output ports | Responsibility |
+|------|-------------|----------------|
+| `read-file` | `success \| not-found \| error` | `readFile(state.path)` → `state.raw` |
+| `parse-json` | `success \| error` | `JSON.parse(state.raw)` → `state.parsed` |
+| `validate-schema` | `valid \| invalid` | AJV validation against `RipperConfigSchema` |
+| `normalize-cache` | `success \| invariant-violated` | Cache defaults + raw/cache-off invariant |
+| `assert-invariants` | `success \| invariant-violated` | Post-normalize checks (e.g. no `api:fetch`) |
+
+All non-success routes terminate at `null`; `state.errors` carries the failure details that `RipperConfig.load()` merges into a `RipperConfigError`.
+
+### Plugin DAGs
+
+Every plugin in Ripperoni is registered as a DAG (Flavor 2 universal pattern). Trivial plugins wrap a single `NodeInterface` in a 1-node DAG; complex plugins decompose into multi-node branching DAGs. The orchestrator's pipeline-name resolution checks the DAG registry first, then the node registry — plugins are interchangeable from the config-author's perspective.
+
+When a pipeline step like `aonprd:parse` resolves to a registered DAG, the runner emits a `DeepDAGNode` placement in the per-page DAG. A `stateMapping.output` copies the child DAG's `state.output` back to the parent so downstream steps (e.g. `json:write`) see the parsed record.
+
+#### Plugin DAG: AON parse
+
+The AON plugin decomposes into 17 nodes: `load-and-common → detect-type → branch (15 page types) → extract-<type> → terminate`. Each per-type extractor is independently dispatchable for tests.
+
+```mermaid
+<!--@include: ./_generated/aonprdParseDAG.mmd -->
+```
+
+#### Plugin DAG: docs-scraper (trivial 1-node wrapper)
+
+```mermaid
+<!--@include: ./_generated/docsScraperDAG.mmd -->
+```
+
+#### Plugin DAG: wiki-docs (trivial 1-node wrapper)
+
+```mermaid
+<!--@include: ./_generated/wikiDocsDAG.mmd -->
+```
+
+### Node signature
 
 ```ts
-const pipeline = new Pipeline<PipelineStateInterface>({ name: 'my-target' });
-if (TaskRegistry.has('my-target:parse')) {
-  pipeline.addTask(TaskRegistry.get('my-target:parse'));
+interface NodeInterface<TState, TOutput extends string, TServices = undefined> {
+  readonly name:    string;
+  readonly outputs: readonly TOutput[];
+  execute(state: TState, context: NodeContextInterface<TServices>): Promise<{ output: TOutput }>;
 }
-pipeline.addTask(async (next, state) => {
-  await next();
-  await writeFile(outputPath, JSON.stringify(state.output ?? fallback));
-});
-await pipeline.execute(PipelineState.fromWikiPage('my-target', page));
 ```
 
-### Task signature
-
-```ts
-type TaskFnType<TState> = (next: NextFnType, state: TState) => Promise<void>
-```
-
-`TState` must extend `Record<string, unknown>`. Tasks mutate state directly; the pipeline passes the same reference through the chain.
-
-Why this matters: If a task decides to bail out (malformed HTML, missing required field), it skips `await next()` and the write task never runs. You don't need error handling middleware; you just don't call `next()`. This is simpler than try/catch chains and keeps the control flow local to each task.
+Nodes never throw. Errors are recorded via `state.collectError(err)` and a deterministic port (`error`, `invalid`, `empty`) is returned so the DAG can route to a failure handler or terminate cleanly.
 
 </section>
 
@@ -183,7 +324,7 @@ Direct `fetch()` calls to the MediaWiki JSON API; no mwn or axios layer. Four op
 - `fetchCategory(name)`: paginated category members list
 - `fetchAllPages()`: enumerates every article in main namespace via `action=query&list=allpages`
 
-The `ScrapeOrchestrator` selects from three modes: explicit `--category` flag → single category; `categories[]` in config → iterate and deduplicate; no categories → `fetchAllPages()`. Rate limiting and jitter applied per-request.
+`runWiki` selects from three modes: explicit `--category` flag → single category; `categories[]` in config → iterate and deduplicate; no categories → `fetchAllPages()`. Rate limiting and jitter applied per-request.
 
 ### WikitextParser
 
@@ -219,21 +360,30 @@ Visited URLs are tracked in a `Set`. All traversals run concurrently via `Promis
 
 Complete index of every source file, its exported symbols, and the PathRipper or TORUS module it was ported from.
 
-| File | Exports | Ported from |
-|------|---------|-------------|
-| `src/pipeline/Pipeline.ts` | `Pipeline<TState>` | PathRipper `Transformer` |
+| File | Exports | Notes |
+|------|---------|-------|
+| `src/state/ScrapeState.ts` | `ScrapeState` | Extends `NodeStateBase`; checkpoint-ready |
+| `src/nodes/HtmlFetchNode.ts` | `HtmlFetchNode` | Ports: `success \| error \| cached` |
+| `src/nodes/WikiFetchNode.ts` | `WikiFetchNode` | Ports: `success \| error` |
+| `src/nodes/HtmlWriteRawNode.ts` | `HtmlWriteRawNode` | Ports: `success` |
+| `src/nodes/WikiWriteRawNode.ts` | `WikiWriteRawNode` | Ports: `success` |
+| `src/nodes/JsonWriteNode.ts` | `JsonWriteNode` | Ports: `success \| skipped` |
+| `src/nodes/JsonlAppendNode.ts` | `JsonlAppendNode` | Ports: `success \| skipped` |
+| `src/nodes/ValidateSchemaNode.ts` | `ValidateSchemaNode` | Ports: `valid \| invalid` |
+| `src/nodes/CrawlListTargetsNode.ts` | `CrawlListTargetsNode` | Ports: `success \| error \| empty` |
+| `src/run/runHtml.ts` | `runHtml` | HTML scrape entry point; builds dispatcher, loads plugins, dispatches outer DAG |
+| `src/run/runWiki.ts` | `runWiki` | Wiki scrape entry point; member resolution, batch loop, dispatches outer DAG |
+| `src/dispatcher/RipperDagonizer.ts` | `RipperDagonizer` | `Dagonizer` subclass with lifecycle logging and contract-warning collection |
+| `src/services/RipperServices.ts` | `RipperServices` | Services bag interface injected into every node via `context.services` |
 | `src/modules/http/ErrorClassifier.ts` | `ErrorClassifier`, `ErrorCategory` | TORUS `errorClassifier.ts` |
 | `src/modules/http/RetryExecutor.ts` | `RetryExecutor` | TORUS `RetryPolicyNode` |
 | `src/modules/http/RateLimiter.ts` | `RateLimiter` | New: wraps `bottleneck` |
 | `src/modules/logger/Logger.ts` | `Logger` | Torreya `@torreya/logger` |
 | `src/scrapers/HtmlScraper.ts` | `HtmlScraper` | PathRipper `fetchPage`, cheerio replaces JSDOM |
-| `src/scrapers/MediaWikiScraper.ts` | `MediaWikiScraper` | New: native `fetch()` to MediaWiki JSON API |
-| `src/scrapers/WikitextParser.ts` | `WikitextParser` | New: `wtf_wikipedia` |
+| `src/scrapers/MediaWikiScraper.ts` | `MediaWikiScraper` | Native `fetch()` to MediaWiki JSON API |
+| `src/scrapers/WikitextParser.ts` | `WikitextParser` | `wtf_wikipedia` |
 | `src/crawlers/LinkLister.ts` | `LinkLister` | PathRipper `linkLister/index.js` |
-| `src/orchestrators/ScrapeOrchestrator.ts` | `ScrapeOrchestrator` | New: pipeline orchestration, three-mode wiki scrape |
-| `src/registry/TaskRegistry.ts` | `TaskRegistry` | New: plugin registration and dynamic loading |
-| `src/registry/PipelineState.ts` | `PipelineState` | New: typed state bridge between scrapers and plugins |
-| `src/config/RipperConfig.ts` | `RipperConfig` | New: replaces hardcoded `config.js` |
-| `src/cli/cli.ts` | `ripperoni` CLI | New: `commander` |
+| `src/config/RipperConfig.ts` | `RipperConfig` | Replaces hardcoded `config.js` |
+| `src/cli/cli.ts` | `ripperoni` CLI | `commander` |
 
 </section>

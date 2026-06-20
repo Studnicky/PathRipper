@@ -1,0 +1,94 @@
+{
+  "_type": "feat",
+  "url": "https://2e.aonprd.com/Feats.aspx?ID=7639",
+  "feat_id": 7639,
+  "name": "Virtuosic Dancer",
+  "level": 12,
+  "rarity": "uncommon",
+  "pfs": "limited",
+  "legacy": false,
+  "alt_edition_url": null,
+  "action_cost": null,
+  "traits": [
+    "Uncommon",
+    "Archetype"
+  ],
+  "trait_ids": {
+    "Uncommon": 159,
+    "Archetype": 12
+  },
+  "source": {
+    "book": "Pathfinder #204: Stage Fright",
+    "page": 82,
+    "source_id": 245
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #204: Stage Fright",
+      "page": 82,
+      "source_id": 245,
+      "raw": "Pathfinder #204: Stage Fright pg. 82"
+    }
+  ],
+  "archetypes": [
+    {
+      "name": "Acrobat",
+      "archetype_id": 236
+    }
+  ],
+  "archetype_footnotes": [],
+  "prerequisites": "Acrobat Dedication",
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "cost": null,
+  "access": null,
+  "is_mythic": false,
+  "description_html": "You're so fond of using your Acrobatic feats on the stage that you've begun adding your own flair to these dances on the big stage. When you Perform, if you do a performance that is either related to dance, acting or opera, you gain a +1 circumstance bonus to the roll. If you're legendary in <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=34\">Acrobatics</a>, this increases to a +2 circumstance bonus. You gain the Dancing Dodge reaction. <br><br><b>Dancing Dodge</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=658\">move</a>) <b>Trigger</b> You're hit by a <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2306\">Strike</a> during the first round of combat; <b>Effect</b> You take advantage of the fact that your foe isn't ready to anticipate your dance-like moves in combat. Add a +3 circumstance bonus to your Armor Class against the triggering Strike to determine the Strike's actual result.",
+  "description_text": "You're so fond of using your Acrobatic feats on the stage that you've begun adding your own flair to these dances on the big stage. When you Perform, if you do a performance that is either related to dance, acting or opera, you gain a +1 circumstance bonus to the roll. If you're legendary in Acrobatics, this increases to a +2 circumstance bonus. You gain the Dancing Dodge reaction. Dancing Dodge [reaction] (move) Trigger You're hit by a Strike during the first round of combat; Effect You take advantage of the fact that your foe isn't ready to anticipate your dance-like moves in combat. Add a +3 circumstance bonus to your Armor Class against the triggering Strike to determine the Strike's actual result.",
+  "special": null,
+  "leads_to": [],
+  "related_feats": [],
+  "trait_glossary": [
+    {
+      "trait": "Uncommon",
+      "description": "Something of uncommon rarity requires special training or comes from a particular culture or part of the world. Some character choices give access to uncommon options, and the GM can choose to allow access for anyone. Less is known about uncommon creatures than common creatures. They typically can't be summoned. The DC of Recall Knowledge checks related to these creature is increased by 2."
+    },
+    {
+      "trait": "Archetype",
+      "description": "This feat belongs to an archetype."
+    }
+  ],
+  "raw_fields": {
+    "Archetype": "Acrobat",
+    "Prerequisites": "Acrobat Dedication"
+  },
+  "links": [
+    {
+      "href": "Skills.aspx?ID=34",
+      "text": "Acrobatics",
+      "kind": "Skills",
+      "id": 34
+    },
+    {
+      "href": "Traits.aspx?ID=658",
+      "text": "move",
+      "kind": "Traits",
+      "id": 658
+    },
+    {
+      "href": "Actions.aspx?ID=2306",
+      "text": "Strike",
+      "kind": "Actions",
+      "id": 2306
+    },
+    {
+      "href": "Actions.aspx?ID=26",
+      "text": "Recall Knowledge",
+      "kind": "Actions",
+      "id": 26
+    }
+  ],
+  "meta_description": "You're so fond of using your Acrobatic feats on the stage that you've begun adding your own flair to these dances on the big stage. When you Perform, if you do a performance that is either related to dance, acting or opera, you gain a +1 circumstance bonus to the roll. If you're legendary in Acrobatics , this increases to a +2 circumstance bonus. You gain the Dancing Dodge reaction. Dancing Dodge ( move ) Trigger You're hit by a Strike during the first round of combat; Effect You take advantage of the fact that your foe isn't ready to anticipate your dance-like moves in combat. Add a +3 circumstance bonus to your Armor Class against the triggering Strike to determine the Strike's actual result.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, FeatVirtuosic Dancer"
+}

@@ -7,6 +7,227 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- **Dagonizer is `@studnicky/dagonizer@0.24.0`** from GitHub Packages (`.npmrc` routes the
+  `@studnicky` scope; auth token lives in `~/.npmrc`). The former vendored `@noocodex/dagonizer@0.9.2`
+  tarball and `vendor/` directory are gone.
+
+### Changed
+
+- **Node model is the 0.23 batch contract.** Every node is a `ScalarNode` subclass implementing
+  `executeOne` and returning `NodeOutputBuilder.of(port)`; nodes carry no `RipperServices` generic
+  (they read state, not `ctx.services`). `RipperDagonizer` adapts the 0.23 hooks (`onNodeEnd(name,
+  output, state, placementPath)`); the obsolete `onContractWarning`/`contractWarnings` surface is
+  removed (dead-write contracts are hard `DAGError`s at `registerDAG`/`derive`). `HttpRetryPolicy`
+  constructs via `RetryPolicy.from` with `BackoffStrategyNames`.
+- **All flows use native `DAGBuilder`** (`.node`/`.scatter`/`.embeddedDAG`/`.terminal`).
+  `configLoadFlow` is authored with explicit `.node()`/`.terminal()` placements and exhaustive
+  route maps. The aonprd parse DAG is produced by `Taxonomy.buildDAG()`, which translates the
+  internal annotation graph to `DAGBuilder` placements — the `/derive` subpath and `DAGDeriver`
+  class are gone. Routing is read natively off `RoutedBatchType` (`result.has(port)`); capability
+  chains are plain arrays (chainability via dagonizer's native `ChainableType`).
+- **`OperationContractType` and contract fields removed.** The `contract` field is gone from
+  every node class and from `NodeInterface`. `OperationContractType`, `OperationContractFragmentType`,
+  and `EMPTY_CONTRACT_FRAGMENT` are removed from the dagonizer API. All node files in `src/nodes/`,
+  `plugins/`, and `examples/` drop their contract declarations.
+- **Worker-thread parse execution (default on).** The CPU-bound per-page plugin parse `embeddedDAG`
+  runs in a `WorkerThreadContainer` pool (`@studnicky/dagonizer-executor-node`) sized to system info via
+  `NodeSystemInfo.recommendedWorkerCount` — the full machine's parallelism (cores + free memory), no
+  artificial cap — while fetch and write stay coordinator-side. The per-page scatter concurrency is set
+  to the pool width so every worker stays fed. Controlled by `enableWorkers` on `runHtml` (default
+  `true`); it falls back to in-process with a warning when the compiled worker tree is absent. The worker
+  registry (`src/workers/parseRegistry.ts`) is plugin-agnostic: `instantiate(servicesConfig)` rebuilds
+  whatever plugin parse DAG the run's `pipelineNames` describe via the extracted `PluginLoader` (shared by
+  `runHtml`/`runWiki`) — same source, only the container execution swaps. The worker reconstructs its own
+  services and state (`ScrapeState.restore`) in-isolate; only `page.html` (in) and `output` (out) cross
+  the boundary. Worker threads can't transpile, so the worker dependency closure compiles to a
+  self-contained `dist-workers/` tree (`npm run build:workers`, `tsconfig.workers.json`, chained into
+  `npm run build`).
+- **Link crawl is a single native cyclic DAG.** `crawl:dedupe-and-enqueue` routes `frontier-ready`
+  back to `crawl:fetch-and-extract` — a back-edge the engine re-executes in place until the depth/budget
+  guard routes to `crawl:exhausted`. This replaces the trampoline (`RecurseCrawlNode` dispatching a
+  separate `linkCrawlLevelDAG` per depth level): `RecurseCrawlNode`, the level DAG, and the load-bearing
+  `LinkCrawlState.clone()` override are gone. Behaviour is unchanged — same discovered/visited sets and
+  depth/budget termination.
+- **Per-page scrape uses a native `{ dag }`-body scatter.** The wiki and html scrape/retry phases
+  scatter over `{ dag: perPageDagName }` — the framework clones the parent state per item (metadata
+  only), sets `metadata.currentTitle`/`currentUrl`, dispatches the registered per-page DAG, and maps
+  its terminal outcome (`completed`/`failed`) to the `success`/`error` partition. The per-page entry
+  nodes (`WikiFetchNode`, `HtmlFetchNode`) initialise `state.page` from that metadata, absorbing the
+  former `pageSetup` callback. `ScrapeState` drops its `clone()` override (the base metadata-only clone
+  is correct now), so per-item clones no longer copy the accumulator arrays. The `DispatchPageDagNode`
+  wrapper, the per-vertical docs dispatch nodes, and the `*:dispatch-page-dag` stubs are gone.
+- **The whole test tree is type-checked** (`tsconfig.typecheck.json` covers `tests/**`). Single-character
+  identifiers are banned via the `id-length` eslint rule.
+- **Three noocodec contract eslint rules at `error`** (`eslint-rules/noocodec.mjs`):
+  `interface-must-be-contract` (a method-less data `interface` must be a `type`), `logger-binding-name`
+  (a `Logger.forComponent(...)` binding is named `log`), and `group-types-in-namespace` (exempts
+  `src/types/`, ripper's canonical type-grouping barrel). Driven to zero violations: every data-shape
+  `interface` is now a `type` alias and the `*Interface` suffix is renamed to `*Type` (the services
+  bags `RipperServices`/`CliServices`/`LinkCrawlServices` keep their names as `type`); module-scoped
+  logger bindings are renamed to `log`.
+
+### Breaking
+
+- **`_type` discriminator removed from every AON output.** Concept identity is no longer
+  carried as a field on the output shape; it comes from the URL (the canonical
+  source) or the concept-specific `<concept>_id` field. The Wave 6 M1 router-stamping
+  indirection is gone with it: `ConceptOutputBase<T>` is deleted, `ConceptDecl.discriminator`
+  is deleted, and the per-concept `discriminator: { _type: 'X' }` field was stripped from
+  every `ConceptDecl`. The `XxxOutputFields` intermediate interface introduced during the
+  router-stamping migration was collapsed back into a single `XxxOutput` interface per
+  concept. Downstream consumers that pattern-matched on `out._type` need an alternate
+  signal — typically URL inspection or the typed `XxxOutput[id]` accessor.
+- `UnknownOutput` no longer carries `_type: 'unknown'`. The unknown fallback shape is now
+  `{ url, unknown_id, ...baseFields }`.
+- `RitualOutput` is now a structural alias for `SpellOutput` (was previously an
+  intersection that varied only by the removed discriminator).
+
+### Added
+
+- **Bounded scrapes via `--paths`.** `scrape-html --paths X Y Z` now skips the configured
+  `crawl:list-targets` node and treats the supplied paths as the bounded URL set.
+  Full-target scraping (crawl + scrape) remains the default when `--paths` is omitted.
+  `HtmlScraper.fetchPage` now normalises the base/path join — `Actions.aspx?ID=1`
+  (no leading slash) becomes the correct URL instead of the malformed
+  `https://example.comActions.aspx?ID=1`.
+
+### Removed
+
+- Plan/audit docs from `docs/`: `taxonomic-extraction-redesign.md`, `wave-6-audit-and-triage.md`,
+  `plans/DAGONIZER-NATIVE.md`, `plans/RESUME.md`. All shipped; git history is the changelog.
+- Superseded scripts: `audit-extraction-gaps.mjs`, `audit-raw-fields.mjs`,
+  `sample-monster-abilities.mjs`, `verify-monster-abilities.mjs`,
+  `verify-archetype-sections.mjs`, `verify-i18n-sample.mjs`, `reparse-cache.ts`. Two of
+  these grouped outputs by the removed `_type` field; the rest were Wave 9 spot-check
+  verifiers superseded by the corpus harness + e2e suite.
+- Every `Wave N` / `Phase 6.X` comment label across `plugins/`, `src/`, and `tests/`
+  (~263 references in ~69 files). Surrounding prose preserved or rewritten to describe
+  current behavior without historical labels.
+
+### Fixed
+
+- `plugins/aonprd/parse.dag.ts` carried a stale `NodeInterface<…, RipperServices>` →
+  `NodeInterface<…, undefined>` assignability mismatch at the `DAGDeriver.derive` boundary.
+- Wave 10A split residue: `plugins/aonprd/concepts/skill/{helpers,concept}.ts` had broken
+  cheerio Element/AnyNode imports (now from `domhandler`) and missing/redundant type
+  exports; `plugins/aonprd/concepts/subclass-feature/base.ts` missing
+  `SubclassFeatureSpellGroup` type import.
+- `tsconfig.plugins.json` now excludes the unmigrated `plugins/bulbapedia/` stub.
+
+### Quality gates
+
+- `npx tsc --noEmit -p tsconfig.plugins.json` — clean
+- `npm run typecheck:tests` — clean
+- `npm run test:unit` — 971 pass / 0 fail
+- `npm run test:e2e` — 126 pass / 0 fail
+- Full corpus extraction: 13,657 pages / 4 known content-gap failures / 0/0/170 against
+  committed Wave 5 baselines
+
+## [3.0.0] - 2026-05-19
+
+### Changed
+
+- Bumped `@noocodex/dagonizer` to `0.8.1` (vendored `noocodex-dagonizer-0.8.1.tgz`). Renamed `FlowDeriver` → `DAGDeriver` and related types (`FlowAnnotations` → `DAGDeriverAnnotations`, `FlowFanOut` → `DAGDeriverFanOut`, `FlowTerminal` → `DAGDeriverTerminal`, `FlowDeepDAG` → `DAGDeriverSubDAG`) per upstream 0.8.0 breaking change. Every fan-out annotation gains an explicit `strategy` discriminator and a top-level `node:` field. Eliminated the remaining `DAGBuilder` calls in `src/run/runHtml.ts` and `src/run/runWiki.ts` using the new `DAGDeriverFanOut.strategy: 'partition'` annotation — ripperoni now has zero `DAGBuilder` calls; every DAG is contract-derived. Also eliminated `DAGBuilder` calls in `plugins/aonprd/parse.dag.ts` and `examples/` plugins.
+- `linkCrawlFlow.ts` rebuilt as a trampolined recursive DAG. The crawler is now two `DAGDeriver.derive(...)` flows — `linkCrawlDAG` (init + first level) and `linkCrawlLevelDAG` (subsequent levels). The `crawl:recurse` node dispatches `linkCrawlLevelDAG` on a cloned state (clone carries `pending` lifecycle; the outer execution holds `running` on the original state; results are merged back after the recursive dispatch completes). Termination invariants (`frontier.length > 0`, `DedupeAndEnqueueNode` routing `frontier-empty`/`budget-exhausted` to `crawl:exhausted`) are preserved from the unrolled version. `Dagonizer.collectDeepDAGReferences` cycle check walks only `DeepDAGNode` placements and is silent on dynamic node-initiated dispatch. Neither `linkCrawlDAG` nor `linkCrawlLevelDAG` contains a `DeepDAGNode` placement, so the static graph remains acyclic.
+
+### Breaking (dagonizer shim removal — complete)
+
+- `ScrapeOrchestrator` class removed entirely. The composition root is `RipperRun`. Callers use `await (await RipperRun.forHtml(opts)).execute()` / `await (await RipperRun.forWiki(opts)).execute()`.
+- `AppServices` interface (`src/nodes/Services.ts`) removed. The only services type is `RipperServices` (`src/services/RipperServices.ts`). Every node's `NodeInterface<TState, T, ...>` services parameter is `RipperServices`. Every `NodeContextInterface<RipperServices>` context type is `RipperServices`.
+- `registerGlobalNode` / `registerGlobalDAG` / `GLOBAL_NODE_REGISTRY` / `GLOBAL_DAG_REGISTRY` removed. The globalThis-backed plugin bag is gone. Plugins now export `register(dispatcher: RipperDagonizer<ScrapeState>): void`. `RipperRun.forHtml` / `forWiki` import the plugin module and call `mod.register(dispatcher)` explicitly. No side-effect-on-import, no global state.
+- `src/orchestrators/` directory removed (`ScrapeOrchestrator.ts`, `pluginRegistry.ts`).
+- `src/nodes/Services.ts` removed.
+- `RipperDagonizer<TState>` now extends `Dagonizer<TState, RipperServices>` (was `Dagonizer<TState, AppServices>`).
+- `RipperServices.setDispatcher()` / `#dispatcher` type is `DagonizerInterface<ScrapeState, RipperServices>` (was `AppServices`).
+
+## [3.0.0-pre.1] - 2026-05-18
+
+### Added (squashage-pattern adoption — R-3 + R-4)
+
+- `RipperRun` composition-root class: `RipperRun.forHtml(opts).execute()` / `await RipperRun.forWiki(opts)` then `.execute()`. Replaces the procedural composition in `ScrapeOrchestrator`. Owns the full construction of services + observer + dispatcher + all node and DAG registrations. The wiki batch loop (`RipperRunWiki`) is encapsulated inside `forWiki()`.
+- `RipperServices` class (`src/services/RipperServices.ts`) — eager-construction services container; replaces the dynamic `AppServices` interface + proxy-based lazy holder. Static factories `forHtml(opts)` / `forWiki(opts)` resolve scrapers, cache, and output config from the target config slice. `setDispatcher()` injects the dispatcher reference after construction to break the circular dependency. Implements `AppServices` structurally for backward compatibility.
+- `stub()` helper (`src/dags/helpers.ts`) — creates a typed `NodeInterface` placeholder for use inside DAGBuilder calls. The stub carries the correct `name` and `outputs` for type inference; its `execute()` throws immediately to catch registration bugs. Mirrors the squashage `src/dag/recordDag.ts` pattern.
+- `src/orchestrators/pluginRegistry.ts` — extracted global node and DAG registry (`GLOBAL_NODE_REGISTRY`, `GLOBAL_DAG_REGISTRY`, `registerGlobalNode`, `registerGlobalDAG`, `BUILTIN_NODES`, `BUILTIN_PREFIXES`). Shared via `globalThis` backing store; `ScrapeOrchestrator` re-exports the full surface for backward compatibility.
+- `src/dags/registerPageDagNodes.ts` — registers all nine built-in scrape-layer nodes onto a dispatcher before the page DAGs are registered.
+- `src/dags/registerMemberResolutionNodes.ts` — registers the five wiki member-resolution nodes onto a dispatcher before `buildWikiResolveMembersDAG()` is called.
+
+### Changed (squashage-pattern adoption — R-3 + R-4)
+
+- All `src/dags/*.ts` files refactored to use `stub()` instead of importing and inlining concrete node instances. Each DAG file is a pure structural definition — it knows node names and output ports but not node implementations. `cliScrapeDAG.ts`, `configLoadDAG.ts`, `linkCrawlDAG.ts`, `htmlCrawlPhase.ts`, `wikiResolveMembersDAG.ts`, `htmlScrapeDAG.ts`, `wikiScrapeDAG.ts`, and the four phase DAGs all use stubs with node names that match the registered node `.name` properties.
+- `ScrapeOrchestrator.scrapeHtml(opts)` / `.scrapeWiki(opts)` static methods are thin shims that delegate to `RipperRun.forHtml(opts).execute()` / `RipperRun.forWiki(opts).execute()`. Internal callers should migrate to `RipperRun` directly; the static surface stays for backward compatibility. All plugin import paths (`registerGlobalNode`, `registerGlobalDAG`) remain accessible from `'./orchestrators/ScrapeOrchestrator.js'`.
+
+## [3.0.0-pre] - 2026-05-18
+
+### Changed
+
+- **Dagonizer dependency bumped to v0.5.0** (vendored tarball `vendor/noocodex-dagonizer-0.5.0.tgz`). The dependency reference moves from `file:../Dagonizer` (local workspace symlink) to a self-contained vendored tarball so the project builds without a sibling workspace. No source changes were required: ripperoni already used the v0.5.0 API surface (`DAGBuilder.deepDAG()` instead of the removed `subDAG()`, `DeepDAGNode` placement type, JSON-LD wire format via `DAGBuilder.build()`). The v0.5.0 `FanInStrategy` → `FanInStrategyName` constant rename and `SingleNodeInterface` → `SingleNodePlacementInterface` rename did not require source edits because ripperoni uses neither identifier directly. New v0.5.0 capabilities available but not yet consumed: per-node `timeoutMs`, `SignalComposer`, read accessors on `Dagonizer` (`getDAG`, `listDAGs`, `getNode`, `listNodes`), `./types` and `./core` subpath exports.
+
+
+
+### BREAKING
+
+- **Plugin contract changed.** Plugin entry points must now export a `NodeInterface<ScrapeState, TOutputs, AppServices>` and call `registerGlobalNode(node)` on import instead of `TaskRegistry.register(name, task)`. The old `(next, state) => Promise<void>` signature is removed.
+- **Orchestration model changed.** `ScrapeOrchestrator` now dispatches via `@noocodex/dagonizer` DAGs instead of a sequential `Pipeline` middleware chain. Internal fan-out over URL/title lists is handled by the dagonizer `fan-out` placement with `partition` fan-in, replacing the old `ConcurrentPipeline` semaphore loop.
+- **Deleted exports:** `./Pipeline`, `./ConcurrentPipeline`, `./registry/TaskRegistry`. Consumers that imported these must update to the dagonizer node API.
+- `ScrapeOrchestrator.scrapeHtml` / `scrapeWiki` public signatures are unchanged; no CLI migration required.
+
+### Added
+
+- `RipperDagonizer` — `Dagonizer` subclass that forwards the 5 lifecycle hooks (`onFlowStart`, `onFlowEnd`, `onNodeStart`, `onNodeEnd`, `onError`) to an injected `RipperObserverInterface`. The dispatcher itself knows nothing about logging or metrics — observers are pluggable.
+- `RipperObserverInterface` + `LoggerObserver` (default, forwards to `Logger.forComponent('Dispatcher')`) + `NullObserver` (no-op, for tests).
+- `@noocodex/dagonizer` v0.4.0 DAG-based dispatch engine (already a `file:` dependency; now the primary orchestration mechanism).
+- `src/state/ScrapeState.ts` — `NodeStateBase` subclass carrying page, output, urls, titles, succeeded, failed, recovered, failedAfterRetry with full checkpoint support via `snapshotData()` / `restoreData()`. Overrides `clone()` so domain fields survive sub-dag dispatch (the base implementation returns a bare `NodeStateBase`).
+- `src/nodes/` — nine built-in `NodeInterface` implementations: `HtmlFetchNode`, `WikiFetchNode`, `HtmlWriteRawNode`, `WikiWriteRawNode`, `JsonWriteNode`, `JsonlAppendNode`, `ValidateSchemaNode`, `CrawlListTargetsNode`, `TerminalNode`. Each declares explicit output ports.
+- `src/nodes/Services.ts` — `AppServices` interface passed to every node via `context.services`.
+- `src/nodes/DispatchPageDagNode.ts` — `makeDispatchPageDagNode()` factory. The single node every per-item phase fan-out invokes; resolves the item key via a fallback list (`['currentUrl', 'currentRetryUrl']`) so the same wrapper serves both the scrape phase and the retry phase.
+- Phase composition via `sub-dag` placements: `src/dags/htmlCrawlPhase.ts`, `htmlScrapePhase.ts`, `htmlRetryPhase.ts` (and wiki analogs `wikiScrapePhase.ts`, `wikiRetryPhase.ts`). Outer scrape DAGs (`htmlScrapeDAG`, `htmlScrapeDAGCrawl`, `wikiScrapeDAG`) are now first-class phase compositions — each phase is independently dispatchable for tests.
+- Automatic per-item failure retry. Items that fail their first per-page DAG dispatch retry exactly once. `state.recovered` and `state.failedAfterRetry` expose the retry outcome; the retry phase reuses the same `DispatchPageDagNode` wrapper as the scrape phase.
+- `registerGlobalNode` exported from `ScrapeOrchestrator` — the canonical self-registration hook for plugin nodes.
+- `scripts/render-dag-diagrams.mjs` — generates Mermaid source files for canonical DAGs into `docs/_generated/` (now ten diagrams: three outer compositions, five phase DAGs, two per-page DAGs).
+- `docs:dag-diagrams` npm script wired into `docs:build`.
+- Architecture doc rewritten: "Pipeline pattern" → "DAG dispatch" with embedded Mermaid diagrams across every decomposition level — outer flow, discovery / scrape / retry phases, per-page child DAG.
+
+### Changed
+
+- **All plugins are now DAGs (Flavor 2 universal pattern).** Pipeline step names resolve to **either** a registered `NodeInterface` (emitting a `SingleNode` placement) **or** a registered `DAG` (emitting a `DeepDAGNode` placement). The orchestrator's pipeline-name resolution checks the DAG registry first, then the node registry — plugins are interchangeable from the config-author's perspective. Trivial plugins (`docs-scraper`, `wiki-docs`) wrap their single `NodeInterface` in a 1-node DAG; complex plugins (`aonprd`) decompose into multi-node branching DAGs. The user-facing pipeline config syntax (`pipeline: ['html:fetch', 'aonprd:parse', 'json:write']`) is unchanged — the resolution layer picks the right placement type at DAG-build time.
+- The `aonprd:parse` plugin is now a 17-node plugin DAG: `load-and-common → detect-type → branch (15 page types) → extract-<type> → terminate`. Each per-type extractor (spell, monster, feat, weapon, armor, equipment, action, ancestry, class, background, condition, trait, hazard, generic) is an independently dispatchable node, and renders in the architecture diagram as its own placement.
+- `registerGlobalDAG(dag)` exported from `ScrapeOrchestrator` alongside `registerGlobalNode(node)` — the canonical self-registration hook for plugin DAGs.
+- CLI command action handlers now dispatch a Dagonizer `cliScrapeDAG`: `load-config → resolve-target → branch(html|wiki) → dispatch-X-scrape → write-manifest → exit`. The flow is independently testable and viz-renderable. `CliState` carries parsed options, resolved config, target kind, outDir, and exit code. Six CLI nodes (`cli:load-config`, `cli:resolve-target`, `cli:dispatch-html-scrape`, `cli:dispatch-wiki-scrape`, `cli:write-manifest`, `cli:exit`) live under `src/nodes/cli/`. The commander surface (commands, flags, exit codes, stdout/stderr) is unchanged.
+- Config load is now a Dagonizer DAG (`configLoadDAG`): `read-file → parse-json → validate-schema → normalize-cache → assert-invariants`. Each step is an independently dispatchable node; per-step failures route to discrete output ports (`not-found`, `error`, `invalid`, `invariant-violated`). `RipperConfig.load(path)` keeps its signature; the implementation is now a thin dispatch wrapper.
+- `failures.json` now reflects items that failed both the initial attempt AND the retry (was: first-attempt failures). Single-attempt behaviour is no longer expressible without rebuilding the outer DAG without the retry phase.
+- **HTTP retry now uses `@noocodex/dagonizer/runtime` `RetryPolicy` directly.** `HtmlScraper`, `MediaWikiScraper`, and `LinkLister` construct an `HttpRetryPolicy` instance (a `RetryPolicy` subclass) instead of `RetryExecutor`. Backoff strategy: `DECORRELATED_JITTER` (same effective curve as v2.x). Retry decisions are driven by `ErrorClassifier.classify()` via an overridden `shouldRetry` — necessary because Ripperoni's HTTP errors are not segregated into distinct `Error` subclasses per category. `Retry-After` header backoff hints on HTTP 429 are honored via an overridden `getDelay`.
+- **`ErrorClassifier` slimmed to pure classification.** `isRetryable()` removed; the `classify(err)` method is the sole public API. The `retryable` field in `ClassificationResultInterface` is retained as a classifier output consumed by `HttpRetryPolicy.shouldRetry`.
+- `LinkLister` is now backed by a Dagonizer DAG (`linkCrawlDAG`): `init-frontier → [level: fetch-N → dedupe-N]* → exhausted`. Each level is a `FetchAndExtractLinksNode` (processes all frontier URLs, writes discovered links to `discoveredRaw` / `nextFrontierRaw`) followed by `DedupeAndEnqueueNode` (deduplicates, promotes to next frontier, routes to `exhausted` on empty frontier or budget/depth limit). Up to 16 levels are unrolled at registration time (Strategy B — bounded inline iteration); `DedupeAndEnqueueNode` enforces caller-supplied `maxPages` and `maxDepth` at runtime. The crawl is BFS rather than DFS. Public `LinkLister.create(cfg).buildList(urls)` signature unchanged.
+
+### Removed
+
+- `src/pipeline/Pipeline.ts` — middleware chain replaced by dagonizer.
+- `src/pipeline/ConcurrentPipeline.ts` — fan-out concurrency replaced by dagonizer fan-out placement.
+- `src/registry/TaskRegistry.ts` — global task registry replaced by `registerGlobalNode` + `GLOBAL_NODE_REGISTRY`.
+- `src/registry/builtinTasks.ts` — individual task functions replaced by `NodeInterface` implementations in `src/nodes/`.
+- Package exports `./Pipeline` and `./ConcurrentPipeline` removed.
+- **`RetryExecutor` removed** (`src/modules/http/retryExecutor.ts`, `src/types/RetryExecutor.ts`, package export `./RetryExecutor`). Replaced by `@noocodex/dagonizer/runtime` `RetryPolicy` (via `HttpRetryPolicy`). Consumers that imported `./RetryExecutor` must use `RetryPolicy` from `@noocodex/dagonizer/runtime` directly.
+
+### Changed
+
+- `MediaWikiScraper` reduced to primitive fetch methods (`fetchPagesBatch`, `fetchCategory`, `fetchAllPages`). `scrapeCategory` removed — it combined member listing and wikitext fetching in a way that duplicated orchestrator-level concerns. Mode selection (resume-failures / single-category / by-categories / all-pages) moved out of `ScrapeOrchestrator.scrapeWiki()` and into `wikiResolveMembersDAG` — a DAG with discrete branch nodes per mode. Each mode is independently dispatchable for tests.
+- `HtmlScraper` audited and trimmed of dead code. The class remains a single fetch primitive consumed by `HtmlFetchNode`.
+
+### Added
+
+- `src/dags/wikiResolveMembersDAG.ts` — four-branch mode-selection DAG. Each branch node (`wiki:resume-failures`, `wiki:fetch-single-category`, `wiki:fetch-multiple-categories`, `wiki:fetch-all-pages`) calls the appropriate `MediaWikiScraper` primitive and writes `state.members`. Dispatched as the first step of `scrapeWiki()` before the page fan-out phase.
+- `src/nodes/wiki/` — five new node implementations: `ChooseModeNode` (priority-order mode selector), `ResumeFailuresNode`, `FetchSingleCategoryNode`, `FetchMultipleCategoriesNode`, `FetchAllPagesNode`.
+- `src/state/MemberResolutionState.ts` — dedicated `NodeStateBase` subclass for the member-resolution phase; carries `target`, `config`, `resumeFailures`, `category`, and `members`.
+- `docs/_generated/wikiResolveMembersDAG.mmd` — Mermaid diagram of the four-branch DAG.
+
+### Tests
+
+- Retry/backoff tests now run on `VirtualScheduler` + `VirtualClockProvider` from `@noocodex/dagonizer/testing` — deterministic virtual time, no real sleeps. The new `tests/unit/modules/http/RetryPolicy.test.ts` drives all retry scenarios (success, network retry, max-attempts exhaustion, permanent abort, Retry-After hint, abort-signal mid-retry) by advancing the virtual scheduler.
+- `tests/unit/nodes/wiki/ChooseModeNode.test.ts` — 5 tests covering all four mode branches and priority ordering.
+- `tests/unit/dags/wikiResolveMembersDAG.test.ts` — 6 integration tests for the full DAG: each branch populates `state.members`, deduplication in by-categories, error handling on missing failures.json, structural DAG check.
+
 ## [2.6.0] - 2026-05-18
 
 ### Changed

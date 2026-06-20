@@ -1,0 +1,83 @@
+{
+  "_type": "armor",
+  "url": "https://2e.aonprd.com/Armor.aspx?ID=8",
+  "armor_id": 8,
+  "name": "Scale Mail",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Armor.aspx?ID=8&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 273,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 273,
+      "source_id": 216,
+      "raw": "Player Core pg. 273"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 275,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 275"
+    }
+  ],
+  "price": {
+    "gp": 4,
+    "sp": null,
+    "cp": null,
+    "raw": "4 gp"
+  },
+  "ac_bonus": 3,
+  "dex_cap": 2,
+  "check_penalty": -2,
+  "speed_penalty": -5,
+  "strength": 2,
+  "bulk": 2,
+  "category": "medium",
+  "group": {
+    "name": "Composite",
+    "group_id": 2
+  },
+  "description_html": "Scale mail consists of many metal scales sewn onto a reinforced leather backing, often in the form of a long shirt that protects the torso, arms, and legs.<br>",
+  "description_text": "Scale mail consists of many metal scales sewn onto a reinforced leather backing, often in the form of a long shirt that protects the torso, arms, and legs.",
+  "raw_fields": {
+    "Price": "4 gp",
+    "AC Bonus": "+3",
+    "Dex Cap": "+2",
+    "Check Penalty": "-2",
+    "Speed Penalty": "-5 ft.",
+    "Strength": "+2",
+    "Bulk": "2",
+    "Category": "Medium",
+    "Group": "Composite"
+  },
+  "links": [
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 275",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "/Equipment.aspx?ID=2806&amp;NoRedirect=1",
+      "text": "Impenetrable Scale",
+      "kind": "Equipment",
+      "id": 2806
+    },
+    {
+      "href": "/Equipment.aspx?ID=3197&amp;NoRedirect=1",
+      "text": "Mamlambo Scale",
+      "kind": "Equipment",
+      "id": 3197
+    }
+  ],
+  "meta_description": "Scale mail consists of many metal scales sewn onto a reinforced leather backing, often in the form of a long shirt that protects the torso, arms, and legs.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Armor, Scale Mail"
+}

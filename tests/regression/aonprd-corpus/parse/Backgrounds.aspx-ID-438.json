@@ -1,0 +1,83 @@
+{
+  "_type": "background",
+  "url": "https://2e.aonprd.com/Backgrounds.aspx?ID=438",
+  "entity_id": 438,
+  "name": "Raised by Belief",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Backgrounds.aspx?ID=132&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 88,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 88,
+      "source_id": 216,
+      "raw": "Player Core pg. 88"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Backgrounds.aspx?ID=132&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Backgrounds",
+      "id": 132
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Backgrounds.aspx?ID=438",
+      "text": "Raised by Belief",
+      "kind": "Backgrounds",
+      "id": 438
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 88",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Feats.aspx?ID=756",
+      "text": "Assurance",
+      "kind": "Feats",
+      "id": 756
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Lore",
+      "kind": "Skills",
+      "id": 8
+    }
+  ],
+  "body_text": "Whether in a monastery, a religious household, or just as part of your everyday life, your upbringing was steeped in the traditions of a faith or philosophy. You might remain committed or you may have turned from your childhood creed, but your skills are still founded in your devotion. Choose two ability boosts. One must be to an attribute specified in your deity’s Divine Attribute and the other is a free attribute boost. You’re trained in your deity’s associated skill, and you gain Assurance with that skill. You gain a Lore skill with a subcategory associated with your deity (Abadar Lore, for instance).",
+  "body_html": "Whether in a monastery, a religious household, or just as part of your everyday life, your upbringing was steeped in the traditions of a faith or philosophy. You might remain committed or you may have turned from your childhood creed, but your skills are still founded in your devotion.<br><br> Choose two ability boosts. One must be to an attribute\nspecified in your deity’s Divine Attribute and the other is a free\nattribute boost.<br><br> You’re trained in your deity’s associated skill, and you gain <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=756\">Assurance</a> with that skill. You gain a <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=8\">Lore</a> skill with a subcategory associated with your deity (Abadar Lore, for instance).",
+  "meta_description": "Whether in a monastery, a religious household, or just as part of your everyday life, your upbringing was steeped in the traditions of a faith or philosophy. You might remain committed or you may have turned from your childhood creed, but your skills are still founded in your devotion.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Backgrounds, Raised by Belief",
+  "attribute_boost_choice": null,
+  "trained_skills": [],
+  "lore_skills": [
+    {
+      "name": "Lore",
+      "skill_id": 8
+    }
+  ],
+  "granted_feat": {
+    "name": "Assurance",
+    "feat_id": 756
+  },
+  "flavor_text": "Whether in a monastery, a religious household, or just as part of your everyday life, your upbringing was steeped in the traditions of a faith or philosophy. You might remain committed or you may have turned from your childhood creed, but your skills are still founded in your devotion. Choose two ability boosts. One must be to an attribute specified in your deity’s Divine Attribute and the other is a free attribute boost. You’re trained in your deity’s associated skill, and you gain Assurance with that skill. You gain a Lore skill with a subcategory associated with your deity (Abadar Lore, for instance).",
+  "related_sources": []
+}

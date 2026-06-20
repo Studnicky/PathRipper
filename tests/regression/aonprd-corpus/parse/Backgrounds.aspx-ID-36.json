@@ -1,0 +1,130 @@
+{
+  "_type": "background",
+  "url": "https://2e.aonprd.com/Backgrounds.aspx?ID=36",
+  "entity_id": 36,
+  "name": "Scholar",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Backgrounds.aspx?ID=36&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 88,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 88,
+      "source_id": 216,
+      "raw": "Player Core pg. 88"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Backgrounds.aspx?ID=36&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Backgrounds",
+      "id": 36
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Backgrounds.aspx?ID=440",
+      "text": "Scholar",
+      "kind": "Backgrounds",
+      "id": 440
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 88",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Skills.aspx?ID=2",
+      "text": "Arcana",
+      "kind": "Skills",
+      "id": 2
+    },
+    {
+      "href": "Skills.aspx?ID=10",
+      "text": "Nature",
+      "kind": "Skills",
+      "id": 10
+    },
+    {
+      "href": "Skills.aspx?ID=11",
+      "text": "Occultism",
+      "kind": "Skills",
+      "id": 11
+    },
+    {
+      "href": "Skills.aspx?ID=13",
+      "text": "Religion",
+      "kind": "Skills",
+      "id": 13
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Academia Lore",
+      "kind": "Skills",
+      "id": 8
+    },
+    {
+      "href": "Feats.aspx?ID=756",
+      "text": "Assurance",
+      "kind": "Feats",
+      "id": 756
+    }
+  ],
+  "body_text": "You have a knack for learning, and sequestered yourself from the outside world to learn all you could. You read about so many wondrous places and things in your books, and always dreamed about one day seeing the real things. Eventually, that curiosity led you to leave your studies and become an adventurer. Choose two attribute boosts. One must be to Intelligence or Wisdom, and one is a free attribute boost. You’re trained in your choice of the Arcana, Nature, Occultism, or Religion skill, and the Academia Lore skill. You gain the Assurance skill feat in your chosen skill.",
+  "body_html": "You have a knack for learning, and sequestered yourself from the outside world to learn all you could. You read about so many wondrous places and things in your books, and always dreamed about one day seeing the real things. Eventually, that curiosity led you to leave your studies and become an adventurer.<br><br>Choose two attribute boosts. One must be to <b>Intelligence</b> or <b>Wisdom</b>, and one is a free attribute boost.<br><br>You’re trained in your choice of the <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=2\">Arcana</a>, <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=10\">Nature</a>, <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=11\">Occultism</a>, or <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=13\">Religion</a> skill, and the <u><a href=\"Skills.aspx?ID=8\">Academia Lore</a></u> skill. You gain the <u><a href=\"Feats.aspx?ID=756\">Assurance</a></u> skill feat in your chosen skill.",
+  "meta_description": "You have a knack for learning, and sequestered yourself from the outside world to learn all you could. You read about so many wondrous places and things in your books, and always dreamed about one day seeing the real things. Eventually, that curiosity led you to leave your studies and become an adventurer.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Backgrounds, Scholar",
+  "attribute_boost_choice": {
+    "fixed_options": [
+      "Intelligence",
+      "Wisdom"
+    ],
+    "free": true
+  },
+  "trained_skills": [
+    {
+      "name": "Arcana",
+      "skill_id": 2
+    },
+    {
+      "name": "Nature",
+      "skill_id": 10
+    },
+    {
+      "name": "Occultism",
+      "skill_id": 11
+    },
+    {
+      "name": "Religion",
+      "skill_id": 13
+    }
+  ],
+  "lore_skills": [
+    {
+      "name": "Academia Lore",
+      "skill_id": 8
+    }
+  ],
+  "granted_feat": {
+    "name": "Assurance",
+    "feat_id": 756
+  },
+  "flavor_text": "You have a knack for learning, and sequestered yourself from the outside world to learn all you could. You read about so many wondrous places and things in your books, and always dreamed about one day seeing the real things. Eventually, that curiosity led you to leave your studies and become an adventurer.",
+  "related_sources": []
+}

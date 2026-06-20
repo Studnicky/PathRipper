@@ -1,0 +1,608 @@
+{
+  "_type": "class",
+  "url": "https://2e.aonprd.com/Classes.aspx?ID=65",
+  "entity_id": 65,
+  "name": "Exemplar",
+  "rarity": "rare",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Rare",
+    "Divine",
+    "Exemplar"
+  ],
+  "trait_ids": {
+    "Rare": 683,
+    "Divine": 579,
+    "Exemplar": 839
+  },
+  "source": {
+    "book": "War of Immortals",
+    "page": 28,
+    "source_id": 232
+  },
+  "sources": [
+    {
+      "book": "War of Immortals",
+      "page": 28,
+      "source_id": 232,
+      "raw": "War of Immortals pg. 28"
+    },
+    {
+      "book": "War of Immortals",
+      "page": 25,
+      "source_id": 232,
+      "raw": "War of Immortals pg. 25"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "During Combat Encounters...",
+      "level": 2,
+      "body_html": "You fight on the vanguard, scattering lesser foes to the winds. You concentrate your divine energy into the right weapon or tool for the moment. When an arrow strikes your skin, it stings no more than a flea; when your spear strikes forward, it can pierce gods.<br>",
+      "body_text": "You fight on the vanguard, scattering lesser foes to the winds. You concentrate your divine energy into the right weapon or tool for the moment. When an arrow strikes your skin, it stings no more than a flea; when your spear strikes forward, it can pierce gods.",
+      "links": []
+    },
+    {
+      "heading": "During Social Encounters...",
+      "level": 2,
+      "body_html": "You naturally cut a larger-than-life figure. You may use your personal magnetism to inspire others, or you might be a lone and brooding figure who seldom speaks. Either way, your actions and words hang in the air with weight.<br>",
+      "body_text": "You naturally cut a larger-than-life figure. You may use your personal magnetism to inspire others, or you might be a lone and brooding figure who seldom speaks. Either way, your actions and words hang in the air with weight.",
+      "links": []
+    },
+    {
+      "heading": "While Exploring...",
+      "level": 2,
+      "body_html": "You feel for the flow of fate, knowing that your path will bring you to your next quest. You may take special interest in certain aspects of nature, society, or the cosmos as your divine spark begins to find itself drawn to certain powers.<br>",
+      "body_text": "You feel for the flow of fate, knowing that your path will bring you to your next quest. You may take special interest in certain aspects of nature, society, or the cosmos as your divine spark begins to find itself drawn to certain powers.",
+      "links": []
+    },
+    {
+      "heading": "In Downtime...",
+      "level": 2,
+      "body_html": "Inactivity rarely suits an exemplar, so you seek out additional deeds or quests to spread your name. You might search for creatures to slay, compete in athletic contests, or quest for lost artifacts.<br>",
+      "body_text": "Inactivity rarely suits an exemplar, so you seek out additional deeds or quests to spread your name. You might search for creatures to slay, compete in athletic contests, or quest for lost artifacts.",
+      "links": []
+    },
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Chase glory across the land, beyond the sea, and over the horizon.</li><li>Take other heroes under your wing, that your legend may live on through them.</li><li>Feel the weight of immense expectations and obligation.</li></ul>",
+      "body_text": "Chase glory across the land, beyond the sea, and over the horizon.Take other heroes under your wing, that your legend may live on through them.Feel the weight of immense expectations and obligation.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Look to you in times of crisis, thinking you can handle any challenge.</li><li>Think of you as larger than life, more of the figure of a story than a living adventurer.</li><li>Mistake your heroism and capability for pride and aloofness.</li></ul>",
+      "body_text": "Look to you in times of crisis, thinking you can handle any challenge.Think of you as larger than life, more of the figure of a story than a living adventurer.Mistake your heroism and capability for pride and aloofness.",
+      "links": []
+    },
+    {
+      "heading": "Perception",
+      "level": 2,
+      "body_html": "Trained in Perception<br>",
+      "body_text": "Trained in Perception",
+      "links": []
+    },
+    {
+      "heading": "Saving Throws",
+      "level": 2,
+      "body_html": "Expert in Fortitude<br>Trained in Reflex<br>Expert in Will<br>",
+      "body_text": "Expert in Fortitude Trained in Reflex Expert in Will",
+      "links": []
+    },
+    {
+      "heading": "Skills",
+      "level": 2,
+      "body_html": "Trained in <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=46\">Religion</a><br> Trained in a number of additional skills equal to 3 plus your Intelligence modifier<br>",
+      "body_text": "Trained in Religion Trained in a number of additional skills equal to 3 plus your Intelligence modifier",
+      "links": [
+        {
+          "href": "Skills.aspx?ID=46",
+          "text": "Religion",
+          "kind": "Skills",
+          "id": 46
+        }
+      ]
+    },
+    {
+      "heading": "Attacks",
+      "level": 2,
+      "body_html": "Trained in simple weapons<br> Trained in martial weapons<br> Trained in unarmed attacks<br>",
+      "body_text": "Trained in simple weapons Trained in martial weapons Trained in unarmed attacks",
+      "links": []
+    },
+    {
+      "heading": "Defenses",
+      "level": 2,
+      "body_html": "Trained in light armor<br> Trained in medium armor<br> Trained in unarmored defense<br>",
+      "body_text": "Trained in light armor Trained in medium armor Trained in unarmored defense",
+      "links": []
+    },
+    {
+      "heading": "Class DC",
+      "level": 2,
+      "body_html": "Trained in exemplar class DC<br>",
+      "body_text": "Trained in exemplar class DC",
+      "links": []
+    },
+    {
+      "heading": "Ancestry and Background",
+      "level": 2,
+      "body_html": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.<br>",
+      "body_text": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "In addition to what you get from your class at 1st level, you have four free boosts to different attribute modifiers.<br><br> At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost and must boost that attribute again at a later level to increase it by 1.<br>",
+      "body_text": "In addition to what you get from your class at 1st level, you have four free boosts to different attribute modifiers. At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost and must boost that attribute again at a later level to increase it by 1.",
+      "links": []
+    },
+    {
+      "heading": "Initial Proficiencies",
+      "level": 2,
+      "body_html": "At 1st level, you gain a number of proficiencies that represent your basic training. These proficiencies are noted at the start of this class.<br>",
+      "body_text": "At 1st level, you gain a number of proficiencies that represent your basic training. These proficiencies are noted at the start of this class.",
+      "links": []
+    },
+    {
+      "heading": "Divine Spark and Ikons",
+      "level": 2,
+      "body_html": "Within your soul is a tiny spark of divine power that belongs not to a deity, but is something you've claimed all your own. You can focus this divine power through special items known as ikons. Ikons are items or bodily features intrinsically linked to you—sacred vessels forged from your divinity that are capable of conducting its power. Select three <a style=\"text-decoration:underline\" href=\"Ikons.aspx\">ikons</a>.<br><br> By placing your divine spark into one of your ikons, you empower that ikon to accomplish deeds beyond what it could in mortal hands. Each ikon has both a passive immanence effect and an active transcendence effect. Both of these effects require your divine spark to be in the item. You can place your spark into an ikon by using the Shift Immanence action. <div class=\"calledAction\"><h3 class=\"title\"><a href=\"Actions.aspx?ID=3030\">Shift Immanence</a>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span> </h3><span class=\"trait\"><a href=\"/Traits.aspx?ID=579\">Divine</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><span class=\"trait\"><a href=\"/Traits.aspx?ID=839\">Exemplar</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><br><b>Source</b> <a href=\"Sources.aspx?ID=232\" target=\"_blank\" class=\"external-link\"><i>War of Immortals pg. 25</i></a><hr>You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=579\">divine</a> trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.<hr><b>Special</b> In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative.</div> ",
+      "body_text": "Within your soul is a tiny spark of divine power that belongs not to a deity, but is something you've claimed all your own. You can focus this divine power through special items known as ikons. Ikons are items or bodily features intrinsically linked to you—sacred vessels forged from your divinity that are capable of conducting its power. Select three ikons. By placing your divine spark into one of your ikons, you empower that ikon to accomplish deeds beyond what it could in mortal hands. Each ikon has both a passive immanence effect and an active transcendence effect. Both of these effects require your divine spark to be in the item. You can place your spark into an ikon by using the Shift Immanence action. Shift Immanence [one-action] Divine Exemplar Source War of Immortals pg. 25You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the divine trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.Special In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative.",
+      "links": [
+        {
+          "href": "Ikons.aspx",
+          "text": "ikons",
+          "kind": "Ikons",
+          "id": null
+        },
+        {
+          "href": "Actions.aspx?ID=3030",
+          "text": "Shift Immanence",
+          "kind": "Actions",
+          "id": 3030
+        },
+        {
+          "href": "/Traits.aspx?ID=579",
+          "text": "Divine",
+          "kind": "Traits",
+          "id": 579
+        },
+        {
+          "href": "/Traits.aspx?ID=839",
+          "text": "Exemplar",
+          "kind": "Traits",
+          "id": 839
+        },
+        {
+          "href": "Sources.aspx?ID=232",
+          "text": "War of Immortals pg. 25",
+          "kind": "Sources",
+          "id": 232
+        },
+        {
+          "href": "Traits.aspx?ID=579",
+          "text": "divine",
+          "kind": "Traits",
+          "id": 579
+        }
+      ]
+    },
+    {
+      "heading": "Shift Immanence [one-action]",
+      "level": 3,
+      "body_html": "<span class=\"trait\"><a href=\"/Traits.aspx?ID=579\">Divine</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><span class=\"trait\"><a href=\"/Traits.aspx?ID=839\">Exemplar</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><br><b>Source</b> <a href=\"Sources.aspx?ID=232\" target=\"_blank\" class=\"external-link\"><i>War of Immortals pg. 25</i></a><hr>You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=579\">divine</a> trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.<hr><b>Special</b> In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative.",
+      "body_text": "Divine Exemplar Source War of Immortals pg. 25You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the divine trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.Special In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative.",
+      "links": [
+        {
+          "href": "/Traits.aspx?ID=579",
+          "text": "Divine",
+          "kind": "Traits",
+          "id": 579
+        },
+        {
+          "href": "/Traits.aspx?ID=839",
+          "text": "Exemplar",
+          "kind": "Traits",
+          "id": 839
+        },
+        {
+          "href": "Sources.aspx?ID=232",
+          "text": "War of Immortals pg. 25",
+          "kind": "Sources",
+          "id": 232
+        },
+        {
+          "href": "Traits.aspx?ID=579",
+          "text": "divine",
+          "kind": "Traits",
+          "id": 579
+        }
+      ]
+    },
+    {
+      "heading": "Spark Transcendence",
+      "level": 2,
+      "body_html": " While your spark dwells within an ikon, you get that ikon's immanence effect continually. However, you can also Spark Transcendence in a mighty deed, channeling your divinity through the ikon—though when you Spark Transcendence, the force of the act temporarily casts your divine spark out of the ikon. Each ikon's transcendence action appears in its stat block, and the transcendence trait is described in the Key Terms sidebar. ",
+      "body_text": "While your spark dwells within an ikon, you get that ikon's immanence effect continually. However, you can also Spark Transcendence in a mighty deed, channeling your divinity through the ikon—though when you Spark Transcendence, the force of the act temporarily casts your divine spark out of the ikon. Each ikon's transcendence action appears in its stat block, and the transcendence trait is described in the Key Terms sidebar.",
+      "links": []
+    },
+    {
+      "heading": "Expanding Immanence And Transcendence",
+      "level": 2,
+      "body_html": " Each ikon has one immanence and one transcendence ability when acquired, but you can imbue your ikons with additional abilities through higher-level exemplar class features and feats. These abilities have the ikon trait.<br>",
+      "body_text": "Each ikon has one immanence and one transcendence ability when acquired, but you can imbue your ikons with additional abilities through higher-level exemplar class features and feats. These abilities have the ikon trait.",
+      "links": []
+    },
+    {
+      "heading": "Exemplar Feats",
+      "level": 2,
+      "body_html": "At 1st level and every even-numbered level thereafter, you gain an <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=839\">exemplar class feat</a>.<br>",
+      "body_text": "At 1st level and every even-numbered level thereafter, you gain an exemplar class feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=839",
+          "text": "exemplar class feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Humble Strikes",
+      "level": 2,
+      "body_html": "Even the most unassuming weapons can accomplish great deeds. When you are wielding a simple weapon, increase the damage die size of that weapon by one step.<br>",
+      "body_text": "Even the most unassuming weapons can accomplish great deeds. When you are wielding a simple weapon, increase the damage die size of that weapon by one step.",
+      "links": []
+    },
+    {
+      "heading": "Shield Block",
+      "level": 2,
+      "body_html": "You gain the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=5212\">Shield Block</a> general feat, a reaction that lets you reduce damage with your shield.<br>",
+      "body_text": "You gain the Shield Block general feat, a reaction that lets you reduce damage with your shield.",
+      "links": [
+        {
+          "href": "Feats.aspx?ID=5212",
+          "text": "Shield Block",
+          "kind": "Feats",
+          "id": 5212
+        }
+      ]
+    },
+    {
+      "heading": "Skill FeatsLevel 2",
+      "level": 2,
+      "body_html": "At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=695\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br>",
+      "body_text": "At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=695",
+          "text": "skill feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "General FeatsLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=615\">general feat</a>.<br>",
+      "body_text": "At 3rd level and every 4 levels thereafter, you gain a general feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=615",
+          "text": "general feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Root EpithetLevel 3",
+      "level": 2,
+      "body_html": "As your story unfolds, your personality and deeds begin to shape the potential of your divine spark. You come to bear an epithet—a word or phrase that seems to always stick in the mind of those describing you. Your epithets grant you additional abilities, especially when your divine spark is brought to the surface.<br><br> You first gain a root epithet to describe an aspect of your personality. This grants you a skill, as well as a special effect that occurs when you Spark Transcendence. If you are already trained in the granted skill, you become trained in a different skill of your choice, as normal. An effect that occurs after you Spark Transcendence happens immediately after your transcendence action is completely resolved. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Root\">Root Epithet.</a><br>",
+      "body_text": "As your story unfolds, your personality and deeds begin to shape the potential of your divine spark. You come to bear an epithet—a word or phrase that seems to always stick in the mind of those describing you. Your epithets grant you additional abilities, especially when your divine spark is brought to the surface. You first gain a root epithet to describe an aspect of your personality. This grants you a skill, as well as a special effect that occurs when you Spark Transcendence. If you are already trained in the granted skill, you become trained in a different skill of your choice, as normal. An effect that occurs after you Spark Transcendence happens immediately after your transcendence action is completely resolved. Choose one Root Epithet.",
+      "links": [
+        {
+          "href": "Epithets.aspx?Type=Root",
+          "text": "Root Epithet.",
+          "kind": "Epithets",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Skill IncreasesLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained.<br><br> At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.<br>",
+      "body_text": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained. At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.",
+      "links": []
+    },
+    {
+      "heading": "Ancestry FeatsLevel 5",
+      "level": 2,
+      "body_html": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter.<br>",
+      "body_text": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter.",
+      "links": []
+    },
+    {
+      "heading": "Weapon ExpertiseLevel 5",
+      "level": 2,
+      "body_html": "You've dedicated yourself to learning the intricacies of your weapons. Your proficiency ranks for unarmed attacks, simple weapons, and martial weapons increase to expert.<br>",
+      "body_text": "You've dedicated yourself to learning the intricacies of your weapons. Your proficiency ranks for unarmed attacks, simple weapons, and martial weapons increase to expert.",
+      "links": []
+    },
+    {
+      "heading": "Dominion EpithetLevel 7",
+      "level": 2,
+      "body_html": "Your divinity has grown in power along with your deeds, allowing you to begin claiming dominion over aspects of creation. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Dominion\">Dominion Epithet</a>. Each one grants a critical specialization ability you can use instead of any others you might have access to, and an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence. Some epithets grant additional benefits, such as feats.<br>",
+      "body_text": "Your divinity has grown in power along with your deeds, allowing you to begin claiming dominion over aspects of creation. Choose one Dominion Epithet. Each one grants a critical specialization ability you can use instead of any others you might have access to, and an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence. Some epithets grant additional benefits, such as feats.",
+      "links": [
+        {
+          "href": "Epithets.aspx?Type=Dominion",
+          "text": "Dominion Epithet",
+          "kind": "Epithets",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Spirit StrikingLevel 7",
+      "level": 2,
+      "body_html": "Your divine power can't be contained, escaping in flits and embers as you wreak violence. You deal 2 additional spirit damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.<br>",
+      "body_text": "Your divine power can't be contained, escaping in flits and embers as you wreak violence. You deal 2 additional spirit damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.",
+      "links": []
+    },
+    {
+      "heading": "Unassailable SoulLevel 7",
+      "level": 2,
+      "body_html": "A firm knowledge of (or foolish pride in) yourself and your ability girds your mind against doubt and intrusion. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.<br>",
+      "body_text": "A firm knowledge of (or foolish pride in) yourself and your ability girds your mind against doubt and intrusion. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.",
+      "links": []
+    },
+    {
+      "heading": "Divine PremonitionLevel 9",
+      "level": 2,
+      "body_html": "A sense of the flow of fate allows you to respond to danger with uncanny alacrity. Your proficiency rank for Reflex saves increases to expert.<br>",
+      "body_text": "A sense of the flow of fate allows you to respond to danger with uncanny alacrity. Your proficiency rank for Reflex saves increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Godly ExpertiseLevel 9",
+      "level": 2,
+      "body_html": "Your divine power increases in might. Your proficiency rank for your exemplar class DC increases to expert.<br>",
+      "body_text": "Your divine power increases in might. Your proficiency rank for your exemplar class DC increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Perception ExpertiseLevel 9",
+      "level": 2,
+      "body_html": "You remain alert to threats around you. Your proficiency rank for Perception increases to expert.<br>",
+      "body_text": "You remain alert to threats around you. Your proficiency rank for Perception increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Divine Weapon Mastery Level 13",
+      "level": 2,
+      "body_html": "Your skill with weapons is divinely inspired. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master.<br>",
+      "body_text": "Your skill with weapons is divinely inspired. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master.",
+      "links": []
+    },
+    {
+      "heading": "Greater Unassailable Soul Level 13",
+      "level": 2,
+      "body_html": "A wall of confidence blunts every arrow seeking to pierce your mind. Your proficiency rank for Will saves increases to legendary. When you roll a success at a Will save, you get a critical success. When you roll a critical failure at a Will save, you get a failure instead. When you fail a Will save against a damaging effect, you take half damage.<br>",
+      "body_text": "A wall of confidence blunts every arrow seeking to pierce your mind. Your proficiency rank for Will saves increases to legendary. When you roll a success at a Will save, you get a critical success. When you roll a critical failure at a Will save, you get a failure instead. When you fail a Will save against a damaging effect, you take half damage.",
+      "links": []
+    },
+    {
+      "heading": "Burnished Armor ExpertiseLevel 13",
+      "level": 2,
+      "body_html": "Exposure to your divine spark has reinforced your armor. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to expert.<br>",
+      "body_text": "Exposure to your divine spark has reinforced your armor. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to expert.",
+      "links": []
+    },
+    {
+      "heading": "Greater Spirit StrikingLevel 15",
+      "level": 2,
+      "body_html": "Your additional damage from spirit striking increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.<br>",
+      "body_text": "Your additional damage from spirit striking increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.",
+      "links": []
+    },
+    {
+      "heading": "Mortality ReforgedLevel 15",
+      "level": 2,
+      "body_html": "Inner fire has burned away the frailty of a mortal body. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.<br>",
+      "body_text": "Inner fire has burned away the frailty of a mortal body. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.",
+      "links": []
+    },
+    {
+      "heading": "Sovereignty EpithetLevel 15",
+      "level": 2,
+      "body_html": "The litany of heroic deeds left in your wake has caused your divine spark to blaze bright enough that it now illuminates your legacy. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Sovereignty\">Sovereignty Epithet</a>, which grants you an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence.<br>",
+      "body_text": "The litany of heroic deeds left in your wake has caused your divine spark to blaze bright enough that it now illuminates your legacy. Choose one Sovereignty Epithet, which grants you an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence.",
+      "links": [
+        {
+          "href": "Epithets.aspx?Type=Sovereignty",
+          "text": "Sovereignty Epithet",
+          "kind": "Epithets",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Deific MasteryLevel 17",
+      "level": 2,
+      "body_html": "You have achieved full mastery over your divine spark as its power flows through your body and ikons. Your proficiency rank for your exemplar class DC increases to master.<br>",
+      "body_text": "You have achieved full mastery over your divine spark as its power flows through your body and ikons. Your proficiency rank for your exemplar class DC increases to master.",
+      "links": []
+    },
+    {
+      "heading": "Perception MasteryLevel 17",
+      "level": 2,
+      "body_html": "Through your adventures, you've developed keen awareness and attention to detail, the better to watch over your wards and keep an eye out for monsters and other threats. Your proficiency rank for Perception increases to master.<br>",
+      "body_text": "Through your adventures, you've developed keen awareness and attention to detail, the better to watch over your wards and keep an eye out for monsters and other threats. Your proficiency rank for Perception increases to master.",
+      "links": []
+    },
+    {
+      "heading": "Burnished Armor MasteryLevel 19",
+      "level": 2,
+      "body_html": "Your armor shines with divine light, flawless and unyielding. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to master.<br>",
+      "body_text": "Your armor shines with divine light, flawless and unyielding. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to master.",
+      "links": []
+    }
+  ],
+  "raw_fields": {
+    "Immanence": ": At any given time, your divine spark can rest within one of your ikons, empowering it with beyond-mortal abilities. As long as your divine spark is empowering one of your ikons, that ikon gains the divine trait and grants you the benefits described in its immanence entry (which is also a divine effect). If your ikon has multiple immanence abilities, you gain all of them whenever the ikon is empowered. If an immanence ability occurs on a critical Strike with a weapon, it replaces any critical specialization effect that weapon might otherwise have.",
+    "Class Features": "1Ancestry and background, attribute boosts, initial proficiencies, divine spark and ikons, exemplar feat, humble strikes, Shield Block2Exemplar feat, skill feat3General feat, root epithet, skill increase4Exemplar feat, skill feat5Attribute boosts, ancestry feat, skill increase, weapon expertise6Exemplar feat, skill feat7Dominion epithet, general feat, skill increase, spirit striking, unassailable soul8Exemplar feat, skill feat9Ancestry feat, divine premonition, godly expertise, perception expertise, skill increase10Attribute boosts, exemplar feat, skill feat11General feat, skill increase12Exemplar feat, skill feat13Ancestry feat, burnished armor expertise, divine weapon mastery, greater unassailable soul, skill increase14Exemplar feat, skill feat15Attribute boosts, general feat, greater spirit striking, mortality reforged, sovereignty epithet, skill increase16Exemplar feat, skill feat17Ancestry feat, deific mastery, perception mastery, skill increase18Exemplar feat, skill feat19Burnished armor mastery, general feat, skill increase20Attribute boosts, exemplar feat, skill featAncestry and BackgroundIn addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background."
+  },
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=683",
+      "text": "Rare",
+      "kind": "Traits",
+      "id": 683
+    },
+    {
+      "href": "Sources.aspx?ID=232",
+      "text": "War of Immortals pg. 28",
+      "kind": "Sources",
+      "id": 232
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "PFS Note",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Traits.aspx?ID=606",
+      "text": "Flourish",
+      "kind": "Traits",
+      "id": 606
+    },
+    {
+      "href": "Traits.aspx?ID=840",
+      "text": "Ikon",
+      "kind": "Traits",
+      "id": 840
+    },
+    {
+      "href": "Traits.aspx?ID=579",
+      "text": "divine",
+      "kind": "Traits",
+      "id": 579
+    },
+    {
+      "href": "Rules.aspx?ID=235",
+      "text": "critical specialization effect",
+      "kind": "Rules",
+      "id": 235
+    },
+    {
+      "href": "Traits.aspx?ID=842",
+      "text": "Transcendence",
+      "kind": "Traits",
+      "id": 842
+    },
+    {
+      "href": "Skills.aspx?ID=46",
+      "text": "Religion",
+      "kind": "Skills",
+      "id": 46
+    },
+    {
+      "href": "Ikons.aspx",
+      "text": "ikons",
+      "kind": "Ikons",
+      "id": null
+    },
+    {
+      "href": "Actions.aspx?ID=3030",
+      "text": "Shift Immanence",
+      "kind": "Actions",
+      "id": 3030
+    },
+    {
+      "href": "/Traits.aspx?ID=579",
+      "text": "Divine",
+      "kind": "Traits",
+      "id": 579
+    },
+    {
+      "href": "/Traits.aspx?ID=839",
+      "text": "Exemplar",
+      "kind": "Traits",
+      "id": 839
+    },
+    {
+      "href": "Sources.aspx?ID=232",
+      "text": "War of Immortals pg. 25",
+      "kind": "Sources",
+      "id": 232
+    },
+    {
+      "href": "Feats.aspx?Traits=839",
+      "text": "exemplar class feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?ID=5212",
+      "text": "Shield Block",
+      "kind": "Feats",
+      "id": 5212
+    },
+    {
+      "href": "Feats.aspx?Traits=695",
+      "text": "skill feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?Traits=615",
+      "text": "general feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Epithets.aspx?Type=Root",
+      "text": "Root Epithet.",
+      "kind": "Epithets",
+      "id": null
+    },
+    {
+      "href": "Epithets.aspx?Type=Dominion",
+      "text": "Dominion Epithet",
+      "kind": "Epithets",
+      "id": null
+    },
+    {
+      "href": "Epithets.aspx?Type=Sovereignty",
+      "text": "Sovereignty Epithet",
+      "kind": "Epithets",
+      "id": null
+    }
+  ],
+  "body_text": "You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the divine trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.Special In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative. Spark Transcendence While your spark dwells within an ikon, you get that ikon's immanence effect continually. However, you can also Spark Transcendence in a mighty deed, channeling your divinity through the ikon—though when you Spark Transcendence, the force of the act temporarily casts your divine spark out of the ikon. Each ikon's transcendence action appears in its stat block, and the transcendence trait is described in the Key Terms sidebar. Expanding Immanence And Transcendence Each ikon has one immanence and one transcendence ability when acquired, but you can imbue your ikons with additional abilities through higher-level exemplar class features and feats. These abilities have the ikon trait. Exemplar FeatsAt 1st level and every even-numbered level thereafter, you gain an exemplar class feat. Humble StrikesEven the most unassuming weapons can accomplish great deeds. When you are wielding a simple weapon, increase the damage die size of that weapon by one step. Shield BlockYou gain the Shield Block general feat, a reaction that lets you reduce damage with your shield. Skill FeatsLevel 2At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat. General FeatsLevel 3At 3rd level and every 4 levels thereafter, you gain a general feat. Root EpithetLevel 3As your story unfolds, your personality and deeds begin to shape the potential of your divine spark. You come to bear an epithet—a word or phrase that seems to always stick in the mind of those describing you. Your epithets grant you additional abilities, especially when your divine spark is brought to the surface. You first gain a root epithet to describe an aspect of your personality. This grants you a skill, as well as a special effect that occurs when you Spark Transcendence. If you are already trained in the granted skill, you become trained in a different skill of your choice, as normal. An effect that occurs after you Spark Transcendence happens immediately after your transcendence action is completely resolved. Choose one Root Epithet. Skill IncreasesLevel 3At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained. At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master. Ancestry FeatsLevel 5In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. Weapon ExpertiseLevel 5You've dedicated yourself to learning the intricacies of your weapons. Your proficiency ranks for unarmed attacks, simple weapons, and martial weapons increase to expert. Dominion EpithetLevel 7Your divinity has grown in power along with your deeds, allowing you to begin claiming dominion over aspects of creation. Choose one Dominion Epithet. Each one grants a critical specialization ability you can use instead of any others you might have access to, and an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence. Some epithets grant additional benefits, such as feats. Spirit StrikingLevel 7Your divine power can't be contained, escaping in flits and embers as you wreak violence. You deal 2 additional spirit damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and 4 if you're legendary. Unassailable SoulLevel 7A firm knowledge of (or foolish pride in) yourself and your ability girds your mind against doubt and intrusion. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead. Divine PremonitionLevel 9A sense of the flow of fate allows you to respond to danger with uncanny alacrity. Your proficiency rank for Reflex saves increases to expert. Godly ExpertiseLevel 9Your divine power increases in might. Your proficiency rank for your exemplar class DC increases to expert. Perception ExpertiseLevel 9You remain alert to threats around you. Your proficiency rank for Perception increases to expert. Divine Weapon Mastery Level 13Your skill with weapons is divinely inspired. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master. Greater Unassailable Soul Level 13A wall of confidence blunts every arrow seeking to pierce your mind. Your proficiency rank for Will saves increases to legendary. When you roll a success at a Will save, you get a critical success. When you roll a critical failure at a Will save, you get a failure instead. When you fail a Will save against a damaging effect, you take half damage. Burnished Armor ExpertiseLevel 13Exposure to your divine spark has reinforced your armor. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to expert. Greater Spirit StrikingLevel 15Your additional damage from spirit striking increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary. Mortality ReforgedLevel 15Inner fire has burned away the frailty of a mortal body. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead. Sovereignty EpithetLevel 15The litany of heroic deeds left in your wake has caused your divine spark to blaze bright enough that it now illuminates your legacy. Choose one Sovereignty Epithet, which grants you an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence. Deific MasteryLevel 17You have achieved full mastery over your divine spark as its power flows through your body and ikons. Your proficiency rank for your exemplar class DC increases to master. Perception MasteryLevel 17Through your adventures, you've developed keen awareness and attention to detail, the better to watch over your wards and keep an eye out for monsters and other threats. Your proficiency rank for Perception increases to master. Burnished Armor MasteryLevel 19Your armor shines with divine light, flawless and unyielding. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to master.",
+  "body_html": "You shift your power, filling one of your ikons with your divine spark. That ikon softly glows with radiant light, emits subtle chimes as it moves, or is otherwise obviously empowered in a way that matches your growing divinity, granting the ikon the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=579\">divine</a> trait and granting you that ikon's immanence effects for as long as your divine spark is empowering it. Your spark is indivisible, so it can empower only one ikon at a time. You can also Shift Immanence to return your spark to the depths of your soul, leaving none of your ikons empowered.<hr><b>Special</b> In addition to the above usage, you can also Shift Immanence as a free action triggered when you roll initiative.</div> <h2 class=\"title\">Spark Transcendence</h2> While your spark dwells within an ikon, you get that ikon's immanence effect continually. However, you can also Spark Transcendence in a mighty deed, channeling your divinity through the ikon—though when you Spark Transcendence, the force of the act temporarily casts your divine spark out of the ikon. Each ikon's transcendence action appears in its stat block, and the transcendence trait is described in the Key Terms sidebar. <h2 class=\"title\">Expanding Immanence And Transcendence</h2> Each ikon has one immanence and one transcendence ability when acquired, but you can imbue your ikons with additional abilities through higher-level exemplar class features and feats. These abilities have the ikon trait.<br><h2 class=\"title\">Exemplar Feats</h2>At 1st level and every even-numbered level thereafter, you gain an <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=839\">exemplar class feat</a>.<br><h2 class=\"title\">Humble Strikes</h2>Even the most unassuming weapons can accomplish great deeds. When you are wielding a simple weapon, increase the damage die size of that weapon by one step.<br><h2 class=\"title\">Shield Block</h2>You gain the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=5212\">Shield Block</a> general feat, a reaction that lets you reduce damage with your shield.<br><h2 class=\"title\">Skill Feats<span style=\"margin-left:auto; margin-right:0\">Level 2</span></h2>At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=695\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br><h2 class=\"title\">General Feats<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=615\">general feat</a>.<br><h2 class=\"title\">Root Epithet<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>As your story unfolds, your personality and deeds begin to shape the potential of your divine spark. You come to bear an epithet—a word or phrase that seems to always stick in the mind of those describing you. Your epithets grant you additional abilities, especially when your divine spark is brought to the surface.<br><br> You first gain a root epithet to describe an aspect of your personality. This grants you a skill, as well as a special effect that occurs when you Spark Transcendence. If you are already trained in the granted skill, you become trained in a different skill of your choice, as normal. An effect that occurs after you Spark Transcendence happens immediately after your transcendence action is completely resolved. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Root\">Root Epithet.</a><br><h2 class=\"title\">Skill Increases<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained.<br><br> At 7th level, you can use skill increases to become a master in a skill in which you're already an expert, and at 15th level, you can use them to become legendary in a skill in which you're already a master.<br><h2 class=\"title\">Ancestry Feats<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter.<br><h2 class=\"title\">Weapon Expertise<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>You've dedicated yourself to learning the intricacies of your weapons. Your proficiency ranks for unarmed attacks, simple weapons, and martial weapons increase to expert.<br><h2 class=\"title\">Dominion Epithet<span style=\"margin-left:auto; margin-right:0\">Level 7</span></h2>Your divinity has grown in power along with your deeds, allowing you to begin claiming dominion over aspects of creation. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Dominion\">Dominion Epithet</a>. Each one grants a critical specialization ability you can use instead of any others you might have access to, and an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence. Some epithets grant additional benefits, such as feats.<br><h2 class=\"title\">Spirit Striking<span style=\"margin-left:auto; margin-right:0\">Level 7</span></h2>Your divine power can't be contained, escaping in flits and embers as you wreak violence. You deal 2 additional spirit damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and 4 if you're legendary.<br><h2 class=\"title\">Unassailable Soul<span style=\"margin-left:auto; margin-right:0\">Level 7</span></h2>A firm knowledge of (or foolish pride in) yourself and your ability girds your mind against doubt and intrusion. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.<br><h2 class=\"title\">Divine Premonition<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>A sense of the flow of fate allows you to respond to danger with uncanny alacrity. Your proficiency rank for Reflex saves increases to expert.<br><h2 class=\"title\">Godly Expertise<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>Your divine power increases in might. Your proficiency rank for your exemplar class DC increases to expert.<br><h2 class=\"title\">Perception Expertise<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>You remain alert to threats around you. Your proficiency rank for Perception increases to expert.<br><h2 class=\"title\">Divine Weapon Mastery <span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>Your skill with weapons is divinely inspired. Your proficiency ranks for simple weapons, martial weapons, and unarmed attacks increase to master.<br><h2 class=\"title\">Greater Unassailable Soul <span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>A wall of confidence blunts every arrow seeking to pierce your mind. Your proficiency rank for Will saves increases to legendary. When you roll a success at a Will save, you get a critical success. When you roll a critical failure at a Will save, you get a failure instead. When you fail a Will save against a damaging effect, you take half damage.<br><h2 class=\"title\">Burnished Armor Expertise<span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>Exposure to your divine spark has reinforced your armor. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to expert.<br><h2 class=\"title\">Greater Spirit Striking<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>Your additional damage from spirit striking increases to 4 with weapons and unarmed attacks in which you're an expert, 6 if you're a master, and 8 if you're legendary.<br><h2 class=\"title\">Mortality Reforged<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>Inner fire has burned away the frailty of a mortal body. Your proficiency rank for Fortitude saves increases to master. When you roll a success on a Fortitude save, you get a critical success instead.<br><h2 class=\"title\">Sovereignty Epithet<span style=\"margin-left:auto; margin-right:0\">Level 15</span></h2>The litany of heroic deeds left in your wake has caused your divine spark to blaze bright enough that it now illuminates your legacy. Choose one <a style=\"text-decoration:underline\" href=\"Epithets.aspx?Type=Sovereignty\">Sovereignty Epithet</a>, which grants you an ability you can use when you Spark Transcendence. You can benefit from no more than one epithet ability each time you Spark Transcendence.<br><h2 class=\"title\">Deific Mastery<span style=\"margin-left:auto; margin-right:0\">Level 17</span></h2>You have achieved full mastery over your divine spark as its power flows through your body and ikons. Your proficiency rank for your exemplar class DC increases to master.<br><h2 class=\"title\">Perception Mastery<span style=\"margin-left:auto; margin-right:0\">Level 17</span></h2>Through your adventures, you've developed keen awareness and attention to detail, the better to watch over your wards and keep an eye out for monsters and other threats. Your proficiency rank for Perception increases to master.<br><h2 class=\"title\">Burnished Armor Mastery<span style=\"margin-left:auto; margin-right:0\">Level 19</span></h2>Your armor shines with divine light, flawless and unyielding. Your proficiency ranks for light armor, medium armor, and unarmored defense increase to master.<br>",
+  "meta_description": "As the war god died, his power rained through the many planes of creation, sparking conflict and instilling divine energy in those previously without it. Whether you were directly touched by this power, claimed it from an ancient being or artifact, or whether it awoke something long dormant in your lineage, a spark of the divine now blazes within your soul, granting you abilities, sacred weapons, and divine signifiers that reach into the realm previously reserved for gods and legends. How you wield these tools and grow your power is for you to decide—you may become a hero or you may turn to selfish ends, but one thing is certain: you intend to carve your epithet in history, immortalized in the memory of gods and mortals alike.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Class, Exemplar",
+  "key_attribute": null,
+  "hit_points_text": null,
+  "hp_per_level": null,
+  "initial_proficiencies": {},
+  "class_dc": null,
+  "subclasses": []
+}

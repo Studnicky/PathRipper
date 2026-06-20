@@ -1,0 +1,52 @@
+{
+  "_type": "trait",
+  "url": "https://2e.aonprd.com/Traits.aspx?ID=248",
+  "entity_id": 248,
+  "name": "Range",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Bestiary",
+    "page": 17,
+    "source_id": 2
+  },
+  "sources": [
+    {
+      "book": "Bestiary",
+      "page": 17,
+      "source_id": 2,
+      "raw": "Bestiary pg. 17"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Traits.aspx?ID=248",
+      "text": "Range",
+      "kind": "Traits",
+      "id": 248
+    },
+    {
+      "href": "Sources.aspx?ID=2",
+      "text": "Bestiary pg. 17",
+      "kind": "Sources",
+      "id": 2
+    },
+    {
+      "href": "Rules.aspx?ID=227",
+      "text": "range increments",
+      "kind": "Rules",
+      "id": 227
+    }
+  ],
+  "body_text": "These attacks will either list a finite range or a range increment, which follows the normal rules for range increments.",
+  "body_html": "These attacks will either list a finite range or a range increment, which follows the normal rules for <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=227\">range increments</a>.<br><br><nethys-search default-query=\"ap-creatures=hide&amp;display=grouped&amp;group-fields=type&amp;link-layout=horizontal\" fixed-params=\"ID=248\" fixed-query-string=\"trait:&quot;Range&quot; !type:trait\" page-id=\"trait\" load-all=\"true\"></nethys-search>",
+  "meta_description": "These attacks will either list a finite range or a range increment, which follows the normal rules for range increments .",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Traits, Range",
+  "category": null
+}

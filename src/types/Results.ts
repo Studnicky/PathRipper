@@ -16,7 +16,7 @@
  * @module Results
  */
 
-import type { WikiPageInterface, CategoryMemberInterface } from './MediaWikiScraper.js';
+import type { WikiPageType, CategoryMemberType } from './MediaWikiScraper.js';
 
 // ─── Crawlers ─────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ export type BuildListResult = Promise<string[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchPageResult = Promise<WikiPageInterface>;
+export type FetchPageResult = Promise<WikiPageType>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchPagesBatch} — up to 50 pages
@@ -59,7 +59,7 @@ export type FetchPageResult = Promise<WikiPageInterface>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchPagesBatchResult = Promise<WikiPageInterface[]>;
+export type FetchPagesBatchResult = Promise<WikiPageType[]>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchCategory} — all page members
@@ -72,7 +72,7 @@ export type FetchPagesBatchResult = Promise<WikiPageInterface[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchCategoryResult = Promise<CategoryMemberInterface[]>;
+export type FetchCategoryResult = Promise<CategoryMemberType[]>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchAllPages} — every article in the
@@ -86,20 +86,7 @@ export type FetchCategoryResult = Promise<CategoryMemberInterface[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchAllPagesResult = Promise<CategoryMemberInterface[]>;
-
-/**
- * Return type of {@link MediaWikiScraper.scrapeCategory} — all pages in a
- * category with their full wikitext.
- *
- * @remarks Combines {@link MediaWikiScraper.fetchCategory} with batched wikitext fetches.
- * @example `const pages: ScrapeCategoryResult = scraper.scrapeCategory('Category:Monsters');`
- * @category Results
- * @since 2.0.0
- * @see {@link MediaWikiScraper}
- * @group Scrapers
- */
-export type ScrapeCategoryResult = Promise<WikiPageInterface[]>;
+export type FetchAllPagesResult = Promise<CategoryMemberType[]>;
 
 /**
  * Return type of {@link HtmlScraper.fetchText} — the raw HTML string of the
@@ -134,30 +121,28 @@ export type FlattenResult = Error[];
 // ─── Orchestrator ─────────────────────────────────────────────────────────────
 
 /**
- * Return type of {@link ScrapeOrchestrator.scrapeHtml} — resolves after all
- * HTML pages have been fetched, processed through the plugin pipeline, and
- * written to disk.
+ * Return type of {@link runHtml} — resolves after all HTML pages have been
+ * fetched, processed through the plugin pipeline, and written to disk.
  *
  * @remarks Throws if an unrecoverable error occurs during scraping.
- * @example `const r: ScrapeHtmlResult = ScrapeOrchestrator.scrapeHtml(opts);`
+ * @example `const r: ScrapeHtmlResult = runHtml(opts);`
  * @category Results
- * @since 2.0.0
- * @see {@link ScrapeOrchestrator}
+ * @since 4.0.0
+ * @see {@link runHtml}
  * @group Orchestrator
  */
 export type ScrapeHtmlResult = Promise<void>;
 
 /**
- * Return type of {@link ScrapeOrchestrator.scrapeWiki} — resolves after all
- * wiki pages have been fetched, processed through the plugin pipeline, and
- * written to disk.
+ * Return type of {@link runWiki} — resolves after all wiki pages have been
+ * fetched, processed through the plugin pipeline, and written to disk.
  *
  * @remarks Supports three modes: explicit category, categories[] from config,
  * or full-wiki enumeration via allpages.
- * @example `const r: ScrapeWikiResult = ScrapeOrchestrator.scrapeWiki(opts);`
+ * @example `const r: ScrapeWikiResult = runWiki(opts);`
  * @category Results
- * @since 2.0.0
- * @see {@link ScrapeOrchestrator}
+ * @since 4.0.0
+ * @see {@link runWiki}
  * @group Orchestrator
  */
 export type ScrapeWikiResult = Promise<void>;

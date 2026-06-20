@@ -70,19 +70,33 @@ ripperoni scrape \
 
 ## Write a parse plugin
 
-Plugins are plain `.js` files loaded at runtime. Each plugin registers a task under `<targetId>:parse`:
+Plugins are TypeScript modules under `plugins/<targetId>/`. Each plugin exports a `register(dispatcher)` function that adds its nodes (and any sub-DAGs) to the runtime dispatcher. The runner imports the module from `./plugins/<targetId>/parse.task.js` automatically when the pipeline config lists `<targetId>:parse`.
 
-```js
-// plugins/my-target/parse.task.js
-import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
+```ts
+// plugins/my-target/parse.task.ts
+import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
+import type { RipperServices } from '../../src/services/RipperServices.js';
+import type { ScrapeState } from '../../src/state/ScrapeState.js';
 
-TaskRegistry.register('my-target:parse', async (next, state) => {
-  state.output = {
-    title: state.page.title,
-    // ... your structured fields
-  };
-  await next();
-});
+export const myParseNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
+  name:    'my-target:parse',
+  outputs: ['success', 'error'],
+  async execute(state, _ctx) {
+    const html = state.page.html ?? '';
+    if (html.length === 0) return { output: 'error' };
+    state.output = {
+      url:   state.page.url,
+      title: state.page.title,
+      // ... your structured fields
+    };
+    return { output: 'success' };
+  },
+};
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myParseNode);
+}
 ```
 
 ## Where to look next
