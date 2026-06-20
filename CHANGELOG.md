@@ -83,6 +83,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `{ url, unknown_id, ...baseFields }`.
 - `RitualOutput` is now a structural alias for `SpellOutput` (was previously an
   intersection that varied only by the removed discriminator).
+- **`./config/ConfigClamp` subpath export removed.** `ConfigClamp` (with `CLAMP_RULES`
+  and `ClampRulesType`) is deleted — it had zero callers and config clamping was never
+  wired into `RipperConfig.load`/`normalize`. Consumers importing
+  `ripperoni/config/ConfigClamp` must drop the dependency.
+- **Top-level `crawlers.<name>` config form removed.** A standalone crawler is configured
+  via the embedded `targets.<name>.crawler` block — the only form the engine reads
+  (`CrawlListTargetsNode`). Configs with a top-level `crawlers` key now fail schema
+  validation; move each crawler under its target.
 
 ### Added
 
@@ -105,6 +113,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Every `Wave N` / `Phase 6.X` comment label across `plugins/`, `src/`, and `tests/`
   (~263 references in ~69 files). Surrounding prose preserved or rewritten to describe
   current behavior without historical labels.
+- **Dead config surface** (pre-release cleanup): `src/config/ConfigClamp.ts` (class +
+  `CLAMP_RULES` + `ClampRulesType`) and the top-level `crawlers` JSON-schema block +
+  `NormalizedRipperConfigType.crawlers` type field. The e2e/unit suite migrated to the
+  embedded `targets.<name>.crawler` form; fixture `pathripper-legacy.config.json` renamed
+  to `aonprd-crawler.config.json`.
 
 ### Fixed
 

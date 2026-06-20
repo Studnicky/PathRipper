@@ -133,32 +133,6 @@ describe('RipperConfigSchema — examples validate against their parent schema',
     }
   });
 
-  // Validate crawlers additionalProperties examples.
-  describe('crawlers additionalProperties examples', () => {
-    const schema = RipperConfigSchema.SCHEMA as unknown as Record<string, unknown>;
-    const crawlersSchema = (schema.properties as Record<string, unknown>)
-      ?.crawlers as Record<string, unknown> | undefined;
-    const crawlerDef = crawlersSchema?.additionalProperties as Record<string, unknown> | undefined;
-    const examples = Array.isArray(crawlerDef?.examples)
-      ? (crawlerDef.examples as unknown[])
-      : [];
-
-    for (let idx = 0; idx < examples.length; idx++) {
-      const example = examples[idx];
-      it(`crawlers.additionalProperties example[${idx}] is valid`, () => {
-        const errors = RipperConfigSchema.validate({
-          output: { basePath: './output' },
-          crawlers: { 'example-crawler': example },
-        });
-        assert.equal(
-          errors,
-          null,
-          `crawlers example[${idx}] failed validation:\n  ${errors}`,
-        );
-      });
-    }
-  });
-
   // Validate inline crawler sub-schema examples.
   describe('targets.crawler sub-schema examples', () => {
     const schema = RipperConfigSchema.SCHEMA as unknown as Record<string, unknown>;

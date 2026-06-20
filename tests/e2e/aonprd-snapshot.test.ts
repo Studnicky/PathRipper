@@ -15,7 +15,7 @@ import { RipperConfig } from '../../src/config/RipperConfig.js';
 export { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
+const FIXTURE   = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
 
 const PROBES: ReadonlyArray<string> = [
   'https://2e.aonprd.com/Spells.aspx?ID=1',

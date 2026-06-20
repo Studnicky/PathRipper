@@ -1,7 +1,6 @@
-// Lane 11 — local-only e2e. Replaces the original PathRipper Pathfinder scrape:
-// constructs a LinkLister from the resurrected legacy config and crawls the live
-// site with respectful rate-limiting + jitter. CI never runs this — no workflow
-// invokes `test:e2e`.
+// Lane 11 — local-only e2e. Constructs a LinkLister from the aonprd target's
+// embedded crawler config and crawls the live site with respectful
+// rate-limiting + jitter. CI never runs this — no workflow invokes `test:e2e`.
 //
 // Run locally:                npm run test:e2e
 // Smoke only (fast):          npm run test:e2e -- --test-name-pattern='smoke'
@@ -19,12 +18,12 @@ import { RipperConfig } from '../../src/config/RipperConfig.js';
 import { ScraperCache } from '../../src/modules/cache/ScraperCache.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
+const FIXTURE   = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
 
-describe('PathRipper legacy AONPRD e2e (local only)', () => {
+describe('AONPRD crawler e2e (local only)', () => {
   it('smoke — crawl one category and collect at least 5 target URLs', async () => {
     const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.crawlers!['aonprd']!;
+    const crawler  = config.targets!['aonprd']!.crawler!;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-smoke-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
@@ -54,7 +53,7 @@ describe('PathRipper legacy AONPRD e2e (local only)', () => {
 
   it('full — crawl all 41 categories under the configured maxPages cap', async () => {
     const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.crawlers!['aonprd']!;
+    const crawler  = config.targets!['aonprd']!.crawler!;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-full-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({

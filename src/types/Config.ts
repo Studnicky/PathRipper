@@ -79,5 +79,4 @@ export type NormalizedRipperConfigType = {
   readonly output:     RipperConfigType['output'];
   readonly targets?:   Record<string, NormalizedTargetConfigType> | undefined;
   readonly mediawiki?: Record<string, NormalizedWikiConfigType> | undefined;
-  readonly crawlers?:  RipperConfigType['crawlers'];
 };

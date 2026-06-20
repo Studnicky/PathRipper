@@ -7,7 +7,6 @@
     "ripperoni": "./dist/cli/cli.js"
   },
   "exports": {
-    "./config/ConfigClamp": "./dist/config/ConfigClamp.js",
     "./LinkLister": "./dist/crawlers/LinkLister.js",
     "./HtmlScraper": "./dist/scrapers/HtmlScraper.js",
     "./MediaWikiScraper": "./dist/scrapers/MediaWikiScraper.js",

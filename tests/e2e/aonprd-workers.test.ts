@@ -28,7 +28,7 @@ import { RipperConfig } from '../../src/config/RipperConfig.js';
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT  = resolve(__dirname, '..', '..');
-const FIXTURE    = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
+const FIXTURE    = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
 
 // Compiled artifacts the worker path requires. The WorkerThreadContainer runs
 // under plain Node — no tsx in the worker — so it loads the COMPILED registry

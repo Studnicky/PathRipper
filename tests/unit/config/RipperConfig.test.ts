@@ -28,16 +28,22 @@ describe('RipperConfig.load()', () => {
   it('loads a full valid config with all sections', async () => {
     const path = await writeFixture('full.json', {
       output: { basePath: './out', format: 'json', pretty: true },
-      targets: { foo: { baseUrl: 'https://example.com', rateLimitMs: 100, pipeline: ['./plugins/foo/parse.task.js'] } },
+      targets: {
+        foo: { baseUrl: 'https://example.com', rateLimitMs: 100, pipeline: ['./plugins/foo/parse.task.js'] },
+        baz: {
+          baseUrl:  'https://example.com',
+          pipeline: ['crawl:list-targets', './plugins/foo/parse.task.js'],
+          crawler:  { startUrls: ['https://example.com/x', 'https://example.com/y'], domain: 'example', target: 'id', delimiter: 'cat', jitterMs: 25, maxPages: 100 },
+        },
+      },
       mediawiki: { bar: { apiUrl: 'https://wiki.example/w/api.php', pipeline: ["./plugins/foo/parse.task.js"] } },
-      crawlers: { baz: { startUrls: ['https://example.com/x', 'https://example.com/y'], domain: 'example', target: 'id', delimiter: 'cat', jitterMs: 25, maxPages: 100 } },
     });
     const cfg = await RipperConfig.load(path);
     assert.equal(cfg.targets?.foo?.baseUrl, 'https://example.com');
     assert.deepEqual(cfg.mediawiki?.bar?.pipeline, ['./plugins/foo/parse.task.js']);
-    assert.equal(cfg.crawlers?.baz?.delimiter, 'cat');
-    assert.equal(cfg.crawlers?.baz?.startUrls.length, 2);
-    assert.equal(cfg.crawlers?.baz?.maxPages, 100);
+    assert.equal(cfg.targets?.baz?.crawler?.delimiter, 'cat');
+    assert.equal(cfg.targets?.baz?.crawler?.startUrls.length, 2);
+    assert.equal(cfg.targets?.baz?.crawler?.maxPages, 100);
   });
 
   it('throws on missing required field with the field path in the message', async () => {

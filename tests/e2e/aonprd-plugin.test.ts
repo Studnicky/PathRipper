@@ -24,7 +24,7 @@ import type { MonsterOutput } from '../../plugins/aonprd/concepts/monster/types.
 import type { WeaponOutput } from '../../plugins/aonprd/concepts/weapon.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE   = resolve(__dirname, 'fixtures/pathripper-legacy.config.json');
+const FIXTURE   = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
 
 // A curated set of stable URLs across every page-type the plugin supports.
 const PLUGIN_PROBES: ReadonlyArray<{ url: string; expect_type: string }> = [
@@ -38,7 +38,7 @@ const PLUGIN_PROBES: ReadonlyArray<{ url: string; expect_type: string }> = [
   { url: 'https://2e.aonprd.com/Traits.aspx?ID=1',     expect_type: 'trait' },
 ];
 
-describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
+describe('AONPRD plugin e2e (local only)', () => {
   it('aonprd plugin smoke — fetch and parse one of every page type', async () => {
     const config = await RipperConfig.load(FIXTURE);
     const target  = config.targets!['aonprd']!;
@@ -150,7 +150,7 @@ describe('PathRipper legacy AONPRD plugin e2e (local only)', () => {
 
   it('full pipeline — LinkLister + RipperRun + plugin → typed JSON outputs', async () => {
     const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.crawlers!['aonprd']!;
+    const crawler  = config.targets!['aonprd']!.crawler!;
     const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
