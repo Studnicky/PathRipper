@@ -50,23 +50,23 @@ const warnedUnknownKeys = new Set<string>();
  */
 function stripWikiMarkup(raw: string): string {
   // Keep only first <br> segment (first variant when multiple exist)
-  let s = raw.split(/<br\s*\/?>/i)[0] ?? raw;
+  let str = raw.split(/<br\s*\/?>/i)[0] ?? raw;
   // Drop HTML comments
-  s = s.replace(/<!--[\s\S]*?-->/g, '');
+  str = str.replace(/<!--[\s\S]*?-->/g, '');
   // Resolve {{tt|display|tooltip}} → display
-  s = s.replace(/\{\{tt\|([^|}\n]+)\|[^}]*\}\}/gi, '$1');
+  str = str.replace(/\{\{tt\|([^|}\n]+)\|[^}]*\}\}/gi, '$1');
   // Drop remaining {{ ... }} templates
-  s = s.replace(/\{\{[^}]*\}\}/g, '');
+  str = str.replace(/\{\{[^}]*\}\}/g, '');
   // Resolve [[target|display]] → display; [[target]] → target
-  s = s.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2');
-  s = s.replace(/\[\[([^\]]+)\]\]/g, '$1');
+  str = str.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2');
+  str = str.replace(/\[\[([^\]]+)\]\]/g, '$1');
   // Drop italic romanization: ''text'' — appears after native script
   // Take only the text before the first ''
-  const italicIdx = s.indexOf("''");
-  if (italicIdx !== -1) s = s.slice(0, italicIdx);
+  const italicIdx = str.indexOf("''");
+  if (italicIdx !== -1) str = str.slice(0, italicIdx);
   // Drop parenthetical remarks
-  s = s.replace(/\([^)]*\)/g, '');
-  return s.trim();
+  str = str.replace(/\([^)]*\)/g, '');
+  return str.trim();
 }
 
 /**
@@ -90,25 +90,25 @@ function extractLangTemplateBlock(wikitext: string): string | null {
     if (startIdx === -1) continue;
 
     let depth = 0;
-    let i = startIdx;
+    let pos = startIdx;
     let endIdx = -1;
 
-    while (i < wikitext.length - 1) {
-      if (wikitext[i] === '{' && wikitext[i + 1] === '{') {
+    while (pos < wikitext.length - 1) {
+      if (wikitext[pos] === '{' && wikitext[pos + 1] === '{') {
         depth++;
-        i += 2;
+        pos += 2;
         continue;
       }
-      if (wikitext[i] === '}' && wikitext[i + 1] === '}') {
+      if (wikitext[pos] === '}' && wikitext[pos + 1] === '}') {
         depth--;
         if (depth === 0) {
-          endIdx = i + 2;
+          endIdx = pos + 2;
           break;
         }
-        i += 2;
+        pos += 2;
         continue;
       }
-      i++;
+      pos++;
     }
 
     return endIdx === -1
@@ -137,43 +137,43 @@ export function extractOtherNames(wikitext: string): Record<string, string> {
 
   // Match |key=value pairs at depth-0 (the outer template level).
   // We scan character by character to handle nested {{ }} correctly.
-  let i = 0;
+  let pos = 0;
   // Skip past the opening {{TemplateName until the first |
-  while (i < block.length && block[i] !== '|') i++;
+  while (pos < block.length && block[pos] !== '|') pos++;
 
-  while (i < block.length) {
-    if (block[i] !== '|') { i++; continue; }
-    i++; // skip |
+  while (pos < block.length) {
+    if (block[pos] !== '|') { pos++; continue; }
+    pos++; // skip |
 
     // Skip whitespace/newlines before the key (e.g. `| key = value` format)
-    while (i < block.length && /[ \t\r\n]/.test(block[i] ?? '')) i++;
+    while (pos < block.length && /[ \t\r\n]/.test(block[pos] ?? '')) pos++;
 
     // Read key: alphanumeric + underscore
-    let keyStart = i;
-    while (i < block.length && /[\w]/.test(block[i] ?? '')) i++;
-    const key = block.slice(keyStart, i).trim();
+    const keyStart = pos;
+    while (pos < block.length && /[\w]/.test(block[pos] ?? '')) pos++;
+    const key = block.slice(keyStart, pos).trim();
     if (key === '') continue;
 
     // Expect =
-    while (i < block.length && block[i] === ' ') i++;
-    if (block[i] !== '=') continue;
-    i++; // skip =
+    while (pos < block.length && block[pos] === ' ') pos++;
+    if (block[pos] !== '=') continue;
+    pos++; // skip =
 
     // Read value until next top-level | or end of block }}, tracking depth
-    const valueStart = i;
+    const valueStart = pos;
     let depth = 0;
-    while (i < block.length - 1) {
-      if (block[i] === '{' && block[i + 1] === '{') { depth++; i += 2; continue; }
-      if (block[i] === '}' && block[i + 1] === '}') {
+    while (pos < block.length - 1) {
+      if (block[pos] === '{' && block[pos + 1] === '{') { depth++; pos += 2; continue; }
+      if (block[pos] === '}' && block[pos + 1] === '}') {
         if (depth === 0) break; // end of outer template
         depth--;
-        i += 2;
+        pos += 2;
         continue;
       }
-      if (depth === 0 && block[i] === '|') break; // next field
-      i++;
+      if (depth === 0 && block[pos] === '|') break; // next field
+      pos++;
     }
-    const rawValue = block.slice(valueStart, i);
+    const rawValue = block.slice(valueStart, pos);
 
     // Skip metadata/structural keys
     if (SKIP_KEYS.has(key) || key.endsWith('meaning') || key.endsWith('trans') && key !== 'ja_trans') {
@@ -489,9 +489,9 @@ type WtfField = { text?: unknown; number?: unknown } | string | null | undefined
  */
 function clean(val: unknown): string | null {
   if (val === null || val === undefined || val === '') return null;
-  const s = String(val);
-  const tt = /\{\{tt\|([^|}\n]+)\|[^}]*\}\}/gi;
-  return s.replace(tt, '$1').trim() || null;
+  const str = String(val);
+  const ttRegex = /\{\{tt\|([^|}\n]+)\|[^}]*\}\}/gi;
+  return str.replace(ttRegex, '$1').trim() || null;
 }
 
 /** Extract text from an infobox field (object with .text) or plain string. */
@@ -506,21 +506,21 @@ function infoboxNum(val: WtfField): number | null {
   if (val === null || val === undefined) return null;
   if (typeof val === 'object') {
     if ('number' in val && val.number !== null && val.number !== undefined) {
-      const n = Number(val.number);
-      return Number.isFinite(n) ? n : null;
+      const num = Number(val.number);
+      return Number.isFinite(num) ? num : null;
     }
     if ('text' in val) {
-      const n = parseFloat(String(val.text ?? ''));
-      return Number.isFinite(n) ? n : null;
+      const num = parseFloat(String(val.text ?? ''));
+      return Number.isFinite(num) ? num : null;
     }
   }
-  const n = parseFloat(String(val));
-  return Number.isFinite(n) ? n : null;
+  const num = parseFloat(String(val));
+  return Number.isFinite(num) ? num : null;
 }
 
 /** Extract non-null text values from a list of infobox fields. */
 function infoboxTextList(vals: WtfField[]): string[] {
-  return vals.map(infoboxText).filter((v): v is string => v !== null);
+  return vals.map(infoboxText).filter((value): value is string => value !== null);
 }
 
 /** Extract a plain string from a template json field. */
@@ -530,10 +530,10 @@ function templateStr(data: Record<string, unknown>, key: string): string | null 
 
 /** Extract a number from a template json field. */
 function templateNum(data: Record<string, unknown>, key: string): number | null {
-  const s = templateStr(data, key);
-  if (s === null) return null;
-  const n = parseFloat(s);
-  return Number.isFinite(n) ? n : null;
+  const str = templateStr(data, key);
+  if (str === null) return null;
+  const num = parseFloat(str);
+  return Number.isFinite(num) ? num : null;
 }
 
 // ─── Template (non-infobox) finder ───────────────────────────────────────────
@@ -545,8 +545,8 @@ function findTemplate(
   predicate: (name: string) => boolean,
 ): TemplateData | null {
   const templates = doc.templates();
-  const match = templates.find((t) => {
-    const name = String((t.json() as Record<string, unknown>)['template'] ?? '').toLowerCase();
+  const match = templates.find((tmpl) => {
+    const name = String((tmpl.json() as Record<string, unknown>)['template'] ?? '').toLowerCase();
     return predicate(name);
   });
   return match !== undefined ? (match.json() as TemplateData) : null;
@@ -699,17 +699,17 @@ export function extractExpansions(wikitext: string, templateName: string): TcgEx
 
     // Walk forward with depth counting to find the matching }}.
     let depth = 0;
-    let i = startIdx;
+    let pos = startIdx;
     let endIdx = -1;
-    while (i < wikitext.length - 1) {
-      if (wikitext[i] === '{' && wikitext[i + 1] === '{') { depth++; i += 2; continue; }
-      if (wikitext[i] === '}' && wikitext[i + 1] === '}') {
+    while (pos < wikitext.length - 1) {
+      if (wikitext[pos] === '{' && wikitext[pos + 1] === '{') { depth++; pos += 2; continue; }
+      if (wikitext[pos] === '}' && wikitext[pos + 1] === '}') {
         depth--;
-        if (depth === 0) { endIdx = i + 2; break; }
-        i += 2;
+        if (depth === 0) { endIdx = pos + 2; break; }
+        pos += 2;
         continue;
       }
-      i++;
+      pos++;
     }
     const blockEnd = endIdx === -1 ? wikitext.length : endIdx;
     const body = wikitext.slice(startIdx + needle.length, blockEnd - 2);
@@ -737,21 +737,21 @@ function parseKv(body: string, key: string): string | null {
 
   const valueStart = startMatch.index + startMatch[0].length;
   let depth = 0;
-  let i = valueStart;
-  while (i < body.length) {
-    const ch = body[i];
-    const next = body[i + 1];
-    if (ch === '{' && next === '{') { depth++; i += 2; continue; }
-    if (ch === '}' && next === '}') {
+  let pos = valueStart;
+  while (pos < body.length) {
+    const char = body[pos];
+    const next = body[pos + 1];
+    if (char === '{' && next === '{') { depth++; pos += 2; continue; }
+    if (char === '}' && next === '}') {
       if (depth === 0) break;
       depth--;
-      i += 2;
+      pos += 2;
       continue;
     }
-    if (depth === 0 && (ch === '|' || ch === '\n')) break;
-    i++;
+    if (depth === 0 && (char === '|' || char === '\n')) break;
+    pos++;
   }
-  const raw = body.slice(valueStart, i).trim();
+  const raw = body.slice(valueStart, pos).trim();
   if (raw === '') return null;
   return extractTcgRef(raw);
 }
@@ -768,27 +768,27 @@ function parseMainInfoboxKv(wikitext: string, templateName: string): Record<stri
   if (startIdx === -1) return null;
   // Walk to find the matching closing }}
   let depth = 0;
-  let i = startIdx;
+  let pos = startIdx;
   let end = -1;
-  while (i < wikitext.length - 1) {
-    if (wikitext[i] === '{' && wikitext[i + 1] === '{') { depth++; i += 2; continue; }
-    if (wikitext[i] === '}' && wikitext[i + 1] === '}') {
+  while (pos < wikitext.length - 1) {
+    if (wikitext[pos] === '{' && wikitext[pos + 1] === '{') { depth++; pos += 2; continue; }
+    if (wikitext[pos] === '}' && wikitext[pos + 1] === '}') {
       depth--;
-      if (depth === 0) { end = i + 2; break; }
-      i += 2;
+      if (depth === 0) { end = pos + 2; break; }
+      pos += 2;
       continue;
     }
-    i++;
+    pos++;
   }
   const block = end === -1 ? wikitext.slice(startIdx) : wikitext.slice(startIdx, end);
   // Parse top-level |key=value lines (skip nested {{ }} blocks).
   const result: Record<string, string> = {};
   const kvRe = /\|\s*([a-zA-Z0-9_]+)\s*=\s*([^|{}\n]*(?:\{\{[^}]*\}\}[^|{}\n]*)*)/g;
-  let m: RegExpExecArray | null;
-  while ((m = kvRe.exec(block)) !== null) {
-    const k = (m[1] ?? '').trim();
-    const v = (m[2] ?? '').trim();
-    if (k !== '' && v !== '') result[k] = v;
+  let kvMatch: RegExpExecArray | null;
+  while ((kvMatch = kvRe.exec(block)) !== null) {
+    const key = (kvMatch[1] ?? '').trim();
+    const value = (kvMatch[2] ?? '').trim();
+    if (key !== '' && value !== '') result[key] = value;
   }
   return result;
 }
@@ -800,20 +800,20 @@ export function extractTcgPokemonCard(
   wikitext: string,
   categories: string[],
 ): TcgPokemonCardOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_POKEMON) ?? {};
-  const hpRaw = kv['hp'] !== undefined ? parseInt(kv['hp'], 10) : null;
-  const retreatRaw = kv['retreatcost'] !== undefined ? parseInt(kv['retreatcost'], 10) : null;
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_POKEMON) ?? {};
+  const hpRaw = infobox['hp'] !== undefined ? parseInt(infobox['hp'], 10) : null;
+  const retreatRaw = infobox['retreatcost'] !== undefined ? parseInt(infobox['retreatcost'], 10) : null;
   return {
     _type:        'tcg_pokemon_card',
     title,
-    name:         kv['cardname'] !== undefined ? extractTcgRef(kv['cardname']) : null,
-    jname:        kv['jname']    !== undefined ? extractTcgRef(kv['jname'])    : null,
-    species:      kv['species']  !== undefined ? extractTcgRef(kv['species'])  : null,
-    stage:        kv['evostage'] !== undefined ? extractTcgRef(kv['evostage']) : null,
-    card_type:    kv['type']     !== undefined ? extractTcgRef(kv['type'])     : null,
+    name:         infobox['cardname'] !== undefined ? extractTcgRef(infobox['cardname']) : null,
+    jname:        infobox['jname']    !== undefined ? extractTcgRef(infobox['jname'])    : null,
+    species:      infobox['species']  !== undefined ? extractTcgRef(infobox['species'])  : null,
+    stage:        infobox['evostage'] !== undefined ? extractTcgRef(infobox['evostage']) : null,
+    card_type:    infobox['type']     !== undefined ? extractTcgRef(infobox['type'])     : null,
     hp:           hpRaw !== null && Number.isFinite(hpRaw) ? hpRaw : null,
-    weakness:     kv['weakness']    !== undefined ? extractTcgRef(kv['weakness'])    : null,
-    resistance:   kv['resistance']  !== undefined ? extractTcgRef(kv['resistance'])  : null,
+    weakness:     infobox['weakness']    !== undefined ? extractTcgRef(infobox['weakness'])    : null,
+    resistance:   infobox['resistance']  !== undefined ? extractTcgRef(infobox['resistance'])  : null,
     retreat_cost: retreatRaw !== null && Number.isFinite(retreatRaw) ? retreatRaw : null,
     expansions:   extractExpansions(wikitext, TEMPLATE_TCG_POKEMON),
     names_intl:   extractOtherNames(wikitext),
@@ -826,13 +826,13 @@ export function extractTcgTrainerCard(
   wikitext: string,
   categories: string[],
 ): TcgTrainerCardOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_TRAINER) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_TRAINER) ?? {};
   return {
     _type:      'tcg_trainer_card',
     title,
-    name:       kv['cardname'] !== undefined ? extractTcgRef(kv['cardname']) : null,
-    jname:      kv['jname']    !== undefined ? extractTcgRef(kv['jname'])    : null,
-    card_class: kv['class']    !== undefined ? extractTcgRef(kv['class'])    : null,
+    name:       infobox['cardname'] !== undefined ? extractTcgRef(infobox['cardname']) : null,
+    jname:      infobox['jname']    !== undefined ? extractTcgRef(infobox['jname'])    : null,
+    card_class: infobox['class']    !== undefined ? extractTcgRef(infobox['class'])    : null,
     expansions: extractExpansions(wikitext, TEMPLATE_TCG_TRAINER),
     names_intl: extractOtherNames(wikitext),
     categories,
@@ -844,21 +844,21 @@ export function extractTcgSet(
   wikitext: string,
   categories: string[],
 ): TcgSetOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_EXPANSION) ?? {};
-  const enCards  = kv['encards']  !== undefined ? parseInt(kv['encards'], 10)  : null;
-  const enSetNum = kv['ensetnum'] !== undefined ? parseInt(kv['ensetnum'], 10) : null;
-  const jaCards  = kv['jacards']  !== undefined ? parseInt(kv['jacards'], 10)  : null;
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_EXPANSION) ?? {};
+  const enCards  = infobox['encards']  !== undefined ? parseInt(infobox['encards'], 10)  : null;
+  const enSetNum = infobox['ensetnum'] !== undefined ? parseInt(infobox['ensetnum'], 10) : null;
+  const jaCards  = infobox['jacards']  !== undefined ? parseInt(infobox['jacards'], 10)  : null;
   return {
     _type:           'tcg_set',
     title,
-    name:            kv['setname']      !== undefined ? extractTcgRef(kv['setname'])      : null,
-    ja_name:         kv['jasetname']    !== undefined ? extractTcgRef(kv['jasetname'])    : null,
-    translated_name: kv['transsetname'] !== undefined ? extractTcgRef(kv['transsetname']) : null,
+    name:            infobox['setname']      !== undefined ? extractTcgRef(infobox['setname'])      : null,
+    ja_name:         infobox['jasetname']    !== undefined ? extractTcgRef(infobox['jasetname'])    : null,
+    translated_name: infobox['transsetname'] !== undefined ? extractTcgRef(infobox['transsetname']) : null,
     en_card_count:   enCards  !== null && Number.isFinite(enCards)  ? enCards  : null,
     en_set_number:   enSetNum !== null && Number.isFinite(enSetNum) ? enSetNum : null,
-    en_release:      kv['enrelease'] !== undefined ? kv['enrelease'].trim() : null,
+    en_release:      infobox['enrelease'] !== undefined ? infobox['enrelease'].trim() : null,
     ja_card_count:   jaCards  !== null && Number.isFinite(jaCards)  ? jaCards  : null,
-    ja_release:      kv['jarelease'] !== undefined ? kv['jarelease'].trim() : null,
+    ja_release:      infobox['jarelease'] !== undefined ? infobox['jarelease'].trim() : null,
     names_intl:      extractOtherNames(wikitext),
     categories,
   };
@@ -869,11 +869,11 @@ export function extractTcgDeck(
   wikitext: string,
   categories: string[],
 ): TcgDeckOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_DECK) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_DECK) ?? {};
   return {
     _type:      'tcg_deck',
     title,
-    name:       kv['name'] !== undefined ? extractTcgRef(kv['name']) : null,
+    name:       infobox['name'] !== undefined ? extractTcgRef(infobox['name']) : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -884,11 +884,11 @@ export function extractTcgPromo(
   wikitext: string,
   categories: string[],
 ): TcgPromoOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_PROMO) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_PROMO) ?? {};
   return {
     _type:      'tcg_promo',
     title,
-    name:       kv['name'] !== undefined ? extractTcgRef(kv['name']) : null,
+    name:       infobox['name'] !== undefined ? extractTcgRef(infobox['name']) : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -899,7 +899,7 @@ export function extractLocation(
   wikitext: string,
   categories: string[],
 ): LocationOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TOWN_INFOBOX)
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TOWN_INFOBOX)
     ?? parseMainInfoboxKv(wikitext, TEMPLATE_ROUTE_INFOBOX)
     ?? parseMainInfoboxKv(wikitext, TEMPLATE_LOCATION_INFOBOX)
     ?? parseMainInfoboxKv(wikitext, TEMPLATE_ANIME_LOCATION)
@@ -914,10 +914,10 @@ export function extractLocation(
   return {
     _type: 'location',
     title,
-    name:          kv['name']       !== undefined ? kv['name'].trim()       : null,
-    ja_name:       kv['jpname']     !== undefined ? kv['jpname'].trim()     : null,
-    region:        kv['region']     !== undefined ? kv['region'].trim()     : null,
-    generation:    kv['generation'] !== undefined ? kv['generation'].trim() : null,
+    name:          infobox['name']       !== undefined ? infobox['name'].trim()       : null,
+    ja_name:       infobox['jpname']     !== undefined ? infobox['jpname'].trim()     : null,
+    region:        infobox['region']     !== undefined ? infobox['region'].trim()     : null,
+    generation:    infobox['generation'] !== undefined ? infobox['generation'].trim() : null,
     location_type: locationType,
     names_intl:    extractOtherNames(wikitext),
     categories,
@@ -929,14 +929,14 @@ export function extractCharacter(
   wikitext: string,
   categories: string[],
 ): CharacterOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_CHARACTER)
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_CHARACTER)
     ?? parseMainInfoboxKv(wikitext, TEMPLATE_CHAR_INFOBOX)
     ?? {};
   return {
     _type:      'character',
     title,
-    name:       kv['name']  !== undefined ? kv['name'].trim()  : null,
-    jname:      kv['jname'] !== undefined ? kv['jname'].trim() : null,
+    name:       infobox['name']  !== undefined ? infobox['name'].trim()  : null,
+    jname:      infobox['jname'] !== undefined ? infobox['jname'].trim() : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -947,12 +947,12 @@ export function extractTrainerClass(
   wikitext: string,
   categories: string[],
 ): TrainerClassOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TRAINER_CLASS) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TRAINER_CLASS) ?? {};
   return {
     _type:      'trainer_class',
     title,
-    name:       kv['name']   !== undefined ? kv['name'].trim()   : null,
-    ja_name:    kv['jpname'] !== undefined ? kv['jpname'].trim() : null,
+    name:       infobox['name']   !== undefined ? infobox['name'].trim()   : null,
+    ja_name:    infobox['jpname'] !== undefined ? infobox['jpname'].trim() : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -963,16 +963,16 @@ export function extractUnitePokemon(
   wikitext: string,
   categories: string[],
 ): UnitePokemonOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_UNITE_INFOBOX) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_UNITE_INFOBOX) ?? {};
   return {
     _type:      'unite_pokemon',
     title,
-    pokemon:    kv['pokemon']    !== undefined ? kv['pokemon'].trim()    : null,
-    jname:      kv['jname']      !== undefined ? kv['jname'].trim()      : null,
-    role:       kv['role']       !== undefined ? kv['role'].trim()       : null,
-    range:      kv['range']      !== undefined ? kv['range'].trim()      : null,
-    damage:     kv['damage']     !== undefined ? kv['damage'].trim()     : null,
-    difficulty: kv['difficulty'] !== undefined ? kv['difficulty'].trim() : null,
+    pokemon:    infobox['pokemon']    !== undefined ? infobox['pokemon'].trim()    : null,
+    jname:      infobox['jname']      !== undefined ? infobox['jname'].trim()      : null,
+    role:       infobox['role']       !== undefined ? infobox['role'].trim()       : null,
+    range:      infobox['range']      !== undefined ? infobox['range'].trim()      : null,
+    damage:     infobox['damage']     !== undefined ? infobox['damage'].trim()     : null,
+    difficulty: infobox['difficulty'] !== undefined ? infobox['difficulty'].trim() : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -983,13 +983,13 @@ export function extractTcgEnergyCard(
   wikitext: string,
   categories: string[],
 ): TcgEnergyCardOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_TCG_ENERGY) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_TCG_ENERGY) ?? {};
   return {
     _type:       'tcg_energy_card',
     title,
-    name:        kv['cardname'] !== undefined ? extractTcgRef(kv['cardname']) : null,
-    energy_type: kv['energy']   !== undefined ? extractTcgRef(kv['energy'])   :
-                 kv['type']     !== undefined ? extractTcgRef(kv['type'])     : null,
+    name:        infobox['cardname'] !== undefined ? extractTcgRef(infobox['cardname']) : null,
+    energy_type: infobox['energy']   !== undefined ? extractTcgRef(infobox['energy'])   :
+                 infobox['type']     !== undefined ? extractTcgRef(infobox['type'])     : null,
     names_intl:  extractOtherNames(wikitext),
     categories,
   };
@@ -1000,19 +1000,19 @@ export function extractGame(
   wikitext: string,
   categories: string[],
 ): GameOutput {
-  const kv = parseMainInfoboxKv(wikitext, TEMPLATE_GAME_INFOBOX) ?? {};
+  const infobox =parseMainInfoboxKv(wikitext, TEMPLATE_GAME_INFOBOX) ?? {};
   return {
     _type:      'game',
     title,
-    name:       kv['name']            !== undefined ? kv['name'].trim()            : null,
-    jname:      kv['jname']           !== undefined ? kv['jname'].trim()           : null,
-    platform:   kv['platform']        !== undefined ? kv['platform'].trim()        : null,
-    developer:  kv['developer']       !== undefined ? kv['developer'].trim()       : null,
-    publisher:  kv['publisher']       !== undefined ? kv['publisher'].trim()       : null,
-    release_ja: kv['release_date_ja'] !== undefined ? kv['release_date_ja'].trim() :
-                kv['releaseja']       !== undefined ? kv['releaseja'].trim()       : null,
-    release_us: kv['release_date_us'] !== undefined ? kv['release_date_us'].trim() :
-                kv['releaseus']       !== undefined ? kv['releaseus'].trim()       : null,
+    name:       infobox['name']            !== undefined ? infobox['name'].trim()            : null,
+    jname:      infobox['jname']           !== undefined ? infobox['jname'].trim()           : null,
+    platform:   infobox['platform']        !== undefined ? infobox['platform'].trim()        : null,
+    developer:  infobox['developer']       !== undefined ? infobox['developer'].trim()       : null,
+    publisher:  infobox['publisher']       !== undefined ? infobox['publisher'].trim()       : null,
+    release_ja: infobox['release_date_ja'] !== undefined ? infobox['release_date_ja'].trim() :
+                infobox['releaseja']       !== undefined ? infobox['releaseja'].trim()       : null,
+    release_us: infobox['release_date_us'] !== undefined ? infobox['release_date_us'].trim() :
+                infobox['releaseus']       !== undefined ? infobox['releaseus'].trim()       : null,
     names_intl: extractOtherNames(wikitext),
     categories,
   };
@@ -1020,8 +1020,8 @@ export function extractGame(
 
 /** Extract the generation roman numeral from a learnset subpage title. */
 function parseLearnsetGeneration(title: string): string | null {
-  const m = /\/Generation ([IVX]+) learnset$/.exec(title);
-  return m?.[1] ?? null;
+  const match = /\/Generation ([IVX]+) learnset$/.exec(title);
+  return match?.[1] ?? null;
 }
 
 // ─── Task ─────────────────────────────────────────────────────────────────────
@@ -1051,7 +1051,7 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
   }
 
   // Move, Item, and Masters infoboxes are generic templates in wtf_wikipedia.
-  const moveData = findTemplate(doc, (n) => n.includes(TEMPLATE_MOVE));
+  const moveData = findTemplate(doc, (name) => name.includes(TEMPLATE_MOVE));
   if (moveData !== null) {
     const output: BulbapediaOutput = extractMove(title, moveData, categories, wikitext);
     state.output = output as unknown as Record<string, unknown>;
@@ -1059,7 +1059,7 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
     return;
   }
 
-  const itemData = findTemplate(doc, (n) => n.includes(TEMPLATE_ITEM_HEAD));
+  const itemData = findTemplate(doc, (name) => name.includes(TEMPLATE_ITEM_HEAD));
   if (itemData !== null) {
     const output: BulbapediaOutput = extractItem(title, itemData, categories, wikitext);
     state.output = output as unknown as Record<string, unknown>;
@@ -1067,7 +1067,7 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
     return;
   }
 
-  const mastersData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS) && !n.includes('skill') && !n.includes('event'));
+  const mastersData = findTemplate(doc, (name) => name.includes(TEMPLATE_MASTERS) && !name.includes('skill') && !name.includes('event'));
   if (mastersData !== null) {
     const output: BulbapediaOutput = extractMasters(title, mastersData, categories, wikitext);
     state.output = output as unknown as Record<string, unknown>;
@@ -1075,7 +1075,7 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
     return;
   }
 
-  const mastersSkillData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS_SKILL));
+  const mastersSkillData = findTemplate(doc, (name) => name.includes(TEMPLATE_MASTERS_SKILL));
   if (mastersSkillData !== null) {
     const output: BulbapediaOutput = extractMastersSkill(title, mastersSkillData, categories, wikitext);
     state.output = output as unknown as Record<string, unknown>;
@@ -1083,7 +1083,7 @@ const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
     return;
   }
 
-  const mastersEventData = findTemplate(doc, (n) => n.includes(TEMPLATE_MASTERS_EVENT));
+  const mastersEventData = findTemplate(doc, (name) => name.includes(TEMPLATE_MASTERS_EVENT));
   if (mastersEventData !== null) {
     const output: BulbapediaOutput = extractMastersEvent(title, mastersEventData, categories, wikitext);
     state.output = output as unknown as Record<string, unknown>;

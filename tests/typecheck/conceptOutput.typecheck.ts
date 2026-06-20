@@ -104,14 +104,14 @@ const STUB_TAXONOMY = [
 type StubUnion = ConceptOutputUnion<typeof STUB_TAXONOMY>;
 
 // StubUnion should be StubLanguageOutput | StubMonsterOutput.
-const u1: StubUnion = {
+const url1: StubUnion = {
   _type: 'language',
   url:   'x',
   name:  'y',
   script: null,
 };
 
-const u2: StubUnion = {
+const url2: StubUnion = {
   _type: 'monster',
   url:   'x',
   name:  'y',
@@ -123,7 +123,7 @@ const uBad: StubUnion = { foo: 'bar' };
 
 // ConceptOutputFor recovers a single concept's output type.
 type LangOut = ConceptOutputFor<typeof stubLangConcept>;
-const lo: LangOut = {
+const langOut: LangOut = {
   _type: 'language',
   url:   'x',
   name:  'y',
@@ -132,4 +132,4 @@ const lo: LangOut = {
 
 // Reference exports so unused-locals does not mask the @ts-expect-error
 // markers above.
-export const _exports = { u1, u2, uBad, lo, STUB_TAXONOMY };
+export const _exports = { url1, url2, uBad, langOut, STUB_TAXONOMY };

@@ -1,5 +1,6 @@
 // Unit tests for skill concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -14,24 +15,25 @@ import {
 } from '../../../../../plugins/aonprd/concepts/skill/index.js';
 import type { SkillOutput } from '../../../../../plugins/aonprd/concepts/skill/index.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await skillBaseNode.execute(state, stubContext);
-  await skillActionsNode.execute(state, stubContext);
-  await skillProficiencyTiersNode.execute(state, stubContext);
-  await finalizeSkillNode.execute(state, stubContext);
-  return state.output as SkillOutput;
+  await skillBaseNode.execute(Batch.of(state), stubContext);
+  await skillActionsNode.execute(Batch.of(state), stubContext);
+  await skillProficiencyTiersNode.execute(Batch.of(state), stubContext);
+  await finalizeSkillNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<SkillOutput>(state.output);
 }
 
 // ─── extract:skill-base ───────────────────────────────────────────────────────
@@ -39,10 +41,10 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:skill-base — skill-acrobatics', () => {
   it('produces _type, name, skill_id, key_ability', async () => {
     const state = await primeState('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await skillBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as SkillOutput;
+    const out = ParsedOutput.as<SkillOutput>(state.output);
     assert.equal(out.name, 'Acrobatics');
     assert.equal(out.skill_id, 1);
     assert.ok(out.key_ability !== null, 'Acrobatics has a key ability (dex)');
@@ -51,15 +53,15 @@ describe('extract:skill-base — skill-acrobatics', () => {
 
   it('description_text is non-empty', async () => {
     const state = await primeState('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    await skillBaseNode.execute(state, stubContext);
-    const out = state.output as SkillOutput;
+    await skillBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<SkillOutput>(state.output);
     assert.ok(out.description_text.length > 0, 'description_text should be non-empty');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await skillBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -68,18 +70,18 @@ describe('extract:skill-base — skill-acrobatics', () => {
 describe('extract:skill-actions — skill-acrobatics', () => {
   it('produces actions array with at least one entry (Balance)', async () => {
     const state = await primeState('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillActionsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await skillActionsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<SkillOutput>;
+    const out = ParsedOutput.as<Partial<SkillOutput>>(state.output);
     assert.ok(Array.isArray(out.actions), 'actions should be an array');
     assert.ok((out.actions?.length ?? 0) > 0, 'Acrobatics should have at least one action');
   });
 
   it('each action has name, action_cost, traits, description_text', async () => {
     const state = await primeState('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    await skillActionsNode.execute(state, stubContext);
-    const out = state.output as Partial<SkillOutput>;
+    await skillActionsNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<Partial<SkillOutput>>(state.output);
     const first = out.actions?.[0];
     assert.ok(first !== undefined, 'should have at least one action');
     assert.ok(typeof first.name === 'string' && first.name.length > 0, 'action.name missing');
@@ -89,8 +91,8 @@ describe('extract:skill-actions — skill-acrobatics', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillActionsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await skillActionsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -99,17 +101,17 @@ describe('extract:skill-actions — skill-acrobatics', () => {
 describe('extract:skill-proficiency-tiers — skill-acrobatics', () => {
   it('produces proficiency_tiers as an array', async () => {
     const state = await primeState('skill-acrobatics.html', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillProficiencyTiersNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await skillProficiencyTiersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<SkillOutput>;
+    const out = ParsedOutput.as<Partial<SkillOutput>>(state.output);
     assert.ok(Array.isArray(out.proficiency_tiers), 'proficiency_tiers should be an array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Skills.aspx?ID=1');
-    const r = await skillProficiencyTiersNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await skillProficiencyTiersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 

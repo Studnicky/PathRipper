@@ -1,5 +1,6 @@
 // Unit tests for ancestry concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -14,24 +15,25 @@ import {
 } from '../../../../../plugins/aonprd/concepts/ancestry.js';
 import type { AncestryOutput } from '../../../../../plugins/aonprd/concepts/ancestry.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await ancestryBaseNode.execute(state, stubContext);
-  await ancestryHeritagesNode.execute(state, stubContext);
-  await ancestryFeaturesNode.execute(state, stubContext);
-  await finalizeAncestryNode.execute(state, stubContext);
-  return state.output as AncestryOutput;
+  await ancestryBaseNode.execute(Batch.of(state), stubContext);
+  await ancestryHeritagesNode.execute(Batch.of(state), stubContext);
+  await ancestryFeaturesNode.execute(Batch.of(state), stubContext);
+  await finalizeAncestryNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<AncestryOutput>(state.output);
 }
 
 // ─── extract:ancestry-base ────────────────────────────────────────────────────
@@ -39,10 +41,10 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:ancestry-base — ancestry-goblin', () => {
   it('produces _type, name, ancestry_id, rarity', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await ancestryBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as AncestryOutput;
+    const out = ParsedOutput.as<AncestryOutput>(state.output);
     assert.equal(out.name, 'Goblin');
     assert.equal(out.ancestry_id, 4);
     // Rarity comes from the fixture's trait pills — accept whatever the fixture reports
@@ -51,23 +53,23 @@ describe('extract:ancestry-base — ancestry-goblin', () => {
 
   it('mechanics.hit_points is a number', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    await ancestryBaseNode.execute(state, stubContext);
-    const out = state.output as AncestryOutput;
+    await ancestryBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<AncestryOutput>(state.output);
     assert.ok(typeof out.mechanics.hit_points === 'number', 'hit_points should be a number');
     assert.ok((out.mechanics.hit_points ?? 0) > 0, 'hit_points should be positive');
   });
 
   it('source.book is populated', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    await ancestryBaseNode.execute(state, stubContext);
-    const out = state.output as AncestryOutput;
+    await ancestryBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<AncestryOutput>(state.output);
     assert.ok(out.source.book !== null, 'source.book should be non-null');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await ancestryBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -76,17 +78,17 @@ describe('extract:ancestry-base — ancestry-goblin', () => {
 describe('extract:ancestry-heritages — ancestry-goblin', () => {
   it('produces heritages array', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryHeritagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await ancestryHeritagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<AncestryOutput>;
+    const out = ParsedOutput.as<Partial<AncestryOutput>>(state.output);
     assert.ok(Array.isArray(out.heritages), 'heritages should be an array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryHeritagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await ancestryHeritagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -95,18 +97,18 @@ describe('extract:ancestry-heritages — ancestry-goblin', () => {
 describe('extract:ancestry-features — ancestry-goblin', () => {
   it('produces initial_proficiencies and features arrays', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryFeaturesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await ancestryFeaturesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<AncestryOutput>;
+    const out = ParsedOutput.as<Partial<AncestryOutput>>(state.output);
     assert.ok(typeof out.initial_proficiencies === 'object', 'initial_proficiencies missing');
     assert.ok(Array.isArray(out.features), 'features should be an array');
   });
 
   it('error path — returns error when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await ancestryFeaturesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await ancestryFeaturesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -115,13 +117,13 @@ describe('extract:ancestry-features — ancestry-goblin', () => {
 describe('finalize:ancestry — ancestry-goblin', () => {
   it('produces raw_fields, links, body_text, sections, meta', async () => {
     const state = await primeState('ancestry-goblin.html', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    await ancestryBaseNode.execute(state, stubContext);
-    await ancestryHeritagesNode.execute(state, stubContext);
-    await ancestryFeaturesNode.execute(state, stubContext);
-    const r = await finalizeAncestryNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await ancestryBaseNode.execute(Batch.of(state), stubContext);
+    await ancestryHeritagesNode.execute(Batch.of(state), stubContext);
+    await ancestryFeaturesNode.execute(Batch.of(state), stubContext);
+    const result = await finalizeAncestryNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as AncestryOutput;
+    const out = ParsedOutput.as<AncestryOutput>(state.output);
     assert.ok(typeof out.raw_fields === 'object', 'raw_fields missing');
     assert.ok(Array.isArray(out.links), 'links missing');
     assert.ok(typeof out.body_text === 'string', 'body_text missing');
@@ -130,8 +132,8 @@ describe('finalize:ancestry — ancestry-goblin', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Ancestries.aspx?ID=4');
-    const r = await finalizeAncestryNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeAncestryNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

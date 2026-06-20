@@ -1,7 +1,7 @@
 import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
-import { baseFrom, setConceptOutput } from '../_helpers.js';
+import { baseFrom } from '../_helpers.js';
 import type {
   HazardOutput,
   HazardBaseSlice,
@@ -25,12 +25,12 @@ const HAZARD_CLAIMED_LABELS: ReadonlyArray<string> = [
  * name (claimed by the routines slice).
  */
 export function finalizeHazard(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      HazardBaseSlice,
   defenses:  HazardDefensesSlice,
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): HazardOutput {
   const componentLabels: string[] = [];
   for (const comp of [...defenses.defenses.hardness, ...defenses.defenses.hp]) {
@@ -38,9 +38,9 @@ export function finalizeHazard(
       componentLabels.push(`${comp.component} Hardness`, `${comp.component} HP`);
     }
   }
-  const routineLabels = routines.routines.map((r) => r.name);
+  const routineLabels = routines.routines.map((routine) => routine.name);
 
-  const baseShape = baseFrom(c, $);
+  const baseShape = baseFrom(common, root);
   return {
     ...baseShape,
     url:             base.url,
@@ -54,7 +54,7 @@ export function finalizeHazard(
     trait_ids:       base.trait_ids,
     source:          base.source,
     sources:         base.sources,
-    raw_fields:      stripStructuredKeys(c.field_map, [
+    raw_fields:      stripStructuredKeys(common.field_map, [
       ...HAZARD_CLAIMED_LABELS,
       ...componentLabels,
       ...routineLabels,
@@ -71,15 +71,15 @@ export function finalizeHazard(
 }
 
 export function finalizeHazardWithSections(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      HazardBaseSlice,
   defenses:  HazardDefensesSlice,
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
   sections:  Section[],
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): HazardOutput {
-  const output = finalizeHazard(c, base, defenses, routines, reset, $);
+  const output = finalizeHazard(common, base, defenses, routines, reset, root);
   return {
     ...output,
     sections: filterLegacySections(sections),

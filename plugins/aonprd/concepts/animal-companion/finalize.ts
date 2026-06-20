@@ -28,16 +28,16 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeAnimalCompanion(
-  c:            CommonExtraction,
+  common:       CommonExtraction,
   base:         AnimalCompanionBaseSlice,
   stats:        AnimalCompanionStatsSlice,
   combat:       AnimalCompanionCombatSlice,
   advancement:  AnimalCompanionAdvancementSlice,
   _meta:        AnimalCompanionMetaSlice,
-  $:            CheerioAPI,
+  root:         CheerioAPI,
 ): AnimalCompanionOutput {
   void _meta;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...stats,
@@ -45,12 +45,12 @@ export function finalizeAnimalCompanion(
     advanced_maneuver_action_cost: advancement.advanced_maneuver_action_cost,
     advanced_maneuver_body:        advancement.advanced_maneuver_body,
     modifications:                 advancement.modifications,
-    sections:        c.sections,
+    sections:        common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies AnimalCompanionOutput;
 }

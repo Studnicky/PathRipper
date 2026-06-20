@@ -34,10 +34,10 @@ export function parseLinkedAnchorList(html: string): AnchorRef[] {
   // Split on commas while respecting HTML boundaries.
   // Simple regex approach: find every `<a>…</a>` and yield it + the tail until the next comma.
   const anchorRe = /<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(html)) !== null) {
-    const href = m[1] ?? '';
-    const innerHtml = m[2] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(html)) !== null) {
+    const href = match[1] ?? '';
+    const innerHtml = match[2] ?? '';
     const name = htmlToText(innerHtml).trim();
     if (name === '') continue;
 

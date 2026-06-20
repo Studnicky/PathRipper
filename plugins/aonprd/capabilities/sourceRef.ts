@@ -5,20 +5,20 @@
 //
 // re-extraction is gone. `extractCommon` is the sole producer of
 // the source reference list; this capability is a pure projection.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }      from '../../../src/state/ScrapeState.js';
-import type { RipperServices }   from '../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../common.js';
 
 export type SourceRefOutput = 'success' | 'error';
 
-export const sourceRefNode: NodeInterface<ScrapeState, SourceRefOutput, RipperServices> = {
-  name:    'extract:source-ref',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SourceRefNode extends ScalarNode<ScrapeState, SourceRefOutput> {
+  public readonly name = 'extract:source-ref';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     // `source`/`sources` are projections of `aonprdCommon` for
     // any future Layer-1 consumer — concept-specific nodes today read
@@ -26,17 +26,19 @@ export const sourceRefNode: NodeInterface<ScrapeState, SourceRefOutput, RipperSe
     // so the `ContractRegistryValidator` registration check stays at "zero
     // warnings"; the runtime side-write still happens.
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SourceRefOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SourceRefOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
     // Open-world soft-fail when `aonprdCommon` is absent (rule pages).
-    if (c === undefined) return { output: 'success' };
-    state.setMetadata('sources', c.sources);
-    state.setMetadata('source',  c.source);
-    return { output: 'success' };
-  },
-};
+    if (common === undefined) return NodeOutputBuilder.of('success');
+    state.setMetadata('sources', common.sources);
+    state.setMetadata('source',  common.source);
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const sourceRefNode = new SourceRefNode();

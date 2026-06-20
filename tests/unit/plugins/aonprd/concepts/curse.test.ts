@@ -1,5 +1,6 @@
 // Unit tests for curse concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }  from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -11,6 +12,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/curse.js';
 import type { CurseOutput } from '../../../../../plugins/aonprd/concepts/curse.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'curse-mummy-rot.html';
 const URL     = 'https://2e.aonprd.com/Curses.aspx?ID=57';
@@ -18,26 +20,26 @@ const URL     = 'https://2e.aonprd.com/Curses.aspx?ID=57';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await curseBaseNode.execute(state, stubContext);
-  await curseMechanicsNode.execute(state, stubContext);
-  await curseStagesNode.execute(state, stubContext);
-  await finalizeCurseNode.execute(state, stubContext);
-  return state.output as CurseOutput;
+  await curseBaseNode.execute(Batch.of(state), stubContext);
+  await curseMechanicsNode.execute(Batch.of(state), stubContext);
+  await curseStagesNode.execute(Batch.of(state), stubContext);
+  await finalizeCurseNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<CurseOutput>(state.output);
 }
 
 describe('extract:curse-base — curse-mummy-rot', () => {
   it('produces _type, name, curse_id, level', async () => {
     const state = await primeState();
-    const r = await curseBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await curseBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CurseOutput;
+    const out = ParsedOutput.as<CurseOutput>(state.output);
     assert.equal(out.name, 'Mummy Rot');
     assert.equal(out.curse_id, 57);
     assert.equal(out.level, 11);
@@ -46,19 +48,19 @@ describe('extract:curse-base — curse-mummy-rot', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await curseBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await curseBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:curse-mechanics — curse-mummy-rot', () => {
   it('produces saving_throw, onset, maximum_duration', async () => {
     const state = await primeState();
-    await curseBaseNode.execute(state, stubContext);
-    const r = await curseMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await curseBaseNode.execute(Batch.of(state), stubContext);
+    const result = await curseMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CurseOutput;
+    const out = ParsedOutput.as<CurseOutput>(state.output);
     assert.ok(out.saving_throw !== null, 'saving_throw present');
     assert.equal(out.saving_throw?.dc, 28);
     assert.equal(out.saving_throw?.save, 'Will');
@@ -69,19 +71,19 @@ describe('extract:curse-mechanics — curse-mummy-rot', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await curseMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await curseMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:curse-stages — curse-mummy-rot', () => {
   it('produces 3 stages with durations', async () => {
     const state = await primeState();
-    await curseBaseNode.execute(state, stubContext);
-    const r = await curseStagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await curseBaseNode.execute(Batch.of(state), stubContext);
+    const result = await curseStagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CurseOutput;
+    const out = ParsedOutput.as<CurseOutput>(state.output);
     assert.ok(Array.isArray(out.stages), 'stages is array');
     assert.equal(out.stages.length, 3, 'three stages parsed');
     assert.equal(out.stages[0]?.stage, 1);
@@ -93,8 +95,8 @@ describe('extract:curse-stages — curse-mummy-rot', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await curseStagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await curseStagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -122,7 +124,7 @@ describe('finalize:curse — curse-mummy-rot', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeCurseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeCurseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

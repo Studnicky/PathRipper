@@ -7,11 +7,11 @@ import {
 } from './helpers.js';
 import type { DeityEdictsAnathemaSlice } from './types.js';
 
-export function extractDeityEdictsAnathema(c: CommonExtraction): DeityEdictsAnathemaSlice {
+export function extractDeityEdictsAnathema(common: CommonExtraction): DeityEdictsAnathemaSlice {
   // Cut the body at the first `<h2 class="title">` to isolate the pre-section
   // header fragment carrying Category / Edicts / Anathema / etc.
-  const cut = /<h2\b[^>]*class="[^"]*title[^"]*"[^>]*>/i.exec(c.body_html);
-  const headFragment = cut !== null ? c.body_html.slice(0, cut.index) : c.body_html;
+  const cut = /<h2\b[^>]*class="[^"]*title[^"]*"[^>]*>/i.exec(common.body_html);
+  const headFragment = cut !== null ? common.body_html.slice(0, cut.index) : common.body_html;
   const map = harvestLinkedBoldLabels(headFragment);
   return {
     category:            map.get('category')             ?? null,

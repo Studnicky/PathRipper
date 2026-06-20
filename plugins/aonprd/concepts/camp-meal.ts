@@ -4,12 +4,12 @@
 // description, and degree-of-success outcomes. Helpers are inlined.
 //
 // bespoke node-folder under nodes/camp-meal/.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -101,9 +101,9 @@ export interface CampMealMetaSlice {
 function pickOutcomeHtml(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(html);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(html);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = html.slice(start);
   const boundary = /<b>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
@@ -137,43 +137,43 @@ function extractDescription(body: string): string {
   return htmlToText(slice).trim();
 }
 
-function clean(s: string | null): string | null {
-  if (s === null) return null;
-  const t = s.trim().replace(/[;,]\s*$/, '').trim();
-  return t === '' ? null : t;
+function clean(str: string | null): string | null {
+  if (str === null) return null;
+  const trimmed = str.trim().replace(/[;,]\s*$/, '').trim();
+  return trimmed === '' ? null : trimmed;
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractCampMealBase(c: CommonExtraction): CampMealBaseSlice {
+export function extractCampMealBase(common: CommonExtraction): CampMealBaseSlice {
   return {
-    url:             c.url,
-    meal_id:         extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    level:           c.title.level,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    meal_id:         extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    level:           common.title.level,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
-export function extractCampMealMechanics(c: CommonExtraction): CampMealMechanicsSlice {
+export function extractCampMealMechanics(common: CommonExtraction): CampMealMechanicsSlice {
   return {
-    recipe_price:  clean(getField(c, 'Recipe Price')),
-    ingredients:   clean(getField(c, 'Ingredients')),
-    preparation:   clean(getField(c, 'Preparation')),
-    favorite_meal: clean(getField(c, 'Favorite Meal')),
-    description:   extractDescription(c.body_html),
-    outcomes:      parseOutcomes(c.body_html),
+    recipe_price:  clean(getField(common, 'Recipe Price')),
+    ingredients:   clean(getField(common, 'Ingredients')),
+    preparation:   clean(getField(common, 'Preparation')),
+    favorite_meal: clean(getField(common, 'Favorite Meal')),
+    description:   extractDescription(common.body_html),
+    outcomes:      parseOutcomes(common.body_html),
   };
 }
 
-export function extractCampMealMeta(_c: CommonExtraction): CampMealMetaSlice {
+export function extractCampMealMeta(_common: CommonExtraction): CampMealMetaSlice {
   return { __camp_meal_meta_marked: true };
 }
 
@@ -187,32 +187,32 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeCampMeal(
-  c:     CommonExtraction,
-  base:  CampMealBaseSlice,
-  mech:  CampMealMechanicsSlice,
-  _meta: CampMealMetaSlice,
-  $:     CheerioAPI,
+  common: CommonExtraction,
+  base:   CampMealBaseSlice,
+  mech:   CampMealMechanicsSlice,
+  _meta:  CampMealMetaSlice,
+  root:   CheerioAPI,
 ): CampMealOutput {
   void _meta;
   return {
     ...base,
     ...mech,
-    sections:         c.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    sections:         common.sections,
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies CampMealOutput;
 }
 
-export function extractCampMeal(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): CampMealOutput {
+export function extractCampMeal(common: CommonExtraction, root: CheerioAPI, target: CheerioNode): CampMealOutput {
   void target;
-  const base = extractCampMealBase(c);
-  const mech = extractCampMealMechanics(c);
-  const meta = extractCampMealMeta(c);
-  return finalizeCampMeal(c, base, mech, meta, $);
+  const base = extractCampMealBase(common);
+  const mech = extractCampMealMechanics(common);
+  const meta = extractCampMealMeta(common);
+  return finalizeCampMeal(common, base, mech, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -220,87 +220,90 @@ export function extractCampMeal(c: CommonExtraction, $: CheerioAPI, target: Chee
 
 export type CampMealBaseOutput = 'success' | 'error';
 
-export const campMealBaseNode: NodeInterface<ScrapeState, CampMealBaseOutput, RipperServices> = {
-  name:    'extract:camp-meal-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class CampMealBaseNodeImpl extends ScalarNode<ScrapeState, CampMealBaseOutput> {
+  public readonly name    = 'extract:camp-meal-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: CampMealBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<CampMealBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractCampMealBase(c);
+    const base = extractCampMealBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const campMealBaseNode = new CampMealBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type CampMealMechanicsOutput = 'success' | 'error';
 
-export const campMealMechanicsNode: NodeInterface<ScrapeState, CampMealMechanicsOutput, RipperServices> = {
-  name:    'extract:camp-meal-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class CampMealMechanicsNodeImpl extends ScalarNode<ScrapeState, CampMealMechanicsOutput> {
+  public readonly name    = 'extract:camp-meal-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: CampMealMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<CampMealMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mech = extractCampMealMechanics(c);
+    const mech = extractCampMealMechanics(common);
 
     state.output = { ...state.output, ...mech };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const campMealMechanicsNode = new CampMealMechanicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeCampMealOutput = 'success';
 
-export const finalizeCampMealNode: NodeInterface<ScrapeState, FinalizeCampMealOutput, RipperServices> = {
-  name:    'finalize:camp-meal',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeCampMealNodeImpl extends ScalarNode<ScrapeState, FinalizeCampMealOutput> {
+  public readonly name    = 'finalize:camp-meal';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeCampMealOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeCampMealOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
 
     // meta arg is unused by finalizeCampMeal (marker only)
     const acc = (state.output ?? {}) as unknown as CampMealOutput;
-    const assembled = finalizeCampMeal(c, acc, acc, { __camp_meal_meta_marked: true }, $);
+    const assembled = finalizeCampMeal(common, acc, acc, { __camp_meal_meta_marked: true }, root);
     void target;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeCampMealNode = new FinalizeCampMealNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

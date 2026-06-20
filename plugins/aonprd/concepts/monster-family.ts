@@ -2,12 +2,12 @@
 // Monster-family pages are lore + member-list pages with minimal structured
 // data; the inlined helpers handle the Members framing section harvest and
 // family identity.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -101,10 +101,10 @@ function parseMembers(html: string): MonsterFamilyMember[] {
   const seen = new Set<string>();
 
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(fragment)) !== null) {
-    const href   = m[1] ?? '';
-    const inner  = m[2] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(fragment)) !== null) {
+    const href   = match[1] ?? '';
+    const inner  = match[2] ?? '';
     const name   = htmlToText(inner);
     if (name === '' || seen.has(href)) continue;
     seen.add(href);
@@ -124,25 +124,25 @@ function parseMembers(html: string): MonsterFamilyMember[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a monster-family page. */
-export function extractMonsterFamilyBase(c: CommonExtraction): MonsterFamilyBaseSlice {
+export function extractMonsterFamilyBase(common: CommonExtraction): MonsterFamilyBaseSlice {
   return {
-    url:             c.url,
-    monster_family_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    monster_family_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract the member-creature list from the `Members` framing section. */
-export function extractMonsterFamilyMembers(c: CommonExtraction): MonsterFamilyMembersSlice {
-  return { members: parseMembers(c.body_html) };
+export function extractMonsterFamilyMembers(common: CommonExtraction): MonsterFamilyMembersSlice {
+  return { members: parseMembers(common.body_html) };
 }
 
 /**
@@ -162,22 +162,22 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * meta fields owned by the full page.
  */
 export function finalizeMonsterFamily(
-  c:       CommonExtraction,
+  common:  CommonExtraction,
   base:    MonsterFamilyBaseSlice,
   members: MonsterFamilyMembersSlice,
-  $:       CheerioAPI,
+  root:    CheerioAPI,
 ): MonsterFamilyOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
     members:          members.members,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies MonsterFamilyOutput;
 }
 
@@ -189,14 +189,14 @@ export function finalizeMonsterFamily(
  * the decomposed monster-family extraction nodes.
  */
 export function extractMonsterFamily(
-  c:    CommonExtraction,
-  $:    CheerioAPI,
-  _span: CheerioNode,
+  common: CommonExtraction,
+  root:   CheerioAPI,
+  _span:  CheerioNode,
 ): MonsterFamilyOutput {
   void _span;
-  const base    = extractMonsterFamilyBase(c);
-  const members = extractMonsterFamilyMembers(c);
-  return finalizeMonsterFamily(c, base, members, $);
+  const base    = extractMonsterFamilyBase(common);
+  const members = extractMonsterFamilyMembers(common);
+  return finalizeMonsterFamily(common, base, members, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -204,82 +204,88 @@ export function extractMonsterFamily(
 
 export type MonsterFamilyBaseOutput = 'success' | 'error';
 
-export const monsterFamilyBaseNode: NodeInterface<ScrapeState, MonsterFamilyBaseOutput, RipperServices> = {
-  name:    'extract:monster-family-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterFamilyBaseNode extends ScalarNode<ScrapeState, MonsterFamilyBaseOutput> {
+  public readonly name = 'extract:monster-family-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterFamilyBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterFamilyBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractMonsterFamilyBase(c);
+    const base = extractMonsterFamilyBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterFamilyBaseNode = new MonsterFamilyBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type MonsterFamilyMembersOutput = 'success' | 'error';
 
-export const monsterFamilyMembersNode: NodeInterface<ScrapeState, MonsterFamilyMembersOutput, RipperServices> = {
-  name:    'extract:monster-family-members',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterFamilyMembersNode extends ScalarNode<ScrapeState, MonsterFamilyMembersOutput> {
+  public readonly name = 'extract:monster-family-members';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterFamilyMembersOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterFamilyMembersOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const members = extractMonsterFamilyMembers(c);
+    const members = extractMonsterFamilyMembers(common);
 
     state.output = { ...state.output, ...members };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterFamilyMembersNode = new MonsterFamilyMembersNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeMonsterFamilyOutput = 'success';
 
-export const finalizeMonsterFamilyNode: NodeInterface<ScrapeState, FinalizeMonsterFamilyOutput, RipperServices> = {
-  name:    'finalize:monster-family',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeMonsterFamilyNode extends ScalarNode<ScrapeState, FinalizeMonsterFamilyOutput> {
+  public readonly name = 'finalize:monster-family';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeMonsterFamilyOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeMonsterFamilyOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as MonsterFamilyOutput;
-    const assembled = finalizeMonsterFamily(c, acc, acc, $);
+    const assembled = finalizeMonsterFamily(common, acc, acc, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeMonsterFamilyNode = new FinalizeMonsterFamilyNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

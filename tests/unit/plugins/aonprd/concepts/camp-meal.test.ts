@@ -1,5 +1,6 @@
 // Unit tests for camp-meal concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }       from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/camp-meal.js';
 import type { CampMealOutput } from '../../../../../plugins/aonprd/concepts/camp-meal.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'camp-meal-baked-spider-legs.html';
 const URL     = 'https://2e.aonprd.com/CampMeals.aspx?ID=1';
@@ -17,25 +19,25 @@ const URL     = 'https://2e.aonprd.com/CampMeals.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await campMealBaseNode.execute(state, stubContext);
-  await campMealMechanicsNode.execute(state, stubContext);
-  await finalizeCampMealNode.execute(state, stubContext);
-  return state.output as CampMealOutput;
+  await campMealBaseNode.execute(Batch.of(state), stubContext);
+  await campMealMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeCampMealNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<CampMealOutput>(state.output);
 }
 
 describe('extract:camp-meal-base — camp-meal-baked-spider-legs', () => {
   it('produces _type, name, meal_id', async () => {
     const state = await primeState();
-    const r = await campMealBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await campMealBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CampMealOutput;
+    const out = ParsedOutput.as<CampMealOutput>(state.output);
     assert.equal(out.name, 'Baked Spider Legs');
     assert.equal(out.meal_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -43,19 +45,19 @@ describe('extract:camp-meal-base — camp-meal-baked-spider-legs', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await campMealBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await campMealBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:camp-meal-mechanics — camp-meal-baked-spider-legs', () => {
   it('produces outcomes array and description', async () => {
     const state = await primeState();
-    await campMealBaseNode.execute(state, stubContext);
-    const r = await campMealMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await campMealBaseNode.execute(Batch.of(state), stubContext);
+    const result = await campMealMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CampMealOutput;
+    const out = ParsedOutput.as<CampMealOutput>(state.output);
     assert.ok(Array.isArray(out.outcomes), 'outcomes is array');
     assert.ok(out.outcomes.length > 0, 'at least one outcome parsed');
     assert.ok(typeof out.description === 'string', 'description is string');
@@ -67,8 +69,8 @@ describe('extract:camp-meal-mechanics — camp-meal-baked-spider-legs', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await campMealMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await campMealMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -96,7 +98,7 @@ describe('finalize:camp-meal — camp-meal-baked-spider-legs', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeCampMealNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeCampMealNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { configLoadFlow, CONFIG_LOAD_FLOW } from '../flows/configLoadFlow.js';
 import { ReadFileNode }             from '../nodes/config/ReadFileNode.js';
@@ -30,7 +30,7 @@ _dispatcher.registerDAG(configLoadFlow);
  * Loads and AJV-validates a ripperoni JSON config file.
  *
  * @remarks
- * Dispatches the `configLoadDAG` through `@noocodex/dagonizer`. The five-node
+ * Dispatches the `configLoadDAG` through `@studnicky/dagonizer`. The five-node
  * pipeline is:
  *
  * ```
@@ -83,7 +83,7 @@ export class RipperConfig {
     }
 
     // Extract errors from state and throw a single RipperConfigError.
-    const messages = result.state.errors.map((e) => e.message);
+    const messages = result.state.errors.map((error) => error.message);
     const combined = messages.length > 0
       ? messages.join('\n  ')
       : 'Config load failed (unknown error)';

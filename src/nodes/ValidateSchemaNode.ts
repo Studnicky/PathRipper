@@ -3,15 +3,15 @@ import { readFile } from 'node:fs/promises';
 import AjvModule, { type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { AjvCtorType, AddFormatsFnInterface } from '../types/AjvInterop.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger }               from '../modules/logger/logger.js';
 import { toNodeError }          from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }     from '../services/RipperServices.js';
+import type { RipperServices }  from '../services/RipperServices.js';
 
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default
                   ?? (AjvModule      as unknown as AjvCtorType);
@@ -54,6 +54,8 @@ const compileSchema = async (schemaPath: string): Promise<ValidateFunction<unkno
   return validator;
 };
 
+type ValidateSchemaOutput = 'valid' | 'invalid';
+
 /**
  * Validates `state.output` against the JSON schema at `services.target.cfg.outputSchema`.
  * No-op when `outputSchema` is unset.
@@ -65,15 +67,18 @@ const compileSchema = async (schemaPath: string): Promise<ValidateFunction<unkno
  * @category Nodes
  * @since 3.0.0
  */
-export const ValidateSchemaNode: NodeInterface<ScrapeState, 'valid' | 'invalid', RipperServices> = {
-  name: 'validate:schema',
-  outputs: ['valid', 'invalid'],
+class ValidateSchemaNodeImpl extends ScalarNode<ScrapeState, ValidateSchemaOutput, RipperServices> {
+  public readonly name = 'validate:schema';
+  public readonly outputs = ['valid', 'invalid'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'valid' | 'invalid' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<ValidateSchemaOutput>> {
     const { services } = context;
     const schemaPath = services.target.cfg['outputSchema'];
     if (schemaPath === undefined) {
-      return { output: 'valid' };
+      return NodeOutputBuilder.of('valid');
     }
     if (typeof schemaPath !== 'string' || schemaPath.length === 0) {
       throw ExternalSchemaError.create('validate:schema requires target.cfg.outputSchema to be a non-empty string', {
@@ -84,23 +89,17 @@ export const ValidateSchemaNode: NodeInterface<ScrapeState, 'valid' | 'invalid',
     const validator = await compileSchema(schemaPath);
     const valid     = validator(state.output);
     if (!valid) {
-      const errors = (validator.errors ?? []).map((e) => `${e.instancePath} ${e.message ?? ''}`.trim()).join('; ');
+      const errors = (validator.errors ?? []).map((ajvError) => `${ajvError.instancePath} ${ajvError.message ?? ''}`.trim()).join('; ');
       const err = ExternalSchemaError.create(`Output failed schema validation: ${errors}`, {
         metadata: { task: 'validate:schema', schemaPath, errors: validator.errors },
       });
       state.collectError(toNodeError(err, 'validate:schema'));
       logger.warn('validate:schema', `Schema violation: ${errors}`, { schemaPath });
-      return { output: 'invalid' };
+      return NodeOutputBuilder.of('invalid');
     }
 
-    return { output: 'valid' };
-  },
-};
+    return NodeOutputBuilder.of('valid');
+  }
+}
 
-/** OperationContract for ValidateSchemaNode: reads output, produces nothing new on state. */
-export const validateSchemaContract: OperationContract = {
-  name:         'validate:schema',
-  hardRequired: ['output'],
-  produces:     [],
-  outputs:      ['valid', 'invalid'],
-};
+export const ValidateSchemaNode = new ValidateSchemaNodeImpl();

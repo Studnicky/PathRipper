@@ -1,16 +1,18 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join }    from 'node:path';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger }               from '../modules/logger/logger.js';
 import { pageSlug }             from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }     from '../services/RipperServices.js';
+import type { RipperServices }  from '../services/RipperServices.js';
 
 const logger = Logger.forComponent('WikiWriteRawNode');
+
+type WikiWriteRawOutput = 'success';
 
 /**
  * Writes `state.page.wikitext` to `<outDir>/<targetId>/raw/<slug>.txt`.
@@ -21,11 +23,14 @@ const logger = Logger.forComponent('WikiWriteRawNode');
  * @category Nodes
  * @since 3.0.0
  */
-export const WikiWriteRawNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name: 'wiki:write-raw',
-  outputs: ['success'],
+class WikiWriteRawNodeImpl extends ScalarNode<ScrapeState, WikiWriteRawOutput, RipperServices> {
+  public readonly name = 'wiki:write-raw';
+  public readonly outputs = ['success'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<WikiWriteRawOutput>> {
     const { services } = context;
     const wikitext = state.page.wikitext;
     if (wikitext === undefined || wikitext.length === 0) {
@@ -38,14 +43,8 @@ export const WikiWriteRawNode: NodeInterface<ScrapeState, 'success', RipperServi
     await mkdir(dirname(outFile), { recursive: true });
     await writeFile(outFile, wikitext, 'utf8');
     logger.debug('wiki:write-raw', `Wrote raw wikitext: ${outFile}`, { task: 'wiki:write-raw', outFile });
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for WikiWriteRawNode: reads page.wikitext, writes to disk (no state field). */
-export const wikiWriteRawContract: OperationContract = {
-  name:         'wiki:write-raw',
-  hardRequired: ['page.wikitext'],
-  produces:     [],
-  outputs:      ['success'],
-};
+export const WikiWriteRawNode = new WikiWriteRawNodeImpl();

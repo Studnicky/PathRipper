@@ -4,7 +4,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { docsParseNode, docsParseFlow as docsParseDAG } from '../../../../examples/docs-scraper/plugin.js';
@@ -40,9 +40,10 @@ describe('docs-scraper wrapper DAG (Flavor 2 universal)', () => {
     assert.equal(docsParseNode.name, 'docs:parse-impl');
   });
 
-  it('DAG has exactly one node placement', () => {
-    assert.equal(docsParseDAG.nodes.length, 1);
+  it('DAG has exactly one SingleNode placement and one TerminalNode', () => {
+    assert.equal(docsParseDAG.nodes.length, 2);
     assert.equal(docsParseDAG.nodes[0]?.['@type'], 'SingleNode');
+    assert.equal(docsParseDAG.nodes[1]?.['@type'], 'TerminalNode');
   });
 
   it('dispatching docs:parse extracts data-component sections', async () => {

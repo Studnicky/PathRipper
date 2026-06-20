@@ -1,5 +1,6 @@
 // Unit tests for disease concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }  from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -11,6 +12,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/disease.js';
 import type { DiseaseOutput } from '../../../../../plugins/aonprd/concepts/disease.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'disease-bubonic-plague.html';
 const URL     = 'https://2e.aonprd.com/Diseases.aspx?ID=1';
@@ -18,26 +20,26 @@ const URL     = 'https://2e.aonprd.com/Diseases.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await diseaseBaseNode.execute(state, stubContext);
-  await diseaseMechanicsNode.execute(state, stubContext);
-  await diseaseStagesNode.execute(state, stubContext);
-  await finalizeDiseaseNode.execute(state, stubContext);
-  return state.output as DiseaseOutput;
+  await diseaseBaseNode.execute(Batch.of(state), stubContext);
+  await diseaseMechanicsNode.execute(Batch.of(state), stubContext);
+  await diseaseStagesNode.execute(Batch.of(state), stubContext);
+  await finalizeDiseaseNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<DiseaseOutput>(state.output);
 }
 
 describe('extract:disease-base — disease-bubonic-plague', () => {
   it('produces _type, name, disease_id, level', async () => {
     const state = await primeState();
-    const r = await diseaseBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await diseaseBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DiseaseOutput;
+    const out = ParsedOutput.as<DiseaseOutput>(state.output);
     assert.equal(out.name, 'Bubonic Plague');
     assert.equal(out.disease_id, 1);
     assert.equal(out.level, 7);
@@ -47,19 +49,19 @@ describe('extract:disease-base — disease-bubonic-plague', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await diseaseBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await diseaseBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:disease-mechanics — disease-bubonic-plague', () => {
   it('produces saving_throw, onset, maximum_duration', async () => {
     const state = await primeState();
-    await diseaseBaseNode.execute(state, stubContext);
-    const r = await diseaseMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await diseaseBaseNode.execute(Batch.of(state), stubContext);
+    const result = await diseaseMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DiseaseOutput;
+    const out = ParsedOutput.as<DiseaseOutput>(state.output);
     assert.ok(out.saving_throw !== null, 'saving_throw present');
     assert.equal(out.saving_throw?.dc, 22);
     assert.equal(out.saving_throw?.save, 'Fortitude');
@@ -70,19 +72,19 @@ describe('extract:disease-mechanics — disease-bubonic-plague', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await diseaseMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await diseaseMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:disease-stages — disease-bubonic-plague', () => {
   it('produces 4 stages', async () => {
     const state = await primeState();
-    await diseaseBaseNode.execute(state, stubContext);
-    const r = await diseaseStagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await diseaseBaseNode.execute(Batch.of(state), stubContext);
+    const result = await diseaseStagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DiseaseOutput;
+    const out = ParsedOutput.as<DiseaseOutput>(state.output);
     assert.ok(Array.isArray(out.stages), 'stages is array');
     assert.equal(out.stages.length, 4, 'four stages parsed');
     assert.equal(out.stages[0]?.stage, 1);
@@ -93,8 +95,8 @@ describe('extract:disease-stages — disease-bubonic-plague', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await diseaseStagesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await diseaseStagesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -123,7 +125,7 @@ describe('finalize:disease — disease-bubonic-plague', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeDiseaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeDiseaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

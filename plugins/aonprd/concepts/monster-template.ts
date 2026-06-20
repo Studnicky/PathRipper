@@ -2,12 +2,12 @@
 // Monster-template pages describe creature adjustment templates (Elite, Weak,
 // Undead, etc.) with bullet adjustments, optional subsections, HP tables, and
 // best-effort numeric delta parsing.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -138,10 +138,10 @@ export interface MonsterTemplateMetaSlice {
 /** Parse `<ul><li>…</li></ul>` items out of a fragment, preserving order. */
 function parseBulletList(html: string): MonsterTemplateAdjustment[] {
   const out: MonsterTemplateAdjustment[] = [];
-  const re = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const inner = m[1] ?? '';
+  const regex = /<li\b[^>]*>([\s\S]*?)<\/li>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const inner = match[1] ?? '';
     const text = htmlToText(inner);
     if (text === '') continue;
     out.push({ text, html: inner.trim() });
@@ -155,9 +155,9 @@ function parseBulletList(html: string): MonsterTemplateAdjustment[] {
  * captured twice.
  */
 function splitOnFirstH3(html: string): { head: string; rest: string } {
-  const m = /<h3\b[^>]*class="[^"]*title[^"]*"[^>]*>/i.exec(html);
-  if (m === null) return { head: html, rest: '' };
-  return { head: html.slice(0, m.index), rest: html.slice(m.index) };
+  const match = /<h3\b[^>]*class="[^"]*title[^"]*"[^>]*>/i.exec(html);
+  if (match === null) return { head: html, rest: '' };
+  return { head: html.slice(0, match.index), rest: html.slice(match.index) };
 }
 
 /**
@@ -167,19 +167,19 @@ function splitOnFirstH3(html: string): { head: string; rest: string } {
  */
 function parseSubsections(html: string): MonsterTemplateSubsection[] {
   const out: MonsterTemplateSubsection[] = [];
-  const re = /<h3\b[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/gi;
+  const regex = /<h3\b[^>]*class="[^"]*title[^"]*"[^>]*>([\s\S]*?)<\/h3>/gi;
   const matches: Array<{ heading: string; start: number; end: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
     matches.push({
-      heading: htmlToText(m[1] ?? ''),
-      start:   m.index,
-      end:     m.index + m[0].length,
+      heading: htmlToText(match[1] ?? ''),
+      start:   match.index,
+      end:     match.index + match[0].length,
     });
   }
-  for (let i = 0; i < matches.length; i++) {
-    const cur  = matches[i]!;
-    const next = i + 1 < matches.length ? matches[i + 1]!.start : html.length;
+  for (let index = 0; index < matches.length; index++) {
+    const cur  = matches[index]!;
+    const next = index + 1 < matches.length ? matches[index + 1]!.start : html.length;
     const body_html = html.slice(cur.end, next).trim();
     out.push({
       heading:     cur.heading,
@@ -198,13 +198,13 @@ function parseHpTable(html: string): MonsterTemplateHpRow[] {
   const tableHtml = tableMatch[1] ?? '';
   const out: MonsterTemplateHpRow[] = [];
   const rowRe = /<tr\b[^>]*>([\s\S]*?)<\/tr>/gi;
-  let r: RegExpExecArray | null;
-  while ((r = rowRe.exec(tableHtml)) !== null) {
-    const rowHtml = r[1] ?? '';
+  let rowMatch: RegExpExecArray | null;
+  while ((rowMatch = rowRe.exec(tableHtml)) !== null) {
+    const rowHtml = rowMatch[1] ?? '';
     const cells: string[] = [];
     const cellRe = /<td\b[^>]*>([\s\S]*?)<\/td>/gi;
-    let c: RegExpExecArray | null;
-    while ((c = cellRe.exec(rowHtml)) !== null) cells.push(htmlToText(c[1] ?? ''));
+    let cellMatch: RegExpExecArray | null;
+    while ((cellMatch = cellRe.exec(rowHtml)) !== null) cells.push(htmlToText(cellMatch[1] ?? ''));
     if (cells.length < 2) continue;
     // Skip header row (contains bolded labels like "Starting Level" / "HP Increase").
     if (/starting level/i.test(cells[0]!) && /hp/i.test(cells[1]!)) continue;
@@ -231,48 +231,48 @@ function parseStatChange(text: string, kind: 'level' | 'attack' | 'damage'): num
   const lower = text.toLowerCase();
   // Tightly scoped regexes — fall back to null when the page uses prose patterns
   // that don't match (e.g. undead templates which describe additions, not deltas).
-  let re: RegExp;
+  let regex: RegExp;
   if (kind === 'level') {
-    re = /(increase|reduce|decrease)[^.]{0,40}\blevel\b[^.]{0,40}?\bby\s+(\d+)/i;
+    regex = /(increase|reduce|decrease)[^.]{0,40}\blevel\b[^.]{0,40}?\bby\s+(\d+)/i;
   } else if (kind === 'attack') {
-    re = /(increase|reduce|decrease)[^.]{0,80}?\b(?:ac|attack(?:\s+modifiers?)?|dcs?|saving\s+throws?|perception|skill\s+modifiers?)\b[^.]{0,80}?\bby\s+(\d+)/i;
+    regex = /(increase|reduce|decrease)[^.]{0,80}?\b(?:ac|attack(?:\s+modifiers?)?|dcs?|saving\s+throws?|perception|skill\s+modifiers?)\b[^.]{0,80}?\bby\s+(\d+)/i;
   } else {
-    re = /(increase|reduce|decrease)[^.]{0,40}?damage[^.]{0,80}?strikes?[^.]{0,40}?\bby\s+(\d+)/i;
+    regex = /(increase|reduce|decrease)[^.]{0,40}?damage[^.]{0,80}?strikes?[^.]{0,40}?\bby\s+(\d+)/i;
   }
-  const m = re.exec(lower);
-  if (m === null) return null;
-  const n = parseInt(m[2]!, 10);
-  if (!Number.isFinite(n)) return null;
-  const sign = /increase/i.test(m[1]!) ? 1 : -1;
-  return sign * n;
+  const match = regex.exec(lower);
+  if (match === null) return null;
+  const num = parseInt(match[2]!, 10);
+  if (!Number.isFinite(num)) return null;
+  const sign = /increase/i.test(match[1]!) ? 1 : -1;
+  return sign * num;
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a monster-template page. */
-export function extractMonsterTemplateBase(c: CommonExtraction): MonsterTemplateBaseSlice {
+export function extractMonsterTemplateBase(common: CommonExtraction): MonsterTemplateBaseSlice {
   return {
-    url:             c.url,
-    template_id:     extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    template_id:     extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract bullet adjustments + subsections + HP table + numeric deltas. */
-export function extractMonsterTemplateModifications(c: CommonExtraction): MonsterTemplateModificationsSlice {
-  const { head, rest } = splitOnFirstH3(c.body_html);
+export function extractMonsterTemplateModifications(common: CommonExtraction): MonsterTemplateModificationsSlice {
+  const { head, rest } = splitOnFirstH3(common.body_html);
   const adjustments = parseBulletList(head);
   const subsections = parseSubsections(rest);
-  const hp_table    = parseHpTable(c.body_html);
-  const flat = c.body_text;
+  const hp_table    = parseHpTable(common.body_html);
+  const flat = common.body_text;
   return {
     adjustments,
     subsections,
@@ -284,7 +284,7 @@ export function extractMonsterTemplateModifications(c: CommonExtraction): Monste
 }
 
 /** Meta marker — body/sections/links/meta attach during finalize. */
-export function extractMonsterTemplateMeta(_c: CommonExtraction): MonsterTemplateMetaSlice {
+export function extractMonsterTemplateMeta(_common: CommonExtraction): MonsterTemplateMetaSlice {
   return { __monster_template_meta_marked: true };
 }
 
@@ -295,26 +295,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeMonsterTemplate(
-  c:             CommonExtraction,
+  common:        CommonExtraction,
   base:          MonsterTemplateBaseSlice,
   modifications: MonsterTemplateModificationsSlice,
   _meta:         MonsterTemplateMetaSlice,
-  $:             CheerioAPI,
+  root:          CheerioAPI,
   _target:       CheerioNode,
 ): MonsterTemplateOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...modifications,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies MonsterTemplateOutput;
 }
 
@@ -326,14 +326,14 @@ export function finalizeMonsterTemplate(
  * the decomposed monster-template extraction nodes.
  */
 export function extractMonsterTemplate(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): MonsterTemplateOutput {
-  const base          = extractMonsterTemplateBase(c);
-  const modifications = extractMonsterTemplateModifications(c);
-  const meta          = extractMonsterTemplateMeta(c);
-  return finalizeMonsterTemplate(c, base, modifications, meta, $, target);
+  const base          = extractMonsterTemplateBase(common);
+  const modifications = extractMonsterTemplateModifications(common);
+  const meta          = extractMonsterTemplateMeta(common);
+  return finalizeMonsterTemplate(common, base, modifications, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -341,83 +341,89 @@ export function extractMonsterTemplate(
 
 export type MonsterTemplateBaseOutput = 'success' | 'error';
 
-export const monsterTemplateBaseNode: NodeInterface<ScrapeState, MonsterTemplateBaseOutput, RipperServices> = {
-  name:    'extract:monster-template-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterTemplateBaseNode extends ScalarNode<ScrapeState, MonsterTemplateBaseOutput> {
+  public readonly name = 'extract:monster-template-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterTemplateBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterTemplateBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractMonsterTemplateBase(c);
+    const base = extractMonsterTemplateBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterTemplateBaseNode = new MonsterTemplateBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type MonsterTemplateModificationsOutput = 'success' | 'error';
 
-export const monsterTemplateModificationsNode: NodeInterface<ScrapeState, MonsterTemplateModificationsOutput, RipperServices> = {
-  name:    'extract:monster-template-modifications',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterTemplateModificationsNode extends ScalarNode<ScrapeState, MonsterTemplateModificationsOutput> {
+  public readonly name = 'extract:monster-template-modifications';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterTemplateModificationsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterTemplateModificationsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const modifications = extractMonsterTemplateModifications(c);
+    const modifications = extractMonsterTemplateModifications(common);
 
     state.output = { ...state.output, ...modifications };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterTemplateModificationsNode = new MonsterTemplateModificationsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeMonsterTemplateOutput = 'success';
 
-export const finalizeMonsterTemplateNode: NodeInterface<ScrapeState, FinalizeMonsterTemplateOutput, RipperServices> = {
-  name:    'finalize:monster-template',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeMonsterTemplateNode extends ScalarNode<ScrapeState, FinalizeMonsterTemplateOutput> {
+  public readonly name = 'finalize:monster-template';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeMonsterTemplateOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeMonsterTemplateOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as MonsterTemplateOutput;
-    const assembled = finalizeMonsterTemplate(c, (acc as never), (acc as never), (acc as never), $, target);
+    const assembled = finalizeMonsterTemplate(common, (acc as never), (acc as never), (acc as never), root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeMonsterTemplateNode = new FinalizeMonsterTemplateNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

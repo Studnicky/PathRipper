@@ -92,19 +92,19 @@ export class ErrorClassifier {
   }
 
   private static retryAfterMs(error: ExtendedErrorInterface): number {
-    const h = error.headers?.['retry-after'];
-    if (typeof h === 'string') {
-      const n = parseInt(h, 10);
-      if (Number.isFinite(n)) return n * RETRY_AFTER_SECONDS_MULTIPLIER;
+    const retryAfter = error.headers?.['retry-after'];
+    if (typeof retryAfter === 'string') {
+      const parsed = parseInt(retryAfter, 10);
+      if (Number.isFinite(parsed)) return parsed * RETRY_AFTER_SECONDS_MULTIPLIER;
     }
-    if (typeof h === 'number' && Number.isFinite(h)) return h * RETRY_AFTER_SECONDS_MULTIPLIER;
+    if (typeof retryAfter === 'number' && Number.isFinite(retryAfter)) return retryAfter * RETRY_AFTER_SECONDS_MULTIPLIER;
     return RETRY_AFTER_DEFAULT_MS;
   }
 
   private static networkRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        e.code === 'ECONNREFUSED' || e.code === 'ECONNRESET' || e.code === 'ENOTFOUND',
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET' || err.code === 'ENOTFOUND',
       category: ErrorCategory.NETWORK,
       retryable: true,
     }];
@@ -112,8 +112,8 @@ export class ErrorClassifier {
 
   private static timeoutRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        e.code === 'ETIMEDOUT' || e.code === 'ESOCKETTIMEDOUT',
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        err.code === 'ETIMEDOUT' || err.code === 'ESOCKETTIMEDOUT',
       category: ErrorCategory.TIMEOUT,
       retryable: true,
     }];
@@ -121,8 +121,8 @@ export class ErrorClassifier {
 
   private static throttledRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        e.status === HTTP_STATUS_THROTTLED || e.statusCode === HTTP_STATUS_THROTTLED,
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        err.status === HTTP_STATUS_THROTTLED || err.statusCode === HTTP_STATUS_THROTTLED,
       category: ErrorCategory.THROTTLED,
       retryable: true,
       backoffHint: ErrorClassifier.retryAfterMs,
@@ -131,9 +131,9 @@ export class ErrorClassifier {
 
   private static transientRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        (e.status !== undefined && e.status >= HTTP_STATUS_SERVER_MIN)
-        || (e.statusCode !== undefined && e.statusCode >= HTTP_STATUS_SERVER_MIN),
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        (err.status !== undefined && err.status >= HTTP_STATUS_SERVER_MIN)
+        || (err.statusCode !== undefined && err.statusCode >= HTTP_STATUS_SERVER_MIN),
       category: ErrorCategory.TRANSIENT,
       retryable: true,
     }];
@@ -141,9 +141,9 @@ export class ErrorClassifier {
 
   private static permanentRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        (e.status !== undefined && e.status >= HTTP_STATUS_CLIENT_MIN && e.status < HTTP_STATUS_CLIENT_MAX)
-        || (e.statusCode !== undefined && e.statusCode >= HTTP_STATUS_CLIENT_MIN && e.statusCode < HTTP_STATUS_CLIENT_MAX),
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        (err.status !== undefined && err.status >= HTTP_STATUS_CLIENT_MIN && err.status < HTTP_STATUS_CLIENT_MAX)
+        || (err.statusCode !== undefined && err.statusCode >= HTTP_STATUS_CLIENT_MIN && err.statusCode < HTTP_STATUS_CLIENT_MAX),
       category: ErrorCategory.PERMANENT,
       retryable: false,
     }];
@@ -151,8 +151,8 @@ export class ErrorClassifier {
 
   private static validationRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        e.name === 'ValidationError' || e.name === 'TypeError' || e.name === 'SyntaxError',
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        err.name === 'ValidationError' || err.name === 'TypeError' || err.name === 'SyntaxError',
       category: ErrorCategory.VALIDATION,
       retryable: false,
     }];
@@ -160,8 +160,8 @@ export class ErrorClassifier {
 
   private static resourceRules(): ClassificationRuleInterface[] {
     return [{
-      predicate: (e: ExtendedErrorInterface): boolean =>
-        e.code === 'ENOMEM' || e.code === 'ENOSPC',
+      predicate: (err: ExtendedErrorInterface): boolean =>
+        err.code === 'ENOMEM' || err.code === 'ENOSPC',
       category: ErrorCategory.RESOURCE,
       retryable: false,
     }];

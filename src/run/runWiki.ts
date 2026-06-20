@@ -25,9 +25,14 @@
 import { writeFile, readdir, mkdir } from 'node:fs/promises';
 import { resolve }                   from 'node:path';
 
-import { Dagonizer }                  from '@noocodex/dagonizer';
-import type { DagonizerInterface }    from '@noocodex/dagonizer';
-import { DAGDeriver }                 from '@noocodex/dagonizer/derive';
+import { Dagonizer }                  from '@studnicky/dagonizer';
+import type { DagonizerInterface }    from '@studnicky/dagonizer';
+
+import {
+  buildWikiScrapePhaseDag,
+  buildWikiRetryPhaseDag,
+  buildWikiScrapeDag,
+}                                     from '../flows/wikiScrapeDag.js';
 
 import type { RipperServices }        from '../services/RipperServices.js';
 import { RipperDagonizer }            from '../dispatcher/RipperDagonizer.js';
@@ -72,11 +77,6 @@ const BUILTIN_PREFIXES: ReadonlyArray<string> = [
   'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
 ];
 
-// ── Phase DAG names ────────────────────────────────────────────────────────────
-
-const WIKI_SCRAPE_PHASE = 'wikiScrapePhase';
-const WIKI_RETRY_PHASE  = 'wikiRetryPhase';
-
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const log = Logger.forComponent('runWiki');
@@ -96,7 +96,7 @@ const requirePipeline = (target: Record<string, unknown>, targetId: string): str
 
 const derivePluginTaskName = (pipeline: ReadonlyArray<string>): string | undefined => {
   for (const entry of pipeline) {
-    if (BUILTIN_PREFIXES.some((p) => entry.startsWith(p))) continue;
+    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
     return entry;
   }
   return undefined;
@@ -111,7 +111,7 @@ const loadAndRegisterPlugins = async (
   const seen = new Set<string>();
 
   for (const entry of pipelineNames) {
-    if (BUILTIN_PREFIXES.some((p) => entry.startsWith(p))) continue;
+    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
     const colon = entry.indexOf(':');
     if (colon <= 0) continue;
     const word = entry.slice(0, colon);
@@ -134,14 +134,14 @@ const loadAndRegisterPlugins = async (
       }
       throw err;
     }
-    const m = mod as Record<string, unknown>;
-    if (typeof m['register'] !== 'function') {
+    const modRecord = mod as Record<string, unknown>;
+    if (typeof modRecord['register'] !== 'function') {
       throw new Error(
         `Plugin at ${absPath} does not export register(dispatcher): void. `
         + `Add: export function register(dispatcher: RipperDagonizer<ScrapeState>): void { ... }`,
       );
     }
-    (m['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
+    (modRecord['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
     pluginDagNames.add(entry);
   }
   return pluginDagNames;
@@ -271,11 +271,11 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
   const existingFiles  = await readdir(targetDir).catch((): string[] => []);
   const alreadyWritten = new Set<string>(
     existingFiles
-      .filter((f) => f.endsWith('.json') && f !== 'failures.json')
-      .map((f) => f.slice(0, -'.json'.length)),
+      .filter((fileName) => fileName.endsWith('.json') && fileName !== 'failures.json')
+      .map((fileName) => fileName.slice(0, -'.json'.length)),
   );
 
-  const allTitles = members.map((m) => m.title);
+  const allTitles = members.map((member) => member.title);
   let skipped = 0;
   const pendingTitles: string[] = [];
   for (const title of allTitles) {
@@ -300,22 +300,22 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
   let recovered = 0;
   const allFailedAfterRetry: string[] = [];
 
-  for (let i = 0; i < pendingTitles.length; i += batchSize) {
-    const slice = pendingTitles.slice(i, i + batchSize);
+  for (let batchIndex = 0; batchIndex < pendingTitles.length; batchIndex += batchSize) {
+    const slice = pendingTitles.slice(batchIndex, batchIndex + batchSize);
     const pages = await wikiScraper.fetchPagesBatch(slice);
 
     const batchState = new ScrapeState();
-    batchState.titles = pages.map((p) => p.title);
+    batchState.titles = pages.map((page) => page.title);
 
-    for (const p of pages) {
-      batchState.setMetadata(`wikitext:${p.title}`, p.wikitext);
+    for (const page of pages) {
+      batchState.setMetadata(`wikitext:${page.title}`, page.wikitext);
     }
 
     // Each batch gets its own isolated services + dispatcher.
     const batchHolder: { current: RipperServices | null } = { current: null };
     const batchDispatcher = new RipperDagonizer<ScrapeState>({
       services: new Proxy({} as RipperServices, {
-        get(_t, prop) {
+        get(_target, prop) {
           if (batchHolder.current === null) {
             throw new Error('RipperServices accessed before initialisation');
           }
@@ -357,85 +357,10 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
     });
     batchDispatcher.registerNode(batchDispatchNode);
 
-    // ── Phase DAGs (DAGDeriver with strategy: 'partition') ───────────────────
-    const wikiScrapePhaseDAG = DAGDeriver.derive({
-      name:       WIKI_SCRAPE_PHASE,
-      version:    '2.0',
-      entrypoint: 'scrape-titles',
-      contracts: [
-        { name: 'scrape-titles', hardRequired: ['titles'], produces: ['succeeded', 'failed'], outputs: ['success', 'error', 'empty'] },
-      ],
-      annotations: {
-        fanouts: {
-          'scrape-titles': {
-            source:     'titles',
-            itemKey:    'currentTitle',
-            concurrency: 8,
-            node:       'wiki:dispatch-page-dag',
-            strategy:   'partition',
-            partitions: { success: 'succeeded', error: 'failed' },
-            outcomes:   ['success', 'error', 'empty'],
-          },
-        },
-        terminals: {
-          'scrape-titles': [
-            { outcome: 'success', target: null },
-            { outcome: 'error',   target: null },
-            { outcome: 'empty',   target: null },
-          ],
-        },
-      },
-    });
-
-    const wikiRetryPhaseDAG = DAGDeriver.derive({
-      name:       WIKI_RETRY_PHASE,
-      version:    '2.0',
-      entrypoint: 'retry-titles',
-      contracts: [
-        { name: 'retry-titles', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
-      ],
-      annotations: {
-        fanouts: {
-          'retry-titles': {
-            source:     'failed',
-            itemKey:    'currentRetryTitle',
-            concurrency: 8,
-            node:       'wiki:dispatch-page-dag',
-            strategy:   'partition',
-            partitions: { success: 'recovered', error: 'failedAfterRetry' },
-            outcomes:   ['success', 'error', 'empty'],
-          },
-        },
-        terminals: {
-          'retry-titles': [
-            { outcome: 'success', target: null },
-            { outcome: 'error',   target: null },
-            { outcome: 'empty',   target: null },
-          ],
-        },
-      },
-    });
-
-    // ── Outer composition DAG (DAGDeriver with subDAGs) ───────────────────────
-    const wikiScrapeDAG = DAGDeriver.derive({
-      name:       'wikiScrapeDAG',
-      version:    '2.0',
-      entrypoint: 'scrape',
-      contracts: [
-        { name: 'scrape', hardRequired: [],              produces: ['scrape-done'], outputs: ['success', 'error'] },
-        { name: 'retry',  hardRequired: ['scrape-done'], produces: ['retry-done'],  outputs: ['success', 'error'] },
-        { name: 'flow:terminate', hardRequired: ['retry-done'],  produces: [],              outputs: ['success'] },
-      ],
-      annotations: {
-        subDAGs: {
-          scrape: { dag: WIKI_SCRAPE_PHASE, outputs: ['success', 'error'], stateMapping: { output: { succeeded: 'succeeded', failed: 'failed' } } },
-          retry:  { dag: WIKI_RETRY_PHASE,  outputs: ['success', 'error'], stateMapping: { output: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' } } },
-        },
-        terminals: {
-          'flow:terminate': [{ outcome: 'success', target: null }],
-        },
-      },
-    });
+    // ── Phase + composition DAGs (DAGBuilder) ────────────────────────────────
+    const wikiScrapePhaseDAG = buildWikiScrapePhaseDag(batchDispatchNode);
+    const wikiRetryPhaseDAG  = buildWikiRetryPhaseDag(batchDispatchNode);
+    const wikiScrapeDAG      = buildWikiScrapeDag();
 
     batchDispatcher.registerDAG(buildWikiPageFlow(pipelineNames, opts.target, wikiPluginDagNames));
     batchDispatcher.registerDAG(wikiScrapePhaseDAG);

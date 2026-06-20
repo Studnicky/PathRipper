@@ -3,12 +3,12 @@
 // Maximum Duration, and Stage N progression markers. This concept delegates
 // Helpers are inlined with inline contracts. The `entity_id` alias was
 // dropped in favour of the concept-specific `disease_id`.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -130,19 +130,19 @@ export interface DiseaseMetaSlice {
 // ─── Affliction helpers ───────────────────────────────────────────────────────
 
 /** Return the page region containing the affliction stage markers. */
-function locateAfflictionBlock(c: CommonExtraction): string {
-  return c.body_html;
+function locateAfflictionBlock(common: CommonExtraction): string {
+  return common.body_html;
 }
 
 /** Header lookup with body-HTML fallback for label `name`. */
-function getDiseaseField(c: CommonExtraction, label: string): string | null {
-  const headerVal = getField(c, label);
+function getDiseaseField(common: CommonExtraction, label: string): string | null {
+  const headerVal = getField(common, label);
   if (headerVal !== null) return headerVal;
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<br|<h[1-6]|<hr|$)`, 'i');
-  const m = re.exec(c.body_html);
-  if (m === null) return null;
-  const text = htmlToText(m[1] ?? '');
+  const regex = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<br|<h[1-6]|<hr|$)`, 'i');
+  const match = regex.exec(common.body_html);
+  if (match === null) return null;
+  const text = htmlToText(match[1] ?? '');
   return text === '' ? null : text;
 }
 
@@ -155,20 +155,20 @@ function parseDiseaseStages(html: string): DiseaseStage[] {
   const diseaseStages: DiseaseStage[] = [];
 
   // Rebuild HTML segments for each stage to populate body_html.
-  const re = /<b>\s*Stage\s+(\d+)\s*<\/b>/gi;
+  const regex = /<b>\s*Stage\s+(\d+)\s*<\/b>/gi;
   const matches: Array<{ stage: number; index: number; end: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const stage = parseInt(m[1] ?? '0', 10);
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const stage = parseInt(match[1] ?? '0', 10);
     if (Number.isFinite(stage)) {
-      matches.push({ stage, index: m.index, end: m.index + m[0].length });
+      matches.push({ stage, index: match.index, end: match.index + match[0].length });
     }
   }
 
   const stopRe = /<hr\s*\/?>|<h[1-6]\b/i;
-  for (let i = 0; i < matches.length; i++) {
-    const cur = matches[i]!;
-    const next = matches[i + 1];
+  for (let index = 0; index < matches.length; index++) {
+    const cur = matches[index]!;
+    const next = matches[index + 1];
     const tail = html.slice(cur.end);
     const stopMatch = stopRe.exec(tail);
     const stopIdx = stopMatch === null ? tail.length : stopMatch.index;
@@ -176,7 +176,7 @@ function parseDiseaseStages(html: string): DiseaseStage[] {
     const end = Math.min(stopIdx, nextIdx);
     const segHtml = tail.slice(0, end).trim();
 
-    const stage = stages[i];
+    const stage = stages[index];
     if (stage !== undefined) {
       diseaseStages.push({
         stage: stage.stage,
@@ -192,44 +192,44 @@ function parseDiseaseStages(html: string): DiseaseStage[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract identity + header scalars for a disease page. */
-export function extractDiseaseBase(c: CommonExtraction): DiseaseBaseSlice {
+export function extractDiseaseBase(common: CommonExtraction): DiseaseBaseSlice {
   return {
-    url:             c.url,
-    disease_id:      extractEntityId(c.url),
-    name:            c.title.name,
-    level:           c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    disease_id:      extractEntityId(common.url),
+    name:            common.title.name,
+    level:           common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract affliction mechanics: saving throw, onset, maximum duration. */
-export function extractDiseaseMechanics(c: CommonExtraction): DiseaseMechanicsSlice {
-  const rawSt = getDiseaseField(c, 'Saving Throw');
+export function extractDiseaseMechanics(common: CommonExtraction): DiseaseMechanicsSlice {
+  const rawSt = getDiseaseField(common, 'Saving Throw');
   const parsed = parseSavingThrow(rawSt);
   const saving_throw: DiseaseSavingThrow | null = parsed === null
     ? null
     : { ...parsed, raw: rawSt! };
   return {
     saving_throw,
-    onset:            getDiseaseField(c, 'Onset'),
-    maximum_duration: getDiseaseField(c, 'Maximum Duration'),
+    onset:            getDiseaseField(common, 'Onset'),
+    maximum_duration: getDiseaseField(common, 'Maximum Duration'),
   };
 }
 
 /** Extract Stage N progression markers from the body affliction block. */
-export function extractDiseaseStages(c: CommonExtraction): DiseaseStagesSlice {
-  return { stages: parseDiseaseStages(locateAfflictionBlock(c)) };
+export function extractDiseaseStages(common: CommonExtraction): DiseaseStagesSlice {
+  return { stages: parseDiseaseStages(locateAfflictionBlock(common)) };
 }
 
 /** Extract meta-slice marker — sections/links/body/meta attach in finalize. */
-export function extractDiseaseMeta(_c: CommonExtraction): DiseaseMetaSlice {
+export function extractDiseaseMeta(_common: CommonExtraction): DiseaseMetaSlice {
   return { __disease_meta_marked: true };
 }
 
@@ -242,17 +242,17 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeDisease(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      DiseaseBaseSlice,
   mech:      DiseaseMechanicsSlice,
   stages:    DiseaseStagesSlice,
   _meta:     DiseaseMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
   _target:   CheerioNode,
 ): DiseaseOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     url:              base.url,
     disease_id:       base.disease_id,
@@ -270,27 +270,27 @@ export function finalizeDisease(
     onset:            mech.onset,
     maximum_duration: mech.maximum_duration,
     stages:           stages.stages,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies DiseaseOutput;
 }
 
 /** Project a Diseases.aspx page into a typed DiseaseOutput (direct-call wrapper). */
 export function extractDisease(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): DiseaseOutput {
-  const base   = extractDiseaseBase(c);
-  const mech   = extractDiseaseMechanics(c);
-  const stages = extractDiseaseStages(c);
-  const meta   = extractDiseaseMeta(c);
-  return finalizeDisease(c, base, mech, stages, meta, $, target);
+  const base   = extractDiseaseBase(common);
+  const mech   = extractDiseaseMechanics(common);
+  const stages = extractDiseaseStages(common);
+  const meta   = extractDiseaseMeta(common);
+  return finalizeDisease(common, base, mech, stages, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -298,113 +298,121 @@ export function extractDisease(
 
 export type DiseaseBaseOutput = 'success' | 'error';
 
-export const diseaseBaseNode: NodeInterface<ScrapeState, DiseaseBaseOutput, RipperServices> = {
-  name:    'extract:disease-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DiseaseBaseNode extends ScalarNode<ScrapeState, DiseaseBaseOutput> {
+  public readonly name = 'extract:disease-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DiseaseBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DiseaseBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractDiseaseBase(c);
+    const base = extractDiseaseBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const diseaseBaseNode = new DiseaseBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DiseaseMechanicsOutput = 'success' | 'error';
 
-export const diseaseMechanicsNode: NodeInterface<ScrapeState, DiseaseMechanicsOutput, RipperServices> = {
-  name:    'extract:disease-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DiseaseMechanicsNode extends ScalarNode<ScrapeState, DiseaseMechanicsOutput> {
+  public readonly name = 'extract:disease-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DiseaseMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DiseaseMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mech = extractDiseaseMechanics(c);
+    const mech = extractDiseaseMechanics(common);
 
     state.output = { ...state.output, ...mech };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const diseaseMechanicsNode = new DiseaseMechanicsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DiseaseStagesOutput = 'success' | 'error';
 
-export const diseaseStagesNode: NodeInterface<ScrapeState, DiseaseStagesOutput, RipperServices> = {
-  name:    'extract:disease-stages',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DiseaseStagesNode extends ScalarNode<ScrapeState, DiseaseStagesOutput> {
+  public readonly name = 'extract:disease-stages';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DiseaseStagesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DiseaseStagesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const stagesSlice = extractDiseaseStages(c);
+    const stagesSlice = extractDiseaseStages(common);
 
     state.output = { ...state.output, ...stagesSlice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const diseaseStagesNode = new DiseaseStagesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeDiseaseOutput = 'success';
 
-export const finalizeDiseaseNode: NodeInterface<ScrapeState, FinalizeDiseaseOutput, RipperServices> = {
-  name:    'finalize:disease',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeDiseaseNode extends ScalarNode<ScrapeState, FinalizeDiseaseOutput> {
+  public readonly name = 'finalize:disease';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeDiseaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeDiseaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     // Pass a meta marker object inline — finalizeDisease ignores it (void _meta).
     const meta   = { __disease_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as DiseaseOutput;
-    const assembled = finalizeDisease(c, acc, acc, acc, meta, $, target);
+    const assembled = finalizeDisease(common, acc, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeDiseaseNode = new FinalizeDiseaseNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

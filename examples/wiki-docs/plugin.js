@@ -6,12 +6,16 @@
 // Plugin contract: exports `register(dispatcher)` which is called by `RipperRun`
 // after importing this module. No side-effect-on-import registration.
 import wtf from 'wtf_wikipedia';
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
+import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 const TEMPLATE_MARKER = '{{RipperoniComponent';
-export const wikiDocsParseNode = {
-    name: 'wiki-docs:parse-impl',
-    outputs: ['success'],
-    async execute(state, _context) {
+class WikiDocsParseNodeImpl extends ScalarNode {
+    name = 'wiki-docs:parse-impl';
+    outputs = ['success'];
+    contract = {
+        hardRequired: ['page.wikitext'],
+        produces: [],
+    };
+    async executeOne(state, _context) {
         const wikitext = state.page.wikitext ?? '';
         const title = state.page.title;
         if (wikitext.includes(TEMPLATE_MARKER)) {
@@ -29,42 +33,28 @@ export const wikiDocsParseNode = {
                         source: data['source'] ?? '',
                     };
                     state.output = output;
-                    return { output: 'success' };
+                    return NodeOutputBuilder.of('success');
                 }
             }
         }
         // No recognized template — return raw page output.
         const fallback = { _type: 'raw_page', title, wikitext };
         state.output = fallback;
-        return { output: 'success' };
-    },
-};
+        return NodeOutputBuilder.of('success');
+    }
+}
+export const wikiDocsParseNode = new WikiDocsParseNodeImpl();
 /**
  * Contract-derived wiki-docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const wikiDocsParseFlow = DAGDeriver.derive({
-    name: 'wiki-docs:parse',
-    version: '2.0',
-    entrypoint: 'wiki-docs:parse-impl',
-    contracts: [
-        { name: 'wiki-docs:parse-impl', hardRequired: ['page.wikitext'], produces: ['output'], outputs: ['success'] },
-    ],
-    annotations: {
-        terminals: {
-            'wiki-docs:parse-impl': [{ outcome: 'success', target: null }],
-        },
-    },
-});
-/** OperationContract for wikiDocsParseNode: reads page.wikitext, produces output. */
-export const wikiDocsParseContract = {
-    name: 'wiki-docs:parse-impl',
-    hardRequired: ['page.wikitext'],
-    produces: ['output'],
-    outputs: ['success'],
-};
+export const wikiDocsParseFlow = new DAGBuilder('wiki-docs:parse', '2.0')
+    .entrypoint('wiki-docs:parse-impl')
+    .node('wiki-docs:parse-impl', wikiDocsParseNode, { success: 'wiki-docs:parse:done' })
+    .terminal('wiki-docs:parse:done', { outcome: 'completed' })
+    .build();
 // ── Plugin contract ────────────────────────────────────────────────────────────
 /**
  * Explicit plugin registration. Called by `RipperRun` after importing this module.

@@ -3,14 +3,14 @@
 // Mirrors `plugins/aonprd/parse.taxonomic.ts` but dispatches against the
 // SECONDARY taxonomy. Demonstrates the AONPRD Layer-1 capabilities binary
 // is plugin-agnostic when paired with a plugin-supplied `CommonStrategy`.
-import type { NodeContextInterface } from '@noocodex/dagonizer';
+import { Batch }                from '@studnicky/dagonizer';
+import type { NodeContextType } from '@studnicky/dagonizer';
 
 import { ScrapeState } from '../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../src/services/RipperServices.js';
 import { TAXONOMY } from './taxonomy.js';
 
-const STUB_CONTEXT: NodeContextInterface<RipperServices> = {
-  services: {} as RipperServices,
+const STUB_CONTEXT: NodeContextType = {
+  services: undefined,
   signal:   new AbortController().signal,
   dagName:  'secondary:parse:direct',
   nodeName: 'secondary:parse:direct',
@@ -38,7 +38,7 @@ export async function parseSecondaryHtml(
 
   const chain = TAXONOMY.chainFor(conceptId);
   for (const node of chain) {
-    await node.execute(state, STUB_CONTEXT);
+    await node.execute(Batch.of(state), STUB_CONTEXT);
   }
 
   const output = state.output;

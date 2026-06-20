@@ -8,12 +8,12 @@
 //
 // re-execution in the taxonomy pipeline; myth-feat disambiguation is
 // transparent via the `is_mythic` field rather than a separate type.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -104,9 +104,9 @@ function dashToNull(value: string | null): string | null {
 
 /** Extract `<b>Special</b>` paragraph text from the body HTML, if present. */
 function extractSpecial(bodyHtml: string): string | null {
-  const m = /<b>\s*Special\s*<\/b>([\s\S]*?)(?=<b>|<h2|<h3|$)/i.exec(bodyHtml);
-  if (m === null) return null;
-  const text = htmlToText(m[1] ?? '');
+  const match = /<b>\s*Special\s*<\/b>([\s\S]*?)(?=<b>|<h2|<h3|$)/i.exec(bodyHtml);
+  if (match === null) return null;
+  const text = htmlToText(match[1] ?? '');
   return text === '' ? null : text;
 }
 
@@ -123,13 +123,13 @@ function parseArchetypes(valueHtml: string | null): Array<{ name: string; archet
   if (valueHtml === null) return [];
   const out: Array<{ name: string; archetype_id: number | null }> = [];
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(valueHtml)) !== null) {
-    const href = m[1] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(valueHtml)) !== null) {
+    const href = match[1] ?? '';
     if (!/Archetypes\.aspx/i.test(href)) continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const archetype_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-    const name = htmlToText(m[2] ?? '');
+    const name = htmlToText(match[2] ?? '');
     if (name === '') continue;
     out.push({ name, archetype_id });
   }
@@ -151,9 +151,9 @@ function parseArchetypeFootnotes(headHtml: string): string[] {
 }
 
 /** Find the `<h2 class="title">… Leads To...</h2>` section and harvest its anchor list. */
-function parseLeadsTo(c: CommonExtraction): Array<{ name: string; feat_id: number | null }> {
+function parseLeadsTo(common: CommonExtraction): Array<{ name: string; feat_id: number | null }> {
   const out: Array<{ name: string; feat_id: number | null }> = [];
-  const section = c.sections.find((s) => /Leads To\.{2,3}\s*$/i.test(s.heading));
+  const section = common.sections.find((section) => /Leads To\.{2,3}\s*$/i.test(section.heading));
   if (section === undefined) return out;
   for (const link of section.links) {
     if (!/Feats\.aspx/i.test(link.href)) continue;
@@ -168,18 +168,18 @@ function parseLeadsTo(c: CommonExtraction): Array<{ name: string; feat_id: numbe
  */
 function parseRelatedFeats(fullHtml: string): Array<{ name: string; feat_id: number | null }> {
   // Capture from the <b>Related Feats</b> marker up to the next <b> or <br/><br/> gap.
-  const m = /<b>\s*Related Feats\s*<\/b>\s*:?\s*([\s\S]*?)(?=<br\s*\/?>[\s\S]{0,4}<br\s*\/?>|<b>|<h[1-6]|$)/i.exec(fullHtml);
-  if (m === null) return [];
-  const fragment = m[1] ?? '';
+  const match = /<b>\s*Related Feats\s*<\/b>\s*:?\s*([\s\S]*?)(?=<br\s*\/?>[\s\S]{0,4}<br\s*\/?>|<b>|<h[1-6]|$)/i.exec(fullHtml);
+  if (match === null) return [];
+  const fragment = match[1] ?? '';
   const out: Array<{ name: string; feat_id: number | null }> = [];
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let am: RegExpExecArray | null;
-  while ((am = anchorRe.exec(fragment)) !== null) {
-    const href = am[1] ?? '';
+  let anchorMatch: RegExpExecArray | null;
+  while ((anchorMatch = anchorRe.exec(fragment)) !== null) {
+    const href = anchorMatch[1] ?? '';
     if (!/Feats\.aspx/i.test(href)) continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const feat_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-    const name = htmlToText(am[2] ?? '');
+    const name = htmlToText(anchorMatch[2] ?? '');
     if (name === '') continue;
     out.push({ name, feat_id });
   }
@@ -187,10 +187,10 @@ function parseRelatedFeats(fullHtml: string): Array<{ name: string; feat_id: num
 }
 
 /** Find `<h2 class="title">Traits</h2>` and harvest the `<div class="trait-entry">` glossary. */
-function parseTraitGlossary($: CheerioAPI, span: CheerioNode): Array<{ trait: string; description: string }> {
+function parseTraitGlossary(root: CheerioAPI, span: CheerioNode): Array<{ trait: string; description: string }> {
   const out: Array<{ trait: string; description: string }> = [];
-  span.find('div.trait-entry').each((_, el) => {
-    const html = $(el).html() ?? '';
+  span.find('div.trait-entry').each((_index, element) => {
+    const html = root(element).html() ?? '';
     const labelMatch = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*)/i.exec(html);
     if (labelMatch === null) return;
     const trait = (labelMatch[1] ?? '').replace(/:$/, '').trim();
@@ -204,8 +204,8 @@ function parseTraitGlossary($: CheerioAPI, span: CheerioNode): Array<{ trait: st
 /** Slice the head HTML (before the first `<hr />`) out of the content span. */
 function readHeadHtml(span: CheerioNode): string {
   const html = span.html() ?? '';
-  const m = /<hr\s*\/?>/i.exec(html);
-  return m === null ? html : html.slice(0, m.index);
+  const match = /<hr\s*\/?>/i.exec(html);
+  return match === null ? html : html.slice(0, match.index);
 }
 
 /** Parse the `<b>Class</b>` field into structured refs linking to Classes.aspx. */
@@ -213,13 +213,13 @@ function parseClassArchetypes(valueHtml: string | null): Array<{ name: string; c
   if (valueHtml === null) return [];
   const out: Array<{ name: string; class_id: number | null }> = [];
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(valueHtml)) !== null) {
-    const href = m[1] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(valueHtml)) !== null) {
+    const href = match[1] ?? '';
     if (!/Classes\.aspx/i.test(href)) continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const class_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-    const name = htmlToText(m[2] ?? '');
+    const name = htmlToText(match[2] ?? '');
     if (name === '') continue;
     out.push({ name, class_id });
   }
@@ -230,10 +230,10 @@ function parseClassArchetypes(valueHtml: string | null): Array<{ name: string; c
  * Extract the `<h2 class="title">This Feat may contain spoilers from …</h2>`
  * advisory notice. Returns the full text, or null.
  */
-function parseFeatSpoilerSource($: CheerioAPI): string | null {
-  const headings = $('h2.title, h3.title').toArray();
-  for (const el of headings) {
-    const text = $(el).text().trim();
+function parseFeatSpoilerSource(root: CheerioAPI): string | null {
+  const headings = root('h2.title, h3.title').toArray();
+  for (const element of headings) {
+    const text = root(element).text().trim();
     if (/^This \w+ may contain spoilers/i.test(text)) return text;
   }
   return null;
@@ -293,61 +293,61 @@ export interface FeatMetaSlice {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract identity, header scalars, and `<meta>` SEO fields. */
-export function extractFeatBase(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): FeatBaseSlice {
+export function extractFeatBase(common: CommonExtraction, root: CheerioAPI, _span: CheerioNode): FeatBaseSlice {
   // Detect mythic feats: level_kind is "Mythic" or traits include "Mythic".
   const is_mythic =
-    (c.title.level_kind ?? '').toLowerCase() === 'mythic' ||
-    c.traits.traits.some((t) => t.toLowerCase() === 'mythic');
+    (common.title.level_kind ?? '').toLowerCase() === 'mythic' ||
+    common.traits.traits.some((trait) => trait.toLowerCase() === 'mythic');
 
   return {
-    url:              c.url,
-    feat_id:          extractEntityId(c.url),
-    name:             c.title.name,
-    level:            c.title.level,
-    rarity:           c.traits.rarity,
-    pfs:              c.title.pfs,
-    legacy:           c.title.legacy,
-    alt_edition_url:  c.title.alt_edition_url,
-    action_cost:      c.title.action_cost,
-    traits:           c.traits.traits,
-    trait_ids:        c.traits.trait_ids,
-    source:           { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:          c.sources,
+    url:              common.url,
+    feat_id:          extractEntityId(common.url),
+    name:             common.title.name,
+    level:            common.title.level,
+    rarity:           common.traits.rarity,
+    pfs:              common.title.pfs,
+    legacy:           common.title.legacy,
+    alt_edition_url:  common.title.alt_edition_url,
+    action_cost:      common.title.action_cost,
+    traits:           common.traits.traits,
+    trait_ids:        common.traits.trait_ids,
+    source:           { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:          common.sources,
     is_mythic,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   };
 }
 
 /** Extract archetype linkage, class scoping, spoiler advisory, and prerequisites. */
-export function extractFeatPrerequisites(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatPrerequisitesSlice {
-  const archetypeHtml = getFieldHtml(c, 'Archetype', 'Archetypes');
+export function extractFeatPrerequisites(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): FeatPrerequisitesSlice {
+  const archetypeHtml = getFieldHtml(common, 'Archetype', 'Archetypes');
   const archetypes = parseArchetypes(archetypeHtml);
   const headHtml = readHeadHtml(span);
   const archetype_footnotes = parseArchetypeFootnotes(headHtml);
-  const class_archetypes = parseClassArchetypes(getFieldHtml(c, 'Class'));
-  const spoiler_source = parseFeatSpoilerSource($);
+  const class_archetypes = parseClassArchetypes(getFieldHtml(common, 'Class'));
+  const spoiler_source = parseFeatSpoilerSource(root);
 
   return {
     archetypes,
     archetype_footnotes,
     class_archetypes,
     spoiler_source,
-    prerequisites: dashToNull(getField(c, 'Prerequisites', 'Prerequisite')),
+    prerequisites: dashToNull(getField(common, 'Prerequisites', 'Prerequisite')),
   };
 }
 
 /** Extract activation-style fields (Frequency/Trigger/Requirements/Cost/Access) and the prose body. */
-export function extractFeatEffect(c: CommonExtraction): FeatEffectSlice {
-  const description = buildDescription(c.body_html);
-  const special = extractSpecial(c.body_html);
+export function extractFeatEffect(common: CommonExtraction): FeatEffectSlice {
+  const description = buildDescription(common.body_html);
+  const special = extractSpecial(common.body_html);
 
   return {
-    frequency:        dashToNull(getField(c, 'Frequency')),
-    trigger:          dashToNull(getField(c, 'Trigger')),
-    requirements:     dashToNull(getField(c, 'Requirements')),
-    cost:             dashToNull(getField(c, 'Cost')),
-    access:           dashToNull(getField(c, 'Access')),
+    frequency:        dashToNull(getField(common, 'Frequency')),
+    trigger:          dashToNull(getField(common, 'Trigger')),
+    requirements:     dashToNull(getField(common, 'Requirements')),
+    cost:             dashToNull(getField(common, 'Cost')),
+    access:           dashToNull(getField(common, 'Access')),
     description_html: description.html,
     description_text: description.text,
     special,
@@ -355,17 +355,17 @@ export function extractFeatEffect(c: CommonExtraction): FeatEffectSlice {
 }
 
 /** Extract cross-page navigation: Leads To, Related Feats, in-page Traits glossary, body links. */
-export function extractFeatMeta(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatMetaSlice {
-  const leads_to = parseLeadsTo(c);
+export function extractFeatMeta(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): FeatMetaSlice {
+  const leads_to = parseLeadsTo(common);
   // Related Feats may appear in the head or the body depending on the page.
   const fullHtml = span.html() ?? '';
   const related_feats = parseRelatedFeats(fullHtml);
-  const trait_glossary = parseTraitGlossary($, span);
+  const trait_glossary = parseTraitGlossary(root, span);
   return {
     leads_to,
     related_feats,
     trait_glossary,
-    links: c.links,
+    links: common.links,
   };
 }
 
@@ -398,7 +398,7 @@ function isFlavorNpcName(name: string): boolean {
   const trimmed = name.trim();
   if (trimmed.length === 0) return false;
   // Multi-word Title-Case (e.g. "Arba Dwindletree", "Queen Galfrey", "Dr. Ashley Arrowbaud").
-  if (/^[A-Z][A-Za-z'.\-]*(?:[ '\-][A-Z][A-Za-z'.\-]*)+$/.test(trimmed)) return true;
+  if (/^[A-Z][A-Za-z'.-]*(?:[ '-][A-Z][A-Za-z'.-]*)+$/.test(trimmed)) return true;
   // Single-word Title-Case "stage name" (e.g. "Moloch", "Thais", "Jinx").
   if (/^[A-Z][a-z]{2,}$/.test(trimmed)) return true;
   return false;
@@ -412,17 +412,17 @@ function isFlavorNpcName(name: string): boolean {
  * unstructured residue (NPC bold tags in flavor prose, etc.).
  */
 export function finalizeFeat(
-  c:             CommonExtraction,
+  common:        CommonExtraction,
   base:          FeatBaseSlice,
   prerequisites: FeatPrerequisitesSlice,
   effect:        FeatEffectSlice,
   meta:          FeatMetaSlice,
 ): FeatOutput {
-  const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const stripped  = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   const raw_fields: Record<string, string> = {};
-  for (const [k, v] of Object.entries(stripped)) {
-    if (isFlavorNpcName(k)) continue;
-    raw_fields[k] = v;
+  for (const [key, value] of Object.entries(stripped)) {
+    if (isFlavorNpcName(key)) continue;
+    raw_fields[key] = value;
   }
 
   return {
@@ -443,12 +443,12 @@ export function finalizeFeat(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed feat extraction nodes.
  */
-export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): FeatOutput {
-  const base          = extractFeatBase(c, $, span);
-  const prerequisites = extractFeatPrerequisites(c, $, span);
-  const effect        = extractFeatEffect(c);
-  const meta          = extractFeatMeta(c, $, span);
-  return finalizeFeat(c, base, prerequisites, effect, meta);
+export function extractFeat(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): FeatOutput {
+  const base          = extractFeatBase(common, root, span);
+  const prerequisites = extractFeatPrerequisites(common, root, span);
+  const effect        = extractFeatEffect(common);
+  const meta          = extractFeatMeta(common, root, span);
+  return finalizeFeat(common, base, prerequisites, effect, meta);
 }
 
 // Re-export output type so tests can import from here.
@@ -459,30 +459,32 @@ export function extractFeat(c: CommonExtraction, $: CheerioAPI, span: CheerioNod
 
 export type FeatBaseOutput = 'success' | 'error';
 
-export const featBaseNode: NodeInterface<ScrapeState, FeatBaseOutput, RipperServices> = {
-  name:    'extract:feat-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FeatBaseNode extends ScalarNode<ScrapeState, FeatBaseOutput> {
+  public readonly name    = 'extract:feat-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FeatBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FeatBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractFeatBase(c, $, target);
+    const base = extractFeatBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const featBaseNode = new FeatBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -491,30 +493,32 @@ export const featBaseNode: NodeInterface<ScrapeState, FeatBaseOutput, RipperServ
 
 export type FeatPrerequisitesOutput = 'success' | 'error';
 
-export const featPrerequisitesNode: NodeInterface<ScrapeState, FeatPrerequisitesOutput, RipperServices> = {
-  name:    'extract:feat-prerequisites',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FeatPrerequisitesNode extends ScalarNode<ScrapeState, FeatPrerequisitesOutput> {
+  public readonly name    = 'extract:feat-prerequisites';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FeatPrerequisitesOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FeatPrerequisitesOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractFeatPrerequisites(c, $, target);
+    const slice = extractFeatPrerequisites(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const featPrerequisitesNode = new FeatPrerequisitesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -523,28 +527,30 @@ export const featPrerequisitesNode: NodeInterface<ScrapeState, FeatPrerequisites
 
 export type FeatEffectOutput = 'success' | 'error';
 
-export const featEffectNode: NodeInterface<ScrapeState, FeatEffectOutput, RipperServices> = {
-  name:    'extract:feat-effect',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FeatEffectNode extends ScalarNode<ScrapeState, FeatEffectOutput> {
+  public readonly name    = 'extract:feat-effect';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FeatEffectOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FeatEffectOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractFeatEffect(c);
+    const slice = extractFeatEffect(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const featEffectNode = new FeatEffectNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -553,30 +559,32 @@ export const featEffectNode: NodeInterface<ScrapeState, FeatEffectOutput, Ripper
 
 export type FeatMetaOutput = 'success' | 'error';
 
-export const featMetaNode: NodeInterface<ScrapeState, FeatMetaOutput, RipperServices> = {
-  name:    'extract:feat-meta',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FeatMetaNode extends ScalarNode<ScrapeState, FeatMetaOutput> {
+  public readonly name    = 'extract:feat-meta';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FeatMetaOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FeatMetaOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractFeatMeta(c, $, target);
+    const slice = extractFeatMeta(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const featMetaNode = new FeatMetaNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -585,29 +593,31 @@ export const featMetaNode: NodeInterface<ScrapeState, FeatMetaOutput, RipperServ
 
 export type FinalizeFeatOutput = 'success';
 
-export const finalizeFeatNode: NodeInterface<ScrapeState, FinalizeFeatOutput, RipperServices> = {
-  name:    'finalize:feat',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeFeatNode extends ScalarNode<ScrapeState, FinalizeFeatOutput> {
+  public readonly name    = 'finalize:feat';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeFeatOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeFeatOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as FeatOutput;
-    const assembled = finalizeFeat(c, acc, acc, acc, acc);
+    const assembled = finalizeFeat(common, acc, acc, acc, acc);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeFeatNode = new FinalizeFeatNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

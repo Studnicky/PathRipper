@@ -37,14 +37,14 @@ import { finalizeSpell } from './finalize.js';
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed spell extraction nodes.
  */
-export function extractSpell(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): SpellOutput {
-  const base       = extractSpellBase(c, $, span);
-  const cast       = extractSpellCast(c);
-  const outcomes   = extractSpellOutcomes(c);
-  const affliction = extractSpellAffliction(c);
-  const heightened = extractSpellHeightened(c);
-  const meta       = extractSpellMeta(c, $);
-  return finalizeSpell(c, base, cast, outcomes, affliction, heightened, meta, $, span);
+export function extractSpell(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): SpellOutput {
+  const base       = extractSpellBase(common, root, span);
+  const cast       = extractSpellCast(common);
+  const outcomes   = extractSpellOutcomes(common);
+  const affliction = extractSpellAffliction(common);
+  const heightened = extractSpellHeightened(common);
+  const meta       = extractSpellMeta(common, root);
+  return finalizeSpell(common, base, cast, outcomes, affliction, heightened, meta, root, span);
 }
 
 export const spellConcept: ConceptDecl<SpellOutput> = {

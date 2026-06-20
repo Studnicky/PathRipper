@@ -1,5 +1,6 @@
 // Unit tests for plane concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -13,32 +14,33 @@ import {
 } from '../../../../../plugins/aonprd/concepts/plane.js';
 import type { PlaneOutput } from '../../../../../plugins/aonprd/concepts/plane.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await planeBaseNode.execute(state, stubContext);
-  await planeCharacteristicsNode.execute(state, stubContext);
-  await finalizePlaneNode.execute(state, stubContext);
-  return state.output as PlaneOutput;
+  await planeBaseNode.execute(Batch.of(state), stubContext);
+  await planeCharacteristicsNode.execute(Batch.of(state), stubContext);
+  await finalizePlaneNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<PlaneOutput>(state.output);
 }
 
 describe('extract:plane-base — plane-earth', () => {
   it('produces _type, name, plane_id, divinities, native_inhabitants', async () => {
     const state = await primeState('plane-earth.html', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    const r = await planeBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await planeBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as PlaneOutput;
+    const out = ParsedOutput.as<PlaneOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.plane_id, 3);
     assert.ok(Array.isArray(out.divinities), 'divinities should be an array');
@@ -47,19 +49,19 @@ describe('extract:plane-base — plane-earth', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    const r = await planeBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await planeBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:plane-characteristics — plane-earth', () => {
   it('produces category and aspect fields', async () => {
     const state = await primeState('plane-earth.html', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    await planeBaseNode.execute(state, stubContext);
-    const r = await planeCharacteristicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await planeBaseNode.execute(Batch.of(state), stubContext);
+    const result = await planeCharacteristicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as PlaneOutput;
+    const out = ParsedOutput.as<PlaneOutput>(state.output);
     // category may be null or a string; just verify the field exists
     assert.ok('category' in out, 'category field missing');
     assert.ok('aspect' in out, 'aspect field missing');
@@ -67,20 +69,20 @@ describe('extract:plane-characteristics — plane-earth', () => {
 
   it('error path — returns error when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    const r = await planeCharacteristicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await planeCharacteristicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('finalize:plane — plane-earth', () => {
   it('produces description_text, sections, raw_fields, links', async () => {
     const state = await primeState('plane-earth.html', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    await planeBaseNode.execute(state, stubContext);
-    await planeCharacteristicsNode.execute(state, stubContext);
-    const r = await finalizePlaneNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await planeBaseNode.execute(Batch.of(state), stubContext);
+    await planeCharacteristicsNode.execute(Batch.of(state), stubContext);
+    const result = await finalizePlaneNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as PlaneOutput;
+    const out = ParsedOutput.as<PlaneOutput>(state.output);
     assert.ok(typeof out.description_text === 'string', 'description_text missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');
     assert.ok(typeof out.raw_fields === 'object', 'raw_fields missing');
@@ -90,8 +92,8 @@ describe('finalize:plane — plane-earth', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Planes.aspx?ID=3');
-    const r = await finalizePlaneNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizePlaneNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

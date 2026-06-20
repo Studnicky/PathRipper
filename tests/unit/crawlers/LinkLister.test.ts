@@ -145,17 +145,17 @@ describe('LinkLister', () => {
       return new Response(body, { status: 200 });
     }) as typeof fetch;
     try {
-      const a = LinkLister.create({
+      const listerA = LinkLister.create({
         domain: /example\.com/, target: /\?id=/, delimiter: /category/, rateLimitMs: 0, cache,
       });
-      await a.buildList(['https://example.com/index']);
+      await listerA.buildList(['https://example.com/index']);
       const networkCallsAfterFirst = fetchCalls.length;
       assert.ok(networkCallsAfterFirst > 0);
 
-      const b = LinkLister.create({
+      const listerB = LinkLister.create({
         domain: /example\.com/, target: /\?id=/, delimiter: /category/, rateLimitMs: 0, cache,
       });
-      await b.buildList(['https://example.com/index']);
+      await listerB.buildList(['https://example.com/index']);
       assert.equal(fetchCalls.length, networkCallsAfterFirst, 'second crawl must hit only the cache');
     } finally {
       globalThis.fetch = origFetch;

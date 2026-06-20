@@ -5,12 +5,12 @@
 //
 // equipment-list slices for downstream consumers without re-running the full
 // pipeline.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -129,11 +129,11 @@ export interface ClassKitMetaSlice {
  */
 function harvestBoldLabelsHtml(html: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     const key = label.toLowerCase();
@@ -158,11 +158,11 @@ function parseItemList(valueHtml: string | undefined): ClassKitItem[] {
   if (valueHtml === undefined) return [];
   const out: ClassKitItem[] = [];
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>([\s\S]*?)(?=<a\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(valueHtml)) !== null) {
-    const href = m[1] ?? '';
-    const inner = m[2] ?? '';
-    const trailing = m[3] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(valueHtml)) !== null) {
+    const href = match[1] ?? '';
+    const inner = match[2] ?? '';
+    const trailing = match[3] ?? '';
     const name = htmlToText(inner);
     if (name === '') continue;
     const aspxMatch = /([A-Za-z][A-Za-z0-9]*)\.aspx/.exec(href);
@@ -184,19 +184,19 @@ function parseItemList(valueHtml: string | undefined): ClassKitItem[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a class kit page. */
-export function extractClassKitBase(c: CommonExtraction): ClassKitBaseSlice {
+export function extractClassKitBase(common: CommonExtraction): ClassKitBaseSlice {
   return {
-    url:             c.url,
-    class_kit_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    class_kit_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -205,8 +205,8 @@ export function extractClassKitBase(c: CommonExtraction): ClassKitBaseSlice {
  * Options item lists from the page body. Labels live in `body_html` because
  * ClassKits pages carry no `<hr/>` separator.
  */
-export function extractClassKitContents(c: CommonExtraction): ClassKitContentsSlice {
-  const labels = harvestBoldLabelsHtml(c.body_html);
+export function extractClassKitContents(common: CommonExtraction): ClassKitContentsSlice {
+  const labels = harvestBoldLabelsHtml(common.body_html);
   return {
     price:           cleanScalar(labels.get('price')),
     bulk:            cleanScalar(labels.get('bulk')),
@@ -219,7 +219,7 @@ export function extractClassKitContents(c: CommonExtraction): ClassKitContentsSl
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractClassKitMeta(_c: CommonExtraction): ClassKitMetaSlice {
+export function extractClassKitMeta(_common: CommonExtraction): ClassKitMetaSlice {
   return { __class_kit_meta_marked: true };
 }
 
@@ -231,26 +231,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeClassKit(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     ClassKitBaseSlice,
   contents: ClassKitContentsSlice,
   _meta:    ClassKitMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   _target:  CheerioNode,
 ): ClassKitOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...contents,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ClassKitOutput;
 }
 
@@ -262,14 +262,14 @@ export function finalizeClassKit(
  * the decomposed class-kit extraction nodes.
  */
 export function extractClassKit(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: CheerioNode,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  CheerioNode,
 ): ClassKitOutput {
-  const base     = extractClassKitBase(c);
-  const contents = extractClassKitContents(c);
-  const meta     = extractClassKitMeta(c);
-  return finalizeClassKit(c, base, contents, meta, $, target);
+  const base     = extractClassKitBase(common);
+  const contents = extractClassKitContents(common);
+  const meta     = extractClassKitMeta(common);
+  return finalizeClassKit(common, base, contents, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -280,28 +280,29 @@ export function extractClassKit(
 
 export type ClassKitBaseOutput = 'success' | 'error';
 
-export const classKitBaseNode: NodeInterface<ScrapeState, ClassKitBaseOutput, RipperServices> = {
-  name:    'extract:class-kit-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class ClassKitBaseNodeImpl extends ScalarNode<ScrapeState, ClassKitBaseOutput> {
+  public readonly name = 'extract:class-kit-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassKitBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassKitBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractClassKitBase(c);
+    const base = extractClassKitBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const classKitBaseNode = new ClassKitBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -310,28 +311,29 @@ export const classKitBaseNode: NodeInterface<ScrapeState, ClassKitBaseOutput, Ri
 
 export type ClassKitContentsOutput = 'success' | 'error';
 
-export const classKitContentsNode: NodeInterface<ScrapeState, ClassKitContentsOutput, RipperServices> = {
-  name:    'extract:class-kit-contents',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class ClassKitContentsNodeImpl extends ScalarNode<ScrapeState, ClassKitContentsOutput> {
+  public readonly name = 'extract:class-kit-contents';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassKitContentsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassKitContentsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractClassKitContents(c);
+    const slice = extractClassKitContents(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const classKitContentsNode = new ClassKitContentsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -340,31 +342,32 @@ export const classKitContentsNode: NodeInterface<ScrapeState, ClassKitContentsOu
 
 export type FinalizeClassKitOutput = 'success';
 
-export const finalizeClassKitNode: NodeInterface<ScrapeState, FinalizeClassKitOutput, RipperServices> = {
-  name:    'finalize:class-kit',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeClassKitNodeImpl extends ScalarNode<ScrapeState, FinalizeClassKitOutput> {
+  public readonly name = 'finalize:class-kit';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeClassKitOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeClassKitOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     const meta     = { __class_kit_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as ClassKitOutput;
-    const assembled = finalizeClassKit(c, acc, acc, meta, $, target);
+    const assembled = finalizeClassKit(common, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeClassKitNode = new FinalizeClassKitNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

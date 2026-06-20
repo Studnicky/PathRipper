@@ -1,9 +1,10 @@
-import { RetryPolicy, BackoffStrategy } from '@noocodex/dagonizer/runtime';
-import type { RetryPolicyOptionsInterface } from '@noocodex/dagonizer/runtime';
+import { RetryPolicy } from '@studnicky/dagonizer/runtime';
+import { BackoffStrategyNames } from '@studnicky/dagonizer/entities';
+import type { RetryPolicyOptionsType } from '@studnicky/dagonizer/runtime';
 import { ErrorClassifier } from './errorClassifier.js';
 import type { ExtendedErrorInterface } from './errorClassifier.js';
 
-export type { RetryPolicyOptionsInterface };
+export type { RetryPolicyOptionsType };
 
 const DEFAULT_MAX_ATTEMPTS  = 3;
 const DEFAULT_BASE_DELAY_MS = 500;
@@ -65,9 +66,11 @@ export class HttpRetryPolicy extends RetryPolicy {
   private constructor(config: HttpRetryConfigInterface = {}) {
     super({
       maxAttempts: config.maxAttempts ?? DEFAULT_MAX_ATTEMPTS,
-      strategy:    BackoffStrategy.DECORRELATED_JITTER,
+      strategy:    BackoffStrategyNames.DECORRELATED_JITTER,
       baseDelay:   config.baseDelayMs ?? DEFAULT_BASE_DELAY_MS,
       maxDelay:    config.maxDelayMs  ?? DEFAULT_MAX_DELAY_MS,
+      retryOn:     [],
+      abortOn:     [],
     });
     this.#classifier = ErrorClassifier.default();
   }
@@ -103,11 +106,12 @@ export class HttpRetryPolicy extends RetryPolicy {
    * @param error - Error that triggered the retry.
    * @returns Delay in milliseconds before the next attempt.
    */
-  public override getDelay(attempt: number, error?: Error | null): number {
-    if (error !== null && error !== undefined) {
+  public override getDelay(attempt: number, options?: { readonly error: Error | null }): number {
+    const error = options?.error ?? null;
+    if (error !== null) {
       const result = this.#classifier.classify(error as ExtendedErrorInterface);
       if (result.backoffHint !== undefined) return Math.min(result.backoffHint, this.maxDelay);
     }
-    return super.getDelay(attempt, error);
+    return super.getDelay(attempt, { error });
   }
 }

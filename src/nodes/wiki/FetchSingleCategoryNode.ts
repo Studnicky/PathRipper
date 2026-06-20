@@ -1,15 +1,17 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { MediaWikiScraper }     from '../../scrapers/MediaWikiScraper.js';
-import { toNodeError }               from '../fileUtils.js';
+import type { MediaWikiScraper }      from '../../scrapers/MediaWikiScraper.js';
+import { toNodeError }                from '../fileUtils.js';
 import type { MemberResolutionState } from '../../state/MemberResolutionState.js';
-import type { RipperServices }           from '../../services/RipperServices.js';
+import type { RipperServices }        from '../../services/RipperServices.js';
 
 /** Returns true when the value exposes a `fetchCategory` method. */
-const isWikiScraper = (s: unknown): s is Pick<MediaWikiScraper, 'fetchCategory'> =>
-  typeof s === 'object' && s !== null &&
-  typeof (s as { fetchCategory?: unknown }).fetchCategory === 'function';
+const isWikiScraper = (val: unknown): val is Pick<MediaWikiScraper, 'fetchCategory'> =>
+  typeof val === 'object' && val !== null &&
+  typeof (val as { fetchCategory?: unknown }).fetchCategory === 'function';
+
+type FetchSingleCategoryOutput = 'success' | 'error';
 
 /**
  * Fetches members of the single category named in `state.category` via
@@ -22,18 +24,14 @@ const isWikiScraper = (s: unknown): s is Pick<MediaWikiScraper, 'fetchCategory'>
  * @category Nodes
  * @since 3.0.0
  */
-export const FetchSingleCategoryNode: NodeInterface<
-  MemberResolutionState,
-  'success' | 'error',
-  RipperServices
-> = {
-  name: 'wiki:fetch-single-category',
-  outputs: ['success', 'error'],
+class FetchSingleCategoryNodeImpl extends ScalarNode<MemberResolutionState, FetchSingleCategoryOutput, RipperServices> {
+  public readonly name = 'wiki:fetch-single-category';
+  public readonly outputs = ['success', 'error'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   MemberResolutionState,
-    context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<FetchSingleCategoryOutput>> {
     const { services } = context;
 
     if (!isWikiScraper(services.wikiScraper)) {
@@ -41,7 +39,7 @@ export const FetchSingleCategoryNode: NodeInterface<
         new Error('wiki:fetch-single-category requires services.wikiScraper'),
         'wiki:fetch-single-category',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     if (state.category === undefined) {
@@ -49,26 +47,20 @@ export const FetchSingleCategoryNode: NodeInterface<
         new Error('wiki:fetch-single-category requires state.category to be set'),
         'wiki:fetch-single-category',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     try {
       state.members = await services.wikiScraper.fetchCategory(state.category);
     } catch (err) {
       state.collectError(toNodeError(err, 'wiki:fetch-single-category'));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     services.log.info('wiki:fetch-single-category',
       `Mode: single category "${state.category}" — ${state.members.length.toString()} pages`);
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for FetchSingleCategoryNode: produces members from a category. */
-export const fetchSingleCategoryContract: OperationContract = {
-  name:         'wiki:fetch-single-category',
-  hardRequired: ['category'],
-  produces:     ['members'],
-  outputs:      ['success', 'error'],
-};
+export const FetchSingleCategoryNode = new FetchSingleCategoryNodeImpl();

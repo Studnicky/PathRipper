@@ -1,24 +1,21 @@
-// Registration-time `ContractRegistryValidator` integration.
+// Registration-time contract validation integration.
 //
 // Verifies that:
-//   1. `RipperDagonizer.onContractWarning` is wired and surfaces dead-write
-//      warnings via the project logger AND (when collectContractWarnings is
-//      enabled) retains them for inspection.
-//   2. Registering the live AONPRD taxonomy emits zero contract warnings.
-//   3. Registering a deliberately-broken DAG (a node declaring a hardRequired
-//      path that no predecessor produces) throws `DAGError` at registration
-//      time.
+//   1. Registering the live AONPRD taxonomy completes without throwing.
+//   2. A DAG whose node declares a hardRequired path that no predecessor produces
+//      throws `DAGError` at derivation time (dangling read → hard error in 0.23).
+//   3. A DAG whose entrypoint node produces a field that no downstream node
+//      reads (dead write) throws `DAGError` at build time (dead-write → hard
+//      error in 0.23; there is no non-fatal warning hook on RipperDagonizer).
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import { DAGError } from '@noocodex/dagonizer';
+import type { NodeInterface, NodeContextType, Batch, DAGType } from '@studnicky/dagonizer';
+import { DAGBuilder, DAGError, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer';
 
 import { RipperDagonizer } from '../../../../src/dispatcher/RipperDagonizer.js';
-import { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import { TerminalNode } from '../../../../src/nodes/TerminalNode.js';
+import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../../src/services/RipperServices.js';
 
 import { TAXONOMY } from '../../../../plugins/aonprd/taxonomy/aonprd.js';
@@ -31,23 +28,14 @@ function buildServices(): RipperServices {
 // ─── Test 1: live taxonomy registration — zero warnings ─────────────────────
 
 describe('ContractRegistryValidator integration', () => {
-  it('live AONPRD taxonomy registers without contract warnings', () => {
+  it('live AONPRD taxonomy registers without throwing', () => {
     const dispatcher = new RipperDagonizer<ScrapeState>({
       services: buildServices(),
-      collectContractWarnings: true,
     });
-    dispatcher.registerNode(TerminalNode);
     for (const node of TAXONOMY.allNodes()) {
-      dispatcher.registerNode(node);
+      dispatcher.registerNode(node as unknown as NodeInterface<ScrapeState, string, RipperServices>);
     }
-    dispatcher.registerDAG(aonprdParseDAG);
-
-    const warnings = dispatcher.contractWarnings();
-    assert.deepEqual(
-      warnings,
-      [],
-      `expected zero contract warnings from live taxonomy, got:\n  ${warnings.join('\n  ')}`,
-    );
+    assert.doesNotThrow(() => { dispatcher.registerDAG(aonprdParseDAG); });
   });
 
   // ─── Test 2: broken taxonomy — DAG derivation throws ──────────────────────
@@ -55,33 +43,35 @@ describe('ContractRegistryValidator integration', () => {
   it('broken taxonomy (hardRequired with no producer) throws DAGError at DAG derivation', () => {
     // Node A produces nothing.
     const nodeA: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:    'broken:nodeA',
-      outputs: ['success'] as const,
+      name:     'broken:nodeA',
+      outputs:  ['success'] as const,
+      timeout:  Timeout.none(),
       contract: {
         hardRequired: [] as const,
         produces:     [] as const,
-      } satisfies OperationContractFragment,
+      } satisfies OperationContractFragmentType,
       async execute(
-        _state: ScrapeState,
-        _ctx:   NodeContextInterface<RipperServices>,
-      ): Promise<{ output: 'success' }> {
-        return { output: 'success' };
+        batch: Batch<ScrapeState>,
+        _ctx:  NodeContextType<RipperServices>,
+      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+        return RoutedBatchBuilder.of('success', batch);
       },
     };
 
     // Node B reads `dangling.field` — nothing in the registry produces it.
     const nodeB: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:    'broken:nodeB',
-      outputs: ['success'] as const,
+      name:     'broken:nodeB',
+      outputs:  ['success'] as const,
+      timeout:  Timeout.none(),
       contract: {
         hardRequired: ['dangling.field'] as const,
         produces:     [] as const,
-      } satisfies OperationContractFragment,
+      } satisfies OperationContractFragmentType,
       async execute(
-        _state: ScrapeState,
-        _ctx:   NodeContextInterface<RipperServices>,
-      ): Promise<{ output: 'success' }> {
-        return { output: 'success' };
+        batch: Batch<ScrapeState>,
+        _ctx:  NodeContextType<RipperServices>,
+      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+        return RoutedBatchBuilder.of('success', batch);
       },
     };
 
@@ -90,15 +80,11 @@ describe('ContractRegistryValidator integration', () => {
     // The entrypoint's hardRequired is exempt (treated as initial state), so
     // we put the dangling read on nodeB and use nodeA as the entrypoint.
     assert.throws(
-      () => DAGDeriver.derive({
-        name:       'broken-test',
-        version:    '1.0',
-        entrypoint: 'broken:nodeA',
-        nodes:      [nodeA, nodeB],
+      () => DAGBuilder.derive('broken-test', '1.0', 'broken:nodeA', [nodeA, nodeB] as unknown as NodeInterface[], {
         annotations: {
           terminals: {
             'broken:nodeA': [{ outcome: 'success', target: 'broken:nodeB' }],
-            'broken:nodeB': [{ outcome: 'success', target: null }],
+            'broken:nodeB': [{ outcome: 'success', emit: { name: 'broken-done', outcome: 'completed' } }],
           },
         },
       }),
@@ -114,69 +100,74 @@ describe('ContractRegistryValidator integration', () => {
     );
   });
 
-  // ─── Test 3: dead-write warnings reach onContractWarning ──────────────────
+  // ─── Test 3: dead-write — throws DAGError at build time ───────────────────
 
-  it('dead-write warnings reach RipperDagonizer.onContractWarning', () => {
-    // entrypoint produces 'unused', no consumer ⇒ dead write.
+  it('dead-write (produces with no downstream consumer) throws DAGError at DAG build/registration', () => {
+    // entrypoint produces 'unused-field', no downstream node reads it → dead write.
     const entryNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:    'dead-write:entry',
-      outputs: ['success'] as const,
+      name:     'dead-write:entry',
+      outputs:  ['success'] as const,
+      timeout:  Timeout.none(),
       contract: {
         hardRequired: [] as const,
         produces:     ['unused-field'] as const,
-      } satisfies OperationContractFragment,
+      } satisfies OperationContractFragmentType,
       async execute(
-        _state: ScrapeState,
-        _ctx:   NodeContextInterface<RipperServices>,
-      ): Promise<{ output: 'success' }> {
-        return { output: 'success' };
+        batch: Batch<ScrapeState>,
+        _ctx:  NodeContextType<RipperServices>,
+      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+        return RoutedBatchBuilder.of('success', batch);
       },
     };
 
     const tailNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:    'dead-write:tail',
-      outputs: ['success'] as const,
+      name:     'dead-write:tail',
+      outputs:  ['success'] as const,
+      timeout:  Timeout.none(),
       contract: {
         hardRequired: [] as const,
         produces:     [] as const,
-      } satisfies OperationContractFragment,
+      } satisfies OperationContractFragmentType,
       async execute(
-        _state: ScrapeState,
-        _ctx:   NodeContextInterface<RipperServices>,
-      ): Promise<{ output: 'success' }> {
-        return { output: 'success' };
+        batch: Batch<ScrapeState>,
+        _ctx:  NodeContextType<RipperServices>,
+      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+        return RoutedBatchBuilder.of('success', batch);
       },
     };
 
-    const dag = DAGDeriver.derive({
-      name:       'dead-write-test',
-      version:    '1.0',
-      entrypoint: 'dead-write:entry',
-      nodes:      [entryNode, tailNode],
-      annotations: {
-        terminals: {
-          'dead-write:entry': [{ outcome: 'success', target: 'dead-write:tail' }],
-          'dead-write:tail':  [{ outcome: 'success', target: null }],
+    // In 0.23, dead-writes are a hard DAGError at build/registerDAG time.
+    // Either DAGBuilder.derive or dispatcher.registerDAG must throw.
+    let dag: DAGType | undefined;
+    let buildThrew = false;
+    try {
+      dag = DAGBuilder.derive('dead-write-test', '1.0', 'dead-write:entry', [entryNode, tailNode] as unknown as NodeInterface[], {
+        annotations: {
+          terminals: {
+            'dead-write:entry': [{ outcome: 'success', target: 'dead-write:tail' }],
+            'dead-write:tail':  [{ outcome: 'success', emit: { name: 'dw-done', outcome: 'completed' } }],
+          },
         },
-      },
-    });
+      });
+    } catch (err: unknown) {
+      assert.ok(err instanceof DAGError, `expected DAGError at derive, got ${String(err)}`);
+      buildThrew = true;
+    }
 
-    const dispatcher = new RipperDagonizer<ScrapeState>({
-      services: buildServices(),
-      collectContractWarnings: true,
-    });
-    dispatcher.registerNode(entryNode);
-    dispatcher.registerNode(tailNode);
-    dispatcher.registerDAG(dag);
-
-    const warnings = dispatcher.contractWarnings();
-    assert.ok(
-      warnings.length >= 1,
-      `expected at least one dead-write warning, got ${warnings.length.toString()}`,
-    );
-    assert.ok(
-      warnings.some((m) => m.includes('unused-field')),
-      `expected warning mentioning 'unused-field', got:\n  ${warnings.join('\n  ')}`,
-    );
+    if (!buildThrew && dag !== undefined) {
+      // derive succeeded — enforce the error at registerDAG.
+      const dispatcher = new RipperDagonizer<ScrapeState>({
+        services: buildServices(),
+      });
+      dispatcher.registerNode(entryNode);
+      dispatcher.registerNode(tailNode);
+      assert.throws(
+        () => dispatcher.registerDAG(dag!),
+        (err: unknown) => {
+          assert.ok(err instanceof DAGError, `expected DAGError at registerDAG, got ${String(err)}`);
+          return true;
+        },
+      );
+    }
   });
 });

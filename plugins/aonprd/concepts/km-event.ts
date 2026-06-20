@@ -4,12 +4,12 @@
 // outcomes. Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-event/.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -106,9 +106,9 @@ export interface KmEventMetaSlice {
 function pickLabelHtml(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(html);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(html);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = html.slice(start);
   // Outcomes lines end at the next <b>; field lines end at <br/> or <b> — we
   // use the broader boundary so callers receive everything up to the next
@@ -122,19 +122,19 @@ function pickLabelHtml(html: string, label: string): string | null {
 function pickOutcomeHtml(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(html);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(html);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = html.slice(start);
   const boundary = /<b>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
   return rest.slice(0, end);
 }
 
-function cleanText(s: string | null): string | null {
-  if (s === null) return null;
-  const t = s.replace(/[;,]\s*$/, '').trim();
-  return t === '' ? null : t;
+function cleanText(str: string | null): string | null {
+  if (str === null) return null;
+  const trimmed = str.replace(/[;,]\s*$/, '').trim();
+  return trimmed === '' ? null : trimmed;
 }
 
 const OUTCOME_LABELS: ReadonlyArray<{ label: string; tier: KmEventOutcome['tier'] }> = [
@@ -170,10 +170,10 @@ function extractDescription(body: string): string {
   const lastBrRe = /<br\s*\/?>/gi;
   let lastEnd = 0;
   let prevEnd = 0;
-  let m: RegExpExecArray | null;
-  while ((m = lastBrRe.exec(head)) !== null) {
+  let match: RegExpExecArray | null;
+  while ((match = lastBrRe.exec(head)) !== null) {
     prevEnd = lastEnd;
-    lastEnd = m.index + m[0].length;
+    lastEnd = match.index + match[0].length;
   }
   void prevEnd;
   // The prose section is everything before the last <br/> (the one that ends
@@ -186,25 +186,25 @@ function extractDescription(body: string): string {
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractKmEventBase(c: CommonExtraction): KmEventBaseSlice {
+export function extractKmEventBase(common: CommonExtraction): KmEventBaseSlice {
   return {
-    url:             c.url,
-    event_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    level:           c.title.level,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    event_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    level:           common.title.level,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
-export function extractKmEventMechanics(c: CommonExtraction): KmEventMechanicsSlice {
-  const body = c.body_html;
+export function extractKmEventMechanics(common: CommonExtraction): KmEventMechanicsSlice {
+  const body = common.body_html;
   return {
     location:      cleanText(pickLabelHtml(body, 'Location')      !== null ? htmlToText(pickLabelHtml(body, 'Location')!) : null),
     kingdom_skill: cleanText(pickLabelHtml(body, 'Kingdom Skill') !== null ? htmlToText(pickLabelHtml(body, 'Kingdom Skill')!) : null),
@@ -216,7 +216,7 @@ export function extractKmEventMechanics(c: CommonExtraction): KmEventMechanicsSl
   };
 }
 
-export function extractKmEventMeta(_c: CommonExtraction): KmEventMetaSlice {
+export function extractKmEventMeta(_common: CommonExtraction): KmEventMetaSlice {
   return { __km_event_meta_marked: true };
 }
 
@@ -228,32 +228,32 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeKmEvent(
-  c:     CommonExtraction,
-  base:  KmEventBaseSlice,
-  mech:  KmEventMechanicsSlice,
-  _meta: KmEventMetaSlice,
-  $:     CheerioAPI,
+  common: CommonExtraction,
+  base:   KmEventBaseSlice,
+  mech:   KmEventMechanicsSlice,
+  _meta:  KmEventMetaSlice,
+  root:   CheerioAPI,
 ): KmEventOutput {
   void _meta;
   return {
     ...base,
     ...mech,
-    sections:         c.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    sections:         common.sections,
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies KmEventOutput;
 }
 
-export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmEventOutput {
+export function extractKmEvent(common: CommonExtraction, root: CheerioAPI, target: CheerioNode): KmEventOutput {
   void target;
-  const base = extractKmEventBase(c);
-  const mech = extractKmEventMechanics(c);
-  const meta = extractKmEventMeta(c);
-  return finalizeKmEvent(c, base, mech, meta, $);
+  const base = extractKmEventBase(common);
+  const mech = extractKmEventMechanics(common);
+  const meta = extractKmEventMeta(common);
+  return finalizeKmEvent(common, base, mech, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -261,87 +261,90 @@ export function extractKmEvent(c: CommonExtraction, $: CheerioAPI, target: Cheer
 
 export type KmEventBaseOutput = 'success' | 'error';
 
-export const kmEventBaseNode: NodeInterface<ScrapeState, KmEventBaseOutput, RipperServices> = {
-  name:    'extract:km-event-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class KmEventBaseNodeImpl extends ScalarNode<ScrapeState, KmEventBaseOutput> {
+  public readonly name    = 'extract:km-event-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmEventBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmEventBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractKmEventBase(c);
+    const base = extractKmEventBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const kmEventBaseNode = new KmEventBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type KmEventMechanicsOutput = 'success' | 'error';
 
-export const kmEventMechanicsNode: NodeInterface<ScrapeState, KmEventMechanicsOutput, RipperServices> = {
-  name:    'extract:km-event-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class KmEventMechanicsNodeImpl extends ScalarNode<ScrapeState, KmEventMechanicsOutput> {
+  public readonly name    = 'extract:km-event-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmEventMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmEventMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mech = extractKmEventMechanics(c);
+    const mech = extractKmEventMechanics(common);
 
     state.output = { ...state.output, ...mech };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const kmEventMechanicsNode = new KmEventMechanicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeKmEventOutput = 'success';
 
-export const finalizeKmEventNode: NodeInterface<ScrapeState, FinalizeKmEventOutput, RipperServices> = {
-  name:    'finalize:km-event',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeKmEventNodeImpl extends ScalarNode<ScrapeState, FinalizeKmEventOutput> {
+  public readonly name    = 'finalize:km-event';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeKmEventOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeKmEventOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
 
     // meta arg is unused by finalizeKmEvent (marker only)
     const acc = (state.output ?? {}) as unknown as KmEventOutput;
-    const assembled = finalizeKmEvent(c, acc, acc, { __km_event_meta_marked: true }, $);
+    const assembled = finalizeKmEvent(common, acc, acc, { __km_event_meta_marked: true }, root);
     void target;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeKmEventNode = new FinalizeKmEventNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

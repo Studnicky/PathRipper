@@ -1,14 +1,14 @@
 import { describe, it, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Clock, Scheduler } from '@noocodex/dagonizer/runtime';
-import { VirtualClockProvider, VirtualScheduler } from '@noocodex/dagonizer/testing';
+import { Clock, Scheduler } from '@studnicky/dagonizer/runtime';
+import { VirtualClockProvider, VirtualScheduler } from '@studnicky/dagonizer/testing';
 
 import { HttpRetryPolicy } from '../../../../src/modules/http/httpRetryPolicy.js';
 
 /** Flush microtasks so pending Promises register in the VirtualScheduler. */
 function tick(): Promise<void> {
-  return new Promise<void>((r) => setImmediate(r));
+  return new Promise<void>((resolve) => setImmediate(resolve));
 }
 
 function makeError(props: Record<string, unknown>): Error {
@@ -183,7 +183,7 @@ describe('HttpRetryPolicy (virtual time)', () => {
     const runPromise = policy.run(async () => {
       calls++;
       throw makeError({ code: 'ECONNREFUSED' });
-    }, controller.signal);
+    }, { signal: controller.signal });
 
     // Flush so attempt 1 runs and the backoff wait is registered
     await tick();

@@ -1,7 +1,7 @@
 // Test suite for linkedAnchorList capability helper.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseLinkedAnchorList, type AnchorRef } from '../../../../../plugins/aonprd/capabilities/linkedAnchorList.js';
+import { parseLinkedAnchorList } from '../../../../../plugins/aonprd/capabilities/linkedAnchorList.js';
 
 describe('parseLinkedAnchorList', () => {
   it('parses a comma-separated anchor list', () => {

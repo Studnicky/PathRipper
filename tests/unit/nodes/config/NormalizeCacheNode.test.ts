@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { NormalizeCacheNode, RAW_CACHE_OFF_ERROR } from '../../../../src/nodes/config/NormalizeCacheNode.js';
@@ -24,9 +25,9 @@ describe('NormalizeCacheNode', () => {
     const state = new ConfigLoadState();
     // state.validated is null by default
 
-    const result = await NormalizeCacheNode.execute(state, makeContext());
+    const result = await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invariant-violated');
+    assert.ok(result.has('invariant-violated'));
     assert.equal(state.errors.length, 1);
   });
 
@@ -34,9 +35,9 @@ describe('NormalizeCacheNode', () => {
     const state = new ConfigLoadState();
     state.validated = makeValidated({});
 
-    const result = await NormalizeCacheNode.execute(state, makeContext());
+    const result = await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.ok(state.normalized !== null);
     assert.equal(state.errors.length, 0);
   });
@@ -52,7 +53,7 @@ describe('NormalizeCacheNode', () => {
       },
     });
 
-    await NormalizeCacheNode.execute(state, makeContext());
+    await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
     const cache = state.normalized?.targets?.['mywiki']?.cache;
     assert.equal(cache?.dir, 'output/.cache/mywiki');
@@ -71,7 +72,7 @@ describe('NormalizeCacheNode', () => {
       },
     });
 
-    await NormalizeCacheNode.execute(state, makeContext());
+    await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
     const cache = state.normalized?.targets?.['mywiki']?.cache;
     assert.equal(cache?.dir, 'custom/dir');
@@ -91,9 +92,9 @@ describe('NormalizeCacheNode', () => {
       },
     });
 
-    const result = await NormalizeCacheNode.execute(state, makeContext());
+    const result = await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invariant-violated');
+    assert.ok(result.has('invariant-violated'));
     assert.equal(state.errors.length, 1);
     const err = state.errors[0];
     assert.ok(err !== undefined);
@@ -113,9 +114,9 @@ describe('NormalizeCacheNode', () => {
       },
     });
 
-    const result = await NormalizeCacheNode.execute(state, makeContext());
+    const result = await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.normalized?.targets?.['mywiki']?.cache.mode, 'off');
   });
 
@@ -130,7 +131,7 @@ describe('NormalizeCacheNode', () => {
       },
     });
 
-    await NormalizeCacheNode.execute(state, makeContext());
+    await NormalizeCacheNode.execute(Batch.of(state), makeContext());
 
     const cache = state.normalized?.mediawiki?.['bulbapedia']?.cache;
     assert.equal(cache?.dir, 'output/.cache/bulbapedia');

@@ -4,12 +4,12 @@
  * Extract identity, header scalars, traits, action cost, and source refs.
  * Node: extract:spell-base
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS, extractEntityId } from '../../common.js';
 
@@ -17,48 +17,49 @@ import type { SpellBaseSlice } from './types.js';
 import { resolveKind } from './helpers.js';
 
 /** Extract identity, header scalars, traits, and source refs. */
-export function extractSpellBase(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): SpellBaseSlice {
+export function extractSpellBase(common: CommonExtraction, _root: CheerioAPI, _span: CheerioNode): SpellBaseSlice {
   return {
-    url:             c.url,
-    spell_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    kind:            resolveKind(c),
-    rank:            c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    action_cost:     c.title.action_cost,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    spell_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    kind:            resolveKind(common),
+    rank:            common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    action_cost:     common.title.action_cost,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 export type SpellBaseOutput = 'success' | 'error';
 
-export const spellBaseNode: NodeInterface<ScrapeState, SpellBaseOutput, RipperServices> = {
-  name:    'extract:spell-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SpellBaseNodeImpl extends ScalarNode<ScrapeState, SpellBaseOutput> {
+  public readonly name = 'extract:spell-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SpellBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SpellBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSpellBase(c, $, target);
+    const base = extractSpellBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const spellBaseNode = new SpellBaseNodeImpl();

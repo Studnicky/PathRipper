@@ -5,11 +5,11 @@
 // can be reused with a non-AON strategy. The finalize node reads the
 // projected `aonprdCommon.sections` / `.sources` that the secondary strategy
 // populated and emits a minimal output shape.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder }      from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType }   from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../../aonprd/common.js';
 import type { Section, SourceRef } from '../../aonprd/capabilities/strategy.js';
 import type { ConceptDecl } from '../../aonprd/taxonomy.js';
@@ -23,36 +23,38 @@ export interface SampleOutput {
   sections: Section[];
 }
 
-const finalizeSampleNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name:    'finalize:sample',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeSampleNodeImpl extends ScalarNode<ScrapeState, 'success'> {
+  public readonly name    = 'finalize:sample';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<'success'>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('success');
 
     const assembled = {
       _type:    'sample' as const,
-      url:      c.url,
-      name:     c.title.name,
-      sources:  c.sources,
-      sections: c.sections,
+      url:      common.url,
+      name:     common.title.name,
+      sources:  common.sources,
+      sections: common.sections,
     } satisfies SampleOutput;
 
     state.output = state.output !== null
       ? { ...state.output, ...assembled }
       : { ...assembled };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+const finalizeSampleNode = new FinalizeSampleNodeImpl();
 
 /**
  * Sample concept declaration. The capabilities are inherited from the

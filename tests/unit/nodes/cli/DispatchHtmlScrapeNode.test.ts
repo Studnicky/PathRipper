@@ -1,4 +1,5 @@
 import { describe, it, mock, before } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { CliState }  from '../../../../src/state/CliState.js';
@@ -43,9 +44,9 @@ describe('DispatchHtmlScrapeNode', () => {
     const state = new CliState();
     state.config = null;
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -56,9 +57,9 @@ describe('DispatchHtmlScrapeNode', () => {
     state.targetId = 'unknown';
     state.options  = { paths: ['/page1'] };
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -69,9 +70,9 @@ describe('DispatchHtmlScrapeNode', () => {
     state.targetId = 'mysite';
     state.options  = { paths: [] };
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.includes('--paths required'));
   });
 
@@ -88,9 +89,9 @@ describe('DispatchHtmlScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(runHtmlMock.mock.calls.length, 1);
     assert.equal(state.failedCount, 0);
   });
@@ -108,9 +109,9 @@ describe('DispatchHtmlScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.failedCount, 0);
     assert.equal(state.errorMessage, '');
   });
@@ -128,9 +129,9 @@ describe('DispatchHtmlScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    const result = await DispatchHtmlScrapeNode.execute(state, makeContext());
+    const result = await DispatchHtmlScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.includes('network failure'));
   });
 });

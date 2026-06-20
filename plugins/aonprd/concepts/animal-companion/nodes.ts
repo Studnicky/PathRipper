@@ -1,9 +1,9 @@
 // Animal-companion capability nodes.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
@@ -11,150 +11,154 @@ import { extractAnimalCompanionBase } from './base.js';
 import { extractAnimalCompanionStats } from './stats.js';
 import { extractAnimalCompanionCombat } from './combat.js';
 import { extractAnimalCompanionAdvancement } from './advancement.js';
-import { extractAnimalCompanionMeta } from './meta.js';
 import { finalizeAnimalCompanion } from './finalize.js';
 import type {
   AnimalCompanionOutput,
-  AnimalCompanionBaseSlice,
-  AnimalCompanionStatsSlice,
-  AnimalCompanionCombatSlice,
-  AnimalCompanionAdvancementSlice,
-  AnimalCompanionMetaSlice,
 } from './types.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AnimalCompanionBaseOutput = 'success' | 'error';
 
-export const animalCompanionBaseNode: NodeInterface<ScrapeState, AnimalCompanionBaseOutput, RipperServices> = {
-  name:    'extract:animal-companion-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AnimalCompanionBaseNode extends ScalarNode<ScrapeState, AnimalCompanionBaseOutput> {
+  public readonly name = 'extract:animal-companion-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AnimalCompanionBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AnimalCompanionBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || target === undefined) return { output: 'error' };
+    if (common === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractAnimalCompanionBase(c, target);
+    const base = extractAnimalCompanionBase(common, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const animalCompanionBaseNode = new AnimalCompanionBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AnimalCompanionStatsOutput = 'success' | 'error';
 
-export const animalCompanionStatsNode: NodeInterface<ScrapeState, AnimalCompanionStatsOutput, RipperServices> = {
-  name:    'extract:animal-companion-stats',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AnimalCompanionStatsNode extends ScalarNode<ScrapeState, AnimalCompanionStatsOutput> {
+  public readonly name = 'extract:animal-companion-stats';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AnimalCompanionStatsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AnimalCompanionStatsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const stats = extractAnimalCompanionStats(c);
+    const stats = extractAnimalCompanionStats(common);
 
     state.output = { ...state.output, ...stats };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const animalCompanionStatsNode = new AnimalCompanionStatsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AnimalCompanionCombatOutput = 'success' | 'error';
 
-export const animalCompanionCombatNode: NodeInterface<ScrapeState, AnimalCompanionCombatOutput, RipperServices> = {
-  name:    'extract:animal-companion-combat',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AnimalCompanionCombatNode extends ScalarNode<ScrapeState, AnimalCompanionCombatOutput> {
+  public readonly name = 'extract:animal-companion-combat';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AnimalCompanionCombatOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AnimalCompanionCombatOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const combat = extractAnimalCompanionCombat(c);
+    const combat = extractAnimalCompanionCombat(common);
 
     state.output = { ...state.output, ...combat };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const animalCompanionCombatNode = new AnimalCompanionCombatNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type AnimalCompanionAdvancementOutput = 'success' | 'error';
 
-export const animalCompanionAdvancementNode: NodeInterface<ScrapeState, AnimalCompanionAdvancementOutput, RipperServices> = {
-  name:    'extract:animal-companion-advancement',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AnimalCompanionAdvancementNode extends ScalarNode<ScrapeState, AnimalCompanionAdvancementOutput> {
+  public readonly name = 'extract:animal-companion-advancement';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AnimalCompanionAdvancementOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AnimalCompanionAdvancementOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const advancement = extractAnimalCompanionAdvancement(c);
+    const advancement = extractAnimalCompanionAdvancement(common);
 
     state.output = { ...state.output, ...advancement };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const animalCompanionAdvancementNode = new AnimalCompanionAdvancementNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeAnimalCompanionOutput = 'success';
 
-export const finalizeAnimalCompanionNode: NodeInterface<ScrapeState, FinalizeAnimalCompanionOutput, RipperServices> = {
-  name:    'finalize:animal-companion',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeAnimalCompanionNode extends ScalarNode<ScrapeState, FinalizeAnimalCompanionOutput> {
+  public readonly name = 'finalize:animal-companion';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeAnimalCompanionOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeAnimalCompanionOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as AnimalCompanionOutput;
-    const assembled = finalizeAnimalCompanion(c, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), $);
+    const assembled = finalizeAnimalCompanion(common, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeAnimalCompanionNode = new FinalizeAnimalCompanionNode();

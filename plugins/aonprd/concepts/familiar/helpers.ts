@@ -1,6 +1,6 @@
 // Familiar shared parsing utilities.
 import type { ActionCost } from '../../common.js';
-import { htmlToText, loadFragment, asInt } from '../../common.js';
+import { htmlToText, loadFragment } from '../../common.js';
 import type { FamiliarAbilityRef, FamiliarSubAbility } from './types.js';
 import type { Element, AnyNode } from 'domhandler';
 
@@ -19,11 +19,11 @@ export function parseGrantedAbilities(html: string | null): FamiliarAbilityRef[]
   const out: FamiliarAbilityRef[] = [];
   const seen = new Set<string>();
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(html)) !== null) {
-    const href = m[1] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(html)) !== null) {
+    const href = match[1] ?? '';
     if (!/Familiars\.aspx/i.test(href)) continue;
-    const name = htmlToText(m[2] ?? '').replace(/[,;]+$/, '').trim();
+    const name = htmlToText(match[2] ?? '').replace(/[,;]+$/, '').trim();
     if (name === '') continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const familiar_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
@@ -55,12 +55,12 @@ export function parseAbilityType(html: string | null): {
   }
   if (/^specific familiar\b/i.test(text)) {
     const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
-    const m = anchorRe.exec(html);
+    const match = anchorRe.exec(html);
     let parent: FamiliarAbilityRef | null = null;
-    if (m !== null) {
-      const href = m[1] ?? '';
+    if (match !== null) {
+      const href = match[1] ?? '';
       if (/Familiars\.aspx/i.test(href)) {
-        const name = htmlToText(m[2] ?? '').trim();
+        const name = htmlToText(match[2] ?? '').trim();
         const idMatch = /\?ID=(\d+)/i.exec(href);
         const familiar_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
         if (name !== '') parent = { name, familiar_id };
@@ -84,9 +84,9 @@ const ACTION_LABEL_TO_COST: ReadonlyMap<string, ActionCost> = new Map<string, Ac
 ]);
 
 function parseActionGlyph(html: string): ActionCost | null {
-  const m = /<span\b[^>]*class=['"]action['"][^>]*>([\s\S]*?)<\/span>/i.exec(html);
-  if (m === null) return null;
-  const inner = m[1] ?? '';
+  const match = /<span\b[^>]*class=['"]action['"][^>]*>([\s\S]*?)<\/span>/i.exec(html);
+  if (match === null) return null;
+  const inner = match[1] ?? '';
   const lab = /\[([a-z-]+)\]/i.exec(inner);
   if (lab === null) return null;
   return ACTION_LABEL_TO_COST.get(lab[1]!.toLowerCase()) ?? null;
@@ -95,13 +95,13 @@ function parseActionGlyph(html: string): ActionCost | null {
 /** Pull a single `<b>Label</b> value` value from a fragment, stopping at the next `<b>` or `<br>`. */
 function pullLabel(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(
+  const regex = new RegExp(
     `<b>\\s*${escaped}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<br\\s*\\/?>|<h[1-3]\\b|$)`,
     'i',
   );
-  const m = re.exec(html);
-  if (m === null) return null;
-  const text = htmlToText(m[1] ?? '').replace(/[\s;,]+$/, '').trim();
+  const match = regex.exec(html);
+  if (match === null) return null;
+  const text = htmlToText(match[1] ?? '').replace(/[\s;,]+$/, '').trim();
   return text === '' ? null : text;
 }
 
@@ -110,12 +110,12 @@ function pullLabel(html: string, label: string): string | null {
  * when no Sources.aspx anchor is found.
  */
 function pullFirstSource(html: string): SourceRef | null {
-  const re = /<b>\s*Source\s*<\/b>\s*<a[^>]*href="[^"]*Sources\.aspx\?ID=(\d+)"[^>]*>\s*<i>([^<]+)<\/i>\s*<\/a>(?:[^<]*pg\.\s*(\d+))?/i;
-  const m = re.exec(html);
-  if (m === null) return null;
-  const source_id = parseInt(m[1] ?? '0', 10);
-  const label = m[2] ?? '';
-  const pageRaw = m[3];
+  const regex = /<b>\s*Source\s*<\/b>\s*<a[^>]*href="[^"]*Sources\.aspx\?ID=(\d+)"[^>]*>\s*<i>([^<]+)<\/i>\s*<\/a>(?:[^<]*pg\.\s*(\d+))?/i;
+  const match = regex.exec(html);
+  if (match === null) return null;
+  const source_id = parseInt(match[1] ?? '0', 10);
+  const label = match[2] ?? '';
+  const pageRaw = match[3];
   const page = pageRaw !== undefined ? parseInt(pageRaw, 10) : null;
   const bookMatch = /^(.*?)\s*pg\.\s*\d+/i.exec(label);
   const book = bookMatch !== null ? bookMatch[1]!.trim() : label.trim();
@@ -144,21 +144,21 @@ interface SourceRef {
  */
 export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
   if (bodyHtml.trim() === '') return [];
-  const $b = loadFragment(bodyHtml, 'body-root');
+  const bodyRoot = loadFragment(bodyHtml, 'body-root');
   const out: FamiliarSubAbility[] = [];
 
-  $b('#body-root h2.title').each((_, el) => {
-    const $h = $b(el);
-    const cls = ($h.attr('class') ?? '').toLowerCase();
+  bodyRoot('#body-root h2.title').each((_index, element) => {
+    const headEl = bodyRoot(element);
+    const cls = (headEl.attr('class') ?? '').toLowerCase();
     if (cls.includes('feel-title') || cls.includes('hide-on-print') || cls.includes('legacy-content-warning')) {
       return;
     }
 
-    const headingHtml = $b.html(el) ?? '';
+    const headingHtml = bodyRoot.html(element) ?? '';
     const heading_action_cost = parseActionGlyph(headingHtml);
 
     // Heading text + ability link
-    const anchor = $h.find('a').first();
+    const anchor = headEl.find('a').first();
     const anchorHref = anchor.attr('href') ?? '';
     let familiar_id: number | null = null;
     if (/Familiars\.aspx/i.test(anchorHref)) {
@@ -166,7 +166,7 @@ export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
       familiar_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
     }
     // Strip action glyph from heading text before reading the name.
-    const headingClone = $h.clone();
+    const headingClone = headEl.clone();
     headingClone.find('span.action').remove();
     const name = headingClone.text().replace(/\s+/g, ' ').trim();
     if (name === '') return;
@@ -176,7 +176,7 @@ export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
     const traitSeen = new Set<string>();
     const fragments: string[] = [];
 
-    let cur = (el as Element).next as AnyNode | null;
+    let cur = (element as Element).next as AnyNode | null;
     while (cur !== null) {
       if (cur.type === 'tag') {
         const next = cur as Element;
@@ -192,7 +192,7 @@ export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
         if (tagName === 'span') {
           const spanCls = (next.attribs?.['class'] ?? '').toLowerCase();
           if (spanCls.startsWith('trait')) {
-            const traitText = $b(next).text().replace(/\s+/g, ' ').trim();
+            const traitText = bodyRoot(next).text().replace(/\s+/g, ' ').trim();
             if (traitText !== '' && !traitSeen.has(traitText)) {
               traitSeen.add(traitText);
               traits.push(traitText);
@@ -200,7 +200,7 @@ export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
           }
         }
       }
-      fragments.push($b.html(cur as AnyNode));
+      fragments.push(bodyRoot.html(cur as AnyNode));
       cur = (cur as { next: AnyNode | null }).next;
     }
 
@@ -237,13 +237,13 @@ export function parseSubAbilities(bodyHtml: string): FamiliarSubAbility[] {
  */
 export function pullFieldHtml(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(
+  const regex = new RegExp(
     `<b>\\s*${escaped}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<br\\s*\\/?>|<h[1-3]\\b|$)`,
     'i',
   );
-  const m = re.exec(html);
-  if (m === null) return null;
-  const valueHtml = (m[1] ?? '').trim();
+  const match = regex.exec(html);
+  if (match === null) return null;
+  const valueHtml = (match[1] ?? '').trim();
   return valueHtml === '' ? null : valueHtml;
 }
 
@@ -257,6 +257,6 @@ export function pullField(html: string, label: string): string | null {
 
 /** Return the head fragment of the content span — the prose before any `<h2 class="title">` block. */
 export function bodyHeadFragment(bodyHtml: string): string {
-  const m = /<h2\b[^>]*class=['"][^'"]*title[^'"]*['"][^>]*>/i.exec(bodyHtml);
-  return m === null ? bodyHtml : bodyHtml.slice(0, m.index);
+  const match = /<h2\b[^>]*class=['"][^'"]*title[^'"]*['"][^>]*>/i.exec(bodyHtml);
+  return match === null ? bodyHtml : bodyHtml.slice(0, match.index);
 }

@@ -2,12 +2,12 @@
 // Action pages are well-structured; the inlined helpers handle all significant
 // data including skill refs, four-tier outcome blocks, and
 // trigger/frequency/requirements fields.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -130,18 +130,18 @@ function buildEffect(bodyHtml: string): { html: string; text: string } {
  * The raw text is typically "SkillName (Proficiency)" — e.g. "Acrobatics (Trained)".
  * The Skills.aspx link provides the skill_id.
  */
-function parseSkill(c: CommonExtraction): ActionOutput['skill'] {
-  const html = getFieldHtml(c, 'Skill');
+function parseSkill(common: CommonExtraction): ActionOutput['skill'] {
+  const html = getFieldHtml(common, 'Skill');
   if (html === null) return null;
   // Extract Skills.aspx link
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
-  const m = anchorRe.exec(html);
+  const match = anchorRe.exec(html);
   const rawText = htmlToText(html).trim();
   if (rawText === '') return null;
 
   let skill_id: number | null = null;
-  if (m !== null) {
-    const idMatch = /\?ID=(\d+)/i.exec(m[1] ?? '');
+  if (match !== null) {
+    const idMatch = /\?ID=(\d+)/i.exec(match[1] ?? '');
     skill_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
   }
 
@@ -160,19 +160,19 @@ function parseSkill(c: CommonExtraction): ActionOutput['skill'] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity slice (URL, traits, rarity, action cost, sources, legacy). */
-export function extractActionBase(c: CommonExtraction): ActionBaseSlice {
+export function extractActionBase(common: CommonExtraction): ActionBaseSlice {
   return {
-    url:             c.url,
-    action_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    action_cost:     c.title.action_cost,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    action_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    action_cost:     common.title.action_cost,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
@@ -180,16 +180,16 @@ export function extractActionBase(c: CommonExtraction): ActionBaseSlice {
  * Extract effect slice (header fields Trigger/Frequency/Requirements/Cost,
  * effect prose, and four-tier outcome block).
  */
-export function extractActionEffect(c: CommonExtraction): ActionEffectSlice {
-  const effect = buildEffect(c.body_html);
+export function extractActionEffect(common: CommonExtraction): ActionEffectSlice {
+  const effect = buildEffect(common.body_html);
   return {
-    trigger:      dashToNull(getField(c, 'Trigger')),
-    frequency:    dashToNull(getField(c, 'Frequency')),
-    requirements: dashToNull(getField(c, 'Requirements')),
-    cost:         dashToNull(getField(c, 'Cost')),
+    trigger:      dashToNull(getField(common, 'Trigger')),
+    frequency:    dashToNull(getField(common, 'Frequency')),
+    requirements: dashToNull(getField(common, 'Requirements')),
+    cost:         dashToNull(getField(common, 'Cost')),
     effect_html:  effect.html,
     effect_text:  effect.text,
-    outcomes:     parseOutcomes(c.body_html),
+    outcomes:     parseOutcomes(common.body_html),
   };
 }
 
@@ -212,20 +212,20 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * computes `raw_fields` by stripping every label claimed by upstream slices.
  */
 export function finalizeAction(
-  c:      CommonExtraction,
-  base:   ActionBaseSlice,
-  effect: ActionEffectSlice,
-  $:      CheerioAPI,
+  common:  CommonExtraction,
+  base:    ActionBaseSlice,
+  effect:  ActionEffectSlice,
+  root:    CheerioAPI,
 ): ActionOutput {
-  const skill = parseSkill(c);
+  const skill = parseSkill(common);
   return {
     ...base,
     ...effect,
     skill,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ActionOutput;
 }
 
@@ -238,11 +238,11 @@ export function finalizeAction(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed action extraction nodes.
  */
-export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ActionOutput {
+export function extractAction(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): ActionOutput {
   void span;
-  const base   = extractActionBase(c);
-  const effect = extractActionEffect(c);
-  return finalizeAction(c, base, effect, $);
+  const base   = extractActionBase(common);
+  const effect = extractActionEffect(common);
+  return finalizeAction(common, base, effect, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -250,82 +250,85 @@ export function extractAction(c: CommonExtraction, $: CheerioAPI, span: CheerioN
 
 export type ActionBaseOutput = 'success' | 'error';
 
-export const actionBaseNode: NodeInterface<ScrapeState, ActionBaseOutput, RipperServices> = {
-  name:    'extract:action-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class ActionBaseNodeImpl extends ScalarNode<ScrapeState, ActionBaseOutput> {
+  public readonly name = 'extract:action-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ActionBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ActionBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractActionBase(c);
+    const base = extractActionBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const actionBaseNode = new ActionBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ActionEffectOutput = 'success' | 'error';
 
-export const actionEffectNode: NodeInterface<ScrapeState, ActionEffectOutput, RipperServices> = {
-  name:    'extract:action-effect',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class ActionEffectNodeImpl extends ScalarNode<ScrapeState, ActionEffectOutput> {
+  public readonly name = 'extract:action-effect';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ActionEffectOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ActionEffectOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const effect = extractActionEffect(c);
+    const effect = extractActionEffect(common);
 
     state.output = { ...state.output, ...effect };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const actionEffectNode = new ActionEffectNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeActionOutput = 'success';
 
-export const finalizeActionNode: NodeInterface<ScrapeState, FinalizeActionOutput, RipperServices> = {
-  name:    'finalize:action',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeActionNodeImpl extends ScalarNode<ScrapeState, FinalizeActionOutput> {
+  public readonly name = 'finalize:action';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeActionOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeActionOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as ActionOutput;
-    const assembled = finalizeAction(c, acc, acc, $);
+    const assembled = finalizeAction(common, acc, acc, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeActionNode = new FinalizeActionNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

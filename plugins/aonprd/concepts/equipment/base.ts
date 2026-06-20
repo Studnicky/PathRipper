@@ -12,54 +12,54 @@ import type {
 } from './types.js';
 
 /** Extract weapon base slice (identity, source, traits). */
-export function extractWeaponBase(c: CommonExtraction): WeaponBaseSlice {
+export function extractWeaponBase(common: CommonExtraction): WeaponBaseSlice {
   return {
-    url:             c.url,
-    weapon_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    weapon_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract armor base slice. */
-export function extractArmorBase(c: CommonExtraction): ArmorBaseSlice {
+export function extractArmorBase(common: CommonExtraction): ArmorBaseSlice {
   return {
-    url:             c.url,
-    armor_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    armor_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract equipment base slice. */
-export function extractEquipmentBase(c: CommonExtraction): EquipmentBaseSlice {
+export function extractEquipmentBase(common: CommonExtraction): EquipmentBaseSlice {
   return {
-    url:             c.url,
-    equipment_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    item_level:      c.title.level,
-    tiered_variants: c.title.tiered,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    equipment_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    item_level:      common.title.level,
+    tiered_variants: common.title.tiered,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }

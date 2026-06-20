@@ -1,6 +1,7 @@
 // Unit tests for extract:section-walker capability.
 // Proves byte-equivalence with harvestSections() from common.ts.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 import type { CheerioAPI } from 'cheerio';
 
@@ -13,10 +14,10 @@ import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
 async function primeAndRun(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  const r1    = await loadAndCommonNode.execute(state, stubContext);
-  assert.equal(r1.output, 'success', `loadAndCommon failed for ${fixtureName}`);
-  const r2 = await sectionWalkerNode.execute(state, stubContext);
-  assert.equal(r2.output, 'success', `sectionWalker failed for ${fixtureName}`);
+  const result1    = await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  assert.ok(result1.has('success'), `loadAndCommon failed for ${fixtureName}`);
+  const result2 = await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  assert.ok(result2.has('success'), `sectionWalker failed for ${fixtureName}`);
   return state;
 }
 
@@ -26,10 +27,10 @@ describe('extract:section-walker — spell-abyssal-plague', () => {
     const url         = 'https://2e.aonprd.com/Spells.aspx?ID=1';
     const state = await primeAndRun(fixtureName, url);
 
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const $ch    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    assert.ok($ !== undefined && target !== undefined);
-    const expected = harvestSections($, target);
+    assert.ok($ch !== undefined && target !== undefined);
+    const expected = harvestSections($ch, target);
 
     const sections = state.getMetadata<Section[]>('sections');
     assert.deepEqual(sections, expected);
@@ -42,10 +43,10 @@ describe('extract:section-walker — feat-hedge-prison', () => {
     const url         = 'https://2e.aonprd.com/Feats.aspx?ID=2';
     const state = await primeAndRun(fixtureName, url);
 
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const $ch    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    assert.ok($ !== undefined && target !== undefined);
-    const expected = harvestSections($, target);
+    assert.ok($ch !== undefined && target !== undefined);
+    const expected = harvestSections($ch, target);
 
     const sections = state.getMetadata<Section[]>('sections');
     assert.deepEqual(sections, expected);
@@ -58,10 +59,10 @@ describe('extract:section-walker — monster-phantasmal-minion', () => {
     const url         = 'https://2e.aonprd.com/Monsters.aspx?ID=1';
     const state = await primeAndRun(fixtureName, url);
 
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const $ch    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    assert.ok($ !== undefined && target !== undefined);
-    const expected = harvestSections($, target);
+    assert.ok($ch !== undefined && target !== undefined);
+    const expected = harvestSections($ch, target);
 
     const sections = state.getMetadata<Section[]>('sections');
     assert.deepEqual(sections, expected);
@@ -71,8 +72,8 @@ describe('extract:section-walker — monster-phantasmal-minion', () => {
 describe('extract:section-walker — open-world soft-fail', () => {
   it('outputs success and writes nothing when required metadata is missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Spells.aspx?ID=1');
-    const r = await sectionWalkerNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await sectionWalkerNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
     assert.equal(state.getMetadata('sections'), undefined);
   });
 });

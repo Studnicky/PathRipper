@@ -10,11 +10,11 @@
 // capability (open-world convention: produces = []).
 //
 // Lifted into a shared capability to eliminate duplicate parsers across concept files.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState } from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../common.js';
 import { getField } from '../common.js';
 
@@ -46,7 +46,7 @@ export function parseSavingThrow(text: string | null): SavingThrow | null {
   const stripped = basic ? trimmed.replace(/^basic\s+/i, '').trim() : trimmed;
 
   const dcMatch = /DC\s*(\d+)/i.exec(stripped);
-  const dc = dcMatch !== null ? parseInt(dcMatch[1]!, 10) : null;
+  const dcVal = dcMatch !== null ? parseInt(dcMatch[1]!, 10) : null;
 
   // Only remove the DC pattern if we successfully matched and parsed it.
   let remainder = stripped;
@@ -55,38 +55,39 @@ export function parseSavingThrow(text: string | null): SavingThrow | null {
   }
   const save = remainder === '' ? null : remainder;
 
-  return { dc, save, basic };
+  return { dc: dcVal, save, basic };
 }
 
 export type SavingThrowOutput = 'success';
 
-export const savingThrowNode: NodeInterface<ScrapeState, SavingThrowOutput, RipperServices> = {
-  name: 'extract:saving-throw',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
+class SavingThrowNodeImpl extends ScalarNode<ScrapeState, SavingThrowOutput> {
+  public readonly name    = 'extract:saving-throw';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
     // `aonprdSavingThrow` is consumed via direct `state.getMetadata` reads in
     // concept mechanics nodes (open-world side-write convention). Listing it
     // in `produces` would trip the contract validator because no node declares
     // hardRequired: ['aonprdSavingThrow'].
-    produces: [] as const,
-  } satisfies OperationContractFragment,
+    produces: [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SavingThrowOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SavingThrowOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('success');
 
-    const raw = getField(c, 'Saving Throw');
-    if (raw === null) return { output: 'success' };
+    const raw = getField(common, 'Saving Throw');
+    if (raw === null) return NodeOutputBuilder.of('success');
 
     const savingThrow = parseSavingThrow(raw);
     if (savingThrow !== null) {
       state.setMetadata('aonprdSavingThrow', savingThrow);
     }
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const savingThrowNode = new SavingThrowNodeImpl();

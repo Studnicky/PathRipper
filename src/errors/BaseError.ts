@@ -1,6 +1,6 @@
 import type { FlattenResult } from '../types/Results.js';
 // Ported from @noocodec/cogitator/src/errors/BaseError.ts.
-// Stripped of redact/JsonObject machinery — ripperoni's errors don't (yet)
+// Stripped of redact/JsonObjectType machinery — ripperoni's errors don't (yet)
 // carry redaction schemas. Same shape, same protected constructor, same
 // code-derivation rule, same flatten()/serialize()/toJson() surface.
 

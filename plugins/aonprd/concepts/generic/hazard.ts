@@ -8,12 +8,9 @@ import {
 } from '../../common.js';
 import {
   baseFrom,
-  type SourceShape,
 } from '../_helpers.js';
 import {
   getHazardField,
-  parseConditionStages,
-  parseDisable,
   parseHazardDefenses,
   parseHazardRoutinesAndReset,
   parseHazardStealth,
@@ -26,43 +23,43 @@ import type {
   HazardResetSlice,
 } from './types.js';
 
-export function extractHazardBase(c: CommonExtraction): HazardBaseSlice {
-  const compRaw = (c.fields.find((f) => f.label.toLowerCase() === 'complexity')?.value_text ?? '').toLowerCase();
+export function extractHazardBase(common: CommonExtraction): HazardBaseSlice {
+  const compRaw = (common.fields.find((field) => field.label.toLowerCase() === 'complexity')?.value_text ?? '').toLowerCase();
   const complexity: 'simple' | 'complex' | null =
     compRaw === 'simple'  ? 'simple' :
     compRaw === 'complex' ? 'complex' : null;
-  const perceptionField = c.fields.find((f) => f.label.toLowerCase() === 'perception')?.value_text ?? null;
-  const descField = c.fields.find((f) => f.label.toLowerCase() === 'description')?.value_text ?? null;
+  const perceptionField = common.fields.find((field) => field.label.toLowerCase() === 'perception')?.value_text ?? null;
+  const descField = common.fields.find((field) => field.label.toLowerCase() === 'description')?.value_text ?? null;
   return {
-    url:             c.url,
-    hazard_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    level:           c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    hazard_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    level:           common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
     complexity,
-    stealth:         parseHazardStealth(getHazardField(c, 'Stealth') ?? perceptionField),
+    stealth:         parseHazardStealth(getHazardField(common, 'Stealth') ?? perceptionField),
     description_text: descField,
   };
 }
 
-export function extractHazardDefenses(c: CommonExtraction): HazardDefensesSlice {
-  return { defenses: parseHazardDefenses(c) };
+export function extractHazardDefenses(common: CommonExtraction): HazardDefensesSlice {
+  return { defenses: parseHazardDefenses(common) };
 }
 
-export function extractHazardRoutines(c: CommonExtraction): HazardRoutinesSlice {
-  const { routines, disable, reset } = parseHazardRoutinesAndReset(c);
+export function extractHazardRoutines(common: CommonExtraction): HazardRoutinesSlice {
+  const { routines, disable } = parseHazardRoutinesAndReset(common);
   return { routines, disable };
 }
 
-export function extractHazardReset(c: CommonExtraction): HazardResetSlice {
-  const { reset } = parseHazardRoutinesAndReset(c);
+export function extractHazardReset(common: CommonExtraction): HazardResetSlice {
+  const { reset } = parseHazardRoutinesAndReset(common);
   return { reset };
 }
 
@@ -73,12 +70,12 @@ const HAZARD_CLAIMED_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeHazard(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      HazardBaseSlice,
   defenses:  HazardDefensesSlice,
   routines:  HazardRoutinesSlice,
   reset:     HazardResetSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): HazardOutput {
   // Collect component labels for stripping (e.g. "Main Hardness", "Door HP").
   const componentLabels: string[] = [];
@@ -87,9 +84,9 @@ export function finalizeHazard(
       componentLabels.push(`${comp.component} Hardness`, `${comp.component} HP`);
     }
   }
-  const routineLabels = routines.routines.map((r) => r.name);
+  const routineLabels = routines.routines.map((routine) => routine.name);
 
-  const baseShape = baseFrom(c, $);
+  const baseShape = baseFrom(common, root);
   return {
     ...baseShape,
     url:             base.url,
@@ -103,7 +100,7 @@ export function finalizeHazard(
     trait_ids:       base.trait_ids,
     source:          base.source,
     sources:         base.sources,
-    raw_fields:      stripStructuredKeys(c.field_map, [
+    raw_fields:      stripStructuredKeys(common.field_map, [
       ...HAZARD_CLAIMED_LABELS,
       ...componentLabels,
       ...routineLabels,
@@ -119,11 +116,11 @@ export function finalizeHazard(
   } satisfies HazardOutput;
 }
 
-export function extractHazard(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): HazardOutput {
+export function extractHazard(common: CommonExtraction, root: CheerioAPI, _span: CheerioNode): HazardOutput {
   void _span;
-  const base     = extractHazardBase(c);
-  const defenses = extractHazardDefenses(c);
-  const routines = extractHazardRoutines(c);
-  const reset    = extractHazardReset(c);
-  return finalizeHazard(c, base, defenses, routines, reset, $);
+  const base     = extractHazardBase(common);
+  const defenses = extractHazardDefenses(common);
+  const routines = extractHazardRoutines(common);
+  const reset    = extractHazardReset(common);
+  return finalizeHazard(common, base, defenses, routines, reset, root);
 }

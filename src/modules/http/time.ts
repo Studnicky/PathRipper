@@ -21,13 +21,13 @@ export class Time {
   /**
    * Returns a Promise that resolves after the given number of milliseconds.
    *
-   * @param ms - Duration to sleep in milliseconds. Must be >= 0.
-   * @returns Promise that resolves after `ms` milliseconds.
-   * @throws {RangeError} When `ms` is negative.
+   * @param millis - Duration to sleep in milliseconds. Must be >= 0.
+   * @returns Promise that resolves after `millis` milliseconds.
+   * @throws {RangeError} When `millis` is negative.
    */
-  public static sleep(ms: number): Promise<void> {
+  public static sleep(millis: number): Promise<void> {
     return new Promise<void>((resolve: () => void): void => {
-      const clamped = Number.isFinite(ms) && ms > 0 ? Math.floor(ms) : 0;
+      const clamped = Number.isFinite(millis) && millis > 0 ? Math.floor(millis) : 0;
       setTimeout(resolve, clamped);
     });
   }

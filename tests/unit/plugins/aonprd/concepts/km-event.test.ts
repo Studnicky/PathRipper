@@ -1,5 +1,6 @@
 // Unit tests for km-event concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }      from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/km-event.js';
 import type { KmEventOutput } from '../../../../../plugins/aonprd/concepts/km-event.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'km-event-archaeological-find.html';
 const URL     = 'https://2e.aonprd.com/KMEvents.aspx?ID=1';
@@ -17,25 +19,25 @@ const URL     = 'https://2e.aonprd.com/KMEvents.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await kmEventBaseNode.execute(state, stubContext);
-  await kmEventMechanicsNode.execute(state, stubContext);
-  await finalizeKmEventNode.execute(state, stubContext);
-  return state.output as KmEventOutput;
+  await kmEventBaseNode.execute(Batch.of(state), stubContext);
+  await kmEventMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeKmEventNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<KmEventOutput>(state.output);
 }
 
 describe('extract:km-event-base — km-event-archaeological-find', () => {
   it('produces _type, name, event_id', async () => {
     const state = await primeState();
-    const r = await kmEventBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await kmEventBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmEventOutput;
+    const out = ParsedOutput.as<KmEventOutput>(state.output);
     assert.equal(out.name, 'Archaeological Find');
     assert.equal(out.event_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -43,19 +45,19 @@ describe('extract:km-event-base — km-event-archaeological-find', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmEventBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmEventBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:km-event-mechanics — km-event-archaeological-find', () => {
   it('produces outcomes array and description', async () => {
     const state = await primeState();
-    await kmEventBaseNode.execute(state, stubContext);
-    const r = await kmEventMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await kmEventBaseNode.execute(Batch.of(state), stubContext);
+    const result = await kmEventMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmEventOutput;
+    const out = ParsedOutput.as<KmEventOutput>(state.output);
     assert.ok(Array.isArray(out.outcomes), 'outcomes is array');
     assert.ok(out.outcomes.length > 0, 'at least one outcome parsed');
     assert.ok(typeof out.description === 'string', 'description is string');
@@ -65,8 +67,8 @@ describe('extract:km-event-mechanics — km-event-archaeological-find', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmEventMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmEventMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -91,7 +93,7 @@ describe('finalize:km-event — km-event-archaeological-find', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeKmEventNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeKmEventNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

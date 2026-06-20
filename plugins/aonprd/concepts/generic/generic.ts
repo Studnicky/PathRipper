@@ -9,13 +9,13 @@ import type {
   UnknownOutput,
 } from './types.js';
 
-export function extractGeneric(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): GenericOutput {
+export function extractGeneric(common: CommonExtraction, _root: CheerioAPI, _span: CheerioNode): GenericOutput {
   void _span;
   return {
-    ...baseFrom(c, _$),
-    generic_id: extractEntityId(c.url),
-    level:      c.title.level,
-    level_kind: c.title.level_kind,
+    ...baseFrom(common, _root),
+    generic_id: extractEntityId(common.url),
+    level:      common.title.level,
+    level_kind: common.title.level_kind,
   };
 }
 

@@ -9,11 +9,11 @@ import {
 } from './helpers.js';
 import type { DeityClericSpellsSlice } from './types.js';
 
-export function extractDeityClericSpells(c: CommonExtraction): DeityClericSpellsSlice {
-  const body = findSectionBody(c, 'Devotee Benefits');
+export function extractDeityClericSpells(common: CommonExtraction): DeityClericSpellsSlice {
+  const body = findSectionBody(common, 'Devotee Benefits');
   const map  = harvestLinkedBoldLabelsHtml(body);
   return {
     cleric_spells: parseClericSpells(map.get('cleric spells') ?? null),
-    intercessions: parseIntercessions(c),
+    intercessions: parseIntercessions(common),
   };
 }

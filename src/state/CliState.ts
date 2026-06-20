@@ -1,5 +1,5 @@
-import { NodeStateBase } from '@noocodex/dagonizer';
-import type { JsonObject } from '@noocodex/dagonizer/entities';
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 import type { NormalizedRipperConfigInterface } from '../types/Config.js';
 
@@ -15,7 +15,7 @@ export type CliCommandType = 'scrape' | 'scrape-html' | 'scrape-wiki' | 'crawl';
  * State flowing through every node in the CLI dispatch DAG.
  *
  * @remarks
- * Extends `NodeStateBase` from `@noocodex/dagonizer` so the dispatcher can
+ * Extends `NodeStateBase` from `@studnicky/dagonizer` so the dispatcher can
  * manage the execution lifecycle, collect errors/warnings, and checkpoint the
  * state for resumable runs.
  *
@@ -78,7 +78,7 @@ export class CliState extends NodeStateBase {
   /**
    * Clone state for isolated execution (sub-flows and fan-out).
    */
-  public override clone(): CliState {
+  public override clone(): this {
     const cloned = new CliState();
     for (const [key, value] of Object.entries(this.metadata)) {
       cloned.setMetadata(key, value);
@@ -94,20 +94,20 @@ export class CliState extends NodeStateBase {
     cloned.exitCode     = this.exitCode;
     cloned.errorMessage = this.errorMessage;
     cloned.failedCount  = this.failedCount;
-    return cloned;
+    return cloned as this;
   }
 
   /**
    * Snapshots domain-specific fields for `Checkpoint.from()`.
    * Called by the engine automatically; do not call directly.
    */
-  protected override snapshotData(): JsonObject {
+  protected override snapshotData(): JsonObjectType {
     return {
       argv:         [...this.argv],
       command:      this.command,
-      options:      this.options as JsonObject,
+      options:      this.options as JsonObjectType,
       configPath:   this.configPath,
-      config:       this.config as unknown as JsonObject | null,
+      config:       this.config as unknown as JsonObjectType | null,
       targetId:     this.targetId,
       targetKind:   this.targetKind,
       outDir:       this.outDir,
@@ -121,7 +121,7 @@ export class CliState extends NodeStateBase {
    * Restores domain-specific fields from a checkpoint snapshot.
    * Called by `Checkpoint.restore()`; do not call directly.
    */
-  protected override restoreData(snap: JsonObject): void {
+  protected override restoreData(snap: JsonObjectType): void {
     const argv = snap['argv'];
     if (Array.isArray(argv)) this.argv = argv as string[];
 

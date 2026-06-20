@@ -1,7 +1,18 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
+
+type ParseJsonOutput = 'success' | 'error';
+
+/** OperationContractType for ParseJsonNode: reads raw, produces parsed. */
+export const parseJsonContract: OperationContractType = {
+  name:         'config:parse-json',
+  hardRequired: ['raw'],
+  produces:     ['parsed'],
+  outputs:      ['success', 'error'],
+};
 
 /**
  * Parses `state.raw` as JSON and stores the result in `state.parsed`.
@@ -14,39 +25,34 @@ import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const ParseJsonNode: NodeInterface<ConfigLoadState, 'success' | 'error'> = {
-  name: 'config:parse-json',
-  outputs: ['success', 'error'],
+class ParseJsonNodeImpl extends ScalarNode<ConfigLoadState, ParseJsonOutput, undefined> {
+  public readonly name = 'config:parse-json';
+  public readonly outputs = ['success', 'error'] as const;
+  public override readonly contract = parseJsonContract;
 
-  async execute(
+  protected override async executeOne(
     state: ConfigLoadState,
-    _context: NodeContextInterface<undefined>,
-  ): Promise<{ output: 'success' | 'error' }> {
+    _context: NodeContextType<undefined>,
+  ): Promise<NodeOutputType<ParseJsonOutput>> {
     try {
       state.parsed = JSON.parse(state.raw) as unknown;
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     } catch (err: unknown) {
       const base    = err instanceof Error ? err : new Error(String(err));
       // V8's SyntaxError message includes position info — preserve it verbatim.
       const message = base.message;
 
-      state.collectError({
-        code:        'SyntaxError',
+      state.collectError(NodeErrorBuilder.from(
+        'SyntaxError',
         message,
-        operation:   'config:parse-json',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
+        'config:parse-json',
+        false,
+        new Date().toISOString(),
+      ));
 
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
-  },
-};
+  }
+}
 
-/** OperationContract for ParseJsonNode: reads raw, produces parsed. */
-export const parseJsonContract: OperationContract = {
-  name:         'config:parse-json',
-  hardRequired: ['raw'],
-  produces:     ['parsed'],
-  outputs:      ['success', 'error'],
-};
+export const ParseJsonNode = new ParseJsonNodeImpl();

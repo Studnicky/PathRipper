@@ -1,5 +1,5 @@
-import { NodeStateBase } from '@noocodex/dagonizer';
-import type { JsonObject } from '@noocodex/dagonizer/entities';
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
 
@@ -40,7 +40,7 @@ export class MemberResolutionState extends NodeStateBase {
    */
   members: CategoryMemberInterface[] = [];
 
-  public override clone(): MemberResolutionState {
+  public override clone(): this {
     const cloned = new MemberResolutionState();
     for (const [key, value] of Object.entries(this.metadata)) {
       cloned.setMetadata(key, value);
@@ -50,20 +50,20 @@ export class MemberResolutionState extends NodeStateBase {
     cloned.resumeFailures = this.resumeFailures;
     cloned.category       = this.category;
     cloned.members        = [...this.members];
-    return cloned;
+    return cloned as this;
   }
 
-  protected override snapshotData(): JsonObject {
+  protected override snapshotData(): JsonObjectType {
     return {
       target:         this.target,
-      config:         this.config as JsonObject,
+      config:         this.config as JsonObjectType,
       resumeFailures: this.resumeFailures,
       category:       this.category ?? null,
-      members:        this.members as unknown as JsonObject,
+      members:        this.members as unknown as JsonObjectType,
     };
   }
 
-  protected override restoreData(snap: JsonObject): void {
+  protected override restoreData(snap: JsonObjectType): void {
     if (typeof snap['target'] === 'string') this.target = snap['target'];
     const cfg = snap['config'];
     if (cfg !== null && typeof cfg === 'object' && !Array.isArray(cfg)) {
@@ -72,6 +72,6 @@ export class MemberResolutionState extends NodeStateBase {
     if (typeof snap['resumeFailures'] === 'boolean') this.resumeFailures = snap['resumeFailures'];
     this.category = typeof snap['category'] === 'string' ? snap['category'] : undefined;
     const mem = snap['members'];
-    if (Array.isArray(mem)) this.members = mem as CategoryMemberInterface[];
+    if (Array.isArray(mem)) this.members = mem as unknown as CategoryMemberInterface[];
   }
 }

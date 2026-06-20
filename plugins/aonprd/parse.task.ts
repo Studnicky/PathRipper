@@ -8,7 +8,8 @@
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
 
-import { TAXONOMY, AONPRD_TAXONOMY } from './taxonomy/aonprd.js';
+import { TAXONOMY } from './taxonomy/aonprd.js';
+import type { AONPRD_TAXONOMY } from './taxonomy/aonprd.js';
 import { aonprdParseDAG } from './parse.dag.js';
 import { parseAonHtmlTaxonomic } from './parse.taxonomic.js';
 import type { ConceptOutputUnion } from './taxonomy.js';

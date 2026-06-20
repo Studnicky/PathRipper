@@ -4,12 +4,12 @@
 // head labels, an effect body, and an optional Special callout. This concept
 // Output is
 // bespoke node-folder under nodes/tactic/.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -99,9 +99,9 @@ export interface TacticMetaSlice {
 function pickValue(body: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(body);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(body);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = body.slice(start);
   const boundary = /<b>|<br\s*\/?>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
@@ -110,42 +110,42 @@ function pickValue(body: string, label: string): string | null {
   return value;
 }
 
-function clean(s: string | null): string | null {
-  if (s === null) return null;
-  const t = s.replace(/[;,]\s*$/, '').trim();
-  return t === '' ? null : t;
+function clean(str: string | null): string | null {
+  if (str === null) return null;
+  const trimmed = str.replace(/[;,]\s*$/, '').trim();
+  return trimmed === '' ? null : trimmed;
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractTacticBase(c: CommonExtraction): TacticBaseSlice {
+export function extractTacticBase(common: CommonExtraction): TacticBaseSlice {
   // Tactics' right-floated marker is the proficiency tier or category — not a
-  // level. level_kind captures the marker prefix word.
+  // level. level_label captures the marker prefix word.
   return {
-    url:             c.url,
-    tactic_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    action_cost:     c.title.action_cost,
-    category:        c.title.level_label,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    tactic_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    action_cost:     common.title.action_cost,
+    category:        common.title.level_label,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
-export function extractTacticMechanics(c: CommonExtraction): TacticMechanicsSlice {
+export function extractTacticMechanics(common: CommonExtraction): TacticMechanicsSlice {
   // Head labels: Prerequisites/Requirements/Trigger/Frequency live in fields
   // (head, before <hr/>) — read via the canonical field_map first, fall back
   // to value scanning if absent.
-  const fromField = (key: string): string | null => clean(getField(c, key));
+  const fromField = (key: string): string | null => clean(getField(common, key));
 
   // Effect is the post-<hr/> body, minus a trailing `<b>Special</b>` block.
-  const body    = c.body_html;
+  const body    = common.body_html;
   const specRe  = /<b>\s*Special\s*<\/b>/i;
   const specM   = specRe.exec(body);
   const effectHtml = specM === null ? body : body.slice(0, specM.index);
@@ -172,7 +172,7 @@ export function extractTacticMechanics(c: CommonExtraction): TacticMechanicsSlic
   void pickValue;
 }
 
-export function extractTacticMeta(_c: CommonExtraction): TacticMetaSlice {
+export function extractTacticMeta(_common: CommonExtraction): TacticMetaSlice {
   return { __tactic_meta_marked: true };
 }
 
@@ -184,32 +184,32 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeTactic(
-  c:     CommonExtraction,
-  base:  TacticBaseSlice,
-  mech:  TacticMechanicsSlice,
-  _meta: TacticMetaSlice,
-  $:     CheerioAPI,
+  common: CommonExtraction,
+  base:   TacticBaseSlice,
+  mech:   TacticMechanicsSlice,
+  _meta:  TacticMetaSlice,
+  root:   CheerioAPI,
 ): TacticOutput {
   void _meta;
   return {
     ...base,
     ...mech,
-    sections:         c.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    sections:         common.sections,
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies TacticOutput;
 }
 
-export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): TacticOutput {
+export function extractTactic(common: CommonExtraction, root: CheerioAPI, target: CheerioNode): TacticOutput {
   void target;
-  const base = extractTacticBase(c);
-  const mech = extractTacticMechanics(c);
-  const meta = extractTacticMeta(c);
-  return finalizeTactic(c, base, mech, meta, $);
+  const base = extractTacticBase(common);
+  const mech = extractTacticMechanics(common);
+  const meta = extractTacticMeta(common);
+  return finalizeTactic(common, base, mech, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -217,87 +217,90 @@ export function extractTactic(c: CommonExtraction, $: CheerioAPI, target: Cheeri
 
 export type TacticBaseOutput = 'success' | 'error';
 
-export const tacticBaseNode: NodeInterface<ScrapeState, TacticBaseOutput, RipperServices> = {
-  name:    'extract:tactic-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class TacticBaseNodeImpl extends ScalarNode<ScrapeState, TacticBaseOutput> {
+  public readonly name    = 'extract:tactic-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: TacticBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<TacticBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractTacticBase(c);
+    const base = extractTacticBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const tacticBaseNode = new TacticBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type TacticMechanicsOutput = 'success' | 'error';
 
-export const tacticMechanicsNode: NodeInterface<ScrapeState, TacticMechanicsOutput, RipperServices> = {
-  name:    'extract:tactic-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class TacticMechanicsNodeImpl extends ScalarNode<ScrapeState, TacticMechanicsOutput> {
+  public readonly name    = 'extract:tactic-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: TacticMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<TacticMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mech = extractTacticMechanics(c);
+    const mech = extractTacticMechanics(common);
 
     state.output = { ...state.output, ...mech };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const tacticMechanicsNode = new TacticMechanicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeTacticOutput = 'success';
 
-export const finalizeTacticNode: NodeInterface<ScrapeState, FinalizeTacticOutput, RipperServices> = {
-  name:    'finalize:tactic',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeTacticNodeImpl extends ScalarNode<ScrapeState, FinalizeTacticOutput> {
+  public readonly name    = 'finalize:tactic';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeTacticOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeTacticOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
 
     // meta arg is unused by finalizeTactic (marker only)
     const acc = (state.output ?? {}) as unknown as TacticOutput;
-    const assembled = finalizeTactic(c, acc, acc, { __tactic_meta_marked: true }, $);
+    const assembled = finalizeTactic(common, acc, acc, { __tactic_meta_marked: true }, root);
     void target;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeTacticNode = new FinalizeTacticNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

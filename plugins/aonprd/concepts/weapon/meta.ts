@@ -16,17 +16,17 @@ import {
 
 /** Extract weapon meta slice (favored_weapon, crit spec, magic weapons, glossary, access). */
 export function extractWeaponMeta(
-  c:    CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  common: CommonExtraction,
+  root:   CheerioAPI,
+  span:   CheerioNode,
 ): WeaponMetaSlice {
-  const description = buildDescription(c.body_html);
+  const description = buildDescription(common.body_html);
   return {
-    favored_weapon:          parseFavoredWeapon(getFieldHtml(c, 'Favored Weapon')),
-    critical_specialization: parseCriticalSpec(c),
-    specific_magic_weapons:  parseSpecificMagicWeapons(c),
-    trait_glossary:          parseTraitGlossary($, span),
-    access:                  dashToNull(getField(c, 'Access')),
+    favored_weapon:          parseFavoredWeapon(getFieldHtml(common, 'Favored Weapon')),
+    critical_specialization: parseCriticalSpec(common),
+    specific_magic_weapons:  parseSpecificMagicWeapons(common),
+    trait_glossary:          parseTraitGlossary(root, span),
+    access:                  dashToNull(getField(common, 'Access')),
     description_html:        description.html,
     description_text:        description.text,
   };

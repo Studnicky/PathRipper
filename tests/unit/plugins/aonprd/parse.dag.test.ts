@@ -8,10 +8,9 @@ import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import { TerminalNode } from '../../../../src/nodes/TerminalNode.js';
 import { TAXONOMY }     from '../../../../plugins/aonprd/taxonomy/aonprd.js';
 import { aonprdParseDAG } from '../../../../plugins/aonprd/parse.dag.js';
 
@@ -25,11 +24,11 @@ async function load(name: string): Promise<string> {
 function buildDispatcher() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dispatcher = new Dagonizer<ScrapeState, any>({ services: {} as any });
-  dispatcher.registerNode(TerminalNode);
   // Register every node from the compiled AONPRD taxonomy. This mirrors what
   // the production `register()` in parse.task.ts does — TAXONOMY.allNodes()
   // includes the router, all capability nodes, unknownTerminal, and
-  // flow:terminate.
+  // flow:terminate (TerminalNode). Do NOT register TerminalNode separately;
+  // TAXONOMY.allNodes() already includes it as 'flow:terminate'.
   for (const node of TAXONOMY.allNodes()) {
     dispatcher.registerNode(node);
   }
@@ -107,18 +106,11 @@ describe('aonprd:parse plugin DAG dispatch', () => {
     const dispatcher = buildDispatcher();
     const state = makeState('<html><body>nothing</body></html>', 'https://2e.aonprd.com/X.aspx?ID=1');
     await dispatcher.execute('aonprd:parse', state);
-    // the URL router now routes unmatched URLs to `genericConcept`
-    // (the only ConceptDecl with `urlPaths: []`) instead of `aonprd:make-unknown`.
-    // The fallback produces a `generic`-typed output. Operators see the
-    // fallback being hit via the `_type` discriminator on the output.
   });
 
   it('DAG resolves generics (unmapped URL path) through taxonomy generic concept', async () => {
     const dispatcher = buildDispatcher();
     const html  = await load('spell-abyssal-plague.html');
-    // unmatched URL → routes to `genericConcept`. Even though the
-    // HTML is a spell page, the URL path (`Bestiary.aspx`) has no taxonomy
-    // entry, so the fallback chain runs.
     const state = makeState(html, 'https://2e.aonprd.com/Bestiary.aspx?ID=99');
     await dispatcher.execute('aonprd:parse', state);
   });

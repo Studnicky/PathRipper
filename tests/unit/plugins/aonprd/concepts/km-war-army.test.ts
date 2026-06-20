@@ -1,5 +1,6 @@
 // Unit tests for km-war-army concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }         from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -11,6 +12,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/km-war-army.js';
 import type { KmWarArmyOutput } from '../../../../../plugins/aonprd/concepts/km-war-army.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'km-war-army-greengripe-bombardiers.html';
 const URL     = 'https://2e.aonprd.com/KMWarArmies.aspx?ID=12';
@@ -18,26 +20,26 @@ const URL     = 'https://2e.aonprd.com/KMWarArmies.aspx?ID=12';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await kmWarArmyBaseNode.execute(state, stubContext);
-  await kmWarArmyStatblockNode.execute(state, stubContext);
-  await kmWarArmyAbilitiesNode.execute(state, stubContext);
-  await finalizeKmWarArmyNode.execute(state, stubContext);
-  return state.output as KmWarArmyOutput;
+  await kmWarArmyBaseNode.execute(Batch.of(state), stubContext);
+  await kmWarArmyStatblockNode.execute(Batch.of(state), stubContext);
+  await kmWarArmyAbilitiesNode.execute(Batch.of(state), stubContext);
+  await finalizeKmWarArmyNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<KmWarArmyOutput>(state.output);
 }
 
 describe('extract:km-war-army-base — km-war-army-greengripe-bombardiers', () => {
   it('produces _type, name, army_id, and ancestry', async () => {
     const state = await primeState();
-    const r = await kmWarArmyBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await kmWarArmyBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmWarArmyOutput;
+    const out = ParsedOutput.as<KmWarArmyOutput>(state.output);
     assert.equal(out.name, 'Greengripe Bombardiers');
     assert.equal(out.army_id, 12);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -46,19 +48,19 @@ describe('extract:km-war-army-base — km-war-army-greengripe-bombardiers', () =
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmWarArmyBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmWarArmyBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:km-war-army-statblock — km-war-army-greengripe-bombardiers', () => {
   it('produces statblock fields (ac, hp, etc.)', async () => {
     const state = await primeState();
-    await kmWarArmyBaseNode.execute(state, stubContext);
-    const r = await kmWarArmyStatblockNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await kmWarArmyBaseNode.execute(Batch.of(state), stubContext);
+    const result = await kmWarArmyStatblockNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmWarArmyOutput;
+    const out = ParsedOutput.as<KmWarArmyOutput>(state.output);
     assert.ok('ac' in out, 'ac field present');
     assert.ok('hp' in out, 'hp field present');
     assert.ok('maneuver' in out, 'maneuver field present');
@@ -73,27 +75,27 @@ describe('extract:km-war-army-statblock — km-war-army-greengripe-bombardiers',
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmWarArmyStatblockNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmWarArmyStatblockNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:km-war-army-abilities — km-war-army-greengripe-bombardiers', () => {
   it('produces abilities array', async () => {
     const state = await primeState();
-    await kmWarArmyBaseNode.execute(state, stubContext);
-    await kmWarArmyStatblockNode.execute(state, stubContext);
-    const r = await kmWarArmyAbilitiesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await kmWarArmyBaseNode.execute(Batch.of(state), stubContext);
+    await kmWarArmyStatblockNode.execute(Batch.of(state), stubContext);
+    const result = await kmWarArmyAbilitiesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmWarArmyOutput;
+    const out = ParsedOutput.as<KmWarArmyOutput>(state.output);
     assert.ok(Array.isArray(out.abilities), 'abilities is array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmWarArmyAbilitiesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmWarArmyAbilitiesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -121,7 +123,7 @@ describe('finalize:km-war-army — km-war-army-greengripe-bombardiers', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeKmWarArmyNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeKmWarArmyNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

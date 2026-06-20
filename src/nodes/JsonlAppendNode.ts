@@ -1,14 +1,16 @@
 import { mkdir, appendFile } from 'node:fs/promises';
 import { dirname, join }     from 'node:path';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { Logger }           from '../modules/logger/logger.js';
 import type { ScrapeState } from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
 
 const logger = Logger.forComponent('JsonlAppendNode');
+
+type JsonlAppendOutput = 'success' | 'skipped';
 
 /**
  * Appends `JSON.stringify(state.output) + '\n'` to `<outDir>/<targetId>/<pluginTaskName>/all.jsonl`.
@@ -24,15 +26,18 @@ const logger = Logger.forComponent('JsonlAppendNode');
  * @category Nodes
  * @since 3.0.0
  */
-export const JsonlAppendNode: NodeInterface<ScrapeState, 'success' | 'skipped', RipperServices> = {
-  name: 'jsonl:append',
-  outputs: ['success', 'skipped'],
+class JsonlAppendNodeImpl extends ScalarNode<ScrapeState, JsonlAppendOutput, RipperServices> {
+  public readonly name = 'jsonl:append';
+  public readonly outputs = ['success', 'skipped'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' | 'skipped' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<JsonlAppendOutput>> {
     const { services } = context;
     if (state.output === null) {
       logger.debug('jsonl:append', 'Skipping append — state.output is null', { task: 'jsonl:append' });
-      return { output: 'skipped' };
+      return NodeOutputBuilder.of('skipped');
     }
     const splitByTaskName = services.splitByTaskName !== false;
     const subdir          = (services.pluginTaskName !== undefined && splitByTaskName)
@@ -46,14 +51,8 @@ export const JsonlAppendNode: NodeInterface<ScrapeState, 'success' | 'skipped', 
     const payload: Record<string, unknown> = { ...state.output };
     await appendFile(outFile, `${JSON.stringify(payload)}\n`, 'utf8');
     logger.debug('jsonl:append', `Appended JSONL row: ${outFile}`, { task: 'jsonl:append', outFile });
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for JsonlAppendNode: reads output, appends to disk (no state field). */
-export const jsonlAppendContract: OperationContract = {
-  name:         'jsonl:append',
-  hardRequired: ['output'],
-  produces:     [],
-  outputs:      ['success', 'skipped'],
-};
+export const JsonlAppendNode = new JsonlAppendNodeImpl();

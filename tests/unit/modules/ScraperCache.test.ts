@@ -24,50 +24,50 @@ const makeTmpDir = async (): Promise<string> => {
 describe('ScraperCache', () => {
   describe('keyFor', () => {
     it('is deterministic for identical input', () => {
-      const a = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/x' });
-      const b = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/x' });
-      assert.equal(a, b);
-      assert.equal(a.length, 40);
+      const keyA = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/x' });
+      const keyB = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/x' });
+      assert.equal(keyA, keyB);
+      assert.equal(keyA.length, 40);
     });
 
     it('is order-independent for headers', () => {
-      const a = ScraperCache.keyFor({
+      const keyA = ScraperCache.keyFor({
         method:  'GET',
         url:     'https://example.com/x',
         headers: { 'X-A': '1', 'X-B': '2' },
       });
-      const b = ScraperCache.keyFor({
+      const keyB = ScraperCache.keyFor({
         method:  'GET',
         url:     'https://example.com/x',
         headers: { 'X-B': '2', 'X-A': '1' },
       });
-      assert.equal(a, b);
+      assert.equal(keyA, keyB);
     });
 
     it('differs for different methods', () => {
-      const a = ScraperCache.keyFor({ method: 'GET',  url: 'https://example.com/x' });
-      const b = ScraperCache.keyFor({ method: 'POST', url: 'https://example.com/x' });
-      assert.notEqual(a, b);
+      const keyA = ScraperCache.keyFor({ method: 'GET',  url: 'https://example.com/x' });
+      const keyB = ScraperCache.keyFor({ method: 'POST', url: 'https://example.com/x' });
+      assert.notEqual(keyA, keyB);
     });
 
     it('differs for different urls', () => {
-      const a = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/a' });
-      const b = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/b' });
-      assert.notEqual(a, b);
+      const keyA = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/a' });
+      const keyB = ScraperCache.keyFor({ method: 'GET', url: 'https://example.com/b' });
+      assert.notEqual(keyA, keyB);
     });
 
     it('differs for different header values', () => {
-      const a = ScraperCache.keyFor({
+      const keyA = ScraperCache.keyFor({
         method:  'GET',
         url:     'https://example.com/x',
         headers: { 'X-A': '1' },
       });
-      const b = ScraperCache.keyFor({
+      const keyB = ScraperCache.keyFor({
         method:  'GET',
         url:     'https://example.com/x',
         headers: { 'X-A': '2' },
       });
-      assert.notEqual(a, b);
+      assert.notEqual(keyA, keyB);
     });
   });
 

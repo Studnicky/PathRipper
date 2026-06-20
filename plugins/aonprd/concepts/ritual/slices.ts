@@ -4,12 +4,12 @@
  * Nodes: extract:ritual-cast, extract:ritual-outcomes, extract:ritual-affliction,
  * extract:ritual-heightened, extract:ritual-meta
  */
-import type { NodeInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS, getField, getFieldHtml } from '../../common.js';
 
@@ -37,48 +37,51 @@ import type {
 } from './types.js';
 
 /** Extract casting components, targeting, defenses, and duration/cost fields. */
-export function extractSpellCast(c: CommonExtraction): RitualCastSlice {
+export function extractSpellCast(common: CommonExtraction): RitualCastSlice {
   return {
-    cast:         parseCast(c),
-    trigger:      getField(c, 'Trigger'),
-    range:        getField(c, 'Range'),
-    area:         getField(c, 'Area'),
-    targets:      getField(c, 'Targets', 'Target', 'Target(s)'),
-    defense:      parseDefense(c),
-    saving_throw: parseSavingThrow(c),
-    duration:     getField(c, 'Duration'),
-    cost:         getField(c, 'Cost'),
-    requirements: getField(c, 'Requirements'),
+    cast:         parseCast(common),
+    trigger:      getField(common, 'Trigger'),
+    range:        getField(common, 'Range'),
+    area:         getField(common, 'Area'),
+    targets:      getField(common, 'Targets', 'Target', 'Target(s)'),
+    defense:      parseDefense(common),
+    saving_throw: parseSavingThrow(common),
+    duration:     getField(common, 'Duration'),
+    cost:         getField(common, 'Cost'),
+    requirements: getField(common, 'Requirements'),
   };
 }
 
 export type RitualCastOutput = 'success' | 'error';
 
-export const ritualCastNode: NodeInterface<ScrapeState, RitualCastOutput, RipperServices> = {
-  name:    'extract:ritual-cast',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualCastNode extends ScalarNode<ScrapeState, RitualCastOutput> {
+  public readonly name = 'extract:ritual-cast';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualCastOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RitualCastOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const cast = extractSpellCast(c);
+    const cast = extractSpellCast(common);
 
     state.output = { ...state.output, ...cast };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualCastNode = new RitualCastNode();
 
 /** Extract description prose + save-tier outcomes from the body HTML. */
-export function extractSpellOutcomes(c: CommonExtraction): RitualOutcomesSlice {
-  const bodyHtml = c.body_html;
+export function extractSpellOutcomes(common: CommonExtraction): RitualOutcomesSlice {
+  const bodyHtml = common.body_html;
   const descEnd = findDescriptionBoundary(bodyHtml);
   const description_html = bodyHtml.slice(0, descEnd).trim();
   return {
@@ -90,115 +93,124 @@ export function extractSpellOutcomes(c: CommonExtraction): RitualOutcomesSlice {
 
 export type RitualOutcomesOutput = 'success' | 'error';
 
-export const ritualOutcomesNode: NodeInterface<ScrapeState, RitualOutcomesOutput, RipperServices> = {
-  name:    'extract:ritual-outcomes',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualOutcomesNode extends ScalarNode<ScrapeState, RitualOutcomesOutput> {
+  public readonly name = 'extract:ritual-outcomes';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualOutcomesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RitualOutcomesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const outcomes = extractSpellOutcomes(c);
+    const outcomes = extractSpellOutcomes(common);
 
     state.output = { ...state.output, ...outcomes };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualOutcomesNode = new RitualOutcomesNode();
 
 /** Extract affliction stages + ritual-specific check fields. */
-export function extractSpellAffliction(c: CommonExtraction): RitualAfflictionSlice {
-  const ritual_secondary_casters_raw = getField(c, 'Secondary Casters');
+export function extractSpellAffliction(common: CommonExtraction): RitualAfflictionSlice {
+  const ritual_secondary_casters_raw = getField(common, 'Secondary Casters');
   const ritual_secondary_casters = ritual_secondary_casters_raw !== null
     ? (parseInt(ritual_secondary_casters_raw.trim(), 10) || null)
     : null;
   return {
-    affliction:               parseAffliction(c.body_html),
-    ritual_primary_check:     getField(c, 'Primary Check'),
+    affliction:               parseAffliction(common.body_html),
+    ritual_primary_check:     getField(common, 'Primary Check'),
     ritual_secondary_casters,
-    ritual_secondary_checks:  getField(c, 'Secondary Checks'),
+    ritual_secondary_checks:  getField(common, 'Secondary Checks'),
   };
 }
 
 export type RitualAfflictionOutput = 'success' | 'error';
 
-export const ritualAfflictionNode: NodeInterface<ScrapeState, RitualAfflictionOutput, RipperServices> = {
-  name:    'extract:ritual-affliction',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualAfflictionNode extends ScalarNode<ScrapeState, RitualAfflictionOutput> {
+  public readonly name = 'extract:ritual-affliction';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualAfflictionOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RitualAfflictionOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const affliction = extractSpellAffliction(c);
+    const affliction = extractSpellAffliction(common);
 
     state.output = { ...state.output, ...affliction };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualAfflictionNode = new RitualAfflictionNode();
 
 /** Extract `<b>Heightened (LABEL)</b>` blocks in source order. */
-export function extractSpellHeightened(c: CommonExtraction): RitualHeightenedSlice {
-  return { heightened: parseHeightenedWithFields(c.body_html, c.fields) };
+export function extractSpellHeightened(common: CommonExtraction): RitualHeightenedSlice {
+  return { heightened: parseHeightenedWithFields(common.body_html, common.fields) };
 }
 
 export type RitualHeightenedOutput = 'success' | 'error';
 
-export const ritualHeightenedNode: NodeInterface<ScrapeState, RitualHeightenedOutput, RipperServices> = {
-  name:    'extract:ritual-heightened',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualHeightenedNode extends ScalarNode<ScrapeState, RitualHeightenedOutput> {
+  public readonly name = 'extract:ritual-heightened';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualHeightenedOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RitualHeightenedOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const heightened = extractSpellHeightened(c);
+    const heightened = extractSpellHeightened(common);
 
     state.output = { ...state.output, ...heightened };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualHeightenedNode = new RitualHeightenedNode();
 
 /** Extract spell-list metadata, ref lists, lesson, access, spoiler source. */
-export function extractSpellMeta(c: CommonExtraction, $: CheerioAPI): RitualMetaSlice {
-  const bloodlines = parseRefList(getFieldHtml(c, 'Bloodline', 'Bloodlines'))
-    .map((r) => ({ name: r.name, bloodline_id: r.id }));
-  const cult = parseRefList(getFieldHtml(c, 'Cult', 'Cults'))
-    .map((r) => ({ name: r.name, cult_id: r.id }));
-  const domain = parseRefList(getFieldHtml(c, 'Domain', 'Domains'))
-    .map((r) => ({ name: r.name, domain_id: r.id }));
-  const deities = parseFilteredRefList(getFieldHtml(c, 'Deities', 'Deity'), /Deities\.aspx/i)
-    .map((r) => ({ name: r.name, deity_id: r.id }));
-  const mysteries = parseFilteredRefList(getFieldHtml(c, 'Mystery', 'Mysteries'), /Mysteries\.aspx/i)
-    .map((r) => ({ name: r.name, mystery_id: r.id }));
-  const patron_themes = parseFilteredRefList(getFieldHtml(c, 'Patron Theme', 'Patron Themes'), /Patrons\.aspx/i)
-    .map((r) => ({ name: r.name, patron_id: r.id }));
-  const catalysts = parseFilteredRefList(getFieldHtml(c, 'Catalysts', 'Catalyst'), /Equipment\.aspx/i)
-    .map((r) => ({ name: r.name, equipment_id: r.id }));
+export function extractSpellMeta(common: CommonExtraction, root: CheerioAPI): RitualMetaSlice {
+  const bloodlines = parseRefList(getFieldHtml(common, 'Bloodline', 'Bloodlines'))
+    .map((ritual) => ({ name: ritual.name, bloodline_id: ritual.id }));
+  const cult = parseRefList(getFieldHtml(common, 'Cult', 'Cults'))
+    .map((ritual) => ({ name: ritual.name, cult_id: ritual.id }));
+  const domain = parseRefList(getFieldHtml(common, 'Domain', 'Domains'))
+    .map((ritual) => ({ name: ritual.name, domain_id: ritual.id }));
+  const deities = parseFilteredRefList(getFieldHtml(common, 'Deities', 'Deity'), /Deities\.aspx/i)
+    .map((ritual) => ({ name: ritual.name, deity_id: ritual.id }));
+  const mysteries = parseFilteredRefList(getFieldHtml(common, 'Mystery', 'Mysteries'), /Mysteries\.aspx/i)
+    .map((ritual) => ({ name: ritual.name, mystery_id: ritual.id }));
+  const patron_themes = parseFilteredRefList(getFieldHtml(common, 'Patron Theme', 'Patron Themes'), /Patrons\.aspx/i)
+    .map((ritual) => ({ name: ritual.name, patron_id: ritual.id }));
+  const catalysts = parseFilteredRefList(getFieldHtml(common, 'Catalysts', 'Catalyst'), /Equipment\.aspx/i)
+    .map((ritual) => ({ name: ritual.name, equipment_id: ritual.id }));
 
   return {
-    traditions:     parseTraditions(c),
-    spell_list:     getField(c, 'Spell List'),
+    traditions:     parseTraditions(common),
+    spell_list:     getField(common, 'Spell List'),
     bloodlines,
     cult,
     domain,
@@ -206,33 +218,36 @@ export function extractSpellMeta(c: CommonExtraction, $: CheerioAPI): RitualMeta
     mysteries,
     patron_themes,
     catalysts,
-    lesson:         parseLesson(c),
-    access:         getField(c, 'Access'),
-    spoiler_source: parseSpoilerSource($),
+    lesson:         parseLesson(common),
+    access:         getField(common, 'Access'),
+    spoiler_source: parseSpoilerSource(root),
   };
 }
 
 export type RitualMetaOutput = 'success' | 'error';
 
-export const ritualMetaNode: NodeInterface<ScrapeState, RitualMetaOutput, RipperServices> = {
-  name:    'extract:ritual-meta',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualMetaNode extends ScalarNode<ScrapeState, RitualMetaOutput> {
+  public readonly name = 'extract:ritual-meta';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualMetaOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RitualMetaOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('error');
 
-    const meta = extractSpellMeta(c, $);
+    const meta = extractSpellMeta(common, root);
 
     state.output = { ...state.output, ...meta };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualMetaNode = new RitualMetaNode();

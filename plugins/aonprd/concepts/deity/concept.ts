@@ -12,12 +12,12 @@
 //   extract:deity-relationships    — linked deity cross-references from body prose
 //   finalize:deity                 — assemble + strip raw_fields, attach meta
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -28,13 +28,7 @@ import { extractDeityEdictsAnathema } from './edicts-anathema.js';
 import { extractDeityClericSpells } from './cleric-spells.js';
 import { extractDeityRelationships } from './relationships.js';
 import { finalizeDeity } from './finalize.js';
-import type { DeityOutput, DeityMetaSlice } from './types.js';
-
-// ─── Meta slice extraction ────────────────────────────────────────────────────
-
-function extractDeityMeta(_c: CommonExtraction): DeityMetaSlice {
-  return { __deity_meta_marked: true };
-}
+import type { DeityOutput } from './types.js';
 
 // ─── Capability nodes ─────────────────────────────────────────────────────────
 
@@ -43,28 +37,29 @@ function extractDeityMeta(_c: CommonExtraction): DeityMetaSlice {
 
 export type DeityBaseOutput = 'success' | 'error';
 
-export const deityBaseNode: NodeInterface<ScrapeState, DeityBaseOutput, RipperServices> = {
-  name:    'extract:deity-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityBaseNodeImpl extends ScalarNode<ScrapeState, DeityBaseOutput> {
+  public readonly name = 'extract:deity-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractDeityBase(c);
+    const base = extractDeityBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityBaseNode = new DeityBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -74,28 +69,29 @@ export const deityBaseNode: NodeInterface<ScrapeState, DeityBaseOutput, RipperSe
 
 export type DeityDevoteeBenefitsOutput = 'success' | 'error';
 
-export const deityDevoteeBenefitsNode: NodeInterface<ScrapeState, DeityDevoteeBenefitsOutput, RipperServices> = {
-  name:    'extract:deity-devotee-benefits',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityDevoteeBenefitsNodeImpl extends ScalarNode<ScrapeState, DeityDevoteeBenefitsOutput> {
+  public readonly name = 'extract:deity-devotee-benefits';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityDevoteeBenefitsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityDevoteeBenefitsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const devotee = extractDeityDevoteeBenefits(c);
+    const devotee = extractDeityDevoteeBenefits(common);
 
     state.output = { ...state.output, ...devotee };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityDevoteeBenefitsNode = new DeityDevoteeBenefitsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -105,28 +101,29 @@ export const deityDevoteeBenefitsNode: NodeInterface<ScrapeState, DeityDevoteeBe
 
 export type DeityEdictsAnathemaOutput = 'success' | 'error';
 
-export const deityEdictsAnathemaNode: NodeInterface<ScrapeState, DeityEdictsAnathemaOutput, RipperServices> = {
-  name:    'extract:deity-edicts-anathema',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityEdictsAnathemaNodeImpl extends ScalarNode<ScrapeState, DeityEdictsAnathemaOutput> {
+  public readonly name = 'extract:deity-edicts-anathema';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityEdictsAnathemaOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityEdictsAnathemaOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const edicts = extractDeityEdictsAnathema(c);
+    const edicts = extractDeityEdictsAnathema(common);
 
     state.output = { ...state.output, ...edicts };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityEdictsAnathemaNode = new DeityEdictsAnathemaNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -135,28 +132,29 @@ export const deityEdictsAnathemaNode: NodeInterface<ScrapeState, DeityEdictsAnat
 
 export type DeityClericSpellsOutput = 'success' | 'error';
 
-export const deityClericSpellsNode: NodeInterface<ScrapeState, DeityClericSpellsOutput, RipperServices> = {
-  name:    'extract:deity-cleric-spells',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityClericSpellsNodeImpl extends ScalarNode<ScrapeState, DeityClericSpellsOutput> {
+  public readonly name = 'extract:deity-cleric-spells';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityClericSpellsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityClericSpellsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const spells = extractDeityClericSpells(c);
+    const spells = extractDeityClericSpells(common);
 
     state.output = { ...state.output, ...spells };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityClericSpellsNode = new DeityClericSpellsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -165,28 +163,29 @@ export const deityClericSpellsNode: NodeInterface<ScrapeState, DeityClericSpells
 
 export type DeityRelationshipsOutput = 'success' | 'error';
 
-export const deityRelationshipsNode: NodeInterface<ScrapeState, DeityRelationshipsOutput, RipperServices> = {
-  name:    'extract:deity-relationships',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityRelationshipsNodeImpl extends ScalarNode<ScrapeState, DeityRelationshipsOutput> {
+  public readonly name = 'extract:deity-relationships';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityRelationshipsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityRelationshipsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const rels = extractDeityRelationships(c);
+    const rels = extractDeityRelationships(common);
 
     state.output = { ...state.output, ...rels };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityRelationshipsNode = new DeityRelationshipsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -196,29 +195,30 @@ export const deityRelationshipsNode: NodeInterface<ScrapeState, DeityRelationshi
 
 export type FinalizeDeityOutput = 'success';
 
-export const finalizeDeityNode: NodeInterface<ScrapeState, FinalizeDeityOutput, RipperServices> = {
-  name:    'finalize:deity',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeDeityNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityOutput> {
+  public readonly name = 'finalize:deity';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeDeityOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeDeityOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as DeityOutput;
-    const assembled = finalizeDeity(c, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), $, target);
+    const assembled = finalizeDeity(common, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeDeityNode = new FinalizeDeityNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

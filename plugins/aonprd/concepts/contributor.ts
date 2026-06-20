@@ -1,14 +1,13 @@
 //
 // Contributor pages have minimal structured data; no improvements warranted
 // beyond legacy-section filtering.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
-import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -104,12 +103,12 @@ export interface ContributorMetaSlice {
  */
 function harvestBoldLabels(html: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const label = htmlToText(m[1] ?? '').replace(/[:?]$/, '').trim();
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const label = htmlToText(match[1] ?? '').replace(/[:?]$/, '').trim();
     if (label === '') continue;
-    const value = htmlToText(m[2] ?? '').replace(/^[\s;,:]+|[\s;,]+$/g, '');
+    const value = htmlToText(match[2] ?? '').replace(/^[\s;,:]+|[\s;,]+$/g, '');
     if (value === '') continue;
     const key = label.toLowerCase();
     if (!out.has(key)) out.set(key, value);
@@ -122,10 +121,10 @@ function pullEmail(html: string): string | null {
   // The header row sits between the page-title <h1> and the first <h2>.
   const headBoundary = /<h2\b/i.exec(html);
   const head = headBoundary !== null ? html.slice(0, headBoundary.index) : html;
-  const re = /<b>\s*Email\s*<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/i;
-  const m = re.exec(head);
-  if (m === null) return null;
-  const value = m[1] ?? '';
+  const regex = /<b>\s*Email\s*<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/i;
+  const match = regex.exec(head);
+  if (match === null) return null;
+  const value = match[1] ?? '';
   const mailto = /href=["']mailto:([^"']+)["']/i.exec(value);
   if (mailto !== null) return mailto[1]!.trim();
   const text = htmlToText(value).replace(/^[\s;,:]+|[\s;,]+$/g, '');
@@ -136,10 +135,10 @@ function pullEmail(html: string): string | null {
 function pullWebsite(html: string): string | null {
   const headBoundary = /<h2\b/i.exec(html);
   const head = headBoundary !== null ? html.slice(0, headBoundary.index) : html;
-  const re = /<b>\s*Web(?:site|page)\s*<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/i;
-  const m = re.exec(head);
-  if (m === null) return null;
-  const value = m[1] ?? '';
+  const regex = /<b>\s*Web(?:site|page)\s*<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/i;
+  const match = regex.exec(head);
+  if (match === null) return null;
+  const value = match[1] ?? '';
   const hrefMatch = /href=["']([^"']+)["']/i.exec(value);
   if (hrefMatch !== null) return hrefMatch[1]!.trim();
   const text = htmlToText(value).replace(/^[\s;,:]+|[\s;,]+$/g, '');
@@ -160,29 +159,29 @@ function extractBio(spanHtml: string): { html: string; text: string } {
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractContributorBase(c: CommonExtraction): ContributorBaseSlice {
+export function extractContributorBase(common: CommonExtraction): ContributorBaseSlice {
   return {
-    url:             c.url,
-    contributor_id:  extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    contributor_id:  extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 export function extractContributorProfile(
-  _c:   CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  _common: CommonExtraction,
+  root:    CheerioAPI,
+  span:    CheerioNode,
 ): ContributorProfileSlice {
-  void $;
-  void _c;
+  void root;
+  void _common;
   const spanHtml = span.html() ?? '';
 
   // Header row labels live before the first <h2 class="title">.
@@ -214,14 +213,14 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeContributor(
-  c:       CommonExtraction,
+  common:  CommonExtraction,
   base:    ContributorBaseSlice,
   profile: ContributorProfileSlice,
-  $:       CheerioAPI,
+  root:    CheerioAPI,
   _target: CheerioNode,
 ): ContributorOutput {
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     title:            profile.title,
@@ -230,13 +229,13 @@ export function finalizeContributor(
     website:          profile.website,
     bio_html:         profile.bio_html,
     bio_text:         profile.bio_text,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ContributorOutput;
 }
 
@@ -246,13 +245,13 @@ export function finalizeContributor(
  * Thin assembly wrapper for `parseAonHtml` direct-call paths and unit tests.
  */
 export function extractContributor(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: CheerioNode,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  CheerioNode,
 ): ContributorOutput {
-  const base    = extractContributorBase(c);
-  const profile = extractContributorProfile(c, $, target);
-  return finalizeContributor(c, base, profile, $, target);
+  const base    = extractContributorBase(common);
+  const profile = extractContributorProfile(common, root, target);
+  return finalizeContributor(common, base, profile, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -264,83 +263,87 @@ export function extractContributor(
 
 export type ContributorBaseOutput = 'success' | 'error';
 
-export const contributorBaseNode: NodeInterface<ScrapeState, ContributorBaseOutput, RipperServices> = {
-  name:    'extract:contributor-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ContributorBaseNode extends ScalarNode<ScrapeState, ContributorBaseOutput> {
+  public readonly name = 'extract:contributor-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ContributorBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ContributorBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractContributorBase(c);
+    const base = extractContributorBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const contributorBaseNode = new ContributorBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ContributorProfileOutput = 'success' | 'error';
 
-export const contributorProfileNode: NodeInterface<ScrapeState, ContributorProfileOutput, RipperServices> = {
-  name:    'extract:contributor-profile',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ContributorProfileNode extends ScalarNode<ScrapeState, ContributorProfileOutput> {
+  public readonly name = 'extract:contributor-profile';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ContributorProfileOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ContributorProfileOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const profile = extractContributorProfile(c, $, target);
+    const profile = extractContributorProfile(common, root, target);
 
     state.output = { ...state.output, ...profile };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const contributorProfileNode = new ContributorProfileNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeContributorOutput = 'success';
 
-export const finalizeContributorNode: NodeInterface<ScrapeState, FinalizeContributorOutput, RipperServices> = {
-  name:    'finalize:contributor',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeContributorNode extends ScalarNode<ScrapeState, FinalizeContributorOutput> {
+  public readonly name = 'finalize:contributor';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeContributorOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeContributorOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     state.output = state.output !== null
       ? {
@@ -348,8 +351,8 @@ export const finalizeContributorNode: NodeInterface<ScrapeState, FinalizeContrib
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       }
@@ -357,15 +360,17 @@ export const finalizeContributorNode: NodeInterface<ScrapeState, FinalizeContrib
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeContributorNode = new FinalizeContributorNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

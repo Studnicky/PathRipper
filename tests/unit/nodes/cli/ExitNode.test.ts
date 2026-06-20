@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { ExitNode } from '../../../../src/nodes/cli/ExitNode.js';
@@ -16,9 +17,9 @@ describe('ExitNode', () => {
   it('always returns success output', async () => {
     const state = new CliState();
 
-    const result = await ExitNode.execute(state, makeContext());
+    const result = await ExitNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
   });
 
   it('sets exitCode=0 when no error and no failures', async () => {
@@ -26,7 +27,7 @@ describe('ExitNode', () => {
     state.errorMessage = '';
     state.failedCount  = 0;
 
-    await ExitNode.execute(state, makeContext());
+    await ExitNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.exitCode, 0);
   });
@@ -36,7 +37,7 @@ describe('ExitNode', () => {
     state.errorMessage = 'something went wrong';
     state.failedCount  = 0;
 
-    await ExitNode.execute(state, makeContext());
+    await ExitNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.exitCode, 1);
   });
@@ -46,7 +47,7 @@ describe('ExitNode', () => {
     state.errorMessage = '';
     state.failedCount  = 5;
 
-    await ExitNode.execute(state, makeContext());
+    await ExitNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.exitCode, 2);
   });
@@ -56,7 +57,7 @@ describe('ExitNode', () => {
     state.errorMessage = 'dispatch failed';
     state.failedCount  = 3;
 
-    await ExitNode.execute(state, makeContext());
+    await ExitNode.execute(Batch.of(state), makeContext());
 
     // errorMessage takes priority.
     assert.equal(state.exitCode, 1);

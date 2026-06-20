@@ -1,9 +1,20 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { RipperConfigInterface } from '../../types/Config.js';
 import { RipperConfigSchema } from '../../schemas/internal/RipperConfigSchema.js';
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
+
+type ValidateConfigSchemaOutput = 'valid' | 'invalid';
+
+/** OperationContractType for ValidateConfigSchemaNode: reads parsed, produces validated. */
+export const validateConfigSchemaContract: OperationContractType = {
+  name:         'config:validate-schema',
+  hardRequired: ['parsed'],
+  produces:     ['validated'],
+  outputs:      ['valid', 'invalid'],
+};
 
 /**
  * Validates `state.parsed` against the `RipperConfigSchema` (AJV-backed).
@@ -20,35 +31,30 @@ import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const ValidateConfigSchemaNode: NodeInterface<ConfigLoadState, 'valid' | 'invalid'> = {
-  name: 'config:validate-schema',
-  outputs: ['valid', 'invalid'],
+class ValidateConfigSchemaNodeImpl extends ScalarNode<ConfigLoadState, ValidateConfigSchemaOutput, undefined> {
+  public readonly name = 'config:validate-schema';
+  public readonly outputs = ['valid', 'invalid'] as const;
+  public override readonly contract = validateConfigSchemaContract;
 
-  async execute(
+  protected override async executeOne(
     state: ConfigLoadState,
-    _context: NodeContextInterface<undefined>,
-  ): Promise<{ output: 'valid' | 'invalid' }> {
+    _context: NodeContextType<undefined>,
+  ): Promise<NodeOutputType<ValidateConfigSchemaOutput>> {
     const errors = RipperConfigSchema.validate(state.parsed);
     if (errors !== null) {
-      state.collectError({
-        code:        'SCHEMA_INVALID',
-        message:     errors,
-        operation:   'config:validate-schema',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      return { output: 'invalid' };
+      state.collectError(NodeErrorBuilder.from(
+        'SCHEMA_INVALID',
+        errors,
+        'config:validate-schema',
+        false,
+        new Date().toISOString(),
+      ));
+      return NodeOutputBuilder.of('invalid');
     }
 
     state.validated = state.parsed as RipperConfigInterface;
-    return { output: 'valid' };
-  },
-};
+    return NodeOutputBuilder.of('valid');
+  }
+}
 
-/** OperationContract for ValidateConfigSchemaNode: reads parsed, produces validated. */
-export const validateConfigSchemaContract: OperationContract = {
-  name:         'config:validate-schema',
-  hardRequired: ['parsed'],
-  produces:     ['validated'],
-  outputs:      ['valid', 'invalid'],
-};
+export const ValidateConfigSchemaNode = new ValidateConfigSchemaNodeImpl();

@@ -5,20 +5,20 @@
 //
 // re-extraction is gone. `extractCommon` is the sole producer of
 // the harvested header data; this capability is a pure projection.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }     from '../../../src/state/ScrapeState.js';
-import type { RipperServices }  from '../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../common.js';
 
 export type LabelPairBlockOutput = 'success' | 'error';
 
-export const labelPairBlockNode = {
-  name:    'extract:label-pair-block',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class LabelPairBlockNode extends ScalarNode<ScrapeState, LabelPairBlockOutput> {
+  public readonly name = 'extract:label-pair-block';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     // `field_map`/`fields` are projections of `aonprdCommon` for
     // the (currently unregistered) Layer-1 `finalize:strip-claimed-keys` cap
@@ -27,19 +27,21 @@ export const labelPairBlockNode = {
     // at "zero warnings" we omit them from the declared produces; the
     // runtime side-write still happens for any future consumer to pick up.
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: LabelPairBlockOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<LabelPairBlockOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
     // Open-world soft-fail: rule pages (and any other concept that does not
     // produce `aonprdCommon`) get a no-op success. Matches the open-world
     // contract from `docs/taxonomic-extraction-redesign.md:273`.
-    if (c === undefined) return { output: 'success' };
-    state.setMetadata('field_map', c.field_map);
-    state.setMetadata('fields',    c.fields);
-    return { output: 'success' };
-  },
-} satisfies NodeInterface<ScrapeState, LabelPairBlockOutput, RipperServices>;
+    if (common === undefined) return NodeOutputBuilder.of('success');
+    state.setMetadata('field_map', common.field_map);
+    state.setMetadata('fields',    common.fields);
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const labelPairBlockNode = new LabelPairBlockNode();

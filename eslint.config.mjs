@@ -45,7 +45,7 @@ export default [
     files: config.files ?? TS_FILES
   })),
   {
-    files: ['src/**/*.ts', 'tests/**/*.ts'],
+    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -58,7 +58,9 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }]
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      // Identifiers must describe what a thing is — no single-character names.
+      'id-length': ['error', { min: 3, exceptions: ['as', 'fs', 'js', 'of', 'os', 'ts', 'vm'], properties: 'never' }]
     }
   }
 ];

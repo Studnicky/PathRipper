@@ -1,17 +1,19 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { MediaWikiScraper }     from '../../scrapers/MediaWikiScraper.js';
-import { toNodeError }               from '../fileUtils.js';
+import type { MediaWikiScraper }      from '../../scrapers/MediaWikiScraper.js';
+import { toNodeError }                from '../fileUtils.js';
 import type { MemberResolutionState } from '../../state/MemberResolutionState.js';
-import type { RipperServices }           from '../../services/RipperServices.js';
+import type { RipperServices }        from '../../services/RipperServices.js';
 
 /** Returns true when the value exposes a `fetchAllPages` method. */
-const isWikiScraper = (s: unknown): s is Pick<MediaWikiScraper, 'fetchAllPages'> =>
-  typeof s === 'object' && s !== null &&
-  typeof (s as { fetchAllPages?: unknown }).fetchAllPages === 'function';
+const isWikiScraper = (val: unknown): val is Pick<MediaWikiScraper, 'fetchAllPages'> =>
+  typeof val === 'object' && val !== null &&
+  typeof (val as { fetchAllPages?: unknown }).fetchAllPages === 'function';
 
 const DEFAULT_MAX_PAGES = 500;
+
+type FetchAllPagesOutput = 'success' | 'error';
 
 /**
  * Enumerates every article in the wiki's main namespace via
@@ -26,18 +28,14 @@ const DEFAULT_MAX_PAGES = 500;
  * @category Nodes
  * @since 3.0.0
  */
-export const FetchAllPagesNode: NodeInterface<
-  MemberResolutionState,
-  'success' | 'error',
-  RipperServices
-> = {
-  name: 'wiki:fetch-all-pages',
-  outputs: ['success', 'error'],
+class FetchAllPagesNodeImpl extends ScalarNode<MemberResolutionState, FetchAllPagesOutput, RipperServices> {
+  public readonly name = 'wiki:fetch-all-pages';
+  public readonly outputs = ['success', 'error'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   MemberResolutionState,
-    context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<FetchAllPagesOutput>> {
     const { services } = context;
 
     if (!isWikiScraper(services.wikiScraper)) {
@@ -45,7 +43,7 @@ export const FetchAllPagesNode: NodeInterface<
         new Error('wiki:fetch-all-pages requires services.wikiScraper'),
         'wiki:fetch-all-pages',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const maxPages = typeof state.config['maxPages'] === 'number'
@@ -58,18 +56,12 @@ export const FetchAllPagesNode: NodeInterface<
       state.members = await services.wikiScraper.fetchAllPages(maxPages);
     } catch (err) {
       state.collectError(toNodeError(err, 'wiki:fetch-all-pages'));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     services.log.info('wiki:fetch-all-pages', `Enumerated ${state.members.length.toString()} pages`);
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for FetchAllPagesNode: produces members from full namespace enumeration. */
-export const fetchAllPagesContract: OperationContract = {
-  name:         'wiki:fetch-all-pages',
-  hardRequired: [],
-  produces:     ['members'],
-  outputs:      ['success', 'error'],
-};
+export const FetchAllPagesNode = new FetchAllPagesNodeImpl();

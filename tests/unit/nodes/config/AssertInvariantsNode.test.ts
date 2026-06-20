@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { AssertInvariantsNode } from '../../../../src/nodes/config/AssertInvariantsNode.js';
@@ -24,9 +25,9 @@ describe('AssertInvariantsNode', () => {
     const state = new ConfigLoadState();
     // state.normalized is null by default
 
-    const result = await AssertInvariantsNode.execute(state, makeContext());
+    const result = await AssertInvariantsNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invariant-violated');
+    assert.ok(result.has('invariant-violated'));
     assert.equal(state.errors.length, 1);
   });
 
@@ -34,9 +35,9 @@ describe('AssertInvariantsNode', () => {
     const state = new ConfigLoadState();
     state.normalized = makeNormalized({});
 
-    const result = await AssertInvariantsNode.execute(state, makeContext());
+    const result = await AssertInvariantsNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.errors.length, 0);
   });
 
@@ -52,9 +53,9 @@ describe('AssertInvariantsNode', () => {
       },
     });
 
-    const result = await AssertInvariantsNode.execute(state, makeContext());
+    const result = await AssertInvariantsNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invariant-violated');
+    assert.ok(result.has('invariant-violated'));
     const err = state.errors[0];
     assert.ok(err !== undefined);
     assert.ok(err.message.includes('api:fetch'));
@@ -73,9 +74,9 @@ describe('AssertInvariantsNode', () => {
       },
     });
 
-    const result = await AssertInvariantsNode.execute(state, makeContext());
+    const result = await AssertInvariantsNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invariant-violated');
+    assert.ok(result.has('invariant-violated'));
     const err = state.errors[0];
     assert.ok(err !== undefined);
     assert.ok(err.message.includes('api:fetch'));
@@ -93,9 +94,9 @@ describe('AssertInvariantsNode', () => {
       },
     });
 
-    const result = await AssertInvariantsNode.execute(state, makeContext());
+    const result = await AssertInvariantsNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.errors.length, 0);
   });
 });

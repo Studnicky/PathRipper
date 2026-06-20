@@ -8,12 +8,12 @@
 //   extract:deity-category-members  — linked deity refs from the Members block
 //   extract:deity-category-aspects  — descriptive prose before the Members heading
 //   finalize:deity-category         — assemble + strip raw_fields, attach meta
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -117,25 +117,25 @@ export interface DeityCategoryMetaSlice {
  * Deities.aspx anchor up to the closing of the content span. Uses cheerio DOM
  * walking rather than regex over the body HTML.
  */
-function parseMembers($: CheerioAPI, target: CheerioNode): DeityCategoryMember[] {
+function parseMembers(root: CheerioAPI, target: CheerioNode): DeityCategoryMember[] {
   const out: DeityCategoryMember[] = [];
   const seen = new Set<string>();
 
   // Find the Members heading. AON uses a single h3.framing per page.
-  const heading = target.find('h3.framing').filter((_, el) => {
-    return $(el).text().trim().toLowerCase() === 'members';
+  const heading = target.find('h3.framing').filter((_index, element) => {
+    return root(element).text().trim().toLowerCase() === 'members';
   }).first();
   if (heading.length === 0) return out;
 
   // Walk forward siblings of the heading until end of the span, collecting any
   // <a href="Deities.aspx?ID=…"> anchors (each link is wrapped in `<u>` for
   // underline styling, but we just need the anchor).
-  heading.nextAll('a[href*="Deities.aspx"]').each((_, el) => {
-    const $a = $(el);
-    const href = $a.attr('href') ?? '';
+  heading.nextAll('a[href*="Deities.aspx"]').each((_index, element) => {
+    const $anchor = root(element);
+    const href = $anchor.attr('href') ?? '';
     if (href === '' || seen.has(href)) return;
     seen.add(href);
-    const name = htmlToText($a.html() ?? '');
+    const name = htmlToText($anchor.html() ?? '');
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const deity_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
     out.push({ name, deity_id, href });
@@ -154,11 +154,11 @@ function parseMembers($: CheerioAPI, target: CheerioNode): DeityCategoryMember[]
  * (`<i>Note from Nethys: …</i>`) — we treat that as null aspects so consumers
  * can distinguish missing prose from real descriptions.
  */
-function parseAspects(c: CommonExtraction): string | null {
+function parseAspects(common: CommonExtraction): string | null {
   // Carve off everything before the Members heading; anchor-less h3.framing
   // markers are unique to deity-category pages.
-  const cut = /<h3\b[^>]*class="[^"]*framing[^"]*"[^>]*>/i.exec(c.body_html);
-  const before = cut !== null ? c.body_html.slice(0, cut.index) : c.body_html;
+  const cut = /<h3\b[^>]*class="[^"]*framing[^"]*"[^>]*>/i.exec(common.body_html);
+  const before = cut !== null ? common.body_html.slice(0, cut.index) : common.body_html;
   const text = htmlToText(before).trim();
   if (text === '') return null;
   if (/^Note from Nethys:/i.test(text)) return null;
@@ -168,34 +168,34 @@ function parseAspects(c: CommonExtraction): string | null {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a deity-category page. */
-export function extractDeityCategoryBase(c: CommonExtraction): DeityCategoryBaseSlice {
+export function extractDeityCategoryBase(common: CommonExtraction): DeityCategoryBaseSlice {
   return {
-    url:               c.url,
-    deity_category_id: extractEntityId(c.url),
-    name:              c.title.name,
-    rarity:            c.traits.rarity,
-    pfs:               c.title.pfs,
-    legacy:            c.title.legacy,
-    alt_edition_url:   c.title.alt_edition_url,
-    traits:            c.traits.traits,
-    trait_ids:         c.traits.trait_ids,
-    source:            { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:           c.sources,
+    url:               common.url,
+    deity_category_id: extractEntityId(common.url),
+    name:              common.title.name,
+    rarity:            common.traits.rarity,
+    pfs:               common.title.pfs,
+    legacy:            common.title.legacy,
+    alt_edition_url:   common.title.alt_edition_url,
+    traits:            common.traits.traits,
+    trait_ids:         common.traits.trait_ids,
+    source:            { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:           common.sources,
   };
 }
 
 /** Extract member deity links from the `<h3 class="framing">Members</h3>` block. */
-export function extractDeityCategoryMembers($: CheerioAPI, target: CheerioNode): DeityCategoryMembersSlice {
-  return { members: parseMembers($, target) };
+export function extractDeityCategoryMembers(root: CheerioAPI, target: CheerioNode): DeityCategoryMembersSlice {
+  return { members: parseMembers(root, target) };
 }
 
 /** Extract the descriptive prose (aspects) preceding the Members heading. */
-export function extractDeityCategoryAspects(c: CommonExtraction): DeityCategoryAspectsSlice {
-  return { aspects: parseAspects(c) };
+export function extractDeityCategoryAspects(common: CommonExtraction): DeityCategoryAspectsSlice {
+  return { aspects: parseAspects(common) };
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractDeityCategoryMeta(_c: CommonExtraction): DeityCategoryMetaSlice {
+export function extractDeityCategoryMeta(_common: CommonExtraction): DeityCategoryMetaSlice {
   return { __deity_category_meta_marked: true };
 }
 
@@ -207,28 +207,28 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeDeityCategory(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     DeityCategoryBaseSlice,
   members:  DeityCategoryMembersSlice,
   aspects:  DeityCategoryAspectsSlice,
   _meta:    DeityCategoryMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   _target:  CheerioNode,
 ): DeityCategoryOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     members:          members.members,
     aspects:          aspects.aspects,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies DeityCategoryOutput;
 }
 
@@ -239,15 +239,15 @@ export function finalizeDeityCategory(
  * tests.
  */
 export function extractDeityCategory(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: CheerioNode,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  CheerioNode,
 ): DeityCategoryOutput {
-  const base    = extractDeityCategoryBase(c);
-  const members = extractDeityCategoryMembers($, target);
-  const aspects = extractDeityCategoryAspects(c);
-  const meta    = extractDeityCategoryMeta(c);
-  return finalizeDeityCategory(c, base, members, aspects, meta, $, target);
+  const base    = extractDeityCategoryBase(common);
+  const members = extractDeityCategoryMembers(root, target);
+  const aspects = extractDeityCategoryAspects(common);
+  const meta    = extractDeityCategoryMeta(common);
+  return finalizeDeityCategory(common, base, members, aspects, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -258,28 +258,29 @@ export function extractDeityCategory(
 
 export type DeityCategoryBaseOutput = 'success' | 'error';
 
-export const deityCategoryBaseNode: NodeInterface<ScrapeState, DeityCategoryBaseOutput, RipperServices> = {
-  name:    'extract:deity-category-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityCategoryBaseNodeImpl extends ScalarNode<ScrapeState, DeityCategoryBaseOutput> {
+  public readonly name = 'extract:deity-category-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityCategoryBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityCategoryBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractDeityCategoryBase(c);
+    const base = extractDeityCategoryBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityCategoryBaseNode = new DeityCategoryBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -289,29 +290,30 @@ export const deityCategoryBaseNode: NodeInterface<ScrapeState, DeityCategoryBase
 
 export type DeityCategoryMembersOutput = 'success' | 'error';
 
-export const deityCategoryMembersNode: NodeInterface<ScrapeState, DeityCategoryMembersOutput, RipperServices> = {
-  name:    'extract:deity-category-members',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityCategoryMembersNodeImpl extends ScalarNode<ScrapeState, DeityCategoryMembersOutput> {
+  public readonly name = 'extract:deity-category-members';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityCategoryMembersOutput }> {
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityCategoryMembersOutput>> {
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if ($ === undefined || target === undefined) return { output: 'error' };
+    if (root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const members = extractDeityCategoryMembers($, target);
+    const members = extractDeityCategoryMembers(root, target);
 
     state.output = { ...state.output, ...members };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityCategoryMembersNode = new DeityCategoryMembersNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -321,28 +323,29 @@ export const deityCategoryMembersNode: NodeInterface<ScrapeState, DeityCategoryM
 
 export type DeityCategoryAspectsOutput = 'success' | 'error';
 
-export const deityCategoryAspectsNode: NodeInterface<ScrapeState, DeityCategoryAspectsOutput, RipperServices> = {
-  name:    'extract:deity-category-aspects',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class DeityCategoryAspectsNodeImpl extends ScalarNode<ScrapeState, DeityCategoryAspectsOutput> {
+  public readonly name = 'extract:deity-category-aspects';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DeityCategoryAspectsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DeityCategoryAspectsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const aspects = extractDeityCategoryAspects(c);
+    const aspects = extractDeityCategoryAspects(common);
 
     state.output = { ...state.output, ...aspects };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const deityCategoryAspectsNode = new DeityCategoryAspectsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -352,29 +355,30 @@ export const deityCategoryAspectsNode: NodeInterface<ScrapeState, DeityCategoryA
 
 export type FinalizeDeityCategoryOutput = 'success';
 
-export const finalizeDeityCategoryNode: NodeInterface<ScrapeState, FinalizeDeityCategoryOutput, RipperServices> = {
-  name:    'finalize:deity-category',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeDeityCategoryNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityCategoryOutput> {
+  public readonly name = 'finalize:deity-category';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeDeityCategoryOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeDeityCategoryOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as DeityCategoryOutput;
-    const assembled = finalizeDeityCategory(c, (acc as never), (acc as never), (acc as never), (acc as never), $, target);
+    const assembled = finalizeDeityCategory(common, (acc as never), (acc as never), (acc as never), (acc as never), root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeDeityCategoryNode = new FinalizeDeityCategoryNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

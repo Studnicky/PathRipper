@@ -4,12 +4,12 @@
  * Exports: resolveMonsterSpan, getMonsterHeadHtml, computeDisplayTraits,
  * extractMonsterBase, monsterBaseNode.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import {
@@ -28,18 +28,18 @@ import {
 import { parseAbilityScores } from '../../capabilities/abilityScores.js';
 
 /** Extract the creature illustration URL from `<a class="monster-art-link" href="…">`. */
-function extractCreatureArt($: CheerioAPI): string | null {
-  const href = $('a.monster-art-link').first().attr('href');
+function extractCreatureArt(root: CheerioAPI): string | null {
+  const href = root('a.monster-art-link').first().attr('href');
   return href !== undefined && href !== '' ? href : null;
 }
 
 /** Extract the monster flavor/lore text from the `<span class="hide-on-print">` block. */
-function extractFlavorText($: CheerioAPI): string | null {
+function extractFlavorText(root: CheerioAPI): string | null {
   let result: string | null = null;
-  $('span.hide-on-print').each((_, el) => {
-    const $el = $(el);
-    const h1 = $el.find('h1.title');
-    if (h1.length === 0) return;
+  root('span.hide-on-print').each((_index, element) => {
+    const $el = root(element);
+    const h1El = $el.find('h1.title');
+    if (h1El.length === 0) return;
     const clone = $el.clone();
     clone.find('h1.title').remove();
     const text = clone.text().replace(/\s+/g, ' ').trim();
@@ -51,10 +51,10 @@ function extractFlavorText($: CheerioAPI): string | null {
 
 /** Extract Recall Knowledge from the head HTML. */
 function extractRecallKnowledgeFromHead(headHtml: string): string | null {
-  const re = /<b>\s*(?:<[^>]+>)*\s*Recall Knowledge\s*(?:<\/[^>]+>)*\s*<\/b>([\s\S]*?)(?=<b>|<br|$)/i;
-  const m = re.exec(headHtml);
-  if (m === null) return null;
-  const raw = htmlToText(m[1] ?? '').trim();
+  const regex = /<b>\s*(?:<[^>]+>)*\s*Recall Knowledge\s*(?:<\/[^>]+>)*\s*<\/b>([\s\S]*?)(?=<b>|<br|$)/i;
+  const match = regex.exec(headHtml);
+  if (match === null) return null;
+  const raw = htmlToText(match[1] ?? '').trim();
   return raw !== '' ? raw : null;
 }
 
@@ -63,8 +63,8 @@ function extractRecallKnowledgeFromHead(headHtml: string): string | null {
  * `<span class="monster-page">`, but `parseAonHtml` may pass a narrower
  * `hide-on-print` span; we prefer the structured span when present.
  */
-export function resolveMonsterSpan($: CheerioAPI, span: CheerioNode): CheerioNode {
-  const direct = $('span.monster-page').first();
+export function resolveMonsterSpan(root: CheerioAPI, span: CheerioNode): CheerioNode {
+  const direct = root('span.monster-page').first();
   return direct.length > 0 ? direct : span;
 }
 
@@ -72,77 +72,79 @@ export function resolveMonsterSpan($: CheerioAPI, span: CheerioNode): CheerioNod
  * Extract the head-of-statblock HTML fragment (everything before the first
  * `<hr/>` boundary) from the resolved monster span.
  */
-export function getMonsterHeadHtml($: CheerioAPI, span: CheerioNode): string {
-  const pageSpan = resolveMonsterSpan($, span);
+export function getMonsterHeadHtml(root: CheerioAPI, span: CheerioNode): string {
+  const pageSpan = resolveMonsterSpan(root, span);
   const spanHtml = pageSpan.html() ?? '';
   return spanHtml.split(/<hr\s*\/?>/i)[0] ?? '';
 }
 
 /** Compute the filtered display-trait list (rarity/size/alignment stripped). */
-export function computeDisplayTraits(c: CommonExtraction): string[] {
-  const rarity = c.traits.rarity;
+export function computeDisplayTraits(common: CommonExtraction): string[] {
+  const rarity = common.traits.rarity;
   const filterTraits = new Set<string>([
-    c.traits.size ?? '',
-    c.traits.alignment ?? '',
+    common.traits.size ?? '',
+    common.traits.alignment ?? '',
     rarity.charAt(0).toUpperCase() + rarity.slice(1),
   ]);
-  return c.traits.traits.filter((t) => !filterTraits.has(t));
+  return common.traits.traits.filter((trimmed) => !filterTraits.has(trimmed));
 }
 
 /** Extract base identity + skill/attribute fields. */
-export function extractMonsterBase(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): MonsterBaseSlice {
-  const headHtml = getMonsterHeadHtml($, span);
-  const rkRaw = getField(c, 'Recall Knowledge') ?? extractRecallKnowledgeFromHead(headHtml);
+export function extractMonsterBase(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): MonsterBaseSlice {
+  const headHtml = getMonsterHeadHtml(root, span);
+  const rkRaw = getField(common, 'Recall Knowledge') ?? extractRecallKnowledgeFromHead(headHtml);
 
   return {
-    url:              c.url,
-    monster_id:       extractEntityId(c.url),
-    name:             c.title.name,
-    level:            c.title.level,
-    rarity:           c.traits.rarity,
-    size:             c.traits.size,
-    alignment:        c.traits.alignment,
-    traits:           computeDisplayTraits(c),
-    trait_ids:        c.traits.trait_ids,
-    source:           { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:          c.sources,
-    alt_edition_url:  c.title.alt_edition_url,
-    pfs:              c.title.pfs,
-    is_legacy:        c.title.legacy,
-    creature_art:     extractCreatureArt($),
-    flavor_text:      extractFlavorText($),
+    url:              common.url,
+    monster_id:       extractEntityId(common.url),
+    name:             common.title.name,
+    level:            common.title.level,
+    rarity:           common.traits.rarity,
+    size:             common.traits.size,
+    alignment:        common.traits.alignment,
+    traits:           computeDisplayTraits(common),
+    trait_ids:        common.traits.trait_ids,
+    source:           { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:          common.sources,
+    alt_edition_url:  common.title.alt_edition_url,
+    pfs:              common.title.pfs,
+    is_legacy:        common.title.legacy,
+    creature_art:     extractCreatureArt(root),
+    flavor_text:      extractFlavorText(root),
     recall_knowledge: parseRecallKnowledge(rkRaw),
-    perception:       parsePerception(getField(c, 'Perception')),
-    languages:        parseLanguages(getField(c, 'Languages')),
-    skills:           parseSkills(getField(c, 'Skills')),
-    abilities:        parseAbilityScores(c),
-    items:            parseItems(getField(c, 'Items')),
+    perception:       parsePerception(getField(common, 'Perception')),
+    languages:        parseLanguages(getField(common, 'Languages')),
+    skills:           parseSkills(getField(common, 'Skills')),
+    abilities:        parseAbilityScores(common),
+    items:            parseItems(getField(common, 'Items')),
   };
 }
 
 export type MonsterBaseOutput = 'success' | 'error';
 
-export const monsterBaseNode: NodeInterface<ScrapeState, MonsterBaseOutput, RipperServices> = {
-  name:    'extract:monster-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterBaseNode extends ScalarNode<ScrapeState, MonsterBaseOutput> {
+  public readonly name = 'extract:monster-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractMonsterBase(c, $, target);
+    const base = extractMonsterBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterBaseNode = new MonsterBaseNode();

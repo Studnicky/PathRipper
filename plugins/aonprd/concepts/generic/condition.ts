@@ -8,7 +8,6 @@ import {
 } from '../../common.js';
 import {
   baseFrom,
-  type SourceShape,
 } from '../_helpers.js';
 import { parseConditionStages } from './helpers.js';
 import type {
@@ -17,28 +16,28 @@ import type {
   ConditionStagesSlice,
 } from './types.js';
 
-export function extractConditionBase(c: CommonExtraction): ConditionBaseSlice {
+export function extractConditionBase(common: CommonExtraction): ConditionBaseSlice {
   return {
-    url:             c.url,
-    condition_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    level:           c.title.level,
+    url:             common.url,
+    condition_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    level:           common.title.level,
   };
 }
 
-export function extractConditionStages(c: CommonExtraction): ConditionStagesSlice {
-  const stages = parseConditionStages(c.body_html);
-  const related_conditions = c.links
-    .filter((l) => l.kind === 'Conditions')
-    .map((l) => ({ name: l.text, condition_id: l.id }));
+export function extractConditionStages(common: CommonExtraction): ConditionStagesSlice {
+  const stages = parseConditionStages(common.body_html);
+  const related_conditions = common.links
+    .filter((link) => link.kind === 'Conditions')
+    .map((link) => ({ name: link.text, condition_id: link.id }));
   return { stages, related_conditions };
 }
 
@@ -47,12 +46,12 @@ const CONDITION_CLAIMED_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeCondition(
-  c:      CommonExtraction,
+  common: CommonExtraction,
   base:   ConditionBaseSlice,
   stages: ConditionStagesSlice,
-  $:      CheerioAPI,
+  root:   CheerioAPI,
 ): ConditionOutput {
-  const baseShape = baseFrom(c, $);
+  const baseShape = baseFrom(common, root);
   return {
     ...baseShape,
     url:                base.url,
@@ -66,15 +65,15 @@ export function finalizeCondition(
     trait_ids:          base.trait_ids,
     source:             base.source,
     sources:            base.sources,
-    raw_fields:         stripStructuredKeys(c.field_map, CONDITION_CLAIMED_LABELS),
+    raw_fields:         stripStructuredKeys(common.field_map, CONDITION_CLAIMED_LABELS),
     stages:             stages.stages,
     related_conditions: stages.related_conditions,
   } satisfies ConditionOutput;
 }
 
-export function extractCondition(c: CommonExtraction, $: CheerioAPI, _span: CheerioNode): ConditionOutput {
+export function extractCondition(common: CommonExtraction, root: CheerioAPI, _span: CheerioNode): ConditionOutput {
   void _span;
-  const base   = extractConditionBase(c);
-  const stages = extractConditionStages(c);
-  return finalizeCondition(c, base, stages, $);
+  const base   = extractConditionBase(common);
+  const stages = extractConditionStages(common);
+  return finalizeCondition(common, base, stages, root);
 }

@@ -1,9 +1,6 @@
 // Class parsing helpers.
 
-import type { CommonExtraction } from '../../common.js';
 import {
-  getField,
-  asInt,
   htmlToText,
   loadFragment,
 } from '../../common.js';
@@ -14,10 +11,10 @@ import {
  */
 export function readInlineBoldLabel(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<b>\\s*${escaped}\\s*:\\s*([^<]+?)</b>`, 'i');
-  const m = re.exec(html);
-  if (m === null) return null;
-  return htmlToText(m[1] ?? '');
+  const regex = new RegExp(`<b>\\s*${escaped}\\s*:\\s*([^<]+?)</b>`, 'i');
+  const match = regex.exec(html);
+  if (match === null) return null;
+  return htmlToText(match[1] ?? '');
 }
 
 /**
@@ -30,25 +27,25 @@ export function readInlineBoldLabel(html: string, label: string): string | null 
 export function extractInitialProficiencies(fullHtml: string): Record<string, string> {
   const out: Record<string, string> = {};
   const initProfRe = /<h1[^>]+class="title"[^>]*>\s*Initial Proficiencies\s*<\/h1>([\s\S]*?)(?=<h1[^>]+class="title"|$)/i;
-  const m = initProfRe.exec(fullHtml);
-  if (m === null) return out;
-  const inner = m[1] ?? '';
+  const match = initProfRe.exec(fullHtml);
+  if (match === null) return out;
+  const inner = match[1] ?? '';
 
   const h2Re = /<h2[^>]+class="title"[^>]*>\s*([^<]+?)\s*<\/h2>\s*([\s\S]*?)(?=<h[123]|$)/gi;
-  let h2m: RegExpExecArray | null;
-  while ((h2m = h2Re.exec(inner)) !== null) {
-    const k = (h2m[1] ?? '').trim();
-    const v = htmlToText(h2m[2] ?? '');
-    if (k !== '' && v !== '' && !(k in out)) out[k] = v;
+  let h2match: RegExpExecArray | null;
+  while ((h2match = h2Re.exec(inner)) !== null) {
+    const key = (h2match[1] ?? '').trim();
+    const value = htmlToText(h2match[2] ?? '');
+    if (key !== '' && value !== '' && !(key in out)) out[key] = value;
   }
 
   if (Object.keys(out).length === 0) {
     const bRe = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|<h[1-6]|$)/gi;
-    let bm: RegExpExecArray | null;
-    while ((bm = bRe.exec(inner)) !== null) {
-      const k = (bm[1] ?? '').replace(/:$/, '').trim();
-      const v = htmlToText(bm[2] ?? '');
-      if (k !== '' && v !== '' && !(k in out)) out[k] = v;
+    let boldMatch: RegExpExecArray | null;
+    while ((boldMatch = bRe.exec(inner)) !== null) {
+      const key = (boldMatch[1] ?? '').replace(/:$/, '').trim();
+      const value = htmlToText(boldMatch[2] ?? '');
+      if (key !== '' && value !== '' && !(key in out)) out[key] = value;
     }
   }
 
@@ -64,14 +61,14 @@ export function parseClassFeaturesProgression(raw: string | null): Array<{ level
   const out: Array<{ level: number; features: string[] }> = [];
 
   const chunkRe = /(\d+)([^\d]+)/g;
-  let m: RegExpExecArray | null;
+  let match: RegExpExecArray | null;
   let lastLevel = 0;
-  while ((m = chunkRe.exec(raw)) !== null) {
-    const level = parseInt(m[1]!, 10);
+  while ((match = chunkRe.exec(raw)) !== null) {
+    const level = parseInt(match[1]!, 10);
     if (!Number.isFinite(level) || level < 1 || level > 20) continue;
     if (level !== lastLevel + 1) continue;
     lastLevel = level;
-    out.push({ level, features: splitFeatureList(m[2] ?? '', level === 20) });
+    out.push({ level, features: splitFeatureList(match[2] ?? '', level === 20) });
   }
   return out;
 }
@@ -80,7 +77,7 @@ export function parseClassFeaturesProgression(raw: string | null): Array<{ level
  * Split a level's feature prose into individual feature names.
  */
 function splitFeatureList(text: string, isLastLevel: boolean): string[] {
-  const parts = text.split(',').map((p) => p.trim()).filter((p) => p !== '');
+  const parts = text.split(',').map((part) => part.trim()).filter((part) => part !== '');
   if (parts.length === 0) return [];
   if (!isLastLevel) return parts;
 
@@ -98,13 +95,16 @@ function splitFeatureList(text: string, isLastLevel: boolean): string[] {
  * Discover subclass nav entries from `<h3>` sections in the Class Features
  * subtree.
  */
-export function extractSubclasses(sections: ReadonlyArray<any>): Array<{ name: string; description: string }> {
+export function extractSubclasses(sections: ReadonlyArray<unknown>): Array<{ name: string; description: string }> {
   const out: Array<{ name: string; description: string }> = [];
-  for (const s of sections) {
-    if (s.level !== 3) continue;
-    if (/Bomber|Chirurgeon|Mutagenist|Toxicologist|^[A-Z][a-z]+$/.test(s.heading)
-        && /research field|methodology/i.test(s.body_text)) {
-      out.push({ name: s.heading, description: s.body_text });
+  for (const section of sections) {
+    if (typeof section !== 'object' || section === null) continue;
+    const sec = section as { level?: unknown; heading?: unknown; body_text?: unknown };
+    if (sec.level !== 3) continue;
+    if (typeof sec.heading !== 'string' || typeof sec.body_text !== 'string') continue;
+    if (/Bomber|Chirurgeon|Mutagenist|Toxicologist|^[A-Z][a-z]+$/.test(sec.heading)
+        && /research field|methodology/i.test(sec.body_text)) {
+      out.push({ name: sec.heading, description: sec.body_text });
     }
   }
   return out;
@@ -131,9 +131,9 @@ const NON_SUBCLASS_LABELS: ReadonlySet<string> = new Set<string>([
  */
 export function isSubclassLabel(label: string, claimed: ReadonlySet<string>): boolean {
   if (label.includes(':')) return false;
-  const lc = label.toLowerCase();
-  if (claimed.has(lc)) return false;
-  if (NON_SUBCLASS_LABELS.has(lc)) return false;
+  const lowercased = label.toLowerCase();
+  if (claimed.has(lowercased)) return false;
+  if (NON_SUBCLASS_LABELS.has(lowercased)) return false;
   if (!/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?$/.test(label)) return false;
   return true;
 }
@@ -145,15 +145,15 @@ export function extractSubclassFeaturesFromHead(headHtml: string, claimedLabels:
   const out: Array<{ name: string; description: string }> = [];
   const seen = new Set<string>();
   if (headHtml.trim() === '') return out;
-  const $h = loadFragment(headHtml, 'head-root');
+  const $head = loadFragment(headHtml, 'head-root');
 
-  $h('#head-root b').each((_, el) => {
-    const $b = $h(el);
-    if ($b.children().length > 0) return;
-    if ($b.parents('a').length > 0) return;
-    if ($b.closest('h1, h2, h3').length > 0) return;
+  $head('#head-root b').each((_index, element) => {
+    const $bold = $head(element);
+    if ($bold.children().length > 0) return;
+    if ($bold.parents('a').length > 0) return;
+    if ($bold.closest('h1, h2, h3').length > 0) return;
 
-    const rawName = $b.text().trim().replace(/:$/, '');
+    const rawName = $bold.text().trim().replace(/:$/, '');
     if (rawName === '') return;
     const beforeColon = rawName.split(':')[0]!.trim();
     if (claimedLabels.has(beforeColon.toLowerCase())) return;
@@ -161,7 +161,7 @@ export function extractSubclassFeaturesFromHead(headHtml: string, claimedLabels:
     if (!/^[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?$/.test(rawName)) return;
     if (seen.has(rawName)) return;
 
-    let cur: ReturnType<typeof $h> | null = $b.next();
+    let cur: ReturnType<typeof $head> | null = $bold.next();
     let descHtml = '';
     while (cur !== null && cur.length > 0) {
       const node = cur[0]!;
@@ -169,7 +169,7 @@ export function extractSubclassFeaturesFromHead(headHtml: string, claimedLabels:
         const tagName = ('name' in node && typeof node.name === 'string') ? node.name.toLowerCase() : '';
         if (tagName === 'b' || tagName === 'br' || tagName === 'hr') break;
       }
-      descHtml += $h.html(cur as ReturnType<typeof $h>);
+      descHtml += $head.html(cur as ReturnType<typeof $head>);
       cur = cur.next();
     }
     const description = htmlToText(descHtml).trim();

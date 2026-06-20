@@ -1,9 +1,11 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { RipperConfig }    from '../../config/RipperConfig.js';
 import type { CliState }   from '../../state/CliState.js';
 import type { CliServices } from './Services.js';
+
+type LoadConfigOutput = 'success' | 'error';
 
 /**
  * Loads and normalizes the ripperoni config file at `state.configPath`.
@@ -23,14 +25,14 @@ import type { CliServices } from './Services.js';
  * @category Nodes
  * @since 3.1.0
  */
-export const LoadConfigNode: NodeInterface<CliState, 'success' | 'error', CliServices> = {
-  name:    'cli:load-config',
-  outputs: ['success', 'error'],
+class LoadConfigNodeImpl extends ScalarNode<CliState, LoadConfigOutput, CliServices> {
+  public readonly name = 'cli:load-config';
+  public readonly outputs = ['success', 'error'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
+    context: NodeContextType<CliServices>,
+  ): Promise<NodeOutputType<LoadConfigOutput>> {
     const log = context.services.log;
     try {
       state.config = await RipperConfig.load(state.configPath);
@@ -39,20 +41,14 @@ export const LoadConfigNode: NodeInterface<CliState, 'success' | 'error', CliSer
         state.outDir = state.config.output.basePath;
       }
       log.debug('LoadConfigNode', `Config loaded from ${state.configPath}`);
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       state.errorMessage = `Failed to load config: ${message}`;
       log.error('LoadConfigNode', state.errorMessage);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
-  },
-};
+  }
+}
 
-/** OperationContract for LoadConfigNode: reads configPath, produces config. */
-export const loadConfigContract: OperationContract = {
-  name:         'cli:load-config',
-  hardRequired: ['configPath'],
-  produces:     ['config'],
-  outputs:      ['success', 'error'],
-};
+export const LoadConfigNode = new LoadConfigNodeImpl();

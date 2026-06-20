@@ -8,15 +8,14 @@
 // The phase is dispatched directly (independent of the outer composition DAG)
 // so each phase is testable in isolation.
 //
-// Phase DAGs are derived via DAGDeriver.derive with strategy: 'partition', matching
-// how runHtml/runWiki construct them at runtime.
+// Phase DAGs are constructed via DAGBuilder matching how runHtml/runWiki
+// builds them at runtime.
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Dagonizer } from '@noocodex/dagonizer';
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import { Dagonizer, DAGBuilder, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { ScrapeState }       from '../../../src/state/ScrapeState.js';
 import type { RipperServices }  from '../../../src/services/RipperServices.js';
@@ -26,87 +25,60 @@ const HTML_RETRY_PHASE = 'htmlRetryPhase';
 
 // ── Mock dispatch nodes ────────────────────────────────────────────────────────
 
+const PHASE_OUTCOMES: Record<string, string> = {
+  'all-success': 'phase-done',
+  'partial':     'phase-done',
+  'all-error':   'phase-done',
+  'empty':       'phase-done',
+};
+
 const succeedingDispatchNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
-  name:    'html:dispatch-page-dag',
-  outputs: ['success', 'error'],
+  name:     'html:dispatch-page-dag',
+  outputs:  ['success', 'error'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
-    _state:   ScrapeState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
-    return { output: 'success' };
+    batch:    Batch<ScrapeState>,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<RoutedBatchType<'success' | 'error', ScrapeState>> {
+    return RoutedBatchBuilder.of('success', batch);
   },
 };
 
 const failingDispatchNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
-  name:    'html:dispatch-page-dag',
-  outputs: ['success', 'error'],
+  name:     'html:dispatch-page-dag',
+  outputs:  ['success', 'error'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
-    _state:   ScrapeState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
-    return { output: 'error' };
+    batch:    Batch<ScrapeState>,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<RoutedBatchType<'success' | 'error', ScrapeState>> {
+    return RoutedBatchBuilder.of('error', batch);
   },
 };
 
 // ── Test helpers ───────────────────────────────────────────────────────────────
 
-const buildRetryPhaseDAG = () => DAGDeriver.derive({
-  name:       HTML_RETRY_PHASE,
-  version:    '2.0',
-  entrypoint: 'retry-urls',
-  contracts: [
-    { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
-  ],
-  annotations: {
-    fanouts: {
-      'retry-urls': {
-        source:     'failed',
-        itemKey:    'currentRetryUrl',
-        concurrency: 4,
-        node:       'html:dispatch-page-dag',
-        strategy:   'partition',
-        partitions: { success: 'recovered', error: 'failedAfterRetry' },
-        outcomes:   ['success', 'error', 'empty'],
-      },
-    },
-    terminals: {
-      'retry-urls': [
-        { outcome: 'success', target: null },
-        { outcome: 'error',   target: null },
-        { outcome: 'empty',   target: null },
-      ],
-    },
-  },
-});
+const buildRetryPhaseDAG = () =>
+  new DAGBuilder(HTML_RETRY_PHASE, '2.0')
+    .scatter('retry-urls', 'failed', succeedingDispatchNode, PHASE_OUTCOMES, {
+      itemKey:     'currentRetryUrl',
+      concurrency: 4,
+      gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
+    })
+    .terminal('phase-done', { outcome: 'completed' })
+    .build();
 
-const buildRetryPhaseDAGFail = () => DAGDeriver.derive({
-  name:       HTML_RETRY_PHASE,
-  version:    '2.0',
-  entrypoint: 'retry-urls',
-  contracts: [
-    { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
-  ],
-  annotations: {
-    fanouts: {
-      'retry-urls': {
-        source:     'failed',
-        itemKey:    'currentRetryUrl',
-        concurrency: 4,
-        node:       'html:dispatch-page-dag',
-        strategy:   'partition',
-        partitions: { success: 'recovered', error: 'failedAfterRetry' },
-        outcomes:   ['success', 'error', 'empty'],
-      },
-    },
-    terminals: {
-      'retry-urls': [
-        { outcome: 'success', target: null },
-        { outcome: 'error',   target: null },
-        { outcome: 'empty',   target: null },
-      ],
-    },
-  },
-});
+const buildRetryPhaseDAGFail = () =>
+  new DAGBuilder(HTML_RETRY_PHASE, '2.0')
+    .scatter('retry-urls', 'failed', failingDispatchNode, PHASE_OUTCOMES, {
+      itemKey:     'currentRetryUrl',
+      concurrency: 4,
+      gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
+    })
+    .terminal('phase-done', { outcome: 'completed' })
+    .build();
 
 const makeServices = (dispatcher: Dagonizer<ScrapeState, RipperServices>): RipperServices => ({
   log:        Logger.forComponent('RetryPhase.test'),
@@ -121,7 +93,7 @@ describe('htmlRetryPhase', () => {
     const holder: { current: RipperServices | null } = { current: null };
     const dispatcher = new Dagonizer<ScrapeState, RipperServices>({
       services: new Proxy({} as RipperServices, {
-        get(_t, prop) {
+        get(_tgt, prop) {
           if (holder.current === null) throw new Error('services accessed too early');
           return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
         },
@@ -146,7 +118,7 @@ describe('htmlRetryPhase', () => {
     const holder: { current: RipperServices | null } = { current: null };
     const dispatcher = new Dagonizer<ScrapeState, RipperServices>({
       services: new Proxy({} as RipperServices, {
-        get(_t, prop) {
+        get(_tgt, prop) {
           if (holder.current === null) throw new Error('services accessed too early');
           return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
         },
@@ -170,50 +142,34 @@ describe('htmlRetryPhase', () => {
   it('partitions a mixed set across recovered and failedAfterRetry', async () => {
     // Mock node that succeeds for URLs ending in /good and fails for /bad.
     const mixedDispatchNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
-      name:    'html:dispatch-page-dag',
-      outputs: ['success', 'error'],
+      name:     'html:dispatch-page-dag',
+      outputs:  ['success', 'error'],
+      timeout:  Timeout.none(),
+      contract: EMPTY_CONTRACT_FRAGMENT,
       async execute(
-        state:   ScrapeState,
-        _context: NodeContextInterface<RipperServices>,
-      ): Promise<{ output: 'success' | 'error' }> {
-        const url = state.getMetadata<string>('currentRetryUrl') ?? '';
-        return { output: url.endsWith('/good') ? 'success' : 'error' };
+        batch:    Batch<ScrapeState>,
+        _context: NodeContextType<RipperServices>,
+      ): Promise<RoutedBatchType<'success' | 'error', ScrapeState>> {
+        return batch.partition((state) => {
+          const url = state.getMetadata<string>('currentRetryUrl') ?? '';
+          return url.endsWith('/good') ? 'success' : 'error';
+        });
       },
     };
 
-    const mixedRetryDAG = DAGDeriver.derive({
-      name:       HTML_RETRY_PHASE,
-      version:    '2.0',
-      entrypoint: 'retry-urls',
-      contracts: [
-        { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
-      ],
-      annotations: {
-        fanouts: {
-          'retry-urls': {
-            source:     'failed',
-            itemKey:    'currentRetryUrl',
-            concurrency: 4,
-            node:       'html:dispatch-page-dag',
-            strategy:   'partition',
-            partitions: { success: 'recovered', error: 'failedAfterRetry' },
-            outcomes:   ['success', 'error', 'empty'],
-          },
-        },
-        terminals: {
-          'retry-urls': [
-            { outcome: 'success', target: null },
-            { outcome: 'error',   target: null },
-            { outcome: 'empty',   target: null },
-          ],
-        },
-      },
-    });
+    const mixedRetryDAG = new DAGBuilder(HTML_RETRY_PHASE, '2.0')
+      .scatter('retry-urls', 'failed', mixedDispatchNode, PHASE_OUTCOMES, {
+        itemKey:     'currentRetryUrl',
+        concurrency: 4,
+        gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
+      })
+      .terminal('phase-done', { outcome: 'completed' })
+      .build();
 
     const holder: { current: RipperServices | null } = { current: null };
     const dispatcher = new Dagonizer<ScrapeState, RipperServices>({
       services: new Proxy({} as RipperServices, {
-        get(_t, prop) {
+        get(_tgt, prop) {
           if (holder.current === null) throw new Error('services accessed too early');
           return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
         },
@@ -236,15 +192,15 @@ describe('htmlRetryPhase', () => {
 
     assert.equal(state.recovered.length, 2, 'two good items should be recovered');
     assert.equal(state.failedAfterRetry.length, 2, 'two bad items should remain failed');
-    assert.ok(state.recovered.every((u) => u.endsWith('/good')));
-    assert.ok(state.failedAfterRetry.every((u) => u.endsWith('/bad')));
+    assert.ok(state.recovered.every((url) => url.endsWith('/good')));
+    assert.ok(state.failedAfterRetry.every((url) => url.endsWith('/bad')));
   });
 
   it('is a no-op when state.failed is empty', async () => {
     const holder: { current: RipperServices | null } = { current: null };
     const dispatcher = new Dagonizer<ScrapeState, RipperServices>({
       services: new Proxy({} as RipperServices, {
-        get(_t, prop) {
+        get(_tgt, prop) {
           if (holder.current === null) throw new Error('services accessed too early');
           return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
         },

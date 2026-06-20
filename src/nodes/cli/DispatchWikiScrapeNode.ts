@@ -1,11 +1,13 @@
 import { dirname, resolve } from 'node:path';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { runWiki }         from '../../run/runWiki.js';
 import type { CliState }   from '../../state/CliState.js';
 import type { CliServices } from './Services.js';
+
+type DispatchWikiScrapeOutput = 'success' | 'partial' | 'error';
 
 /**
  * Dispatches a MediaWiki scrape run via `runWiki(opts)`.
@@ -23,26 +25,26 @@ import type { CliServices } from './Services.js';
  * @category Nodes
  * @since 3.1.0
  */
-export const DispatchWikiScrapeNode: NodeInterface<CliState, 'success' | 'partial' | 'error', CliServices> = {
-  name:    'cli:dispatch-wiki-scrape',
-  outputs: ['success', 'partial', 'error'],
+class DispatchWikiScrapeNodeImpl extends ScalarNode<CliState, DispatchWikiScrapeOutput, CliServices> {
+  public readonly name = 'cli:dispatch-wiki-scrape';
+  public readonly outputs = ['success', 'partial', 'error'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' | 'partial' | 'error' }> {
+    context: NodeContextType<CliServices>,
+  ): Promise<NodeOutputType<DispatchWikiScrapeOutput>> {
     const log = context.services.log;
 
     if (state.config === null) {
       state.errorMessage = 'DispatchWikiScrapeNode: config is null';
       log.error('DispatchWikiScrapeNode', state.errorMessage);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     if (state.config.mediawiki?.[state.targetId] === undefined) {
       state.errorMessage = `DispatchWikiScrapeNode: target "${state.targetId}" not found in config.mediawiki`;
       log.error('DispatchWikiScrapeNode', state.errorMessage);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const rawCategory      = state.options['category'];
@@ -65,20 +67,14 @@ export const DispatchWikiScrapeNode: NodeInterface<CliState, 'success' | 'partia
       });
 
       state.failedCount = 0;
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       state.errorMessage = `Wiki scrape failed: ${message}`;
       log.error('DispatchWikiScrapeNode', state.errorMessage);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
-  },
-};
+  }
+}
 
-/** OperationContract for DispatchWikiScrapeNode: reads config + targetId, produces failedCount. */
-export const dispatchWikiScrapeContract: OperationContract = {
-  name:         'cli:dispatch-wiki-scrape',
-  hardRequired: ['config', 'targetId'],
-  produces:     ['failedCount'],
-  outputs:      ['success', 'partial', 'error'],
-};
+export const DispatchWikiScrapeNode = new DispatchWikiScrapeNodeImpl();

@@ -10,11 +10,11 @@ import { detectVariant, harvestBoldEntries, readActionGlyph } from './helpers.js
  * harvester) and the verbatim uplift modifications harvested from a Unique
  * companion page's body_html.
  */
-export function extractAnimalCompanionAdvancement(c: CommonExtraction): AnimalCompanionAdvancementSlice {
+export function extractAnimalCompanionAdvancement(common: CommonExtraction): AnimalCompanionAdvancementSlice {
   let action_cost = null;
   let body = null;
   // Find the first h3 section whose heading carries an action-cost glyph.
-  for (const section of c.sections) {
+  for (const section of common.sections) {
     if (section.level !== 3) continue;
     const cost = readActionGlyph(section.heading);
     if (cost === null) continue;
@@ -34,7 +34,7 @@ export function extractAnimalCompanionAdvancement(c: CommonExtraction): AnimalCo
   // Modifications: only meaningful on Unique pages. Harvest every <b>Label</b>
   // value pair from body_html, skipping the labels claimed by other slices.
   const modifications: AnimalCompanionModification[] = [];
-  if (detectVariant(c.url) === 'unique') {
+  if (detectVariant(common.url) === 'unique') {
     const claimed = new Set([
       'base animal companion', 'size', 'melee', 'ranged', 'damage',
       'str', 'dex', 'con', 'int', 'wis', 'cha',
@@ -42,11 +42,11 @@ export function extractAnimalCompanionAdvancement(c: CommonExtraction): AnimalCo
       'support benefit', 'advanced maneuver',
       'source', 'immunities', 'weaknesses', 'resistances',
     ]);
-    const entries = harvestBoldEntries(c.body_html);
-    for (const e of entries) {
-      if (claimed.has(e.label.toLowerCase())) continue;
-      if (e.value_text === '') continue;
-      modifications.push({ label: e.label, text: e.value_text, html: e.value_html });
+    const entries = harvestBoldEntries(common.body_html);
+    for (const entry of entries) {
+      if (claimed.has(entry.label.toLowerCase())) continue;
+      if (entry.value_text === '') continue;
+      modifications.push({ label: entry.label, text: entry.value_text, html: entry.value_html });
     }
   }
 

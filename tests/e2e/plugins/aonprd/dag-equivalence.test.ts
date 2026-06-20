@@ -15,7 +15,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { ScrapeState }       from '../../../../src/state/ScrapeState.js';
 import { TerminalNode }      from '../../../../src/nodes/TerminalNode.js';
@@ -130,12 +130,12 @@ describe('aonprdParseDAG vs parseAonHtml — equivalence', () => {
     assert.deepEqual(dag, direct, 'DAG output must match direct-call output');
   });
 
-  for (const c of CASES) {
-    it(`produces identical output via DAG dispatch vs direct call — ${c.family}`, async () => {
-      const html = await loadFixture(c.fixture);
-      const direct = await parseAonHtml(html, c.url);
-      const dag    = await runViaDAG(html, c.url);
-      assert.deepEqual(dag, direct, `DAG output diverged from direct-call for ${c.family}`);
+  for (const caseItem of CASES) {
+    it(`produces identical output via DAG dispatch vs direct call — ${caseItem.family}`, async () => {
+      const html = await loadFixture(caseItem.fixture);
+      const direct = await parseAonHtml(html, caseItem.url);
+      const dag    = await runViaDAG(html, caseItem.url);
+      assert.deepEqual(dag, direct, `DAG output diverged from direct-call for ${caseItem.family}`);
     });
   }
 });

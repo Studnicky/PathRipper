@@ -30,51 +30,51 @@ import { htmlToText } from '../../common.js';
 
 /** Extract weapon meta slice (favored_weapon, crit spec, magic weapons, glossary, access). */
 export function extractWeaponMeta(
-  c:    CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  common: CommonExtraction,
+  root:   CheerioAPI,
+  span:   CheerioNode,
 ): WeaponMetaSlice {
-  const description = buildDescription(c.body_html);
+  const description = buildDescription(common.body_html);
   return {
-    favored_weapon:          parseFavoredWeapon(getFieldHtml(c, 'Favored Weapon')),
-    critical_specialization: parseCriticalSpec(c),
-    specific_magic_weapons:  parseSpecificMagicWeapons(c),
-    trait_glossary:          parseTraitGlossary($, span),
-    access:                  dashToNull(getField(c, 'Access')),
+    favored_weapon:          parseFavoredWeapon(getFieldHtml(common, 'Favored Weapon')),
+    critical_specialization: parseCriticalSpec(common),
+    specific_magic_weapons:  parseSpecificMagicWeapons(common),
+    trait_glossary:          parseTraitGlossary(root, span),
+    access:                  dashToNull(getField(common, 'Access')),
     description_html:        description.html,
     description_text:        description.text,
   };
 }
 
 /** Extract armor meta slice (hardness, hp_bt, description). */
-export function extractArmorMeta(c: CommonExtraction): ArmorMetaSlice {
-  const description = buildDescription(c.body_html);
+export function extractArmorMeta(common: CommonExtraction): ArmorMetaSlice {
+  const description = buildDescription(common.body_html);
   return {
-    hardness:         asInt(dashToNull(getField(c, 'Hardness'))),
-    hp_bt:            asInt(dashToNull(getField(c, 'HP (BT)', 'HP'))),
+    hardness:         asInt(dashToNull(getField(common, 'Hardness'))),
+    hp_bt:            asInt(dashToNull(getField(common, 'HP (BT)', 'HP'))),
     description_html: description.html,
     description_text: description.text,
   };
 }
 
 /** Extract equipment meta slice (base_armor/base_weapon, description, variants). */
-export function extractEquipmentMeta(c: CommonExtraction): EquipmentMetaSlice {
-  const description = buildEquipmentDescription(c.body_html);
+export function extractEquipmentMeta(common: CommonExtraction): EquipmentMetaSlice {
+  const description = buildEquipmentDescription(common.body_html);
   return {
-    base_armor:       dashToNull(getField(c, 'Base Armor')),
-    base_weapon:      dashToNull(getField(c, 'Base Weapon')),
+    base_armor:       dashToNull(getField(common, 'Base Armor')),
+    base_weapon:      dashToNull(getField(common, 'Base Weapon')),
     description_html: description.html,
     description_text: description.text,
-    variants:         parseVariants(c),
+    variants:         parseVariants(common),
   };
 }
 
 const VARIANT_HEADING_RE = /\((Lesser|Moderate|Greater|Major)\)/i;
 
 /** Walk variant `<h2 class="title">Name (Lesser/…)</h2>` blocks within the body. */
-function parseVariants(c: CommonExtraction): EquipmentVariant[] {
+function parseVariants(common: CommonExtraction): EquipmentVariant[] {
   const out: EquipmentVariant[] = [];
-  for (const section of c.sections) {
+  for (const section of common.sections) {
     if (!VARIANT_HEADING_RE.test(section.heading)) continue;
     // Extract item-level marker (`Item N`) from the heading text.
     const lvlMatch = /Item\s+(-?\d+)/i.exec(section.heading);
@@ -93,8 +93,8 @@ function parseVariants(c: CommonExtraction): EquipmentVariant[] {
       const pgMatch = /^(.*?)\s*pg\.\s*(\d+)/i.exec(raw);
       if (pgMatch !== null) {
         book = (pgMatch[1] ?? '').trim();
-        const n = parseInt(pgMatch[2]!, 10);
-        page = Number.isFinite(n) ? n : null;
+        const num = parseInt(pgMatch[2]!, 10);
+        page = Number.isFinite(num) ? num : null;
       } else {
         book = raw.trim();
       }

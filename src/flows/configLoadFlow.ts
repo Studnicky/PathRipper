@@ -18,15 +18,14 @@
  *           → config:normalize-cache → config:assert-invariants
  */
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { DAG }    from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { DAGDeriver } from '@studnicky/dagonizer/derive';
+import type { DAGType } from '@studnicky/dagonizer';
 
-import { readFileContract }              from '../nodes/config/ReadFileNode.js';
-import { parseJsonContract }             from '../nodes/config/ParseJsonNode.js';
-import { validateConfigSchemaContract }  from '../nodes/config/ValidateConfigSchemaNode.js';
-import { normalizeCacheContract }        from '../nodes/config/NormalizeCacheNode.js';
-import { assertInvariantsContract }      from '../nodes/config/AssertInvariantsNode.js';
+import { ReadFileNode }              from '../nodes/config/ReadFileNode.js';
+import { ParseJsonNode }             from '../nodes/config/ParseJsonNode.js';
+import { ValidateConfigSchemaNode }  from '../nodes/config/ValidateConfigSchemaNode.js';
+import { NormalizeCacheNode }        from '../nodes/config/NormalizeCacheNode.js';
+import { AssertInvariantsNode }      from '../nodes/config/AssertInvariantsNode.js';
 
 /**
  * Canonical DAG name for the config-load flow.
@@ -35,13 +34,12 @@ import { assertInvariantsContract }      from '../nodes/config/AssertInvariantsN
  */
 export const CONFIG_LOAD_FLOW = 'configLoadDAG';
 
-const configContracts: readonly OperationContract[] = [
-  readFileContract,
-  parseJsonContract,
-  validateConfigSchemaContract,
-  normalizeCacheContract,
-  assertInvariantsContract,
-];
+// Synthesized terminal placements. Dagonizer 0.22 has no implicit `null` end:
+// a terminating outcome routes to an inline `TerminalNode` via the `emit`
+// variant. Two shared terminals — one marks the run `completed`, one `failed`;
+// the deriver deduplicates by name.
+const COMPLETED_TERMINAL = { name: 'config:completed', outcome: 'completed' } as const;
+const FAILED_TERMINAL    = { name: 'config:failed',    outcome: 'failed' } as const;
 
 /**
  * Config-load flow.
@@ -49,32 +47,38 @@ const configContracts: readonly OperationContract[] = [
  * @category Flows
  * @since 4.0.0
  */
-export const configLoadFlow: DAG = DAGDeriver.derive({
+export const configLoadFlow: DAGType = DAGDeriver.derive({
   name:       CONFIG_LOAD_FLOW,
   version:    '2.0',
   entrypoint: 'config:read-file',
-  contracts:  configContracts,
+  nodes: [
+    ReadFileNode,
+    ParseJsonNode,
+    ValidateConfigSchemaNode,
+    NormalizeCacheNode,
+    AssertInvariantsNode,
+  ],
   annotations: {
     terminals: {
       'config:read-file': [
-        { outcome: 'not-found', target: null },
-        { outcome: 'error',     target: null },
+        { outcome: 'not-found', emit: FAILED_TERMINAL },
+        { outcome: 'error',     emit: FAILED_TERMINAL },
       ],
       'config:parse-json': [
-        { outcome: 'error', target: null },
+        { outcome: 'error', emit: FAILED_TERMINAL },
       ],
       // validate-schema emits 'valid'/'invalid' (no 'success' port).
       // 'valid' re-routes to the next derived stage; 'invalid' terminates.
       'config:validate-schema': [
         { outcome: 'valid',   target: 'config:normalize-cache' },
-        { outcome: 'invalid', target: null },
+        { outcome: 'invalid', emit: FAILED_TERMINAL },
       ],
       'config:normalize-cache': [
-        { outcome: 'invariant-violated', target: null },
+        { outcome: 'invariant-violated', emit: FAILED_TERMINAL },
       ],
       'config:assert-invariants': [
-        { outcome: 'success',            target: null },
-        { outcome: 'invariant-violated', target: null },
+        { outcome: 'success',            emit: COMPLETED_TERMINAL },
+        { outcome: 'invariant-violated', emit: FAILED_TERMINAL },
       ],
     },
   },

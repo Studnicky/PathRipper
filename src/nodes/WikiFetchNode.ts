@@ -1,16 +1,18 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import type { WikiPageInterface } from '../types/MediaWikiScraper.js';
 import { toNodeError }            from './fileUtils.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
-import type { RipperServices }       from '../services/RipperServices.js';
+import type { RipperServices }    from '../services/RipperServices.js';
 
 /** Returns true when the value looks like a MediaWikiScraper. */
-const isWikiScraper = (s: unknown): s is { fetchPage(title: string): Promise<WikiPageInterface> } => {
-  return typeof s === 'object' && s !== null && typeof (s as { fetchPage?: unknown }).fetchPage === 'function';
+const isWikiScraper = (val: unknown): val is { fetchPage(title: string): Promise<WikiPageInterface> } => {
+  return typeof val === 'object' && val !== null && typeof (val as { fetchPage?: unknown }).fetchPage === 'function';
 };
+
+type WikiFetchOutput = 'success' | 'error';
 
 /**
  * Fetches `state.page.title` via `services.wikiScraper` and stores wikitext
@@ -18,19 +20,23 @@ const isWikiScraper = (s: unknown): s is { fetchPage(title: string): Promise<Wik
  *
  * Output ports:
  * - `success` — wikitext populated on `state.page.wikitext`.
+ * - `cached`  — page was served from cache (no live HTTP); same fields set.
  * - `error`   — fetch failed; item recorded in `state.failed`.
  *
  * @category Nodes
  * @since 3.0.0
  */
-export const WikiFetchNode: NodeInterface<ScrapeState, 'success' | 'error', RipperServices> = {
-  name: 'wiki:fetch',
-  outputs: ['success', 'error'],
+class WikiFetchNodeImpl extends ScalarNode<ScrapeState, WikiFetchOutput, RipperServices> {
+  public readonly name = 'wiki:fetch';
+  public readonly outputs = ['success', 'error'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' | 'error' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<WikiFetchOutput>> {
     // No-op when wikitext already set.
     if (state.page.wikitext !== undefined && state.page.wikitext.length > 0) {
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     }
 
     const { services } = context;
@@ -41,7 +47,7 @@ export const WikiFetchNode: NodeInterface<ScrapeState, 'success' | 'error', Ripp
         ExternalSchemaError.create('wiki:fetch requires services.wikiScraper to be a MediaWikiScraper', { metadata: { task: 'wiki:fetch' } }),
         'wiki:fetch',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const title = state.page.title;
@@ -50,7 +56,7 @@ export const WikiFetchNode: NodeInterface<ScrapeState, 'success' | 'error', Ripp
         ExternalSchemaError.create('wiki:fetch requires state.page.title to be set', { metadata: { task: 'wiki:fetch', targetId: services.target.id } }),
         'wiki:fetch',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     let result: WikiPageInterface;
@@ -60,18 +66,12 @@ export const WikiFetchNode: NodeInterface<ScrapeState, 'success' | 'error', Ripp
       state.collectError(toNodeError(err, 'wiki:fetch'));
       const currentTitle = state.getMetadata<string>('currentTitle') ?? title;
       state.failed.push(currentTitle);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     state.page = { ...state.page, wikitext: result.wikitext };
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for WikiFetchNode: reads page.title, produces page.wikitext. */
-export const wikiFetchContract: OperationContract = {
-  name:         'wiki:fetch',
-  hardRequired: ['page.title'],
-  produces:     ['page.wikitext'],
-  outputs:      ['success', 'error'],
-};
+export const WikiFetchNode = new WikiFetchNodeImpl();

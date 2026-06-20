@@ -5,11 +5,15 @@
 // Plugin contract: exports `register(dispatcher)` which is called by `RipperRun`
 // after importing this module. No side-effect-on-import registration.
 import { load } from 'cheerio';
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-export const docsParseNode = {
-    name: 'docs:parse-impl',
-    outputs: ['success'],
-    async execute(state, _context) {
+import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+class DocsParseNodeImpl extends ScalarNode {
+    name = 'docs:parse-impl';
+    outputs = ['success'];
+    contract = {
+        hardRequired: ['page.html'],
+        produces: [],
+    };
+    async executeOne(state, _context) {
         const html = state.page.html ?? '';
         const url = state.page.url;
         const $ = load(html);
@@ -33,35 +37,21 @@ export const docsParseNode = {
             const output = { _type: 'docs_page', url, title: pageTitle };
             state.output = output;
         }
-        return { output: 'success' };
-    },
-};
+        return NodeOutputBuilder.of('success');
+    }
+}
+export const docsParseNode = new DocsParseNodeImpl();
 /**
  * Contract-derived docs parse DAG.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const docsParseFlow = DAGDeriver.derive({
-    name: 'docs:parse',
-    version: '2.0',
-    entrypoint: 'docs:parse-impl',
-    contracts: [
-        { name: 'docs:parse-impl', hardRequired: ['page.html'], produces: ['output'], outputs: ['success'] },
-    ],
-    annotations: {
-        terminals: {
-            'docs:parse-impl': [{ outcome: 'success', target: null }],
-        },
-    },
-});
-/** OperationContract for docsParseNode: reads page.html, produces output. */
-export const docsParseContract = {
-    name: 'docs:parse-impl',
-    hardRequired: ['page.html'],
-    produces: ['output'],
-    outputs: ['success'],
-};
+export const docsParseFlow = new DAGBuilder('docs:parse', '2.0')
+    .entrypoint('docs:parse-impl')
+    .node('docs:parse-impl', docsParseNode, { success: 'docs:parse:done' })
+    .terminal('docs:parse:done', { outcome: 'completed' })
+    .build();
 // ── Plugin contract ────────────────────────────────────────────────────────────
 /**
  * Explicit plugin registration. Called by `RipperRun` after importing this module.

@@ -4,12 +4,12 @@
  * Extracts identity, header scalars, traits, and source refs.
  * Node: extract:ritual-base
  */
-import type { NodeInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS, extractEntityId } from '../../common.js';
 
@@ -17,49 +17,51 @@ import { resolveKind } from './helpers.js';
 import type { RitualBaseSlice } from './types.js';
 
 /** Extract identity, header scalars, traits, and source refs. */
-export function extractSpellBase(c: CommonExtraction): RitualBaseSlice {
+export function extractSpellBase(common: CommonExtraction): RitualBaseSlice {
   return {
-    url:             c.url,
-    spell_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    kind:            resolveKind(c),
-    rank:            c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    action_cost:     c.title.action_cost,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    spell_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    kind:            resolveKind(common),
+    rank:            common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    action_cost:     common.title.action_cost,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 export type RitualBaseOutput = 'success' | 'error';
 
-export const ritualBaseNode: NodeInterface<ScrapeState, RitualBaseOutput, RipperServices> = {
-  name:    'extract:ritual-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RitualBaseNode extends ScalarNode<ScrapeState, RitualBaseOutput> {
+  public readonly name = 'extract:ritual-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: RitualBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+  ): Promise<NodeOutputType<RitualBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    void $;
+    void root;
     void target;
-    const base = extractSpellBase(c);
+    const base = extractSpellBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ritualBaseNode = new RitualBaseNode();

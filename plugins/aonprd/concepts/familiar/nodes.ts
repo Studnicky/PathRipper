@@ -1,9 +1,9 @@
 // Familiar capability nodes.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
@@ -14,91 +14,93 @@ import { extractFamiliarMeta } from './meta.js';
 import { finalizeFamiliar } from './finalize.js';
 import type {
   FamiliarOutput,
-  FamiliarBaseSlice,
-  FamiliarPrerequisitesSlice,
-  FamiliarAbilitiesSlice,
-  FamiliarMetaSlice,
 } from './types.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FamiliarBaseOutput = 'success' | 'error';
 
-export const familiarBaseNode: NodeInterface<ScrapeState, FamiliarBaseOutput, RipperServices> = {
-  name:    'extract:familiar-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FamiliarBaseNode extends ScalarNode<ScrapeState, FamiliarBaseOutput> {
+  public readonly name = 'extract:familiar-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FamiliarBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FamiliarBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractFamiliarBase(c);
+    const base = extractFamiliarBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const familiarBaseNode = new FamiliarBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FamiliarPrerequisitesOutput = 'success' | 'error';
 
-export const familiarPrerequisitesNode: NodeInterface<ScrapeState, FamiliarPrerequisitesOutput, RipperServices> = {
-  name:    'extract:familiar-prerequisites',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class FamiliarPrerequisitesNode extends ScalarNode<ScrapeState, FamiliarPrerequisitesOutput> {
+  public readonly name = 'extract:familiar-prerequisites';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FamiliarPrerequisitesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FamiliarPrerequisitesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const prerequisites = extractFamiliarPrerequisites(c);
+    const prerequisites = extractFamiliarPrerequisites(common);
 
     state.output = { ...state.output, ...prerequisites };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const familiarPrerequisitesNode = new FamiliarPrerequisitesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeFamiliarOutput = 'success';
 
-export const finalizeFamiliarNode: NodeInterface<ScrapeState, FinalizeFamiliarOutput, RipperServices> = {
-  name:    'finalize:familiar',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeFamiliarNode extends ScalarNode<ScrapeState, FinalizeFamiliarOutput> {
+  public readonly name = 'finalize:familiar';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeFamiliarOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeFamiliarOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as FamiliarOutput;
-    const abilities = extractFamiliarAbilities(c);
-    const meta      = extractFamiliarMeta(c);
-    const assembled = finalizeFamiliar(c, acc, acc, abilities, meta, $);
+    const abilities = extractFamiliarAbilities(common);
+    const meta      = extractFamiliarMeta(common);
+    const assembled = finalizeFamiliar(common, acc, acc, abilities, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeFamiliarNode = new FinalizeFamiliarNode();

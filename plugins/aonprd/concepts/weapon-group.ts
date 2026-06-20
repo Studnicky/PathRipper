@@ -1,14 +1,13 @@
 //
 // Weapon-group pages have well-defined structure; the inlined helpers fully
 // cover the content shape.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
-import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -123,16 +122,16 @@ function splitContent(spanHtml: string): { specHtml: string; weaponsHtml: string
 function parseWeapons(weaponsHtml: string): WeaponGroupWeapon[] {
   const out: WeaponGroupWeapon[] = [];
   const seen = new Set<string>();
-  const re = /<a[^>]*href=["'][^"']*Weapons\.aspx\?ID=(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(weaponsHtml)) !== null) {
-    const id = parseInt(m[1]!, 10);
-    const name = htmlToText(m[2] ?? '').trim();
+  const regex = /<a[^>]*href=["'][^"']*Weapons\.aspx\?ID=(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(weaponsHtml)) !== null) {
+    const weaponId = parseInt(match[1]!, 10);
+    const name = htmlToText(match[2] ?? '').trim();
     if (name === '') continue;
-    const key = `${id}|${name}`;
+    const key = `${weaponId}|${name}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ name, weapon_id: Number.isFinite(id) ? id : null });
+    out.push({ name, weapon_id: Number.isFinite(weaponId) ? weaponId : null });
   }
   return out;
 }
@@ -140,30 +139,30 @@ function parseWeapons(weaponsHtml: string): WeaponGroupWeapon[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a weapon-group page. */
-export function extractWeaponGroupBase(c: CommonExtraction): WeaponGroupBaseSlice {
+export function extractWeaponGroupBase(common: CommonExtraction): WeaponGroupBaseSlice {
   return {
-    url:             c.url,
-    group_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    group_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract critical-specialization prose + weapons list from the span. */
 export function extractWeaponGroupContent(
-  _c:   CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  _common: CommonExtraction,
+  _root:   CheerioAPI,
+  span:    CheerioNode,
 ): WeaponGroupContentSlice {
-  void $;
-  void _c;
+  void _root;
+  void _common;
   const spanHtml = span.html() ?? '';
   const { specHtml, weaponsHtml } = splitContent(spanHtml);
   return {
@@ -182,26 +181,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeWeaponGroup(
-  c:       CommonExtraction,
+  common:  CommonExtraction,
   base:    WeaponGroupBaseSlice,
   content: WeaponGroupContentSlice,
-  $:       CheerioAPI,
+  root:    CheerioAPI,
   _target: CheerioNode,
 ): WeaponGroupOutput {
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     critical_specialization_html: content.critical_specialization_html,
     critical_specialization_text: content.critical_specialization_text,
     weapons:                      content.weapons,
-    sections:                     c.sections,
+    sections:                     common.sections,
     raw_fields,
-    links:                        c.links,
-    body_text:                    c.body_text,
-    body_html:                    c.body_html,
-    meta_description:             extractMetaDescription($),
-    meta_keywords:                extractMetaKeywords($),
+    links:                        common.links,
+    body_text:                    common.body_text,
+    body_html:                    common.body_html,
+    meta_description:             extractMetaDescription(root),
+    meta_keywords:                extractMetaKeywords(root),
   } satisfies WeaponGroupOutput;
 }
 
@@ -211,13 +210,13 @@ export function finalizeWeaponGroup(
  * Thin assembly wrapper for `parseAonHtml` direct-call paths and unit tests.
  */
 export function extractWeaponGroup(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): WeaponGroupOutput {
-  const base    = extractWeaponGroupBase(c);
-  const content = extractWeaponGroupContent(c, $, target);
-  return finalizeWeaponGroup(c, base, content, $, target);
+  const base    = extractWeaponGroupBase(common);
+  const content = extractWeaponGroupContent(common, root, target);
+  return finalizeWeaponGroup(common, base, content, root, target);
 }
 
 // Re-export output types so tests can import from here.
@@ -229,83 +228,85 @@ export function extractWeaponGroup(
 
 export type WeaponGroupBaseOutput = 'success' | 'error';
 
-export const weaponGroupBaseNode: NodeInterface<ScrapeState, WeaponGroupBaseOutput, RipperServices> = {
-  name:    'extract:weapon-group-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class WeaponGroupBaseNodeImpl extends ScalarNode<ScrapeState, WeaponGroupBaseOutput> {
+  public readonly name = 'extract:weapon-group-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: WeaponGroupBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<WeaponGroupBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractWeaponGroupBase(c);
+    const base = extractWeaponGroupBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const weaponGroupBaseNode = new WeaponGroupBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type WeaponGroupContentOutput = 'success' | 'error';
 
-export const weaponGroupContentNode: NodeInterface<ScrapeState, WeaponGroupContentOutput, RipperServices> = {
-  name:    'extract:weapon-group-content',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class WeaponGroupContentNodeImpl extends ScalarNode<ScrapeState, WeaponGroupContentOutput> {
+  public readonly name = 'extract:weapon-group-content';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: WeaponGroupContentOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<WeaponGroupContentOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const content = extractWeaponGroupContent(c, $, target);
+    const content = extractWeaponGroupContent(common, root, target);
 
     state.output = { ...state.output, ...content };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const weaponGroupContentNode = new WeaponGroupContentNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeWeaponGroupOutput = 'success';
 
-export const finalizeWeaponGroupNode: NodeInterface<ScrapeState, FinalizeWeaponGroupOutput, RipperServices> = {
-  name:    'finalize:weapon-group',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeWeaponGroupNodeImpl extends ScalarNode<ScrapeState, FinalizeWeaponGroupOutput> {
+  public readonly name = 'finalize:weapon-group';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeWeaponGroupOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeWeaponGroupOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     state.output = state.output !== null
       ? {
@@ -313,8 +314,8 @@ export const finalizeWeaponGroupNode: NodeInterface<ScrapeState, FinalizeWeaponG
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       }
@@ -322,15 +323,16 @@ export const finalizeWeaponGroupNode: NodeInterface<ScrapeState, FinalizeWeaponG
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeWeaponGroupNode = new FinalizeWeaponGroupNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

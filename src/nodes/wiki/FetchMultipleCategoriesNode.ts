@@ -1,16 +1,18 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { CategoryMemberInterface } from '../../types/MediaWikiScraper.js';
 import type { MediaWikiScraper }        from '../../scrapers/MediaWikiScraper.js';
 import { toNodeError }                  from '../fileUtils.js';
 import type { MemberResolutionState }   from '../../state/MemberResolutionState.js';
-import type { RipperServices }             from '../../services/RipperServices.js';
+import type { RipperServices }          from '../../services/RipperServices.js';
 
 /** Returns true when the value exposes a `fetchCategory` method. */
-const isWikiScraper = (s: unknown): s is Pick<MediaWikiScraper, 'fetchCategory'> =>
-  typeof s === 'object' && s !== null &&
-  typeof (s as { fetchCategory?: unknown }).fetchCategory === 'function';
+const isWikiScraper = (val: unknown): val is Pick<MediaWikiScraper, 'fetchCategory'> =>
+  typeof val === 'object' && val !== null &&
+  typeof (val as { fetchCategory?: unknown }).fetchCategory === 'function';
+
+type FetchMultipleCategoriesOutput = 'success' | 'error';
 
 /**
  * Fetches members from all categories listed in `state.config.categories`,
@@ -23,18 +25,14 @@ const isWikiScraper = (s: unknown): s is Pick<MediaWikiScraper, 'fetchCategory'>
  * @category Nodes
  * @since 3.0.0
  */
-export const FetchMultipleCategoriesNode: NodeInterface<
-  MemberResolutionState,
-  'success' | 'error',
-  RipperServices
-> = {
-  name: 'wiki:fetch-multiple-categories',
-  outputs: ['success', 'error'],
+class FetchMultipleCategoriesNodeImpl extends ScalarNode<MemberResolutionState, FetchMultipleCategoriesOutput, RipperServices> {
+  public readonly name = 'wiki:fetch-multiple-categories';
+  public readonly outputs = ['success', 'error'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   MemberResolutionState,
-    context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<FetchMultipleCategoriesOutput>> {
     const { services } = context;
 
     if (!isWikiScraper(services.wikiScraper)) {
@@ -42,12 +40,12 @@ export const FetchMultipleCategoriesNode: NodeInterface<
         new Error('wiki:fetch-multiple-categories requires services.wikiScraper'),
         'wiki:fetch-multiple-categories',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const configCategories = state.config['categories'];
     const categories: string[] = Array.isArray(configCategories)
-      ? (configCategories as unknown[]).filter((c): c is string => typeof c === 'string')
+      ? (configCategories as unknown[]).filter((cat): cat is string => typeof cat === 'string')
       : [];
 
     const seen    = new Set<string>();
@@ -56,29 +54,23 @@ export const FetchMultipleCategoriesNode: NodeInterface<
     try {
       for (const cat of categories) {
         const batch = await services.wikiScraper.fetchCategory(cat);
-        for (const m of batch) {
-          if (!seen.has(m.title)) {
-            seen.add(m.title);
-            members.push(m);
+        for (const member of batch) {
+          if (!seen.has(member.title)) {
+            seen.add(member.title);
+            members.push(member);
           }
         }
       }
     } catch (err) {
       state.collectError(toNodeError(err, 'wiki:fetch-multiple-categories'));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     state.members = members;
     services.log.info('wiki:fetch-multiple-categories',
       `Mode: ${categories.length.toString()} categories — ${members.length.toString()} unique pages`);
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for FetchMultipleCategoriesNode: produces members from configured categories. */
-export const fetchMultipleCategoriesContract: OperationContract = {
-  name:         'wiki:fetch-multiple-categories',
-  hardRequired: [],
-  produces:     ['members'],
-  outputs:      ['success', 'error'],
-};
+export const FetchMultipleCategoriesNode = new FetchMultipleCategoriesNodeImpl();

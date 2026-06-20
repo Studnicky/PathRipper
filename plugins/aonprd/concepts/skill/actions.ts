@@ -5,7 +5,7 @@ import { parseActions } from './helpers.js';
 import type { SkillActionsSlice } from './types.js';
 
 /** Extract every `<h2 class="title">` action block under the skill page. */
-export function extractSkillActions(_c: CommonExtraction, $: CheerioAPI, span: any): SkillActionsSlice {
-  void _c;
-  return { actions: parseActions($, span) };
+export function extractSkillActions(_common: CommonExtraction, root: CheerioAPI, span: unknown): SkillActionsSlice {
+  void _common;
+  return { actions: parseActions(root, span) };
 }

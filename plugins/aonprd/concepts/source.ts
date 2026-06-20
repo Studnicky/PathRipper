@@ -3,12 +3,12 @@
 // release date, product line, source group, errata version, and an extensive
 // catalog of every entity sourced from that book organized by h2 category
 // headings. Helpers are inlined with inline contracts.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -133,12 +133,12 @@ export interface SourceMetaSlice {
  * Page values are rendered as `<u><a href="https://…">Paizo Store</a></u>`).
  * Falls back to the field's text value when no anchor is present.
  */
-function extractFieldHref(c: CommonExtraction, label: string): string | null {
-  for (const f of c.fields) {
-    if (f.label.toLowerCase() !== label.toLowerCase()) continue;
-    const m = /href="([^"]+)"/i.exec(f.value_html);
-    if (m !== null) return m[1]!;
-    const text = htmlToText(f.value_html).trim();
+function extractFieldHref(common: CommonExtraction, label: string): string | null {
+  for (const field of common.fields) {
+    if (field.label.toLowerCase() !== label.toLowerCase()) continue;
+    const match = /href="([^"]+)"/i.exec(field.value_html);
+    if (match !== null) return match[1]!;
+    const text = htmlToText(field.value_html).trim();
     return text === '' ? null : text;
   }
   return null;
@@ -153,20 +153,20 @@ function extractFieldHref(c: CommonExtraction, label: string): string | null {
  *
  * The category label is the h2's text with the trailing `[N]` count stripped.
  */
-function parseRelated($: CheerioAPI, target: CheerioNode): SourceRelated[] {
+function parseRelated(root: CheerioAPI, target: CheerioNode): SourceRelated[] {
   const out: SourceRelated[] = [];
   const seen = new Set<string>();
 
-  target.find('h2.title').each((_, el) => {
-    const $h = $(el);
-    const headingRaw = $h.text().replace(/\s+/g, ' ').trim();
+  target.find('h2.title').each((_index, element) => {
+    const $heading = root(element);
+    const headingRaw = $heading.text().replace(/\s+/g, ' ').trim();
     if (headingRaw === '') return;
     // Strip trailing "[N]" entity count for a clean category label.
     const category = headingRaw.replace(/\s*\[\d+\]\s*$/, '').trim();
     if (category === '') return;
 
     // Collect anchors between this heading and the next h2/h3.
-    let cur = ($h.get(0) as { next: { tagName?: string; type: string } | null } | undefined)?.next ?? null;
+    let cur = ($heading.get(0) as { next: { tagName?: string; type: string } | null } | undefined)?.next ?? null;
     while (cur !== null) {
       // Cheerio's Element typings vary; cast to a minimal shape for traversal.
       const node = cur as unknown as { type: string; tagName?: string; next: unknown };
@@ -175,17 +175,17 @@ function parseRelated($: CheerioAPI, target: CheerioNode): SourceRelated[] {
         if (tag === 'h2' || tag === 'h3' || tag === 'h1') break;
       }
       // Collect every anchor reachable from this node.
-      const $wrapper = $(cur as unknown as Parameters<typeof $>[0]);
-      $wrapper.find('a[href]').addBack('a[href]').each((__, a) => {
-        const $a = $(a);
-        const href = $a.attr('href') ?? '';
+      const $wrapper = root(cur as unknown as Parameters<typeof root>[0]);
+      $wrapper.find('a[href]').addBack('a[href]').each((_innerIndex, anchor) => {
+        const $anchor = root(anchor);
+        const href = $anchor.attr('href') ?? '';
         if (href === '') return;
         const aspxMatch = /([A-Za-z][A-Za-z0-9]*)\.aspx/.exec(href);
         if (aspxMatch === null) return;
         const kind = aspxMatch[1]!;
         const idMatch = /\?ID=(\d+)/i.exec(href);
         const aon_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-        const name = htmlToText($a.html() ?? '');
+        const name = htmlToText($anchor.html() ?? '');
         if (name === '') return;
         const key = `${href}|${name}|${category}`;
         if (seen.has(key)) return;
@@ -202,40 +202,40 @@ function parseRelated($: CheerioAPI, target: CheerioNode): SourceRelated[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a source page. */
-export function extractSourceBase(c: CommonExtraction): SourceBaseSlice {
+export function extractSourceBase(common: CommonExtraction): SourceBaseSlice {
   return {
-    url:             c.url,
-    source_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    source_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract the four product-metadata fields plus optional errata version. */
-export function extractSourceMetadata(c: CommonExtraction): SourceMetadataSlice {
+export function extractSourceMetadata(common: CommonExtraction): SourceMetadataSlice {
   return {
-    product_page:  extractFieldHref(c, 'Product Page'),
-    release_date:  getField(c, 'Release Date'),
-    product_line:  getField(c, 'Product Line'),
-    source_group:  getField(c, 'Source Group'),
-    latest_errata: getField(c, 'Latest Errata'),
+    product_page:  extractFieldHref(common, 'Product Page'),
+    release_date:  getField(common, 'Release Date'),
+    product_line:  getField(common, 'Product Line'),
+    source_group:  getField(common, 'Source Group'),
+    latest_errata: getField(common, 'Latest Errata'),
   };
 }
 
 /** Extract catalog cross-references from the `<h2 class="title">` sections. */
-export function extractSourceRelated($: CheerioAPI, target: CheerioNode): SourceRelatedSlice {
-  return { related_sources: parseRelated($, target) };
+export function extractSourceRelated(root: CheerioAPI, target: CheerioNode): SourceRelatedSlice {
+  return { related_sources: parseRelated(root, target) };
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractSourceMeta(_c: CommonExtraction): SourceMetaSlice {
+export function extractSourceMeta(_common: CommonExtraction): SourceMetaSlice {
   return { __source_meta_marked: true };
 }
 
@@ -250,17 +250,17 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeSource(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      SourceBaseSlice,
   metadata:  SourceMetadataSlice,
   related:   SourceRelatedSlice,
   _meta:     SourceMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
   _target:   CheerioNode,
 ): SourceOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     product_page:     metadata.product_page,
@@ -269,16 +269,16 @@ export function finalizeSource(
     source_group:     metadata.source_group,
     latest_errata:    metadata.latest_errata,
     related_sources:  related.related_sources,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
     // Sources.aspx has no `<hr/>` separator so `body_html` is empty after the
     // shared `splitOnHr` fallback — fall back to the canonical span-wide link
     // harvest so catalog anchors aren't dropped.
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies SourceOutput;
 }
 
@@ -289,15 +289,15 @@ export function finalizeSource(
  * tests.
  */
 export function extractSource(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): SourceOutput {
-  const base     = extractSourceBase(c);
-  const metadata = extractSourceMetadata(c);
-  const related  = extractSourceRelated($, target);
-  const meta     = extractSourceMeta(c);
-  return finalizeSource(c, base, metadata, related, meta, $, target);
+  const base     = extractSourceBase(common);
+  const metadata = extractSourceMetadata(common);
+  const related  = extractSourceRelated(root, target);
+  const meta     = extractSourceMeta(common);
+  return finalizeSource(common, base, metadata, related, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -305,114 +305,118 @@ export function extractSource(
 
 export type SourceBaseOutput = 'success' | 'error';
 
-export const sourceBaseNode: NodeInterface<ScrapeState, SourceBaseOutput, RipperServices> = {
-  name:    'extract:source-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SourceBaseNodeImpl extends ScalarNode<ScrapeState, SourceBaseOutput> {
+  public readonly name    = 'extract:source-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SourceBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SourceBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSourceBase(c);
+    const base = extractSourceBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const sourceBaseNode = new SourceBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SourceMetadataOutput = 'success' | 'error';
 
-export const sourceMetadataNode: NodeInterface<ScrapeState, SourceMetadataOutput, RipperServices> = {
-  name:    'extract:source-metadata',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SourceMetadataNodeImpl extends ScalarNode<ScrapeState, SourceMetadataOutput> {
+  public readonly name    = 'extract:source-metadata';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SourceMetadataOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SourceMetadataOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const metadata = extractSourceMetadata(c);
+    const metadata = extractSourceMetadata(common);
 
     state.output = { ...state.output, ...metadata };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const sourceMetadataNode = new SourceMetadataNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SourceRelatedOutput = 'success' | 'error';
 
-export const sourceRelatedNode: NodeInterface<ScrapeState, SourceRelatedOutput, RipperServices> = {
-  name:    'extract:source-related',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SourceRelatedNodeImpl extends ScalarNode<ScrapeState, SourceRelatedOutput> {
+  public readonly name    = 'extract:source-related';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SourceRelatedOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SourceRelatedOutput>> {
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if ($ === undefined || target === undefined) return { output: 'error' };
+    if (root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const related = extractSourceRelated($, target);
+    const related = extractSourceRelated(root, target);
 
     state.output = { ...state.output, ...related };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const sourceRelatedNode = new SourceRelatedNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeSourceOutput = 'success';
 
-export const finalizeSourceNode: NodeInterface<ScrapeState, FinalizeSourceOutput, RipperServices> = {
-  name:    'finalize:source',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeSourceNodeImpl extends ScalarNode<ScrapeState, FinalizeSourceOutput> {
+  public readonly name    = 'finalize:source';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSourceOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSourceOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     // Pass a meta marker inline — finalizeSource ignores it (void _meta).
-    const meta     = { __source_meta_marked: true as const };
-    const acc = (state.output ?? {}) as unknown as SourceOutput;
-    const assembled = finalizeSource(c, acc, acc, acc, meta, $, target);
+    const meta  = { __source_meta_marked: true as const };
+    const acc   = (state.output ?? {}) as unknown as SourceOutput;
+    const assembled = finalizeSource(common, acc, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeSourceNode = new FinalizeSourceNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

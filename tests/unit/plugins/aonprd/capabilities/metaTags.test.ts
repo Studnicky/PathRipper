@@ -1,5 +1,6 @@
 // Unit tests for `extract:meta-tags` capability.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode } from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -11,9 +12,9 @@ describe('extract:meta-tags — language-common fixture', () => {
   it('extracts description and keywords from <meta> tags into aonprdMetaTags', async () => {
     const html  = await loadFixture('language-common.html');
     const state = makeState(html, 'https://2e.aonprd.com/Languages.aspx?ID=1');
-    await loadAndCommonNode.execute(state, stubContext);
-    const r = await metaTagsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await loadAndCommonNode.execute(Batch.of(state), stubContext);
+    const result = await metaTagsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
     const meta = state.getMetadata<AonprdMetaTags>('aonprdMetaTags');
     assert.ok(meta !== undefined, 'aonprdMetaTags missing on state');
@@ -24,8 +25,8 @@ describe('extract:meta-tags — language-common fixture', () => {
 
   it('soft-fails to success with no metadata when aonprdCheerio is missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Languages.aspx?ID=1');
-    const r = await metaTagsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await metaTagsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
     assert.equal(state.getMetadata('aonprdMetaTags'), undefined);
   });
 });

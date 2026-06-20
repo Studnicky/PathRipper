@@ -1,8 +1,10 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { CliState }    from '../../state/CliState.js';
 import type { CliServices } from './Services.js';
+
+type ExitOutput = 'success';
 
 /**
  * Terminal node for the CLI scrape DAG.
@@ -25,14 +27,14 @@ import type { CliServices } from './Services.js';
  * @category Nodes
  * @since 3.1.0
  */
-export const ExitNode: NodeInterface<CliState, 'success', CliServices> = {
-  name:    'cli:exit',
-  outputs: ['success'],
+class ExitNodeImpl extends ScalarNode<CliState, ExitOutput, CliServices> {
+  public readonly name = 'cli:exit';
+  public readonly outputs = ['success'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' }> {
+    context: NodeContextType<CliServices>,
+  ): Promise<NodeOutputType<ExitOutput>> {
     const log = context.services.log;
 
     if (state.errorMessage.length > 0) {
@@ -46,14 +48,8 @@ export const ExitNode: NodeInterface<CliState, 'success', CliServices> = {
       log.debug('ExitNode', 'Exiting with code 0');
     }
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for ExitNode: reads errorMessage + failedCount, produces exitCode. */
-export const exitNodeContract: OperationContract = {
-  name:         'cli:exit',
-  hardRequired: ['errorMessage', 'failedCount'],
-  produces:     ['exitCode'],
-  outputs:      ['success'],
-};
+export const ExitNode = new ExitNodeImpl();

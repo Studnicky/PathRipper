@@ -1,4 +1,5 @@
 import { describe, it, before, after } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -27,9 +28,9 @@ describe('ReadFileNode', () => {
     const state = new ConfigLoadState();
     state.path  = filePath;
 
-    const result = await ReadFileNode.execute(state, makeContext());
+    const result = await ReadFileNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.raw, '{"a":1}');
     assert.equal(state.errors.length, 0);
   });
@@ -38,9 +39,9 @@ describe('ReadFileNode', () => {
     const state = new ConfigLoadState();
     state.path  = join(tmpDir, 'does-not-exist.json');
 
-    const result = await ReadFileNode.execute(state, makeContext());
+    const result = await ReadFileNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'not-found');
+    assert.ok(result.has('not-found'));
     assert.equal(state.errors.length, 1);
     assert.ok(state.errors[0]?.message.length ?? 0 > 0);
     assert.equal(state.raw, '');
@@ -50,7 +51,7 @@ describe('ReadFileNode', () => {
     const state = new ConfigLoadState();
     state.path  = join(tmpDir, 'no-file.json');
 
-    await ReadFileNode.execute(state, makeContext());
+    await ReadFileNode.execute(Batch.of(state), makeContext());
 
     const err = state.errors[0];
     assert.ok(err !== undefined);

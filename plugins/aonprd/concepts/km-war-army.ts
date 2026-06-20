@@ -5,12 +5,12 @@
 // Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-war-army/.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -135,16 +135,16 @@ export interface KmWarArmyMetaSlice {
 const ARMY_TYPE_TAGS: ReadonlySet<string> = new Set(['Infantry', 'Skirmisher', 'Cavalry', 'Siege']);
 
 function pickAncestryTag(traits: ReadonlyArray<string>): string | null {
-  for (const t of traits) {
-    if (ARMY_TYPE_TAGS.has(t)) return t;
+  for (const trait of traits) {
+    if (ARMY_TYPE_TAGS.has(trait)) return trait;
   }
   return null;
 }
 
-function clean(s: string | null): string | null {
-  if (s === null) return null;
-  const t = s.trim().replace(/[;,]\s*$/, '').trim();
-  return t === '' ? null : t;
+function clean(str: string | null): string | null {
+  if (str === null) return null;
+  const trimmed = str.trim().replace(/[;,]\s*$/, '').trim();
+  return trimmed === '' ? null : trimmed;
 }
 
 /** Parse an attack line: "weapons +9" → {bonus: 9}; "javelins +12 (5 shots)" → {bonus:12, shots:5}. */
@@ -163,9 +163,9 @@ function parseAttack(raw: string | null): KmWarArmyAttack | null {
 function pickValue(body: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(body);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(body);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = body.slice(start);
   const boundary = /<b>|<br\s*\/?>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
@@ -199,10 +199,10 @@ function abilitiesStart(body: string): number {
     /<b>\s*HP\s*<\/b>[\s\S]*?<br\s*\/?>/i,
   ];
   let pos = -1;
-  for (const re of labels) {
-    const m = re.exec(body);
-    if (m === null) continue;
-    const end = m.index + m[0].length;
+  for (const regex of labels) {
+    const match = regex.exec(body);
+    if (match === null) continue;
+    const end = match.index + match[0].length;
     if (end > pos) pos = end;
   }
   return pos;
@@ -219,17 +219,17 @@ function parseAbilities(body: string): KmWarArmyAbility[] {
   if (start < 0) return [];
   const tail = body.slice(start);
   const out: KmWarArmyAbility[] = [];
-  const re = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|<\/span>|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(tail)) !== null) {
-    const name = (m[1] ?? '').trim();
+  const regex = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|<\/span>|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(tail)) !== null) {
+    const name = (match[1] ?? '').trim();
     if (name === '') continue;
     if (NON_ABILITY_LABELS.has(name.toLowerCase())) continue;
-    const rest = (m[2] ?? '').replace(/^\s*[:;,]\s*/, '');
+    const rest = (match[2] ?? '').replace(/^\s*[:;,]\s*/, '');
     // Optional `(qualifier) text` at the start of the value.
-    const qm = /^\(([^)]+)\)\s*([\s\S]*)$/.exec(rest);
-    const qualifier = qm !== null ? qm[1]!.trim() : null;
-    const valueHtml = qm !== null ? (qm[2] ?? '') : rest;
+    const qualMatch = /^\(([^)]+)\)\s*([\s\S]*)$/.exec(rest);
+    const qualifier = qualMatch !== null ? qualMatch[1]!.trim() : null;
+    const valueHtml = qualMatch !== null ? (qualMatch[2] ?? '') : rest;
     const text = htmlToText(valueHtml).trim();
     out.push({ name, qualifier, text });
   }
@@ -238,37 +238,37 @@ function parseAbilities(body: string): KmWarArmyAbility[] {
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractKmWarArmyBase(c: CommonExtraction): KmWarArmyBaseSlice {
+export function extractKmWarArmyBase(common: CommonExtraction): KmWarArmyBaseSlice {
   return {
-    url:             c.url,
-    army_id:         extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    level:           c.title.level,
-    ancestry:        pickAncestryTag(c.traits.traits),
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    army_id:         extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    level:           common.title.level,
+    ancestry:        pickAncestryTag(common.traits.traits),
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
-export function extractKmWarArmyStatblock(c: CommonExtraction): KmWarArmyStatblockSlice {
-  const body = c.body_html;
-  const fromField = (...keys: string[]): string | null => clean(getField(c, ...keys));
+export function extractKmWarArmyStatblock(common: CommonExtraction): KmWarArmyStatblockSlice {
+  const body = common.body_html;
+  const fromField = (...keys: string[]): string | null => clean(getField(common, ...keys));
 
   // Stats sometimes appear in field_map (when harvestFields can see them) or
   // only in body — try both.
   const scouting    = fromField('Scouting', 'Scout')    ?? pickValue(body, 'Scouting') ?? pickValue(body, 'Scout');
   const recruitment = fromField('Recruitment')          ?? pickValue(body, 'Recruitment');
   const consumption = fromField('Consumption')          ?? pickValue(body, 'Consumption');
-  const ac          = fromField('AC')                   ?? pickValue(body, 'AC');
+  const armorClass  = fromField('AC')                   ?? pickValue(body, 'AC');
   const maneuver    = fromField('Maneuver')             ?? pickValue(body, 'Maneuver');
   const morale      = fromField('Morale')               ?? pickValue(body, 'Morale');
-  const hp          = fromField('HP')                   ?? pickValue(body, 'HP');
+  const hitPoints   = fromField('HP')                   ?? pickValue(body, 'HP');
   const meleeRaw    = fromField('Melee')                ?? pickValue(body, 'Melee');
   const rangedRaw   = fromField('Ranged')               ?? pickValue(body, 'Ranged');
 
@@ -277,20 +277,20 @@ export function extractKmWarArmyStatblock(c: CommonExtraction): KmWarArmyStatblo
     recruitment,
     consumption,
     description: extractDescription(body),
-    ac,
+    ac:      armorClass,
     maneuver,
     morale,
-    hp,
-    melee:  parseAttack(meleeRaw),
-    ranged: parseAttack(rangedRaw),
+    hp:      hitPoints,
+    melee:   parseAttack(meleeRaw),
+    ranged:  parseAttack(rangedRaw),
   };
 }
 
-export function extractKmWarArmyAbilities(c: CommonExtraction): KmWarArmyAbilitiesSlice {
-  return { abilities: parseAbilities(c.body_html) };
+export function extractKmWarArmyAbilities(common: CommonExtraction): KmWarArmyAbilitiesSlice {
+  return { abilities: parseAbilities(common.body_html) };
 }
 
-export function extractKmWarArmyMeta(_c: CommonExtraction): KmWarArmyMetaSlice {
+export function extractKmWarArmyMeta(_common: CommonExtraction): KmWarArmyMetaSlice {
   return { __km_war_army_meta_marked: true };
 }
 
@@ -303,35 +303,35 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeKmWarArmy(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      KmWarArmyBaseSlice,
   stat:      KmWarArmyStatblockSlice,
   abilities: KmWarArmyAbilitiesSlice,
   _meta:     KmWarArmyMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): KmWarArmyOutput {
   void _meta;
   return {
     ...base,
     ...stat,
     abilities:        abilities.abilities,
-    sections:         c.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    sections:         common.sections,
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies KmWarArmyOutput;
 }
 
-export function extractKmWarArmy(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmWarArmyOutput {
+export function extractKmWarArmy(common: CommonExtraction, root: CheerioAPI, target: CheerioNode): KmWarArmyOutput {
   void target;
-  const base      = extractKmWarArmyBase(c);
-  const stat      = extractKmWarArmyStatblock(c);
-  const abilities = extractKmWarArmyAbilities(c);
-  const meta      = extractKmWarArmyMeta(c);
-  return finalizeKmWarArmy(c, base, stat, abilities, meta, $);
+  const base      = extractKmWarArmyBase(common);
+  const stat      = extractKmWarArmyStatblock(common);
+  const abilities = extractKmWarArmyAbilities(common);
+  const meta      = extractKmWarArmyMeta(common);
+  return finalizeKmWarArmy(common, base, stat, abilities, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -339,114 +339,122 @@ export function extractKmWarArmy(c: CommonExtraction, $: CheerioAPI, target: Che
 
 export type KmWarArmyBaseOutput = 'success' | 'error';
 
-export const kmWarArmyBaseNode: NodeInterface<ScrapeState, KmWarArmyBaseOutput, RipperServices> = {
-  name:    'extract:km-war-army-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class KmWarArmyBaseNode extends ScalarNode<ScrapeState, KmWarArmyBaseOutput> {
+  public readonly name = 'extract:km-war-army-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmWarArmyBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmWarArmyBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractKmWarArmyBase(c);
+    const base = extractKmWarArmyBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const kmWarArmyBaseNode = new KmWarArmyBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type KmWarArmyStatblockOutput = 'success' | 'error';
 
-export const kmWarArmyStatblockNode: NodeInterface<ScrapeState, KmWarArmyStatblockOutput, RipperServices> = {
-  name:    'extract:km-war-army-statblock',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class KmWarArmyStatblockNode extends ScalarNode<ScrapeState, KmWarArmyStatblockOutput> {
+  public readonly name = 'extract:km-war-army-statblock';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmWarArmyStatblockOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmWarArmyStatblockOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const stat = extractKmWarArmyStatblock(c);
+    const stat = extractKmWarArmyStatblock(common);
 
     state.output = { ...state.output, ...stat };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const kmWarArmyStatblockNode = new KmWarArmyStatblockNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type KmWarArmyAbilitiesOutput = 'success' | 'error';
 
-export const kmWarArmyAbilitiesNode: NodeInterface<ScrapeState, KmWarArmyAbilitiesOutput, RipperServices> = {
-  name:    'extract:km-war-army-abilities',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class KmWarArmyAbilitiesNode extends ScalarNode<ScrapeState, KmWarArmyAbilitiesOutput> {
+  public readonly name = 'extract:km-war-army-abilities';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmWarArmyAbilitiesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmWarArmyAbilitiesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractKmWarArmyAbilities(c);
+    const slice = extractKmWarArmyAbilities(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const kmWarArmyAbilitiesNode = new KmWarArmyAbilitiesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeKmWarArmyOutput = 'success';
 
-export const finalizeKmWarArmyNode: NodeInterface<ScrapeState, FinalizeKmWarArmyOutput, RipperServices> = {
-  name:    'finalize:km-war-army',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeKmWarArmyNode extends ScalarNode<ScrapeState, FinalizeKmWarArmyOutput> {
+  public readonly name = 'finalize:km-war-army';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeKmWarArmyOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeKmWarArmyOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
 
     // meta arg is unused by finalizeKmWarArmy (marker only)
     const acc = (state.output ?? {}) as unknown as KmWarArmyOutput;
-    const assembled = finalizeKmWarArmy(c, acc, acc, acc, { __km_war_army_meta_marked: true }, $);
+    const assembled = finalizeKmWarArmy(common, acc, acc, acc, { __km_war_army_meta_marked: true }, root);
     void target;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeKmWarArmyNode = new FinalizeKmWarArmyNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

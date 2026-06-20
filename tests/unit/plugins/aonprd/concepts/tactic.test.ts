@@ -1,5 +1,6 @@
 // Unit tests for tactic concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }     from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/tactic.js';
 import type { TacticOutput } from '../../../../../plugins/aonprd/concepts/tactic.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 // Mirrored Wall (ID=22): Two-Actions, Master category.
 const FIXTURE = 'tactic-mirrored-wall.html';
@@ -18,25 +20,25 @@ const URL     = 'https://2e.aonprd.com/Tactics.aspx?ID=22';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await tacticBaseNode.execute(state, stubContext);
-  await tacticMechanicsNode.execute(state, stubContext);
-  await finalizeTacticNode.execute(state, stubContext);
-  return state.output as TacticOutput;
+  await tacticBaseNode.execute(Batch.of(state), stubContext);
+  await tacticMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeTacticNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<TacticOutput>(state.output);
 }
 
 describe('extract:tactic-base — tactic-mirrored-wall', () => {
   it('produces _type, name, tactic_id, and action_cost', async () => {
     const state = await primeState();
-    const r = await tacticBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await tacticBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as TacticOutput;
+    const out = ParsedOutput.as<TacticOutput>(state.output);
     assert.equal(out.name, 'Mirrored Wall');
     assert.equal(out.tactic_id, 22);
     assert.ok('action_cost' in out, 'action_cost field present');
@@ -47,19 +49,19 @@ describe('extract:tactic-base — tactic-mirrored-wall', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await tacticBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await tacticBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:tactic-mechanics — tactic-mirrored-wall', () => {
   it('produces effect text', async () => {
     const state = await primeState();
-    await tacticBaseNode.execute(state, stubContext);
-    const r = await tacticMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await tacticBaseNode.execute(Batch.of(state), stubContext);
+    const result = await tacticMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as TacticOutput;
+    const out = ParsedOutput.as<TacticOutput>(state.output);
     assert.ok(typeof out.effect === 'string', 'effect is string');
     assert.ok(out.effect.length > 0, 'effect is non-empty');
     assert.ok('prerequisites' in out, 'prerequisites field present');
@@ -71,8 +73,8 @@ describe('extract:tactic-mechanics — tactic-mirrored-wall', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await tacticMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await tacticMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -98,7 +100,7 @@ describe('finalize:tactic — tactic-mirrored-wall', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeTacticNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeTacticNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

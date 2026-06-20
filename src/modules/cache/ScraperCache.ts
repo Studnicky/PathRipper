@@ -260,11 +260,11 @@ export class ScraperCache {
     const entries = await this.collectMetaEntries();
     if (entries.length <= maxEntries) return;
 
-    entries.sort((a, b): number => Date.parse(a.meta.fetchedAt) - Date.parse(b.meta.fetchedAt));
+    entries.sort((entryA, entryB): number => Date.parse(entryA.meta.fetchedAt) - Date.parse(entryB.meta.fetchedAt));
     const evictCount = entries.length - maxEntries;
 
-    for (let i = 0; i < evictCount; i++) {
-      const entry = entries[i];
+    for (let index = 0; index < evictCount; index++) {
+      const entry = entries[index];
       if (entry === undefined) continue;
       if (entry.key === currentKey) continue;
       if (this.isUnderBodyDir(entry.meta.bodyPath)) {
@@ -296,13 +296,13 @@ export class ScraperCache {
         if (isEnoent(error)) continue;
         throw error;
       }
-      for (const f of files) {
-        if (!f.endsWith(META_SUFFIX)) continue;
-        const metaPath = join(shardDir, f);
+      for (const file of files) {
+        if (!file.endsWith(META_SUFFIX)) continue;
+        const metaPath = join(shardDir, file);
         try {
           const raw  = await readFile(metaPath, 'utf8');
           const meta = JSON.parse(raw) as CacheMetaInterface;
-          const key  = `${shard}${f.slice(0, -META_SUFFIX.length)}`;
+          const key  = `${shard}${file.slice(0, -META_SUFFIX.length)}`;
           out.push({ key, metaPath, meta });
         } catch {
           // skip malformed
@@ -325,9 +325,9 @@ export class ScraperCache {
   private static sortHeaders(headers: Record<string, string> | undefined): Record<string, string> {
     if (headers === undefined) return {};
     const sorted: Record<string, string> = {};
-    for (const k of Object.keys(headers).sort()) {
-      const value = headers[k];
-      if (value !== undefined) sorted[k] = value;
+    for (const key of Object.keys(headers).sort()) {
+      const value = headers[key];
+      if (value !== undefined) sorted[key] = value;
     }
     return sorted;
   }

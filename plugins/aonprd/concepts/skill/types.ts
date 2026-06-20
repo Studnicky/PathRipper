@@ -80,7 +80,7 @@ export interface SkillOutput {
   /** Linked partner skill (rare; appears on Specialty-style entries). */
   corresponding_skill: { name: string; skill_id: number | null } | null;
   raw_fields:          Record<string, string>;
-  links:               any[];
+  links:               unknown[];
   body_text:           string;
   body_html:           string;
   /** `<meta name="description">` content. */
@@ -127,7 +127,7 @@ export interface SkillMetaSlice {
   corresponding_skill: { name: string; skill_id: number | null } | null;
   body_text:           string;
   body_html:           string;
-  links:               any[];
+  links:               unknown[];
   meta_description:    string | null;
   meta_keywords:       string | null;
 }

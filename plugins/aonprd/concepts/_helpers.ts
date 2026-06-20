@@ -74,25 +74,25 @@ export interface BaseShape {
  * Single source of truth for the per-page projection that every entity-style
  * concept extends.
  */
-export function baseFrom(c: CommonExtraction, $: CheerioAPI): BaseShape {
+export function baseFrom(common: CommonExtraction, root: CheerioAPI): BaseShape {
   return {
-    url:             c.url,
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    sections:        c.sections,
-    raw_fields:      { ...c.field_map },
-    links:           c.links,
-    body_text:       c.body_text,
-    body_html:       c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:   extractMetaKeywords($),
+    url:             common.url,
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    sections:        common.sections,
+    raw_fields:      { ...common.field_map },
+    links:           common.links,
+    body_text:       common.body_text,
+    body_html:       common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:   extractMetaKeywords(root),
   };
 }
 

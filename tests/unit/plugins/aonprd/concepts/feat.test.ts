@@ -1,5 +1,6 @@
 // Unit tests for feat concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -15,25 +16,26 @@ import {
 } from '../../../../../plugins/aonprd/concepts/feat.js';
 import type { FeatOutput } from '../../../../../plugins/aonprd/concepts/feat.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await featBaseNode.execute(state, stubContext);
-  await featPrerequisitesNode.execute(state, stubContext);
-  await featEffectNode.execute(state, stubContext);
-  await featMetaNode.execute(state, stubContext);
-  await finalizeFeatNode.execute(state, stubContext);
-  return state.output as FeatOutput;
+  await featBaseNode.execute(Batch.of(state), stubContext);
+  await featPrerequisitesNode.execute(Batch.of(state), stubContext);
+  await featEffectNode.execute(Batch.of(state), stubContext);
+  await featMetaNode.execute(Batch.of(state), stubContext);
+  await finalizeFeatNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<FeatOutput>(state.output);
 }
 
 // ─── extract:feat-base ────────────────────────────────────────────────────────
@@ -41,10 +43,10 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:feat-base — feat-dwarven-lore', () => {
   it('produces _type, name, feat_id, level', async () => {
     const state = await primeState('feat-dwarven-lore.html', 'https://2e.aonprd.com/Feats.aspx?ID=17');
-    const r = await featBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await featBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as FeatOutput;
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.equal(out.name, 'Dwarven Lore');
     assert.equal(out.feat_id, 17);
     assert.ok(typeof out.level === 'number' || out.level === null, 'level should be number or null');
@@ -52,8 +54,8 @@ describe('extract:feat-base — feat-dwarven-lore', () => {
 
   it('meta_description and meta_keywords are string or null', async () => {
     const state = await primeState('feat-dwarven-lore.html', 'https://2e.aonprd.com/Feats.aspx?ID=17');
-    await featBaseNode.execute(state, stubContext);
-    const out = state.output as FeatOutput;
+    await featBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.ok(
       out.meta_description === null || typeof out.meta_description === 'string',
       'meta_description type mismatch',
@@ -62,8 +64,8 @@ describe('extract:feat-base — feat-dwarven-lore', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Feats.aspx?ID=17');
-    const r = await featBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await featBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -72,28 +74,28 @@ describe('extract:feat-base — feat-dwarven-lore', () => {
 describe('extract:feat-prerequisites — feat-with-class', () => {
   it('produces archetypes and class_archetypes arrays', async () => {
     const state = await primeState('feat-with-class.html', 'https://2e.aonprd.com/Feats.aspx?ID=2849');
-    await featBaseNode.execute(state, stubContext);
-    const r = await featPrerequisitesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await featBaseNode.execute(Batch.of(state), stubContext);
+    const result = await featPrerequisitesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as FeatOutput;
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.ok(Array.isArray(out.archetypes), 'archetypes should be an array');
     assert.ok(Array.isArray(out.class_archetypes), 'class_archetypes should be an array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Feats.aspx?ID=2849');
-    const r = await featPrerequisitesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await featPrerequisitesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:feat-prerequisites — feat-with-related-feats (has archetype link)', () => {
   it('archetypes contains at least one entry', async () => {
     const state = await primeState('feat-with-related-feats.html', 'https://2e.aonprd.com/Feats.aspx?ID=316');
-    await featBaseNode.execute(state, stubContext);
-    await featPrerequisitesNode.execute(state, stubContext);
-    const out = state.output as FeatOutput;
+    await featBaseNode.execute(Batch.of(state), stubContext);
+    await featPrerequisitesNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.ok(Array.isArray(out.archetypes), 'archetypes should be an array');
   });
 });
@@ -103,18 +105,18 @@ describe('extract:feat-prerequisites — feat-with-related-feats (has archetype 
 describe('extract:feat-effect — feat-dwarven-lore', () => {
   it('produces description_text and description_html', async () => {
     const state = await primeState('feat-dwarven-lore.html', 'https://2e.aonprd.com/Feats.aspx?ID=17');
-    const r = await featEffectNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await featEffectNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as FeatOutput;
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.ok(typeof out.description_text === 'string' && out.description_text.length > 0, 'description_text should be non-empty');
     assert.ok(typeof out.description_html === 'string', 'description_html missing');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Feats.aspx?ID=17');
-    const r = await featEffectNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await featEffectNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -123,21 +125,21 @@ describe('extract:feat-effect — feat-dwarven-lore', () => {
 describe('extract:feat-meta — feat-with-related-feats', () => {
   it('produces leads_to and related_feats arrays', async () => {
     const state = await primeState('feat-with-related-feats.html', 'https://2e.aonprd.com/Feats.aspx?ID=316');
-    await featBaseNode.execute(state, stubContext);
-    await featPrerequisitesNode.execute(state, stubContext);
-    await featEffectNode.execute(state, stubContext);
-    const r = await featMetaNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await featBaseNode.execute(Batch.of(state), stubContext);
+    await featPrerequisitesNode.execute(Batch.of(state), stubContext);
+    await featEffectNode.execute(Batch.of(state), stubContext);
+    const result = await featMetaNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as FeatOutput;
+    const out = ParsedOutput.as<FeatOutput>(state.output);
     assert.ok(Array.isArray(out.leads_to), 'leads_to should be an array');
     assert.ok(Array.isArray(out.related_feats), 'related_feats should be an array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Feats.aspx?ID=316');
-    const r = await featMetaNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await featMetaNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 

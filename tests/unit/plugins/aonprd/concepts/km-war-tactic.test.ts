@@ -1,5 +1,6 @@
 // Unit tests for km-war-tactic concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }          from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/km-war-tactic.js';
 import type { KmWarTacticOutput } from '../../../../../plugins/aonprd/concepts/km-war-tactic.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'km-war-tactic-ambush.html';
 const URL     = 'https://2e.aonprd.com/KMWarTactics.aspx?ID=1';
@@ -17,25 +19,25 @@ const URL     = 'https://2e.aonprd.com/KMWarTactics.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await kmWarTacticBaseNode.execute(state, stubContext);
-  await kmWarTacticMechanicsNode.execute(state, stubContext);
-  await finalizeKmWarTacticNode.execute(state, stubContext);
-  return state.output as KmWarTacticOutput;
+  await kmWarTacticBaseNode.execute(Batch.of(state), stubContext);
+  await kmWarTacticMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeKmWarTacticNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<KmWarTacticOutput>(state.output);
 }
 
 describe('extract:km-war-tactic-base — km-war-tactic-ambush', () => {
   it('produces _type, name, tactic_id, and army_types', async () => {
     const state = await primeState();
-    const r = await kmWarTacticBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await kmWarTacticBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmWarTacticOutput;
+    const out = ParsedOutput.as<KmWarTacticOutput>(state.output);
     assert.equal(out.name, 'Ambush');
     assert.equal(out.tactic_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -44,19 +46,19 @@ describe('extract:km-war-tactic-base — km-war-tactic-ambush', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmWarTacticBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmWarTacticBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:km-war-tactic-mechanics — km-war-tactic-ambush', () => {
   it('produces effect and mechanic fields', async () => {
     const state = await primeState();
-    await kmWarTacticBaseNode.execute(state, stubContext);
-    const r = await kmWarTacticMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await kmWarTacticBaseNode.execute(Batch.of(state), stubContext);
+    const result = await kmWarTacticMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmWarTacticOutput;
+    const out = ParsedOutput.as<KmWarTacticOutput>(state.output);
     assert.ok(typeof out.effect === 'string', 'effect is string');
     assert.ok(out.effect.length > 0, 'effect is non-empty');
     assert.ok('prerequisites' in out, 'prerequisites field present');
@@ -66,8 +68,8 @@ describe('extract:km-war-tactic-mechanics — km-war-tactic-ambush', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmWarTacticMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmWarTacticMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -95,7 +97,7 @@ describe('finalize:km-war-tactic — km-war-tactic-ambush', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeKmWarTacticNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeKmWarTacticNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

@@ -6,11 +6,11 @@
  * The finalize node recomputes the full output from scratch so raw_fields can see
  * the complete picture of claimed labels.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -23,55 +23,59 @@ export type { WeaponOutput } from './types.js';
 
 export type WeaponBaseOutput = 'success' | 'error';
 
-export const weaponBaseNode: NodeInterface<ScrapeState, WeaponBaseOutput, RipperServices> = {
-  name:    'extract:weapon-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class WeaponBaseNode extends ScalarNode<ScrapeState, WeaponBaseOutput> {
+  public readonly name = 'extract:weapon-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: WeaponBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<WeaponBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractWeaponBase(c);
+    const base = extractWeaponBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const weaponBaseNode = new WeaponBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type WeaponMechanicsOutput = 'success' | 'error';
 
-export const weaponMechanicsNode: NodeInterface<ScrapeState, WeaponMechanicsOutput, RipperServices> = {
-  name:    'extract:weapon-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class WeaponMechanicsNode extends ScalarNode<ScrapeState, WeaponMechanicsOutput> {
+  public readonly name = 'extract:weapon-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: WeaponMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<WeaponMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mechanics = extractWeaponMechanics(c);
+    const mechanics = extractWeaponMechanics(common);
 
     state.output = { ...state.output, ...mechanics };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const weaponMechanicsNode = new WeaponMechanicsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 

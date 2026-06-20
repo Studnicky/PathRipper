@@ -23,7 +23,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { parseAonHtmlTaxonomic } from '../plugins/aonprd/parse.taxonomic.ts';
 import { ScrapeState }    from '../src/state/ScrapeState.ts';

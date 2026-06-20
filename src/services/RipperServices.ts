@@ -11,7 +11,7 @@
  * @since 3.0.0
  */
 
-import type { DagonizerInterface } from '@noocodex/dagonizer';
+import type { DagonizerInterface } from '@studnicky/dagonizer';
 
 import type { HtmlScraper }       from '../scrapers/HtmlScraper.js';
 import type { MediaWikiScraper }  from '../scrapers/MediaWikiScraper.js';

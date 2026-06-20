@@ -4,11 +4,11 @@
 // concept ID or 'unknown', and stores the concept ID in state metadata so the
 // subsequent `aonprd:concept-dispatch` node can re-route after the shared
 // capability prefix.
-import type { NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { CapabilityNode } from '../taxonomy.js';
 
 /** Metadata key used to carry the routed concept ID across the shared capability prefix. */
@@ -32,24 +32,28 @@ export function makeTaxonomyRouter(
     ? [...leafConceptIds, fallbackConceptId, 'unknown']
     : [...leafConceptIds, 'unknown'];
 
-  return {
-    name: 'aonprd:taxonomy-route',
-    outputs,
-    contract: {
-      hardRequired: ['page.url'] as const,
-      produces:     ['aonprdConceptId'] as const,
-    } satisfies OperationContractFragment,
+  const nodeContract: OperationContractFragmentType = {
+    hardRequired: ['page.url'],
+    produces:     ['aonprdConceptId'],
+  };
 
-    async execute(
-      state:    ScrapeState,
-      _ctx:     NodeContextInterface<RipperServices>,
-    ): Promise<{ output: string }> {
+  class TaxonomyRouterNode extends ScalarNode<ScrapeState, string> {
+    public readonly name    = 'aonprd:taxonomy-route';
+    public readonly outputs = outputs;
+    public override readonly contract: OperationContractFragmentType = nodeContract;
+
+    protected override async executeOne(
+      state: ScrapeState,
+      _ctx:  NodeContextType,
+    ): Promise<NodeOutputType<string>> {
       const conceptId = routeUrl(state.page.url);
       const resolved  = conceptId ?? fallbackConceptId ?? 'unknown';
       state.setMetadata(CONCEPT_ID_KEY, resolved);
-      return { output: resolved };
-    },
-  };
+      return NodeOutputBuilder.of(resolved);
+    }
+  }
+
+  return new TaxonomyRouterNode();
 }
 
 /**
@@ -68,20 +72,25 @@ export function makeConceptDispatch(
 ): CapabilityNode {
   const outputs: readonly string[] = [...leafConceptIds, 'unknown'];
 
-  return {
-    name,
-    outputs,
-    contract: {
-      hardRequired: ['aonprdConceptId'] as const,
-      produces:     [] as const,
-    } satisfies OperationContractFragment,
-
-    async execute(
-      state:    ScrapeState,
-      _ctx:     NodeContextInterface<RipperServices>,
-    ): Promise<{ output: string }> {
-      const conceptId = state.getMetadata<string>(CONCEPT_ID_KEY);
-      return { output: conceptId ?? 'unknown' };
-    },
+  const nodeName = name;
+  const nodeContract: OperationContractFragmentType = {
+    hardRequired: ['aonprdConceptId'],
+    produces:     [],
   };
+
+  class ConceptDispatchNode extends ScalarNode<ScrapeState, string> {
+    public readonly name    = nodeName;
+    public readonly outputs = outputs;
+    public override readonly contract: OperationContractFragmentType = nodeContract;
+
+    protected override async executeOne(
+      state: ScrapeState,
+      _ctx:  NodeContextType,
+    ): Promise<NodeOutputType<string>> {
+      const conceptId = state.getMetadata<string>(CONCEPT_ID_KEY);
+      return NodeOutputBuilder.of(conceptId ?? 'unknown');
+    }
+  }
+
+  return new ConceptDispatchNode();
 }

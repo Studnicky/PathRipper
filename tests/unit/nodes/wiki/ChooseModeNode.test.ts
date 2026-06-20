@@ -4,8 +4,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Dagonizer }    from '@noocodex/dagonizer';
-import { DAGDeriver }   from '@noocodex/dagonizer/derive';
+import { Dagonizer, DAGBuilder, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { MemberResolutionState } from '../../../../src/state/MemberResolutionState.js';
 import { ChooseModeNode }        from '../../../../src/nodes/wiki/ChooseModeNode.js';
@@ -29,49 +29,46 @@ const runChooseMode = async (state: MemberResolutionState): Promise<ModePort[]> 
   const chosen: ModePort[] = [];
   const dagId = `chooseModeTestDAG:${Math.random().toString(36).slice(2)}`;
 
-  const makeStub = (port: ModePort) => ({
-    name:    `stub:cm:${port}` as string,
-    outputs: ['ok'] as const,
-    async execute(): Promise<{ output: 'ok' }> {
+  const makeStub = (port: ModePort): NodeInterface<MemberResolutionState, 'ok', RipperServices> => ({
+    name:     `stub:cm:${port}` as string,
+    outputs:  ['ok'] as const,
+    timeout:  Timeout.none(),
+    contract: EMPTY_CONTRACT_FRAGMENT,
+    async execute(
+      batch:    Batch<MemberResolutionState>,
+      _context: NodeContextType<RipperServices>,
+    ): Promise<RoutedBatchType<'ok', MemberResolutionState>> {
       chosen.push(port);
-      return { output: 'ok' };
+      return RoutedBatchBuilder.of('ok', batch);
     },
   });
 
+  const stubResume    = makeStub('resume-failures');
+  const stubSingle    = makeStub('single-category');
+  const stubByCateg   = makeStub('by-categories');
+  const stubAllPages  = makeStub('all-pages');
+
+  const dag = new DAGBuilder(dagId, '1.0')
+    .node('wiki:choose-mode', ChooseModeNode, {
+      'resume-failures': 'stub:cm:resume-failures',
+      'single-category': 'stub:cm:single-category',
+      'by-categories':   'stub:cm:by-categories',
+      'all-pages':       'stub:cm:all-pages',
+    })
+    .node('stub:cm:resume-failures', stubResume,   { ok: 'done' })
+    .node('stub:cm:single-category', stubSingle,   { ok: 'done' })
+    .node('stub:cm:by-categories',   stubByCateg,  { ok: 'done' })
+    .node('stub:cm:all-pages',       stubAllPages,  { ok: 'done' })
+    .terminal('done', { outcome: 'completed' })
+    .build();
+
   const dispatcher = new Dagonizer<MemberResolutionState, RipperServices>({ services: SERVICES });
   dispatcher.registerNode(ChooseModeNode);
-  for (const port of ['resume-failures', 'single-category', 'by-categories', 'all-pages'] as ModePort[]) {
-    dispatcher.registerNode(makeStub(port));
-  }
-
-  dispatcher.registerDAG(
-    DAGDeriver.derive({
-      name:       dagId,
-      version:    '1.0',
-      entrypoint: 'wiki:choose-mode',
-      contracts: [
-        { name: 'wiki:choose-mode',          hardRequired: [], produces: [], outputs: ['resume-failures', 'single-category', 'by-categories', 'all-pages'] },
-        { name: 'stub:cm:resume-failures',   hardRequired: [], produces: [], outputs: ['ok'] },
-        { name: 'stub:cm:single-category',   hardRequired: [], produces: [], outputs: ['ok'] },
-        { name: 'stub:cm:by-categories',     hardRequired: [], produces: [], outputs: ['ok'] },
-        { name: 'stub:cm:all-pages',         hardRequired: [], produces: [], outputs: ['ok'] },
-      ],
-      annotations: {
-        terminals: {
-          'wiki:choose-mode': [
-            { outcome: 'resume-failures', target: 'stub:cm:resume-failures' },
-            { outcome: 'single-category', target: 'stub:cm:single-category' },
-            { outcome: 'by-categories',   target: 'stub:cm:by-categories'   },
-            { outcome: 'all-pages',       target: 'stub:cm:all-pages'        },
-          ],
-          'stub:cm:resume-failures': [{ outcome: 'ok', target: null }],
-          'stub:cm:single-category': [{ outcome: 'ok', target: null }],
-          'stub:cm:by-categories':   [{ outcome: 'ok', target: null }],
-          'stub:cm:all-pages':       [{ outcome: 'ok', target: null }],
-        },
-      },
-    }),
-  );
+  dispatcher.registerNode(stubResume);
+  dispatcher.registerNode(stubSingle);
+  dispatcher.registerNode(stubByCateg);
+  dispatcher.registerNode(stubAllPages);
+  dispatcher.registerDAG(dag);
 
   await dispatcher.execute(dagId, state);
   return chosen;

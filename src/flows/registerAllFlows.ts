@@ -14,7 +14,7 @@
  * @since 4.0.0
  */
 
-import type { Dagonizer } from '@noocodex/dagonizer';
+import type { Dagonizer } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
@@ -148,10 +148,9 @@ export const DAG_FILENAME_MAP: ReadonlyMap<string, string> = new Map([
  * that plugin imports stay outside the `src/` rootDir constraint.
  *
  * Phase DAGs (`htmlScrapePhaseFlow` etc.) are imported directly from the
- * DAGDeriver-derived flow files. These flows reference virtual fan-out
- * operation names (`scrape-urls`, `html:partition`, etc.) that are not runtime
- * nodes — stubs are registered below so the dispatcher's node-reference
- * validation passes at docs-build time.
+ * DAGBuilder-backed flow files. The scatter body nodes (`html:dispatch-page-dag`,
+ * `wiki:dispatch-page-dag`) are registered as stubs below so the dispatcher's
+ * node-reference validation passes at docs-build time.
  *
  * @param dispatcher - A `Dagonizer<ScrapeState, RipperServices>` instance. The
  *   caller owns construction; this function only calls `registerNode` and
@@ -210,22 +209,9 @@ export const registerAllFlows = (
   dispatcher.registerNode(stub('crawl:exhausted',           ['success']));
   dispatcher.registerNode(stub('crawl:recurse',             ['success']));
 
-  // ── Virtual fan-out node stubs (DAGDeriver phase flows) ─────────────────
-  // The DAGDeriver-derived phase flows use virtual operation names that do not
-  // correspond to real runtime nodes. These stubs satisfy dispatcher validation
-  // at docs-build time so the phase flows can be registered for visualization.
-  dispatcher.registerNode(stub('scrape-urls',            ['all-success', 'partial', 'all-error', 'empty']));
-  dispatcher.registerNode(stub('html:partition',         ['success']));
-  dispatcher.registerNode(stub('html:retryPartition',    ['success']));
-  dispatcher.registerNode(stub('retry-urls',             ['all-success', 'partial', 'all-error', 'empty']));
-  dispatcher.registerNode(stub('scrape-titles',          ['all-success', 'partial', 'all-error', 'empty']));
-  dispatcher.registerNode(stub('wiki:partition',         ['success']));
-  dispatcher.registerNode(stub('wiki:retryPartition',    ['success']));
-  dispatcher.registerNode(stub('retry-titles',           ['all-success', 'partial', 'all-error', 'empty']));
-
-  // ── Phase DAGs (imported from DAGDeriver flow files) ─────────────────────
+  // ── Phase DAGs (imported from DAGBuilder flow files) ─────────────────────
   // Defined once in the flow files; no inline DAGBuilder duplication here.
-  // Must precede outer DAGs that reference them as DeepDAGNode.
+  // Must precede outer DAGs that reference them as EmbeddedDAGNode.
   dispatcher.registerDAG(htmlCrawlPhaseFlow);
   dispatcher.registerDAG(htmlScrapePhaseFlow);
   dispatcher.registerDAG(htmlRetryPhaseFlow);

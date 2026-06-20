@@ -1,16 +1,16 @@
 // Armor concept declaration and capability nodes.
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
-import type { ArmorOutput, ArmorBaseSlice, ArmorMechanicsSlice, ArmorMetaSlice } from './types.js';
+import type { ArmorOutput } from './types.js';
 import { extractArmorBase } from './base.js';
 import { extractArmorMechanics } from './mechanics.js';
 import { extractArmorMeta } from './meta.js';
@@ -18,79 +18,85 @@ import { finalizeArmor } from './finalize.js';
 
 export type ArmorBaseOutput = 'success' | 'error';
 
-export const armorBaseNode: NodeInterface<ScrapeState, ArmorBaseOutput, RipperServices> = {
-  name:    'extract:armor-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArmorBaseNode extends ScalarNode<ScrapeState, ArmorBaseOutput> {
+  public readonly name    = 'extract:armor-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArmorBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArmorBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractArmorBase(c);
+    const base = extractArmorBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const armorBaseNode = new ArmorBaseNode();
 
 export type ArmorMechanicsOutput = 'success' | 'error';
 
-export const armorMechanicsNode: NodeInterface<ScrapeState, ArmorMechanicsOutput, RipperServices> = {
-  name:    'extract:armor-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArmorMechanicsNode extends ScalarNode<ScrapeState, ArmorMechanicsOutput> {
+  public readonly name    = 'extract:armor-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArmorMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArmorMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mechanics = extractArmorMechanics(c);
+    const mechanics = extractArmorMechanics(common);
 
     state.output = { ...state.output, ...mechanics };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const armorMechanicsNode = new ArmorMechanicsNode();
 
 export type FinalizeArmorOutput = 'success';
 
-export const finalizeArmorNode: NodeInterface<ScrapeState, FinalizeArmorOutput, RipperServices> = {
-  name:    'finalize:armor',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeArmorNode extends ScalarNode<ScrapeState, FinalizeArmorOutput> {
+  public readonly name    = 'finalize:armor';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeArmorOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeArmorOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as ArmorOutput;
-    const meta = extractArmorMeta(c);
-    const assembled = finalizeArmor(c, acc, acc, meta, $);
+    const meta = extractArmorMeta(common);
+    const assembled = finalizeArmor(common, acc, acc, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeArmorNode = new FinalizeArmorNode();
 
 export const armorConcept: ConceptDecl<ArmorOutput> = {
   id:       'armor',

@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { DedupeAndEnqueueNode } from '../../../../src/nodes/crawl/DedupeAndEnqueueNode.js';
@@ -10,7 +11,7 @@ describe('DedupeAndEnqueueNode', () => {
     state.discoveredRaw   = ['https://example.com/category/item?id=1', 'https://example.com/category/item?id=2'];
     state.nextFrontierRaw = [];
 
-    await DedupeAndEnqueueNode.execute(state, makeTestContext());
+    await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
 
     assert.deepEqual(state.discovered, [
       'https://example.com/category/item?id=1',
@@ -25,9 +26,9 @@ describe('DedupeAndEnqueueNode', () => {
     });
     state.nextFrontierRaw = ['https://example.com/category/a', 'https://example.com/category/b'];
 
-    const result = await DedupeAndEnqueueNode.execute(state, makeTestContext());
+    const result = await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
 
-    assert.equal(result.output, 'frontier-ready');
+    assert.ok(result.has('frontier-ready'));
     assert.deepEqual(state.frontier, ['https://example.com/category/a', 'https://example.com/category/b']);
     assert.deepEqual(state.nextFrontierRaw, []);
     assert.equal(state.depth, 1);
@@ -37,8 +38,8 @@ describe('DedupeAndEnqueueNode', () => {
     const state = makeState();
     state.nextFrontierRaw = [];
 
-    const result = await DedupeAndEnqueueNode.execute(state, makeTestContext());
-    assert.equal(result.output, 'frontier-empty');
+    const result = await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
+    assert.ok(result.has('frontier-empty'));
     assert.deepEqual(state.frontier, []);
   });
 
@@ -50,9 +51,9 @@ describe('DedupeAndEnqueueNode', () => {
       'https://example.com/category/b',  // duplicate — skip
     ];
 
-    const result = await DedupeAndEnqueueNode.execute(state, makeTestContext());
+    const result = await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
 
-    assert.equal(result.output, 'frontier-ready');
+    assert.ok(result.has('frontier-ready'));
     assert.deepEqual(state.frontier, ['https://example.com/category/b']);
   });
 
@@ -60,8 +61,8 @@ describe('DedupeAndEnqueueNode', () => {
     const state = makeState({ maxPages: 2, discovered: ['a', 'b'] });
     state.nextFrontierRaw = ['https://example.com/more'];
 
-    const result = await DedupeAndEnqueueNode.execute(state, makeTestContext());
-    assert.equal(result.output, 'budget-exhausted');
+    const result = await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
+    assert.ok(result.has('budget-exhausted'));
     assert.deepEqual(state.frontier, []);
   });
 
@@ -69,8 +70,8 @@ describe('DedupeAndEnqueueNode', () => {
     const state = makeState({ maxDepth: 2, depth: 2 });
     state.nextFrontierRaw = ['https://example.com/category/c'];
 
-    const result = await DedupeAndEnqueueNode.execute(state, makeTestContext());
-    assert.equal(result.output, 'budget-exhausted');
+    const result = await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
+    assert.ok(result.has('budget-exhausted'));
     assert.deepEqual(state.frontier, []);
   });
 
@@ -78,7 +79,7 @@ describe('DedupeAndEnqueueNode', () => {
     const state = makeState({ depth: 1 });
     state.nextFrontierRaw = ['https://example.com/category/x'];
 
-    await DedupeAndEnqueueNode.execute(state, makeTestContext());
+    await DedupeAndEnqueueNode.execute(Batch.of(state), makeTestContext());
     assert.equal(state.depth, 2);
   });
 });

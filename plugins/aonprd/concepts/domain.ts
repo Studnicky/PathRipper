@@ -3,12 +3,12 @@
 // deity list, domain spell + advanced domain spell, optional Apocryphal Domain
 // Spells subsection, and a brief flavor description. This concept delegates to
 // Helpers are inlined with inline contracts.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -21,7 +21,6 @@ import {
   type Section,
   htmlToText,
   harvestLinks,
-  getFieldHtml,
   extractEntityId,
   extractMetaDescription,
   extractMetaKeywords,
@@ -152,13 +151,13 @@ function isDash(text: string | null): boolean {
  */
 function domainHeadBody(bodyHtml: string): string {
   const headingRe = /<h[23]\s+class="title"/i;
-  const m = headingRe.exec(bodyHtml);
-  return m === null ? bodyHtml : bodyHtml.slice(0, m.index);
+  const match = headingRe.exec(bodyHtml);
+  return match === null ? bodyHtml : bodyHtml.slice(0, match.index);
 }
 
 /** Escape regex metacharacters in a literal label string. */
-function escapeRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -171,9 +170,9 @@ function escapeRegex(s: string): string {
  */
 function pickLabelHtml(html: string, label: string): string | null {
   const labelRe = new RegExp(`<b>\\s*${escapeRegex(label)}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(html);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(html);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = html.slice(start);
   const boundary = /<b>|<br\s*\/?>|<hr\s*\/?>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
@@ -196,13 +195,13 @@ function parseSpellRef(valueHtml: string | null): DomainSpellRef | null {
   if (isDash(text)) return null;
 
   const anchorRe = /<a\b[^>]*href="([^"]*Spells\.aspx[^"]*)"[^>]*>([\s\S]*?)<\/a>/i;
-  const m = anchorRe.exec(valueHtml);
-  if (m === null) {
+  const match = anchorRe.exec(valueHtml);
+  if (match === null) {
     // No anchor — return the raw text as the name with a null id.
     return text === '' ? null : { name: text, spell_id: null };
   }
-  const href      = m[1] ?? '';
-  const innerText = htmlToText(m[2] ?? '');
+  const href      = match[1] ?? '';
+  const innerText = htmlToText(match[2] ?? '');
   const idMatch   = /\?ID=(\d+)/i.exec(href);
   const spell_id  = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
   if (innerText === '') return null;
@@ -220,10 +219,10 @@ function parseDeityList(valueHtml: string | null): DomainDeityRef[] {
   const out: DomainDeityRef[] = [];
   const seen = new Set<string>();
   const anchorRe = /<a\b[^>]*href="([^"]*Deities\.aspx[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(valueHtml)) !== null) {
-    const href  = m[1] ?? '';
-    const inner = m[2] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(valueHtml)) !== null) {
+    const href  = match[1] ?? '';
+    const inner = match[2] ?? '';
     const name  = htmlToText(inner);
     if (name === '') continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
@@ -251,12 +250,12 @@ function parseDeityList(valueHtml: string | null): DomainDeityRef[] {
  * stop at the first subsection heading so the Apocryphal block doesn't bleed
  * into the description.
  */
-function extractDescription(c: CommonExtraction): { html: string; text: string } {
+function extractDescription(common: CommonExtraction): { html: string; text: string } {
   // The full head section (head + body) is what we walk: AON puts the flavor
   // text inside the head_html on most domain pages because no `<hr />` is
-  // present. `c.body_html` may also contain a tail copy. Try body_html first
+  // present. `common.body_html` may also contain a tail copy. Try body_html first
   // (it's what `splitOnHr` returns); fall back to scanning the field tail.
-  const html = c.body_html;
+  const html = common.body_html;
 
   // Stop at the first subsection heading (Apocryphal Domain Spells etc).
   const headIdx = /<h[23]\s+class="title"/i.exec(html);
@@ -267,10 +266,10 @@ function extractDescription(c: CommonExtraction): { html: string; text: string }
   const brRe = /<br\s*\/?>/gi;
   let lastIdx = -1;
   let lastLen = 0;
-  let m: RegExpExecArray | null;
-  while ((m = brRe.exec(scope)) !== null) {
-    lastIdx = m.index;
-    lastLen = m[0].length;
+  let match: RegExpExecArray | null;
+  while ((match = brRe.exec(scope)) !== null) {
+    lastIdx = match.index;
+    lastLen = match[0].length;
   }
   if (lastIdx === -1) {
     // No `<br />` — return the scope verbatim.
@@ -302,10 +301,10 @@ function parseApocryphal(bodyHtml: string): DomainApocryphalSpells | null {
     const label    = (srcMatch[2] ?? '').trim();
     const pgMatch  = /^(.*?)\s*pg\.\s*(\d+)/i.exec(label);
     const book = pgMatch !== null ? pgMatch[1]!.trim() : label;
-    const pg   = pgMatch !== null ? parseInt(pgMatch[2]!, 10) : null;
+    const page = pgMatch !== null ? parseInt(pgMatch[2]!, 10) : null;
     source = {
       book:      book === '' ? null : book,
-      page:      pg !== null && Number.isFinite(pg) ? pg : null,
+      page:      page !== null && Number.isFinite(page) ? page : null,
       source_id: Number.isFinite(sourceId) ? sourceId : null,
       raw:       label,
     };
@@ -346,17 +345,17 @@ function harvestDomainSections(bodyHtml: string): Section[] {
   const headingRe = /<h([23])\s+class="title"[^>]*>([\s\S]*?)<\/h\1>/gi;
   type Marker = { level: 2 | 3; heading: string; start: number; end: number };
   const markers: Marker[] = [];
-  let m: RegExpExecArray | null;
-  while ((m = headingRe.exec(bodyHtml)) !== null) {
-    const lvl = parseInt(m[1]!, 10);
+  let match: RegExpExecArray | null;
+  while ((match = headingRe.exec(bodyHtml)) !== null) {
+    const lvl = parseInt(match[1]!, 10);
     const level: 2 | 3 = lvl === 3 ? 3 : 2;
-    const heading = htmlToText(m[2] ?? '');
+    const heading = htmlToText(match[2] ?? '');
     if (heading === '') continue;
-    markers.push({ level, heading, start: m.index, end: m.index + m[0].length });
+    markers.push({ level, heading, start: match.index, end: match.index + match[0].length });
   }
-  for (let i = 0; i < markers.length; i++) {
-    const cur = markers[i]!;
-    const next = markers[i + 1];
+  for (let index = 0; index < markers.length; index++) {
+    const cur = markers[index]!;
+    const next = markers[index + 1];
     const bodyStart = cur.end;
     const bodyEnd = next === undefined ? bodyHtml.length : next.start;
     const body_html = bodyHtml.slice(bodyStart, bodyEnd);
@@ -374,19 +373,19 @@ function harvestDomainSections(bodyHtml: string): Section[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity slice (URL, traits, rarity, sources, pfs, legacy). */
-export function extractDomainBase(c: CommonExtraction): DomainBaseSlice {
+export function extractDomainBase(common: CommonExtraction): DomainBaseSlice {
   return {
-    url:             c.url,
-    domain_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    pfs:             c.title.pfs,
+    url:             common.url,
+    domain_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    pfs:             common.title.pfs,
   };
 }
 
@@ -399,12 +398,12 @@ export function extractDomainBase(c: CommonExtraction): DomainBaseSlice {
  * `c.body_html`. We pull them with {@link pickLabelHtml} from the head region
  * (the body before any `<h2>`/`<h3>` subsection).
  */
-export function extractDomainSpells(c: CommonExtraction): DomainSpellsSlice {
-  const head = domainHeadBody(c.body_html);
+export function extractDomainSpells(common: CommonExtraction): DomainSpellsSlice {
+  const head = domainHeadBody(common.body_html);
   return {
     domain_spell:          parseSpellRef(pickLabelHtml(head, 'Domain Spell')),
     advanced_domain_spell: parseSpellRef(pickLabelHtml(head, 'Advanced Domain Spell')),
-    apocryphal:            parseApocryphal(c.body_html),
+    apocryphal:            parseApocryphal(common.body_html),
   };
 }
 
@@ -416,13 +415,13 @@ export function extractDomainSpells(c: CommonExtraction): DomainSpellsSlice {
  * the body head region. We pick the label's value HTML and walk every
  * `Deities.aspx` anchor to produce structured references.
  */
-export function extractDomainMeta(c: CommonExtraction): DomainMetaSlice {
-  const head        = domainHeadBody(c.body_html);
-  const description = extractDescription(c);
+export function extractDomainMeta(common: CommonExtraction): DomainMetaSlice {
+  const head        = domainHeadBody(common.body_html);
+  const description = extractDescription(common);
   return {
     description_text: description.text,
     description_html: description.html,
-    sections:         harvestDomainSections(c.body_html),
+    sections:         harvestDomainSections(common.body_html),
     deities_using:    parseDeityList(pickLabelHtml(head, 'Deities')),
   };
 }
@@ -443,11 +442,11 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * and attaches the body / link / meta fields owned by the full page.
  */
 export function finalizeDomain(
-  c:      CommonExtraction,
-  base:   DomainBaseSlice,
-  spells: DomainSpellsSlice,
-  meta:   DomainMetaSlice,
-  $:      CheerioAPI,
+  common:  CommonExtraction,
+  base:    DomainBaseSlice,
+  spells:  DomainSpellsSlice,
+  meta:    DomainMetaSlice,
+  root:    CheerioAPI,
 ): DomainOutput {
   return {
     ...base,
@@ -456,12 +455,12 @@ export function finalizeDomain(
     description_text: meta.description_text,
     description_html: meta.description_html,
     sections:         meta.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_html:        c.body_html,
-    body_text:        c.body_text,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_html:        common.body_html,
+    body_text:        common.body_text,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies DomainOutput;
 }
 
@@ -474,12 +473,12 @@ export function finalizeDomain(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed domain extraction nodes.
  */
-export function extractDomain(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): DomainOutput {
+export function extractDomain(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): DomainOutput {
   void span;
-  const base   = extractDomainBase(c);
-  const spells = extractDomainSpells(c);
-  const meta   = extractDomainMeta(c);
-  return finalizeDomain(c, base, spells, meta, $);
+  const base   = extractDomainBase(common);
+  const spells = extractDomainSpells(common);
+  const meta   = extractDomainMeta(common);
+  return finalizeDomain(common, base, spells, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -487,110 +486,118 @@ export function extractDomain(c: CommonExtraction, $: CheerioAPI, span: CheerioN
 
 export type DomainBaseOutput = 'success' | 'error';
 
-export const domainBaseNode: NodeInterface<ScrapeState, DomainBaseOutput, RipperServices> = {
-  name:    'extract:domain-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DomainBaseNode extends ScalarNode<ScrapeState, DomainBaseOutput> {
+  public readonly name    = 'extract:domain-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DomainBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DomainBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractDomainBase(c);
+    const base = extractDomainBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const domainBaseNode = new DomainBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DomainSpellsOutput = 'success' | 'error';
 
-export const domainSpellsNode: NodeInterface<ScrapeState, DomainSpellsOutput, RipperServices> = {
-  name:    'extract:domain-spells',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DomainSpellsNode extends ScalarNode<ScrapeState, DomainSpellsOutput> {
+  public readonly name    = 'extract:domain-spells';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DomainSpellsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DomainSpellsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const spells = extractDomainSpells(c);
+    const spells = extractDomainSpells(common);
 
     state.output = { ...state.output, ...spells };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const domainSpellsNode = new DomainSpellsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DomainMetaOutput = 'success' | 'error';
 
-export const domainMetaNode: NodeInterface<ScrapeState, DomainMetaOutput, RipperServices> = {
-  name:    'extract:domain-meta',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class DomainMetaNode extends ScalarNode<ScrapeState, DomainMetaOutput> {
+  public readonly name    = 'extract:domain-meta';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: DomainMetaOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<DomainMetaOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const meta = extractDomainMeta(c);
+    const meta = extractDomainMeta(common);
 
     state.output = { ...state.output, ...meta };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const domainMetaNode = new DomainMetaNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeDomainOutput = 'success';
 
-export const finalizeDomainNode: NodeInterface<ScrapeState, FinalizeDomainOutput, RipperServices> = {
-  name:    'finalize:domain',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeDomainNode extends ScalarNode<ScrapeState, FinalizeDomainOutput> {
+  public readonly name    = 'finalize:domain';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeDomainOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeDomainOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     // Require at least base to have run (state.output set).
-    if (c === undefined || $ === undefined || state.output === null) return { output: 'success' };
+    if (common === undefined || root === undefined || state.output === null) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as DomainOutput;
-    const assembled = finalizeDomain(c, acc, acc, acc, $);
+    const assembled = finalizeDomain(common, acc, acc, acc, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeDomainNode = new FinalizeDomainNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

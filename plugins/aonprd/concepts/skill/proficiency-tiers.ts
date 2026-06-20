@@ -6,10 +6,10 @@ import type { SkillProficiencyTiersSlice } from './types.js';
 
 /** Extract Sample-Tasks tier descriptions (empty when none are present). */
 export function extractSkillProficiencyTiers(
-  _c:    CommonExtraction,
-  $:     CheerioAPI,
-  span:  any,
+  _common: CommonExtraction,
+  root:    CheerioAPI,
+  span:    unknown,
 ): SkillProficiencyTiersSlice {
-  void _c;
-  return { proficiency_tiers: parseProficiencyTiers($, span) };
+  void _common;
+  return { proficiency_tiers: parseProficiencyTiers(root, span) };
 }

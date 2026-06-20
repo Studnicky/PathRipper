@@ -19,7 +19,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseAonHtmlTaxonomic } from '../../../../plugins/aonprd/parse.taxonomic.js';
-import type { LanguageOutput, LanguageSpeakers } from '../../../../plugins/aonprd/concepts/language.js';
+import type { LanguageOutput } from '../../../../plugins/aonprd/concepts/language.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -27,24 +27,16 @@ const FIXTURE_DIR  = resolve(__dirname, '../fixtures/aonprd');
 const CORPUS_DIR   = resolve(__dirname, '../../../../output-live/aonprd/aonprd/aonprd:parse');
 
 // URL derivation: Languages.aspx?ID=N  ←→  Languages.aspx-ID-N.json
-function urlFromId(id: number): string {
-  return `https://2e.aonprd.com/Languages.aspx?ID=${id}`;
+function urlFromId(entityId: number): string {
+  return `https://2e.aonprd.com/Languages.aspx?ID=${entityId}`;
 }
-
-// The two HTML fixtures we have with known URLs.
-// language-common.html  = Legacy Common (ID=1, Core Rulebook pg. 65)
-// language-osiriani.html = Legacy Osiriani (ID=40, has the redirect banner + PFS Note)
-const FIXTURE_URL_MAP: ReadonlyMap<string, number> = new Map([
-  ['language-common.html',   1],
-  ['language-osiriani.html', 40],
-]);
 
 async function loadFixture(name: string): Promise<string> {
   return readFile(resolve(FIXTURE_DIR, name), 'utf-8');
 }
 
-async function loadCorpusSample(id: number): Promise<Record<string, unknown> | null> {
-  const path = resolve(CORPUS_DIR, `Languages.aspx-ID-${id}.json`);
+async function loadCorpusSample(entityId: number): Promise<Record<string, unknown> | null> {
+  const path = resolve(CORPUS_DIR, `Languages.aspx-ID-${entityId}.json`);
   try {
     const text = await readFile(path, 'utf-8');
     return JSON.parse(text) as Record<string, unknown>;
@@ -78,7 +70,7 @@ describe('language taxonomic extraction — fixture parsing', () => {
     assert.ok(out.speakers.ancestries.length > 0, 'ancestries bucket empty for Common');
     assert.ok(out.speakers.ancestries.length >= 40, 'expected ≥40 ancestry entries for Common');
     // Spot-check: Human should be in there
-    const hasHuman = out.speakers.ancestries.some((r) => r.name === 'Human');
+    const hasHuman = out.speakers.ancestries.some((ref) => ref.name === 'Human');
     assert.ok(hasHuman, 'Human ancestry ref not found in speakers.ancestries');
   });
 
@@ -107,8 +99,8 @@ describe('language taxonomic extraction — fixture parsing', () => {
     const html = await loadFixture('language-common.html');
     const out  = await parseAonHtmlTaxonomic(html, urlFromId(1)) as unknown as LanguageOutput;
 
-    const legacySection = out.sections.find((s) =>
-      /legacy[\s-]content[\s-]warning/i.test(s.heading),
+    const legacySection = out.sections.find((sec) =>
+      /legacy[\s-]content[\s-]warning/i.test(sec.heading),
     );
     assert.equal(legacySection, undefined, 'legacy-content-warning section should be filtered from sections[]');
   });
@@ -176,7 +168,7 @@ describe('language taxonomic extraction — superset of prior baseline', () => {
     it(`${fixture}: output is strict superset of prior scalar fields`, async () => {
       const wave5 = await loadCorpusSample(id);
       if (wave5 === null) {
-        // eslint-disable-next-line no-console
+         
         console.log(`  [skip] No corpus sample for ID=${id} — corpus not present locally`);
         return;
       }
@@ -201,7 +193,7 @@ describe('language taxonomic extraction — superset of prior baseline', () => {
         assert.equal(w6book, w5source.book, 'source.book mismatch');
       } else if (w5source !== undefined && typeof w5source.book === 'string' && w5source.book !== w6book) {
         // Different editions (live redirect, remaster vs legacy). Document but do not fail.
-        // eslint-disable-next-line no-console
+         
         console.log(`    [edition-delta] source.book: Wave5="${w5source.book}" Wave6="${w6book ?? 'null'}" (fixture is remaster; corpus is legacy)`);
       }
 
@@ -221,15 +213,15 @@ describe('language taxonomic extraction — superset of prior baseline', () => {
 
       // Report deltas
       const newFields = ['speakers', 'section_counts', 'pfs_note'];
-      // eslint-disable-next-line no-console
+       
       console.log(`  [delta] ${fixture} — new fields: ${newFields.join(', ')}`);
-      // eslint-disable-next-line no-console
+       
       console.log(`    speakers.ancestries: ${wave6.speakers.ancestries.length}`);
-      // eslint-disable-next-line no-console
+       
       console.log(`    speakers.creatures:  ${wave6.speakers.creatures.length}`);
-      // eslint-disable-next-line no-console
+       
       console.log(`    section_counts:      ${JSON.stringify(wave6.section_counts)}`);
-      // eslint-disable-next-line no-console
+       
       console.log(`    pfs_note:            ${wave6.pfs_note ?? 'null'}`);
     });
   }
@@ -254,10 +246,10 @@ describe('language taxonomic extraction — corpus smoke test', () => {
     let sampled = 0;
     let skipped = 0;
 
-    for (const [id, fixtureName] of AVAILABLE_FIXTURES) {
+    for (const [entityId, fixtureName] of AVAILABLE_FIXTURES) {
       if (sampled >= MAX_SAMPLES) break;
 
-      const wave5 = await loadCorpusSample(id);
+      const wave5 = await loadCorpusSample(entityId);
       if (wave5 === null) {
         skipped++;
         continue;
@@ -271,12 +263,12 @@ describe('language taxonomic extraction — corpus smoke test', () => {
         continue;
       }
 
-      const out = await parseAonHtmlTaxonomic(html, urlFromId(id));
-      assert.ok(typeof out['name'] === 'string', `Expected name field for ID=${id}`);
+      const out = await parseAonHtmlTaxonomic(html, urlFromId(entityId));
+      assert.ok(typeof out['name'] === 'string', `Expected name field for ID=${entityId}`);
       sampled++;
     }
 
-    // eslint-disable-next-line no-console
+     
     console.log(`  Corpus smoke: ${sampled} parsed, ${skipped} skipped (no local HTML)`);
 
     // At minimum, we expect the two fixtures to parse successfully

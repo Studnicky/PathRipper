@@ -1,12 +1,12 @@
 //
 // SiegeWeapons.aspx pages document large ranged engines with body-resident
 // stat-block fields and operator action definitions.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
-import { load, type CheerioAPI } from 'cheerio';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
+import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -165,8 +165,8 @@ const DASH_RE = /^(?:—|–|-|&mdash;|&ndash;)$/;
 
 function isDash(value: string | null | undefined): boolean {
   if (value === null || value === undefined) return false;
-  const t = value.trim();
-  return t === '' || DASH_RE.test(t);
+  const trimmed = value.trim();
+  return trimmed === '' || DASH_RE.test(trimmed);
 }
 
 function dashToNull(value: string | null): string | null {
@@ -183,21 +183,21 @@ function dashToNull(value: string | null): string | null {
  */
 function parseAmmunition(raw: string | null): SiegeWeaponAmmunition | null {
   if (raw === null || isDash(raw)) return null;
-  const t = raw.trim();
-  const parenMatch = /^([^()]+?)\s*\(([^()]+)\)\s*$/.exec(t);
+  const trimmed = raw.trim();
+  const parenMatch = /^([^()]+?)\s*\(([^()]+)\)\s*$/.exec(trimmed);
   if (parenMatch === null) {
-    return { name: t, price: null, bulk: null, raw: t };
+    return { name: trimmed, price: null, bulk: null, raw: trimmed };
   }
   const name = (parenMatch[1] ?? '').trim();
   const meta = (parenMatch[2] ?? '').trim();
   let price: string | null = null;
   let bulk:  string | null = null;
-  for (const part of meta.split(',').map((s) => s.trim())) {
+  for (const part of meta.split(',').map((seg) => seg.trim())) {
     if (part === '') continue;
     if (/\b(gp|sp|cp)\b/i.test(part)) price = part;
     else if (/\bbulk\b/i.test(part) || /^L$/i.test(part) || /^\d+$/.test(part)) bulk = part;
   }
-  return { name, price, bulk, raw: t };
+  return { name, price, bulk, raw: trimmed };
 }
 
 /**
@@ -206,14 +206,14 @@ function parseAmmunition(raw: string | null): SiegeWeaponAmmunition | null {
  */
 function parseHpBt(raw: string | null): { hp: number | null; broken_threshold: number | null } {
   if (raw === null || isDash(raw)) return { hp: null, broken_threshold: null };
-  const t = raw.trim();
-  const m = /^(-?\d+)(?:\s*\(\s*BT\s+(-?\d+)\s*\))?/i.exec(t);
-  if (m === null) return { hp: null, broken_threshold: null };
-  const hp = parseInt(m[1]!, 10);
-  const bt = m[2] !== undefined ? parseInt(m[2], 10) : null;
+  const trimmed = raw.trim();
+  const match = /^(-?\d+)(?:\s*\(\s*BT\s+(-?\d+)\s*\))?/i.exec(trimmed);
+  if (match === null) return { hp: null, broken_threshold: null };
+  const hpNum = parseInt(match[1]!, 10);
+  const btNum = match[2] !== undefined ? parseInt(match[2], 10) : null;
   return {
-    hp:               Number.isFinite(hp) ? hp : null,
-    broken_threshold: bt !== null && Number.isFinite(bt) ? bt : null,
+    hp:               Number.isFinite(hpNum) ? hpNum : null,
+    broken_threshold: btNum !== null && Number.isFinite(btNum) ? btNum : null,
   };
 }
 
@@ -236,20 +236,20 @@ const STAT_BLOCK_LABELS: ReadonlySet<string> = new Set([
 function parseOperatorActions(tailHtml: string): SiegeWeaponOperatorAction[] {
   const out: SiegeWeaponOperatorAction[] = [];
   const labelRe = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<h[1-3]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = labelRe.exec(tailHtml)) !== null) {
-    const name = (m[1] ?? '').replace(/:$/, '').trim();
+  let match: RegExpExecArray | null;
+  while ((match = labelRe.exec(tailHtml)) !== null) {
+    const name = (match[1] ?? '').replace(/:$/, '').trim();
     if (name === '') continue;
     if (STAT_BLOCK_LABELS.has(name.toLowerCase())) continue;
-    const valueHtml = m[2] ?? '';
+    const valueHtml = match[2] ?? '';
 
     // Action cost glyph.
     const glyphMatch = ACTION_GLYPH_RE.exec(valueHtml);
     let action_cost: string | null = null;
     if (glyphMatch !== null) {
       const inner = glyphMatch[1] ?? '';
-      const lm = /\[([a-z-]+)\]/i.exec(inner);
-      if (lm !== null) action_cost = (lm[1] ?? '').toLowerCase();
+      const lastMatch = /\[([a-z-]+)\]/i.exec(inner);
+      if (lastMatch !== null) action_cost = (lastMatch[1] ?? '').toLowerCase();
     }
 
     // Component list from the first trailing `(…)` block in the text.
@@ -257,7 +257,7 @@ function parseOperatorActions(tailHtml: string): SiegeWeaponOperatorAction[] {
     const textForComp = htmlToText(valueHtml.replace(/<span\s+class=['"]action['"][\s\S]*?<\/span>/gi, ''));
     const compMatch = /\(([^()]+)\)/.exec(textForComp);
     if (compMatch !== null) {
-      for (const part of (compMatch[1] ?? '').split(',').map((s) => s.trim().toLowerCase())) {
+      for (const part of (compMatch[1] ?? '').split(',').map((seg) => seg.trim().toLowerCase())) {
         if (part !== '') components.push(part);
       }
     }
@@ -303,11 +303,11 @@ function harvestBodyFields(bodyHtml: string): Map<string, string> {
   const out = new Map<string, string>();
   // Each pair: `<b>Label</b> Value` up to the next `<b>` or end. Stop also at
   // `<hr>` since they're field boundaries.
-  const re = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<hr|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(head)) !== null) {
-    const labelRaw = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<hr|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(head)) !== null) {
+    const labelRaw = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = labelRaw.replace(/:$/, '').trim();
     if (label === '') continue;
     if (/^source$/i.test(label)) continue;
@@ -321,11 +321,11 @@ function harvestBodyFields(bodyHtml: string): Map<string, string> {
 
 /** Read a label from `field_map` first, falling back to a body-fields map. */
 function readField(
-  c: CommonExtraction,
+  common: CommonExtraction,
   bodyFields: Map<string, string>,
   label: string,
 ): string | null {
-  const fromHead = getField(c, label);
+  const fromHead = getField(common, label);
   if (fromHead !== null) return fromHead;
   return bodyFields.get(label.toLowerCase()) ?? null;
 }
@@ -333,59 +333,59 @@ function readField(
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a siege weapon page. */
-export function extractSiegeWeaponBase(c: CommonExtraction): SiegeWeaponBaseSlice {
+export function extractSiegeWeaponBase(common: CommonExtraction): SiegeWeaponBaseSlice {
   return {
-    url:             c.url,
-    siege_weapon_id: extractEntityId(c.url),
-    name:            c.title.name,
-    level:           c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    siege_weapon_id: extractEntityId(common.url),
+    name:            common.title.name,
+    level:           common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract mechanical stat-block fields. Siege-weapon pages keep most labels
  *  in the body HTML rather than the header `field_map`, so we harvest body
  *  fields as a fallback. */
-export function extractSiegeWeaponMechanics(c: CommonExtraction): SiegeWeaponMechanicsSlice {
-  const bodyFields = harvestBodyFields(c.body_html);
-  const hpBt = parseHpBt(readField(c, bodyFields, 'HP'));
+export function extractSiegeWeaponMechanics(common: CommonExtraction): SiegeWeaponMechanicsSlice {
+  const bodyFields = harvestBodyFields(common.body_html);
+  const hpBt = parseHpBt(readField(common, bodyFields, 'HP'));
   return {
-    price:            dashToNull(readField(c, bodyFields, 'Price')),
-    ammunition:       parseAmmunition(readField(c, bodyFields, 'Ammunition')),
-    usage:            dashToNull(readField(c, bodyFields, 'Usage')),
-    space:            dashToNull(readField(c, bodyFields, 'Space')),
-    crew:             dashToNull(readField(c, bodyFields, 'Crew')),
-    proficiency:      dashToNull(readField(c, bodyFields, 'Proficiency')),
-    ac:               asInt(dashToNull(readField(c, bodyFields, 'AC'))),
-    fort:             asInt(dashToNull(readField(c, bodyFields, 'Fort'))),
-    ref:              asInt(dashToNull(readField(c, bodyFields, 'Ref'))),
-    hardness:         asInt(dashToNull(readField(c, bodyFields, 'Hardness'))),
+    price:            dashToNull(readField(common, bodyFields, 'Price')),
+    ammunition:       parseAmmunition(readField(common, bodyFields, 'Ammunition')),
+    usage:            dashToNull(readField(common, bodyFields, 'Usage')),
+    space:            dashToNull(readField(common, bodyFields, 'Space')),
+    crew:             dashToNull(readField(common, bodyFields, 'Crew')),
+    proficiency:      dashToNull(readField(common, bodyFields, 'Proficiency')),
+    ac:               asInt(dashToNull(readField(common, bodyFields, 'AC'))),
+    fort:             asInt(dashToNull(readField(common, bodyFields, 'Fort'))),
+    ref:              asInt(dashToNull(readField(common, bodyFields, 'Ref'))),
+    hardness:         asInt(dashToNull(readField(common, bodyFields, 'Hardness'))),
     hp:               hpBt.hp,
     broken_threshold: hpBt.broken_threshold,
-    immunities:       dashToNull(readField(c, bodyFields, 'Immunities')),
-    speed:            dashToNull(readField(c, bodyFields, 'Speed')),
+    immunities:       dashToNull(readField(common, bodyFields, 'Immunities')),
+    speed:            dashToNull(readField(common, bodyFields, 'Speed')),
   };
 }
 
 /** Extract operator actions and description prose. */
-export function extractSiegeWeaponOperation(c: CommonExtraction): SiegeWeaponOperationSlice {
-  const desc = buildDescription(c.body_html);
+export function extractSiegeWeaponOperation(common: CommonExtraction): SiegeWeaponOperationSlice {
+  const desc = buildDescription(common.body_html);
   return {
-    operator_actions: parseOperatorActions(c.body_html),
+    operator_actions: parseOperatorActions(common.body_html),
     description_html: desc.html,
     description_text: desc.text,
   };
 }
 
 /** Extract meta slice marker. */
-export function extractSiegeWeaponMeta(_c: CommonExtraction): SiegeWeaponMetaSlice {
+export function extractSiegeWeaponMeta(_common: CommonExtraction): SiegeWeaponMetaSlice {
   return { __siege_weapon_meta_marked: true };
 }
 
@@ -398,26 +398,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeSiegeWeapon(
-  c:          CommonExtraction,
+  common:     CommonExtraction,
   base:       SiegeWeaponBaseSlice,
   mechanics:  SiegeWeaponMechanicsSlice,
   operation:  SiegeWeaponOperationSlice,
   _meta:      SiegeWeaponMetaSlice,
-  $:          CheerioAPI,
+  root:       CheerioAPI,
 ): SiegeWeaponOutput {
   void _meta;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...mechanics,
     ...operation,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies SiegeWeaponOutput;
 }
 
@@ -429,16 +429,16 @@ export function finalizeSiegeWeapon(
  * the decomposed siege-weapon extraction nodes.
  */
 export function extractSiegeWeapon(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   _span:  CheerioNode,
 ): SiegeWeaponOutput {
   void _span;
-  const base      = extractSiegeWeaponBase(c);
-  const mechanics = extractSiegeWeaponMechanics(c);
-  const operation = extractSiegeWeaponOperation(c);
-  const meta      = extractSiegeWeaponMeta(c);
-  return finalizeSiegeWeapon(c, base, mechanics, operation, meta, $);
+  const base      = extractSiegeWeaponBase(common);
+  const mechanics = extractSiegeWeaponMechanics(common);
+  const operation = extractSiegeWeaponOperation(common);
+  const meta      = extractSiegeWeaponMeta(common);
+  return finalizeSiegeWeapon(common, base, mechanics, operation, meta, root);
 }
 
 // Re-export output types so tests can import from here.
@@ -446,84 +446,90 @@ export function extractSiegeWeapon(
 
 export type SiegeWeaponBaseOutput = 'success' | 'error';
 
-export const siegeWeaponBaseNode: NodeInterface<ScrapeState, SiegeWeaponBaseOutput, RipperServices> = {
-  name:    'extract:siege-weapon-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SiegeWeaponBaseNode extends ScalarNode<ScrapeState, SiegeWeaponBaseOutput> {
+  public readonly name = 'extract:siege-weapon-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SiegeWeaponBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SiegeWeaponBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSiegeWeaponBase(c);
+    const base = extractSiegeWeaponBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const siegeWeaponBaseNode = new SiegeWeaponBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SiegeWeaponMechanicsOutput = 'success' | 'error';
 
-export const siegeWeaponMechanicsNode: NodeInterface<ScrapeState, SiegeWeaponMechanicsOutput, RipperServices> = {
-  name:    'extract:siege-weapon-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SiegeWeaponMechanicsNode extends ScalarNode<ScrapeState, SiegeWeaponMechanicsOutput> {
+  public readonly name = 'extract:siege-weapon-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SiegeWeaponMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SiegeWeaponMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mechanics = extractSiegeWeaponMechanics(c);
+    const mechanics = extractSiegeWeaponMechanics(common);
 
     state.output = { ...state.output, ...mechanics };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const siegeWeaponMechanicsNode = new SiegeWeaponMechanicsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeSiegeWeaponOutput = 'success';
 
-export const finalizeSiegeWeaponNode: NodeInterface<ScrapeState, FinalizeSiegeWeaponOutput, RipperServices> = {
-  name:    'finalize:siege-weapon',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeSiegeWeaponNode extends ScalarNode<ScrapeState, FinalizeSiegeWeaponOutput> {
+  public readonly name = 'finalize:siege-weapon';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSiegeWeaponOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSiegeWeaponOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as SiegeWeaponOutput;
-    const operation = extractSiegeWeaponOperation(c);
-    const meta      = extractSiegeWeaponMeta(c);
-    const assembled = finalizeSiegeWeapon(c, acc, acc, operation, meta, $);
+    const operation = extractSiegeWeaponOperation(common);
+    const meta      = extractSiegeWeaponMeta(common);
+    const assembled = finalizeSiegeWeapon(common, acc, acc, operation, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeSiegeWeaponNode = new FinalizeSiegeWeaponNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

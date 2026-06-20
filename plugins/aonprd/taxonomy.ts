@@ -1,17 +1,14 @@
 // Taxonomy compiler.
 //
 // Compiles a declarative concept tree (ConceptDecl[]) into a DAG-ready node
-// set plus a DAGDeriverAnnotations bundle for DAGDeriver.derive.
+// set plus a DAGDeriverAnnotationsType bundle for DAGDeriver.derive.
 //
 // The pipeline switch in parse.dag.ts / parse.task.ts is NOT touched here;
 // this module is an orphan library until the taxonomy router wires it in.
-import type { NodeInterface, NodeContextInterface, NodeStateInterface } from '@noocodex/dagonizer';
-import type { DAGDeriverAnnotations } from '@noocodex/dagonizer/derive';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import type { NodeInterface } from '@studnicky/dagonizer';
+import type { DAGDeriverAnnotationsType } from '@studnicky/dagonizer/derive';
 
 import type { ScrapeState }    from '../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../src/services/RipperServices.js';
-import { unknownTerminalNode } from './nodes/unknownTerminal.js';
 import { makeTaxonomyRouter, makeConceptDispatch }  from './nodes/taxonomyRouter.js';
 
 // ─── Public types ─────────────────────────────────────────────────────────────
@@ -28,138 +25,15 @@ import { makeTaxonomyRouter, makeConceptDispatch }  from './nodes/taxonomyRouter
  * Narrowing the union (vs widening every node to `string`) keeps typos in
  * `'success'`/`'error'` from compiling silently.
  */
-type CapabilitySuccessOnlyNode  = NodeInterface<ScrapeState, 'success', RipperServices>;
-type CapabilitySuccessErrorNode = NodeInterface<ScrapeState, 'success' | 'error', RipperServices>;
-type CapabilityRouterNode       = NodeInterface<ScrapeState, string, RipperServices>;
+type CapabilitySuccessOnlyNode  = NodeInterface<ScrapeState, 'success', unknown>;
+type CapabilitySuccessErrorNode = NodeInterface<ScrapeState, 'success' | 'error', unknown>;
+type CapabilityRouterNode       = NodeInterface<ScrapeState, string, unknown>;
 export type CapabilityNode = CapabilitySuccessOnlyNode | CapabilitySuccessErrorNode | CapabilityRouterNode;
 
-/**
- * Minimal shape `Chainable<>` consumes — the dagonizer-exported alias
- * constrains its parameters to `NodeInterface & { contract: ... }`.
- *
- * `TServices` is contravariant in `NodeInterface` (it appears in
- * `execute(state, context: NodeContextInterface<TServices>)`), so accepting
- * `unknown` here would actually NARROW the set of acceptable nodes — only
- * nodes whose execute accepts `NodeContextInterface<unknown>` would qualify,
- * which excludes nodes typed with concrete `RipperServices`. Pinning
- * `TServices = RipperServices` matches the codebase convention and accepts
- * every plugin capability authored against the AONPRD services bag.
- */
-export type ContractedCapability = NodeInterface<NodeStateInterface, string, RipperServices> & {
-  readonly contract: OperationContractFragment;
-};
-
-/**
- * Local `Chainable<A, B>`. Mirrors `@noocodex/dagonizer`'s
- * `Chainable` but without the embedded `NodeInterface<…, undefined>`
- * constraint that excludes nodes typed with a concrete `TServices` bag
- * (such as `RipperServices`). Resolves to `true` when B's `hardRequired`
- * is a subset of A's `produces`, `never` otherwise.
- */
-type ChainableLocal<
-  A extends { readonly contract: OperationContractFragment },
-  B extends { readonly contract: OperationContractFragment },
-> = B['contract']['hardRequired'][number] extends A['contract']['produces'][number]
-  ? true
-  : never;
-
-/**
- * Asserts that B's `hardRequired` is a subset of A's `produces`. Resolves to
- * `B` when chainable, `never` otherwise — used by `chain(...)`'s overloads to
- * mark a broken successor argument as `never` so the call site fails `tsc`.
- *
- * `ChainableLocal<A, B>` resolves to `true` on a valid pair and `never`
- * otherwise. Distinguishing them in a conditional requires `[T] extends
- * [never]` — the conditional `[Chainable<A,B>] extends [true]` would always
- * pass because `[never] extends [true]` is `true` (a `never` slot in a tuple
- * still satisfies any tuple constraint).
- */
-type ChainNext<
-  A extends ContractedCapability,
-  B extends ContractedCapability,
-> = [ChainableLocal<A, B>] extends [never] ? never : B;
-
-/**
- * Build a capability chain with compile-time `Chainable<>` validation
- *. Each adjacent pair `(nodes[i], nodes[i+1])` is checked: the
- * latter's `hardRequired` must be a subset of the former's `produces`. Drift
- * fails `tsc` (the offending argument is required to be `never`).
- *
- * Concepts opt in by calling `chain(nodeA, nodeB, nodeC, ...)` for their
- * `capabilities` field. The helper is a no-op at runtime — it returns the
- * input tuple unchanged. Concepts whose capabilities are already implicitly
- * chained via Taxonomy's prefix inheritance (i.e. the root `thing` provides
- * `aonprdCheerio`, the `entity` concept reads it, etc.) gain a typecheck of
- * their own local chain when they author it through `chain()`.
- *
- * The overloads cover chains of 2–6 capabilities. Longer chains are uncommon
- * in concept files — at six nodes the concept should split. Adding more
- * overloads is a one-line change if needed.
- *
- * @example
- * ```ts
- * capabilities: chain(
- *   monsterBaseNode,
- *   monsterDefensesNode,
- *   finalizeMonsterNode,
- * )
- * ```
- */
-export function chain<const A extends ContractedCapability, const B extends ContractedCapability>(
-  a: A,
-  b: ChainNext<A, B>,
-): readonly [A, B];
-export function chain<
-  const A extends ContractedCapability,
-  const B extends ContractedCapability,
-  const C extends ContractedCapability,
->(
-  a: A,
-  b: ChainNext<A, B>,
-  c: ChainNext<B, C>,
-): readonly [A, B, C];
-export function chain<
-  const A extends ContractedCapability,
-  const B extends ContractedCapability,
-  const C extends ContractedCapability,
-  const D extends ContractedCapability,
->(
-  a: A,
-  b: ChainNext<A, B>,
-  c: ChainNext<B, C>,
-  d: ChainNext<C, D>,
-): readonly [A, B, C, D];
-export function chain<
-  const A extends ContractedCapability,
-  const B extends ContractedCapability,
-  const C extends ContractedCapability,
-  const D extends ContractedCapability,
-  const E extends ContractedCapability,
->(
-  a: A,
-  b: ChainNext<A, B>,
-  c: ChainNext<B, C>,
-  d: ChainNext<C, D>,
-  e: ChainNext<D, E>,
-): readonly [A, B, C, D, E];
-export function chain<
-  const A extends ContractedCapability,
-  const B extends ContractedCapability,
-  const C extends ContractedCapability,
-  const D extends ContractedCapability,
-  const E extends ContractedCapability,
-  const F extends ContractedCapability,
->(
-  a: A,
-  b: ChainNext<A, B>,
-  c: ChainNext<B, C>,
-  d: ChainNext<C, D>,
-  e: ChainNext<D, E>,
-  f: ChainNext<E, F>,
-): readonly [A, B, C, D, E, F];
-export function chain(...nodes: readonly ContractedCapability[]): readonly ContractedCapability[] {
-  return nodes;
-}
+// A capability chain is a plain array of nodes. Chainability (each successor's
+// `hardRequired` ⊆ a predecessor's `produces`) is checked at the type layer via
+// dagonizer's native `ChainableType<A, B>`, and enforced at DAG-construction
+// time by `ContractRegistryValidator` (a `DAGError` on dangling-reads / dead-writes).
 
 /**
  * Declarative concept node in the taxonomy.
@@ -246,25 +120,6 @@ export class TaxonomyError extends Error {
   }
 }
 
-// ─── flow:terminate stub ──────────────────────────────────────────────────────
-
-// Mirrors the pattern used in parse.dag.ts where flow:terminate has
-// outputs: ['success'] and its terminal points to target: null.
-const flowTerminateNode: CapabilityNode = {
-  name:    'flow:terminate',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: [] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
-  async execute(
-    _state:   ScrapeState,
-    _ctx:     NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' }> {
-    return { output: 'success' };
-  },
-};
-
 // ─── URL path extraction ──────────────────────────────────────────────────────
 
 /** Extract the lowercase AON path segment from any URL. Returns null on no match. */
@@ -283,19 +138,19 @@ function validateConcepts(concepts: readonly ConceptDecl<unknown>[]): void {
         throw new TaxonomyError(
           'capability-shape',
           `Concept '${concept.id}': capability '${cap.name}' is missing the 'contract' field. ` +
-          'All capabilities must carry an inline OperationContractFragment.',
+          'All capabilities must carry an inline OperationContractFragmentType.',
         );
       }
     }
   }
 
   // Count roots
-  const roots = concepts.filter((c) => c.parent === null);
+  const roots = concepts.filter((concept) => concept.parent === null);
   if (roots.length === 0) {
     throw new TaxonomyError('no-root', 'Taxonomy must have exactly one root concept (parent: null).');
   }
   if (roots.length > 1) {
-    const ids = roots.map((r) => `'${r.id}'`).join(', ');
+    const ids = roots.map((root) => `'${root.id}'`).join(', ');
     throw new TaxonomyError('multiple-roots', `Taxonomy has ${roots.length} roots: ${ids}. Only one root is allowed.`);
   }
 
@@ -319,20 +174,20 @@ function validateConcepts(concepts: readonly ConceptDecl<unknown>[]): void {
   }
 
   // Cycle detection via DFS
-  const byId = new Map<string, ConceptDecl<unknown>>(concepts.map((c) => [c.id, c]));
+  const byId = new Map<string, ConceptDecl<unknown>>(concepts.map((concept) => [concept.id, concept]));
   const visited   = new Set<string>();
   const onStack   = new Set<string>();
 
-  function dfs(id: string): void {
-    if (onStack.has(id)) {
-      throw new TaxonomyError('cycle', `Cycle detected involving concept '${id}'.`);
+  function dfs(conceptId: string): void {
+    if (onStack.has(conceptId)) {
+      throw new TaxonomyError('cycle', `Cycle detected involving concept '${conceptId}'.`);
     }
-    if (visited.has(id)) return;
-    onStack.add(id);
-    const concept = byId.get(id)!;
+    if (visited.has(conceptId)) return;
+    onStack.add(conceptId);
+    const concept = byId.get(conceptId)!;
     if (concept.parent !== null) dfs(concept.parent);
-    onStack.delete(id);
-    visited.add(id);
+    onStack.delete(conceptId);
+    visited.add(conceptId);
   }
 
   for (const concept of concepts) {
@@ -388,7 +243,7 @@ export class Taxonomy {
   readonly #chainMap:           ReadonlyMap<string, readonly CapabilityNode[]>;
   readonly #urlMap:             ReadonlyMap<string, string>;
   readonly #allNodesList:       readonly CapabilityNode[];
-  readonly #annotations:        DAGDeriverAnnotations;
+  readonly #annotations:        DAGDeriverAnnotationsType;
   readonly #fallbackConceptId:  string | null;
 
   private constructor(
@@ -398,7 +253,7 @@ export class Taxonomy {
     chainMap:           ReadonlyMap<string, readonly CapabilityNode[]>,
     urlMap:             ReadonlyMap<string, string>,
     allNodesList:       readonly CapabilityNode[],
-    annotations:        DAGDeriverAnnotations,
+    annotations:        DAGDeriverAnnotationsType,
     fallbackConceptId:  string | null,
   ) {
     this.#router             = router;
@@ -420,12 +275,12 @@ export class Taxonomy {
 
     validateConcepts(concepts);
 
-    const byId = new Map<string, ConceptDecl<unknown>>(concepts.map((c) => [c.id, c]));
+    const byId = new Map<string, ConceptDecl<unknown>>(concepts.map((concept) => [concept.id, concept]));
 
     // Build ancestor chain (root → concept) for each concept
-    function ancestorChain(id: string): readonly string[] {
+    function ancestorChain(conceptId: string): readonly string[] {
       const chain: string[] = [];
-      let current: string | null = id;
+      let current: string | null = conceptId;
       while (current !== null) {
         chain.unshift(current);
         current = byId.get(current)?.parent ?? null;
@@ -454,15 +309,15 @@ export class Taxonomy {
 
     // Leaf concept IDs — those with urlPaths declared
     const leafIds = concepts
-      .filter((c) => c.urlPaths !== undefined && c.urlPaths.length > 0)
-      .map((c) => c.id);
+      .filter((concept) => concept.urlPaths !== undefined && concept.urlPaths.length > 0)
+      .map((concept) => concept.id);
 
     // fallback concept (one with `urlPaths: []` and `capabilities`
     // declared). Receives unmatched URLs that the router would otherwise send
     // to `make-unknown`. By convention there is at most one fallback per
     // taxonomy; if multiple are declared, the first wins.
-    const fallbackConcept = concepts.find((c) =>
-      c.urlPaths !== undefined && c.urlPaths.length === 0 && c.capabilities.length > 0,
+    const fallbackConcept = concepts.find((concept) =>
+      concept.urlPaths !== undefined && concept.urlPaths.length === 0 && concept.capabilities.length > 0,
     );
     const fallbackConceptId = fallbackConcept?.id ?? null;
 
@@ -528,8 +383,6 @@ export class Taxonomy {
       router,
       ...branchDispatchNodes,
       ...allCapsByName.values(),
-      unknownTerminalNode,
-      flowTerminateNode,
     ];
 
     // Build annotations — includes full sequential chain routing.
@@ -543,7 +396,7 @@ export class Taxonomy {
       fallbackConceptId,
     );
 
-    const conceptIds = concepts.map((c) => c.id);
+    const conceptIds = concepts.map((concept) => concept.id);
 
     return new Taxonomy(router, conceptIds, leafIds, chainMap, urlMap, allNodesList, annotations, fallbackConceptId);
   }
@@ -555,16 +408,14 @@ export class Taxonomy {
     const allNodesList: CapabilityNode[] = [
       router,
       conceptDispatch,
-      unknownTerminalNode,
-      flowTerminateNode,
     ];
 
-    const annotations: DAGDeriverAnnotations = {
+    const AONPRD_UNKNOWN_TERMINAL = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
+
+    const annotations: DAGDeriverAnnotationsType = {
       terminals: {
-        'aonprd:taxonomy-route':  [{ outcome: 'unknown', target: 'aonprd:make-unknown' }],
-        'aonprd:concept-dispatch': [{ outcome: 'unknown', target: 'aonprd:make-unknown' }],
-        'aonprd:make-unknown':    [{ outcome: 'success', target: 'flow:terminate' }],
-        'flow:terminate':         [{ outcome: 'success', target: null }],
+        'aonprd:taxonomy-route':   [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
+        'aonprd:concept-dispatch': [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
       },
     };
 
@@ -608,15 +459,15 @@ export class Taxonomy {
     const perPositionNext = new Map<string, Map<string, string>>();
 
     function recordNext(position: string, conceptId: string, nextTarget: string): void {
-      let m = perPositionNext.get(position);
-      if (m === undefined) {
-        m = new Map();
-        perPositionNext.set(position, m);
+      let posMap = perPositionNext.get(position);
+      if (posMap === undefined) {
+        posMap = new Map();
+        perPositionNext.set(position, posMap);
       }
       // For a given concept at a position, the next must be deterministic.
       // (A concept's chain is a fixed sequence — no two appearances of the
       // same cap in one chain should have different successors. Caller honors.)
-      if (!m.has(conceptId)) m.set(conceptId, nextTarget);
+      if (!posMap.has(conceptId)) posMap.set(conceptId, nextTarget);
     }
 
     for (const leafId of leafIds) {
@@ -627,9 +478,9 @@ export class Taxonomy {
       }
       // Entry routes to the first cap of this concept's chain.
       recordNext('__entry__', leafId, chain[0]!.name);
-      for (let i = 0; i < chain.length; i++) {
-        const cap     = chain[i]!;
-        const next    = i < chain.length - 1 ? chain[i + 1]!.name : 'flow:terminate';
+      for (let index = 0; index < chain.length; index++) {
+        const cap     = chain[index]!;
+        const next    = index < chain.length - 1 ? chain[index + 1]!.name : 'flow:terminate';
         recordNext(cap.name, leafId, next);
       }
     }
@@ -660,7 +511,7 @@ export class Taxonomy {
   }
 
   /**
-   * Build DAGDeriverAnnotations from the routing trie.
+   * Build DAGDeriverAnnotationsType from the routing trie.
    *
    * Topology (open-world):
    * 1. `aonprd:taxonomy-route` (URL router) is the DAG entrypoint. Per leaf
@@ -686,43 +537,62 @@ export class Taxonomy {
     branchDispatchNames: ReadonlyMap<string, string>,
     capSuccessNext:     ReadonlyMap<string, string>,
     fallbackConceptId:  string | null,
-  ): DAGDeriverAnnotations {
+  ): DAGDeriverAnnotationsType {
+    const AONPRD_UNKNOWN_TERMINAL   = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
+    const AONPRD_COMPLETED_TERMINAL = { name: 'aonprd:completed',   outcome: 'completed' } as const;
+
     // ── URL router terminals ──────────────────────────────────────────────────
     // Per concept, route to the FIRST cap in that concept's chain (or
-    // flow:terminate for an empty chain).
-    const routerTerminals: { outcome: string; target: string | null }[] = leafIds.map((id) => {
-      const chain = chainMap.get(id) ?? [];
-      const first = chain[0]?.name ?? 'flow:terminate';
-      return { outcome: id, target: first };
+    // the unknown emit terminal for an empty chain).
+    const routerTerminals: Array<{ outcome: string; target: string } | { outcome: string; emit: typeof AONPRD_UNKNOWN_TERMINAL | typeof AONPRD_COMPLETED_TERMINAL }> = leafIds.map((leafId) => {
+      const chain = chainMap.get(leafId) ?? [];
+      const first = chain[0]?.name ?? null;
+      if (first !== null) {
+        return { outcome: leafId, target: first };
+      }
+      return { outcome: leafId, emit: AONPRD_COMPLETED_TERMINAL };
     });
     // if a fallback concept is configured (e.g. `generic`), wire
     // the fallback outcome to its first cap. The router emits the fallback
     // outcome instead of `'unknown'` when no URL match is found.
     if (fallbackConceptId !== null) {
       const chain = chainMap.get(fallbackConceptId) ?? [];
-      const first = chain[0]?.name ?? 'aonprd:make-unknown';
-      routerTerminals.push({ outcome: fallbackConceptId, target: first });
+      const first = chain[0]?.name ?? null;
+      if (first !== null) {
+        routerTerminals.push({ outcome: fallbackConceptId, target: first });
+      } else {
+        routerTerminals.push({ outcome: fallbackConceptId, emit: AONPRD_COMPLETED_TERMINAL });
+      }
     }
-    routerTerminals.push({ outcome: 'unknown', target: 'aonprd:make-unknown' });
+    routerTerminals.push({ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL });
 
     // ── Capability terminals ──────────────────────────────────────────────────
-    const capabilityTerminals: Record<string, readonly { outcome: string; target: string | null }[]> = {};
+    type TerminalEntry =
+      | { outcome: string; target: string }
+      | { outcome: string; emit: typeof AONPRD_UNKNOWN_TERMINAL | typeof AONPRD_COMPLETED_TERMINAL };
+
+    const capabilityTerminals: Record<string, readonly TerminalEntry[]> = {};
 
     for (const [name, cap] of allCapsByName) {
-      const terminals: { outcome: string; target: string | null }[] = [];
+      const terminals: TerminalEntry[] = [];
 
       // Resolve the cap's downstream target: either a uniform direct target
       // (success edges agree across all concepts using this cap), a branch
-      // dispatcher (success edges diverge per concept), or `flow:terminate`
-      // (the cap is registered but not used by any concept's chain).
-      let downstreamTarget: string;
+      // dispatcher (success edges diverge per concept), or the completed
+      // emit terminal (the cap is a chain tail or registered but unused).
       const uniformTarget = capSuccessNext.get(name);
-      if (uniformTarget !== undefined) {
-        downstreamTarget = uniformTarget;
-      } else if (branchDispatchNames.has(name)) {
-        downstreamTarget = branchDispatchNames.get(name)!;
-      } else {
-        downstreamTarget = 'flow:terminate';
+      const dispatchName  = branchDispatchNames.get(name);
+
+      function makeEntry(outcome: string): TerminalEntry {
+        if (uniformTarget !== undefined && uniformTarget !== 'flow:terminate') {
+          return { outcome, target: uniformTarget };
+        }
+        if (dispatchName !== undefined) {
+          return { outcome, target: dispatchName };
+        }
+        // No uniform successor or the uniform successor is the retired flow:terminate
+        // placeholder — emit a synthetic TerminalNode to end the flow as completed.
+        return { outcome, emit: AONPRD_COMPLETED_TERMINAL };
       }
 
       // Open-world routing: BOTH `'success'` and `'error'` route to the same
@@ -733,10 +603,10 @@ export class Taxonomy {
       // DAG-dispatch path with the direct-call path in `parse.taxonomic.ts`,
       // which already discards individual node outcomes and continues.
       if ((cap.outputs as readonly string[]).includes('success')) {
-        terminals.push({ outcome: 'success', target: downstreamTarget });
+        terminals.push(makeEntry('success'));
       }
       if ((cap.outputs as readonly string[]).includes('error')) {
-        terminals.push({ outcome: 'error', target: downstreamTarget });
+        terminals.push(makeEntry('error'));
       }
 
       if (terminals.length > 0) {
@@ -745,16 +615,22 @@ export class Taxonomy {
     }
 
     // ── Branch dispatcher terminals ───────────────────────────────────────────
-    const dispatchTerminals: Record<string, readonly { outcome: string; target: string | null }[]> = {};
+    const dispatchTerminals: Record<string, readonly TerminalEntry[]> = {};
     for (const [position, perConcept] of branchPoints) {
       const dispatchName = branchDispatchNames.get(position);
       if (dispatchName === undefined) continue;
-      const terminals: { outcome: string; target: string | null }[] = [];
+      const terminals: TerminalEntry[] = [];
       for (const leafId of leafIds) {
-        const target = perConcept.get(leafId) ?? 'flow:terminate';
-        terminals.push({ outcome: leafId, target });
+        const target = perConcept.get(leafId);
+        if (target !== undefined && target !== 'flow:terminate') {
+          terminals.push({ outcome: leafId, target });
+        } else {
+          // No further cap for this concept at this branch, or target is the
+          // retired flow:terminate placeholder — emit a completed terminal.
+          terminals.push({ outcome: leafId, emit: AONPRD_COMPLETED_TERMINAL });
+        }
       }
-      terminals.push({ outcome: 'unknown', target: 'aonprd:make-unknown' });
+      terminals.push({ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL });
       dispatchTerminals[dispatchName] = terminals;
     }
 
@@ -763,8 +639,6 @@ export class Taxonomy {
         'aonprd:taxonomy-route': routerTerminals,
         ...capabilityTerminals,
         ...dispatchTerminals,
-        'aonprd:make-unknown': [{ outcome: 'success', target: 'flow:terminate' }],
-        'flow:terminate':      [{ outcome: 'success', target: null }],
       },
     };
   }
@@ -791,8 +665,8 @@ export class Taxonomy {
     return this.#allNodesList;
   }
 
-  /** DAGDeriverAnnotations for DAGDeriver.derive. */
-  annotations(): DAGDeriverAnnotations {
+  /** DAGDeriverAnnotationsType for DAGDeriver.derive. */
+  annotations(): DAGDeriverAnnotationsType {
     return this.#annotations;
   }
 

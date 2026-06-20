@@ -43,9 +43,9 @@ export class WikitextParser {
 
     const rawSections = doc.sections();
     const sectionArray = Array.isArray(rawSections) ? rawSections : (rawSections !== null ? [rawSections] : []);
-    const sections = sectionArray.map((s: WtfSectionType): { title: string; text: string } => ({
-      title: (s as { title: () => string }).title(),
-      text:  (s as { wikitext: () => string }).wikitext(),
+    const sections = sectionArray.map((section: WtfSectionType): { title: string; text: string } => ({
+      title: (section as { title: () => string }).title(),
+      text:  (section as { wikitext: () => string }).wikitext(),
     }));
 
     const categories = doc.categories() as string[];
@@ -75,7 +75,7 @@ export class WikitextParser {
   static infoboxNumber(parsed: ParsedPageInterface, field: string): InfoboxNumberResult {
     const val = WikitextParser.infoboxField(parsed, field);
     if (val === null) return null;
-    const n = parseFloat(val);
-    return Number.isFinite(n) ? n : null;
+    const num = parseFloat(val);
+    return Number.isFinite(num) ? num : null;
   }
 }

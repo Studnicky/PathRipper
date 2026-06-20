@@ -1,5 +1,6 @@
 // Unit tests for npc-theme-template concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -13,23 +14,24 @@ import {
 } from '../../../../../plugins/aonprd/concepts/npc-theme-template.js';
 import type { NpcThemeTemplateOutput } from '../../../../../plugins/aonprd/concepts/npc-theme-template.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await npcThemeTemplateBaseNode.execute(state, stubContext);
-  await npcThemeTemplateTraitsModsNode.execute(state, stubContext);
-  await finalizeNpcThemeTemplateNode.execute(state, stubContext);
-  return state.output as NpcThemeTemplateOutput;
+  await npcThemeTemplateBaseNode.execute(Batch.of(state), stubContext);
+  await npcThemeTemplateTraitsModsNode.execute(Batch.of(state), stubContext);
+  await finalizeNpcThemeTemplateNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<NpcThemeTemplateOutput>(state.output);
 }
 
 // ─── extract:npc-theme-template-base ─────────────────────────────────────────
@@ -37,25 +39,25 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:npc-theme-template-base — npc-theme-template-firebrands', () => {
   it('produces _type, name, npc_theme_template_id', async () => {
     const state = await primeState('npc-theme-template-firebrands.html', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    const r = await npcThemeTemplateBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await npcThemeTemplateBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as NpcThemeTemplateOutput;
+    const out = ParsedOutput.as<NpcThemeTemplateOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.npc_theme_template_id, 1);
   });
 
   it('source.book is populated', async () => {
     const state = await primeState('npc-theme-template-firebrands.html', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    await npcThemeTemplateBaseNode.execute(state, stubContext);
-    const out = state.output as NpcThemeTemplateOutput;
+    await npcThemeTemplateBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<NpcThemeTemplateOutput>(state.output);
     assert.ok(out.source.book !== null, 'source.book should be non-null');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    const r = await npcThemeTemplateBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await npcThemeTemplateBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -64,18 +66,18 @@ describe('extract:npc-theme-template-base — npc-theme-template-firebrands', ()
 describe('extract:npc-theme-template-traits-mods — npc-theme-template-firebrands', () => {
   it('produces tiers as an array with at least one entry', async () => {
     const state = await primeState('npc-theme-template-firebrands.html', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    const r = await npcThemeTemplateTraitsModsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await npcThemeTemplateTraitsModsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<NpcThemeTemplateOutput>;
+    const out = ParsedOutput.as<Partial<NpcThemeTemplateOutput>>(state.output);
     assert.ok(Array.isArray(out.tiers), 'tiers should be an array');
     assert.ok((out.tiers?.length ?? 0) > 0, 'tiers should have at least one entry');
   });
 
   it('tier entries have level, label, text fields', async () => {
     const state = await primeState('npc-theme-template-firebrands.html', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    await npcThemeTemplateTraitsModsNode.execute(state, stubContext);
-    const out = state.output as Partial<NpcThemeTemplateOutput>;
+    await npcThemeTemplateTraitsModsNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<Partial<NpcThemeTemplateOutput>>(state.output);
     const first = out.tiers?.[0];
     assert.ok(first !== undefined, 'tiers should have at least one entry');
     assert.ok(typeof first.level === 'number', 'tier.level should be a number');
@@ -85,8 +87,8 @@ describe('extract:npc-theme-template-traits-mods — npc-theme-template-firebran
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/NPCThemeTemplates.aspx?ID=1');
-    const r = await npcThemeTemplateTraitsModsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await npcThemeTemplateTraitsModsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 

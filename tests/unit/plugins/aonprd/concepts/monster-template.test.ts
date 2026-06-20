@@ -1,5 +1,6 @@
 // Unit tests for monster-template concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }   from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -12,6 +13,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/monster-template.js';
 import type { MonsterTemplateOutput } from '../../../../../plugins/aonprd/concepts/monster-template.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE_ELITE   = 'monster-template-elite.html';
 const BASE_URL_ELITE  = 'https://2e.aonprd.com/MonsterTemplates.aspx?ID=22';
@@ -22,46 +24,46 @@ const BASE_URL_UNDEAD = 'https://2e.aonprd.com/MonsterTemplates.aspx?ID=1';
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await monsterTemplateBaseNode.execute(state, stubContext);
-  await monsterTemplateModificationsNode.execute(state, stubContext);
-  await finalizeMonsterTemplateNode.execute(state, stubContext);
-  return state.output as MonsterTemplateOutput;
+  await monsterTemplateBaseNode.execute(Batch.of(state), stubContext);
+  await monsterTemplateModificationsNode.execute(Batch.of(state), stubContext);
+  await finalizeMonsterTemplateNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<MonsterTemplateOutput>(state.output);
 }
 
 describe('extract:monster-template-base — elite', () => {
   it('produces _type, url, name, template_id', async () => {
     const state = await primeState(FIXTURE_ELITE, BASE_URL_ELITE);
-    const r = await monsterTemplateBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await monsterTemplateBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterTemplateOutput;
+    const out = ParsedOutput.as<MonsterTemplateOutput>(state.output);
     assert.equal(out.template_id, 22);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_ELITE);
-    const r = await monsterTemplateBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterTemplateBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-template-modifications — elite', () => {
   it('produces adjustments, subsections, hp_table, numeric deltas', async () => {
     const state = await primeState(FIXTURE_ELITE, BASE_URL_ELITE);
-    await monsterTemplateBaseNode.execute(state, stubContext);
-    const r = await monsterTemplateModificationsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterTemplateBaseNode.execute(Batch.of(state), stubContext);
+    const result = await monsterTemplateModificationsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterTemplateOutput;
+    const out = ParsedOutput.as<MonsterTemplateOutput>(state.output);
     assert.ok(Array.isArray(out.adjustments), 'adjustments should be array');
     assert.ok(Array.isArray(out.subsections), 'subsections should be array');
     assert.ok(Array.isArray(out.hp_table), 'hp_table should be array');
@@ -73,8 +75,8 @@ describe('extract:monster-template-modifications — elite', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_ELITE);
-    const r = await monsterTemplateModificationsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterTemplateModificationsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -91,8 +93,8 @@ describe('finalize:monster-template — elite', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', BASE_URL_ELITE);
-    const r = await finalizeMonsterTemplateNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeMonsterTemplateNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

@@ -1,12 +1,12 @@
 //
 // Covers both single-gift pages (?ID=N) and aspect-aggregator pages
 // (?Aspect=N) under one concept.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -146,15 +146,15 @@ function dashToNull(value: string | null): string | null {
  * `extractEntityId` (which targets `?ID=N`).
  */
 function extractAspectId(url: string): number | null {
-  const m = /[?&]Aspect=(\d+)/i.exec(url);
-  if (m === null) return null;
-  const n = parseInt(m[1]!, 10);
-  return Number.isFinite(n) ? n : null;
+  const match = /[?&]Aspect=(\d+)/i.exec(url);
+  if (match === null) return null;
+  const num = parseInt(match[1]!, 10);
+  return Number.isFinite(num) ? num : null;
 }
 
 /** Read the right-floated tier marker from the title (`Minor Gift`, `Major Gift`, `Grand Gift`). */
-function readTier(c: CommonExtraction): string | null {
-  return c.title.level_label;
+function readTier(common: CommonExtraction): string | null {
+  return common.title.level_label;
 }
 
 /**
@@ -164,10 +164,10 @@ function readTier(c: CommonExtraction): string | null {
  * we add this as a defensive fallback.
  */
 function readHeadField(headHtml: string, label: string): string | null {
-  const re = new RegExp(`<b>\\s*${label}\\s*</b>([\\s\\S]*?)(?=<b>|<br|<hr|$)`, 'i');
-  const m = re.exec(headHtml);
-  if (m === null) return null;
-  const text = htmlToText(m[1] ?? '').replace(/[;,]\s*$/, '').trim();
+  const regex = new RegExp(`<b>\\s*${label}\\s*</b>([\\s\\S]*?)(?=<b>|<br|<hr|$)`, 'i');
+  const match = regex.exec(headHtml);
+  if (match === null) return null;
+  const text = htmlToText(match[1] ?? '').replace(/[;,]\s*$/, '').trim();
   return text === '' ? null : text;
 }
 
@@ -177,30 +177,30 @@ function readHeadField(headHtml: string, label: string): string | null {
  * inner text concatenates the link name and the right-floated tier span.
  */
 function splitAspectGiftHeading(heading: string): { name: string; tier: string | null } {
-  const m = /^(.*?)\s+(Minor|Major|Grand|Greater|Lesser)\s+Gift$/i.exec(heading.trim());
-  if (m === null) {
+  const match = /^(.*?)\s+(Minor|Major|Grand|Greater|Lesser)\s+Gift$/i.exec(heading.trim());
+  if (match === null) {
     return { name: heading.trim(), tier: null };
   }
-  return { name: (m[1] ?? '').trim(), tier: `${m[2]} Gift` };
+  return { name: (match[1] ?? '').trim(), tier: `${match[2]} Gift` };
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a relic page. */
-export function extractRelicBase(c: CommonExtraction): RelicBaseSlice {
+export function extractRelicBase(common: CommonExtraction): RelicBaseSlice {
   return {
-    url:             c.url,
-    relic_id:        extractEntityId(c.url),
-    aspect_id:       extractAspectId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    relic_id:        extractEntityId(common.url),
+    aspect_id:       extractAspectId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -214,21 +214,21 @@ export function extractRelicBase(c: CommonExtraction): RelicBaseSlice {
  * do not appear in the harvested header `field_map`. We lift them from the
  * body HTML directly so structured fields populate consistently.
  */
-export function extractRelicGift(c: CommonExtraction): RelicGiftSlice {
+export function extractRelicGift(common: CommonExtraction): RelicGiftSlice {
   // Aggregator pages have multiple sub-gift `<h2 class="title">` blocks and
   // either no aspect field on the header or a `<h1>Relics</h1>` placeholder.
-  const isAggregator = c.sections.length > 1 && /Gift$/i.test(c.sections[0]?.heading ?? '');
+  const isAggregator = common.sections.length > 1 && /Gift$/i.test(common.sections[0]?.heading ?? '');
   if (isAggregator) return { gift: null };
 
-  const aspect    = dashToNull(getField(c, 'Aspect'));
-  const prereqs   = dashToNull(getField(c, 'Prerequisite'));
-  const activate  = dashToNull(getField(c, 'Activate'))   ?? readHeadField(c.body_html, 'Activate');
-  const frequency = dashToNull(getField(c, 'Frequency'))  ?? readHeadField(c.body_html, 'Frequency');
-  const tier      = readTier(c);
-  const effectRaw = dashToNull(getField(c, 'Effect'))     ?? readHeadField(c.body_html, 'Effect');
+  const aspect    = dashToNull(getField(common, 'Aspect'));
+  const prereqs   = dashToNull(getField(common, 'Prerequisite'));
+  const activate  = dashToNull(getField(common, 'Activate'))   ?? readHeadField(common.body_html, 'Activate');
+  const frequency = dashToNull(getField(common, 'Frequency'))  ?? readHeadField(common.body_html, 'Frequency');
+  const tier      = readTier(common);
+  const effectRaw = dashToNull(getField(common, 'Effect'))     ?? readHeadField(common.body_html, 'Effect');
   // When the body has no labeled `Effect` block (gift body is pure prose) the
   // entire body_text is the effect; otherwise prefer the labeled portion.
-  const effect    = effectRaw ?? c.body_text.trim();
+  const effect    = effectRaw ?? common.body_text.trim();
 
   // If neither aspect nor any gift body exists, the page is unexpectedly empty
   // — return null so the slot reflects the absence rather than emitting a
@@ -239,10 +239,10 @@ export function extractRelicGift(c: CommonExtraction): RelicGiftSlice {
 
   return {
     gift: {
-      name:      c.title.name,
+      name:      common.title.name,
       tier,
       aspect,
-      traits:    c.traits.traits,
+      traits:    common.traits.traits,
       prereqs,
       activate,
       frequency,
@@ -255,12 +255,12 @@ export function extractRelicGift(c: CommonExtraction): RelicGiftSlice {
  * Extract the aspect-aggregator projection from a `?Aspect=N` page. Returns
  * `[]` when the page is a single-gift entry (no subsections or only one).
  */
-export function extractRelicAspects(c: CommonExtraction): RelicAspectsSlice {
-  const isAggregator = c.sections.length > 1 && /Gift$/i.test(c.sections[0]?.heading ?? '');
+export function extractRelicAspects(common: CommonExtraction): RelicAspectsSlice {
+  const isAggregator = common.sections.length > 1 && /Gift$/i.test(common.sections[0]?.heading ?? '');
   if (!isAggregator) return { aspects: [] };
 
   const aspects: RelicAspectGift[] = [];
-  for (const section of c.sections) {
+  for (const section of common.sections) {
     const { name, tier } = splitAspectGiftHeading(section.heading);
     if (name === '') continue;
     aspects.push({ name, tier, body: section.body_text });
@@ -273,12 +273,12 @@ export function extractRelicAspects(c: CommonExtraction): RelicAspectsSlice {
  * tables on Relics.aspx pages; returns `[]` until/unless source pages start
  * including them.
  */
-export function extractRelicMilestones(_c: CommonExtraction): RelicMilestonesSlice {
+export function extractRelicMilestones(_common: CommonExtraction): RelicMilestonesSlice {
   return { milestones: [] };
 }
 
 /** Extract meta slice marker. */
-export function extractRelicMeta(_c: CommonExtraction): RelicMetaSlice {
+export function extractRelicMeta(_common: CommonExtraction): RelicMetaSlice {
   return { __relic_meta_marked: true };
 }
 
@@ -290,28 +290,28 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeRelic(
-  c:           CommonExtraction,
+  common:      CommonExtraction,
   base:        RelicBaseSlice,
   gift:        RelicGiftSlice,
   aspects:     RelicAspectsSlice,
   milestones:  RelicMilestonesSlice,
   _meta:       RelicMetaSlice,
-  $:           CheerioAPI,
+  root:        CheerioAPI,
 ): RelicOutput {
   void _meta;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     gift:             gift.gift,
     aspects:          aspects.aspects,
     milestones:       milestones.milestones,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies RelicOutput;
 }
 
@@ -323,17 +323,17 @@ export function finalizeRelic(
  * the decomposed relic extraction nodes.
  */
 export function extractRelic(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   _span:  CheerioNode,
 ): RelicOutput {
   void _span;
-  const base       = extractRelicBase(c);
-  const gift       = extractRelicGift(c);
-  const aspects    = extractRelicAspects(c);
-  const milestones = extractRelicMilestones(c);
-  const meta       = extractRelicMeta(c);
-  return finalizeRelic(c, base, gift, aspects, milestones, meta, $);
+  const base       = extractRelicBase(common);
+  const gift       = extractRelicGift(common);
+  const aspects    = extractRelicAspects(common);
+  const milestones = extractRelicMilestones(common);
+  const meta       = extractRelicMeta(common);
+  return finalizeRelic(common, base, gift, aspects, milestones, meta, root);
 }
 
 // Re-export output types so tests can import from here.
@@ -341,86 +341,92 @@ export function extractRelic(
 
 export type RelicBaseOutput = 'success' | 'error';
 
-export const relicBaseNode: NodeInterface<ScrapeState, RelicBaseOutput, RipperServices> = {
-  name:    'extract:relic-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RelicBaseNode extends ScalarNode<ScrapeState, RelicBaseOutput> {
+  public readonly name = 'extract:relic-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: RelicBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RelicBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractRelicBase(c);
+    const base = extractRelicBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const relicBaseNode = new RelicBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type RelicGiftOutput = 'success' | 'error';
 
-export const relicGiftNode: NodeInterface<ScrapeState, RelicGiftOutput, RipperServices> = {
-  name:    'extract:relic-gift',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RelicGiftNode extends ScalarNode<ScrapeState, RelicGiftOutput> {
+  public readonly name = 'extract:relic-gift';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: RelicGiftOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RelicGiftOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const giftSlice    = extractRelicGift(c);
-    const aspectsSlice = extractRelicAspects(c);
-    const milestones   = extractRelicMilestones(c);
+    const giftSlice    = extractRelicGift(common);
+    const aspectsSlice = extractRelicAspects(common);
+    const milestones   = extractRelicMilestones(common);
 
     state.output = state.output !== null
       ? { ...state.output, ...giftSlice, ...aspectsSlice, ...milestones }
       : { ...giftSlice, ...aspectsSlice, ...milestones };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const relicGiftNode = new RelicGiftNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeRelicOutput = 'success';
 
-export const finalizeRelicNode: NodeInterface<ScrapeState, FinalizeRelicOutput, RipperServices> = {
-  name:    'finalize:relic',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeRelicNode extends ScalarNode<ScrapeState, FinalizeRelicOutput> {
+  public readonly name = 'finalize:relic';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeRelicOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeRelicOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as RelicOutput;
-    const assembled = finalizeRelic(c, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), $);
+    const assembled = finalizeRelic(common, (acc as never), (acc as never), (acc as never), (acc as never), (acc as never), root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeRelicNode = new FinalizeRelicNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
 // Unit tests for background concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -13,23 +14,24 @@ import {
 } from '../../../../../plugins/aonprd/concepts/background.js';
 import type { BackgroundOutput } from '../../../../../plugins/aonprd/concepts/background.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await backgroundBaseNode.execute(state, stubContext);
-  await backgroundBenefitsNode.execute(state, stubContext);
-  await finalizeBackgroundNode.execute(state, stubContext);
-  return state.output as BackgroundOutput;
+  await backgroundBaseNode.execute(Batch.of(state), stubContext);
+  await backgroundBenefitsNode.execute(Batch.of(state), stubContext);
+  await finalizeBackgroundNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<BackgroundOutput>(state.output);
 }
 
 // ─── extract:background-base ──────────────────────────────────────────────────
@@ -37,25 +39,25 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:background-base — background-acolyte', () => {
   it('produces _type, name, background_id', async () => {
     const state = await primeState('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const r = await backgroundBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await backgroundBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as BackgroundOutput;
+    const out = ParsedOutput.as<BackgroundOutput>(state.output);
     assert.equal(out.name, 'Acolyte');
     assert.equal(out.background_id, 1);
   });
 
   it('source.book is populated', async () => {
     const state = await primeState('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    await backgroundBaseNode.execute(state, stubContext);
-    const out = state.output as BackgroundOutput;
+    await backgroundBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<BackgroundOutput>(state.output);
     assert.ok(out.source.book !== null, 'source.book should be non-null');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const r = await backgroundBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await backgroundBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -64,25 +66,25 @@ describe('extract:background-base — background-acolyte', () => {
 describe('extract:background-benefits — background-acolyte', () => {
   it('produces trained_skills and granted_feat arrays', async () => {
     const state = await primeState('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const r = await backgroundBenefitsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await backgroundBenefitsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as Partial<BackgroundOutput>;
+    const out = ParsedOutput.as<Partial<BackgroundOutput>>(state.output);
     assert.ok(Array.isArray(out.trained_skills), 'trained_skills should be an array');
     assert.ok(Array.isArray(out.lore_skills), 'lore_skills should be an array');
   });
 
   it('granted_feat is non-null for Acolyte (grants Assurance or Deity\'s Domain)', async () => {
     const state = await primeState('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    await backgroundBenefitsNode.execute(state, stubContext);
-    const out = state.output as Partial<BackgroundOutput>;
+    await backgroundBenefitsNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<Partial<BackgroundOutput>>(state.output);
     assert.ok(out.granted_feat !== null && out.granted_feat !== undefined, 'Acolyte should have a granted_feat');
   });
 
   it('error path — returns error when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const r = await backgroundBenefitsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await backgroundBenefitsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -91,12 +93,12 @@ describe('extract:background-benefits — background-acolyte', () => {
 describe('finalize:background — background-acolyte', () => {
   it('produces raw_fields, links, body_text, sections, meta', async () => {
     const state = await primeState('background-acolyte.html', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    await backgroundBaseNode.execute(state, stubContext);
-    await backgroundBenefitsNode.execute(state, stubContext);
-    const r = await finalizeBackgroundNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await backgroundBaseNode.execute(Batch.of(state), stubContext);
+    await backgroundBenefitsNode.execute(Batch.of(state), stubContext);
+    const result = await finalizeBackgroundNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as BackgroundOutput;
+    const out = ParsedOutput.as<BackgroundOutput>(state.output);
     assert.ok(typeof out.raw_fields === 'object', 'raw_fields missing');
     assert.ok(Array.isArray(out.links), 'links missing');
     assert.ok(typeof out.body_text === 'string', 'body_text missing');
@@ -105,8 +107,8 @@ describe('finalize:background — background-acolyte', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const r = await finalizeBackgroundNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeBackgroundNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

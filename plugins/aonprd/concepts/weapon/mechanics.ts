@@ -15,39 +15,39 @@ const CATEGORY_WEAPON: ReadonlyMap<string, 'unarmed' | 'simple' | 'martial' | 'a
 
 function parseWeaponHands(raw: string | null): '1' | '2' | '1+' | null {
   if (raw === null) return null;
-  const t = raw.trim();
-  if (t === '1') return '1';
-  if (t === '2') return '2';
-  if (t === '1+' || /^1\s*\+/.test(t)) return '1+';
+  const trimmed = raw.trim();
+  if (trimmed === '1') return '1';
+  if (trimmed === '2') return '2';
+  if (trimmed === '1+' || /^1\s*\+/.test(trimmed)) return '1+';
   return null;
 }
 
 /** Extract weapon mechanics slice (price/damage/bulk/hands/range/category/group). */
-export function extractWeaponMechanics(c: CommonExtraction): WeaponMechanicsSlice {
-  const groupHtml = getFieldHtml(c, 'Group');
+export function extractWeaponMechanics(common: CommonExtraction): WeaponMechanicsSlice {
+  const groupHtml = getFieldHtml(common, 'Group');
   const group = readGroupAnchor(groupHtml, /WeaponGroups\.aspx/i);
 
-  const typeRaw = getField(c, 'Type');
+  const typeRaw = getField(common, 'Type');
   let weapon_type: WeaponOutput['weapon_type'] = null;
   if (typeRaw !== null) {
-    const lc = typeRaw.toLowerCase().trim();
-    if (lc === 'melee') weapon_type = 'melee';
-    else if (lc === 'ranged') weapon_type = 'ranged';
+    const lcType = typeRaw.toLowerCase().trim();
+    if (lcType === 'melee') weapon_type = 'melee';
+    else if (lcType === 'ranged') weapon_type = 'ranged';
   }
 
-  const categoryRaw = getField(c, 'Category');
+  const categoryRaw = getField(common, 'Category');
   const category: WeaponOutput['category'] = categoryRaw !== null
     ? CATEGORY_WEAPON.get(categoryRaw.toLowerCase().trim()) ?? null
     : null;
 
   return {
-    price:       parsePrice(getField(c, 'Price')),
-    damage:      parseDamage(getField(c, 'Damage')),
-    bulk:        parseBulk(getField(c, 'Bulk')),
-    hands:       parseWeaponHands(getField(c, 'Hands')),
-    reload:      dashToNull(getField(c, 'Reload')),
-    range:       parseRange(getField(c, 'Range')),
-    ammunition:  dashToNull(getField(c, 'Ammunition')),
+    price:       parsePrice(getField(common, 'Price')),
+    damage:      parseDamage(getField(common, 'Damage')),
+    bulk:        parseBulk(getField(common, 'Bulk')),
+    hands:       parseWeaponHands(getField(common, 'Hands')),
+    reload:      dashToNull(getField(common, 'Reload')),
+    range:       parseRange(getField(common, 'Range')),
+    ammunition:  dashToNull(getField(common, 'Ammunition')),
     weapon_type,
     category,
     group,

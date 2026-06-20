@@ -4,22 +4,6 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { parseStatblockDefenses } from '../../../../../plugins/aonprd/capabilities/statblockDefenses.js';
-import type { CommonExtraction } from '../../../../../plugins/aonprd/common.js';
-
-const mockCommon: CommonExtraction = {
-  url: 'https://2e.aonprd.com/Monsters.aspx?ID=1',
-  page_type: 'monster',
-  title: { name: 'Test Monster', level_label: 'Creature 1', level: 1, level_kind: 'Creature', tiered: false, action_cost: null, pfs: null, legacy: false, alt_edition_url: null },
-  traits: { traits: [], rarity: 'common', size: null, alignment: null, trait_ids: {} },
-  source: { book: null, page: null, source_id: null, raw: '' },
-  sources: [],
-  fields: [],
-  field_map: {},
-  body_text: '',
-  body_html: '',
-  sections: [],
-  links: [],
-};
 
 describe('parseStatblockDefenses — AC parsing', () => {
   it('parses simple AC value', () => {

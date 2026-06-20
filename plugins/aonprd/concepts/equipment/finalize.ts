@@ -6,12 +6,12 @@
  * equipmentBaseNode, equipmentMechanicsNode, finalizeEquipmentNode,
  * EquipmentBaseOutput, EquipmentMechanicsOutput, FinalizeEquipmentOutput.
  */
-import type { NodeInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { setConceptOutput } from '../_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
@@ -82,166 +82,172 @@ const EQUIPMENT_CLAIMED_LABELS: ReadonlyArray<string> = [
 
 /** Assemble a WeaponOutput from per-slice results, stripping claimed labels from raw_fields. */
 export function finalizeWeapon(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      WeaponBaseSlice,
   mechanics: WeaponMechanicsSlice,
   meta:      WeaponMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): WeaponOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, WEAPON_CLAIMED_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, WEAPON_CLAIMED_LABELS);
   return {
     ...base,
     ...mechanics,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies WeaponOutput;
 }
 
 /** Assemble an ArmorOutput from per-slice results, stripping claimed labels from raw_fields. */
 export function finalizeArmor(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      ArmorBaseSlice,
   mechanics: ArmorMechanicsSlice,
   meta:      ArmorMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): ArmorOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, ARMOR_CLAIMED_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, ARMOR_CLAIMED_LABELS);
   return {
     ...base,
     ...mechanics,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ArmorOutput;
 }
 
 /** Assemble an EquipmentOutput from per-slice results, stripping claimed labels from raw_fields. */
 export function finalizeEquipment(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      EquipmentBaseSlice,
   mechanics: EquipmentMechanicsSlice,
   meta:      EquipmentMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): EquipmentOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, EQUIPMENT_CLAIMED_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, EQUIPMENT_CLAIMED_LABELS);
   return {
     ...base,
     ...mechanics,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies EquipmentOutput;
 }
 
 /** Project a CommonExtraction of a Weapons.aspx page into a typed WeaponOutput. */
-export function extractWeapon(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): WeaponOutput {
-  const base      = extractWeaponBase(c);
-  const mechanics = extractWeaponMechanics(c);
-  const meta      = extractWeaponMeta(c, $, span);
-  return finalizeWeapon(c, base, mechanics, meta, $);
+export function extractWeapon(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): WeaponOutput {
+  const base      = extractWeaponBase(common);
+  const mechanics = extractWeaponMechanics(common);
+  const meta      = extractWeaponMeta(common, root, span);
+  return finalizeWeapon(common, base, mechanics, meta, root);
 }
 
 /** Project a CommonExtraction of an Armor.aspx page into a typed ArmorOutput. */
-export function extractArmor(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): ArmorOutput {
+export function extractArmor(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): ArmorOutput {
   void span;
-  const base      = extractArmorBase(c);
-  const mechanics = extractArmorMechanics(c);
-  const meta      = extractArmorMeta(c);
-  return finalizeArmor(c, base, mechanics, meta, $);
+  const base      = extractArmorBase(common);
+  const mechanics = extractArmorMechanics(common);
+  const meta      = extractArmorMeta(common);
+  return finalizeArmor(common, base, mechanics, meta, root);
 }
 
 /** Project a CommonExtraction of an Equipment.aspx page into a typed EquipmentOutput. */
-export function extractEquipment(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): EquipmentOutput {
+export function extractEquipment(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): EquipmentOutput {
   void span;
-  const base      = extractEquipmentBase(c);
-  const mechanics = extractEquipmentMechanics(c);
-  const meta      = extractEquipmentMeta(c);
-  return finalizeEquipment(c, base, mechanics, meta, $);
+  const base      = extractEquipmentBase(common);
+  const mechanics = extractEquipmentMechanics(common);
+  const meta      = extractEquipmentMeta(common);
+  return finalizeEquipment(common, base, mechanics, meta, root);
 }
 
 // ─── Capability nodes ─────────────────────────────────────────────────────────
 
 export type EquipmentBaseOutput = 'success' | 'error';
 
-export const equipmentBaseNode: NodeInterface<ScrapeState, EquipmentBaseOutput, RipperServices> = {
-  name:    'extract:equipment-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class EquipmentBaseNode extends ScalarNode<ScrapeState, EquipmentBaseOutput> {
+  public readonly name    = 'extract:equipment-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: EquipmentBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+  ): Promise<NodeOutputType<EquipmentBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractEquipmentBase(c);
+    const base = extractEquipmentBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const equipmentBaseNode = new EquipmentBaseNode();
 
 export type EquipmentMechanicsOutput = 'success' | 'error';
 
-export const equipmentMechanicsNode: NodeInterface<ScrapeState, EquipmentMechanicsOutput, RipperServices> = {
-  name:    'extract:equipment-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class EquipmentMechanicsNode extends ScalarNode<ScrapeState, EquipmentMechanicsOutput> {
+  public readonly name    = 'extract:equipment-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: EquipmentMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+  ): Promise<NodeOutputType<EquipmentMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mechanics = extractEquipmentMechanics(c);
+    const mechanics = extractEquipmentMechanics(common);
 
     state.output = { ...state.output, ...mechanics };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const equipmentMechanicsNode = new EquipmentMechanicsNode();
 
 export type FinalizeEquipmentOutput = 'success';
 
-export const finalizeEquipmentNode: NodeInterface<ScrapeState, FinalizeEquipmentOutput, RipperServices> = {
-  name:    'finalize:equipment',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeEquipmentNode extends ScalarNode<ScrapeState, FinalizeEquipmentOutput> {
+  public readonly name    = 'finalize:equipment';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-  ): Promise<{ output: FinalizeEquipmentOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+  ): Promise<NodeOutputType<FinalizeEquipmentOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as EquipmentOutput;
-    const meta = extractEquipmentMeta(c);
-    const pfs_note = extractPfsNote($, target);
-    const assembled = finalizeEquipment(c, acc, acc, meta, $);
+    const meta = extractEquipmentMeta(common);
+    const pfs_note = extractPfsNote(root, target);
+    const assembled = finalizeEquipment(common, acc, acc, meta, root);
     setConceptOutput(state, {
       ...assembled,
       pfs_note,
     } satisfies EquipmentOutput);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeEquipmentNode = new FinalizeEquipmentNode();

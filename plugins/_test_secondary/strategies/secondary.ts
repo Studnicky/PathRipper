@@ -66,16 +66,16 @@ export const secondaryStrategy: CommonStrategy = {
   // H15 — sources are emitted as `<div class="citation" data-source-id=N
   // data-page=N>Title</div>` blocks anywhere inside the content target.
   sourceRef: {
-    extractSources(target: CheerioTarget, $: CheerioAPI): SourceRef[] {
+    extractSources(target: CheerioTarget, root: CheerioAPI): SourceRef[] {
       const out: SourceRef[] = [];
       const seen = new Set<string>();
-      target.find('div.citation').each((_, el) => {
-        const node = el as Element;
+      target.find('div.citation').each((_index, element) => {
+        const node = element as Element;
         const sourceIdRaw = node.attribs?.['data-source-id'];
         const pageRaw     = node.attribs?.['data-page'];
         const source_id = sourceIdRaw !== undefined ? parseInt(sourceIdRaw, 10) : null;
         const page      = pageRaw     !== undefined ? parseInt(pageRaw, 10)     : null;
-        const text  = htmlToTextLocal($.html(el as AnyNode) ?? '');
+        const text  = htmlToTextLocal(root.html(element as AnyNode) ?? '');
         const book  = text === '' ? null : text;
         const key = `${source_id ?? 'n'}|${book ?? ''}|${page ?? 'n'}`;
         if (seen.has(key)) return;
@@ -94,14 +94,14 @@ export const secondaryStrategy: CommonStrategy = {
   // H16 — sections are bare `<h2>` / `<h3>` headings (no `.title` class
   // required). Body text/html runs until the next h1/h2/h3 sibling.
   sectionWalker: {
-    harvestSections($: CheerioAPI, target: CheerioTarget): Section[] {
+    harvestSections(root: CheerioAPI, target: CheerioTarget): Section[] {
       const out: Section[] = [];
-      target.find('h2, h3').each((_, el) => {
-        const node = el as Element;
-        const $h = $(el);
+      target.find('h2, h3').each((_index, element) => {
+        const node = element as Element;
+        const $heading = root(element);
         const tag = node.tagName.toLowerCase();
         const level: 2 | 3 = tag === 'h3' ? 3 : 2;
-        const heading = $h.text().replace(/\s+/g, ' ').trim();
+        const heading = $heading.text().replace(/\s+/g, ' ').trim();
         if (heading === '') return;
 
         const fragments: string[] = [];
@@ -112,7 +112,7 @@ export const secondaryStrategy: CommonStrategy = {
             const nextTag = next.tagName.toLowerCase();
             if (nextTag === 'h1' || nextTag === 'h2' || nextTag === 'h3') break;
           }
-          fragments.push($.html(cur as AnyNode));
+          fragments.push(root.html(cur as AnyNode));
           cur = (cur as { next: AnyNode | null }).next;
         }
         const body_html = fragments.join('');

@@ -5,6 +5,7 @@
  * spell-shape types (SpellKind, Tradition, SpellOutcome, AfflictionStage,
  * Affliction, HeightenedEntry) and per-slice discriminators.
  */
+import type { Rarity, PfsLegality, ActionCost, SourceRef, LinkRef } from '../../common.js';
 
 export type SpellKind = 'spell' | 'cantrip' | 'focus' | 'ritual';
 export type Tradition = 'arcane' | 'divine' | 'occult' | 'primal' | 'elemental';
@@ -55,17 +56,17 @@ export interface SpellOutput {
   name: string;
   kind: SpellKind;
   rank: number | null;
-  rarity: import('../../common.js').Rarity;
-  pfs: import('../../common.js').PfsLegality | null;
+  rarity: Rarity;
+  pfs: PfsLegality | null;
   legacy: boolean;
   alt_edition_url: string | null;
-  action_cost: import('../../common.js').ActionCost | null;
+  action_cost: ActionCost | null;
   traits: string[];
   /** Trait AON IDs keyed by trait name (e.g. `{ "Necromancy": 117 }`). */
   trait_ids: Record<string, number>;
   source: { book: string | null; page: number | null; source_id: number | null };
   /** All source refs on the page (header + body footnotes). */
-  sources: import('../../common.js').SourceRef[];
+  sources: SourceRef[];
   traditions: Tradition[];
   spell_list: string | null;
   bloodlines: Array<{ name: string; bloodline_id: number | null }>;
@@ -115,7 +116,7 @@ export interface SpellOutput {
    * For rituals: secondary skill check(s) required, from `<b>Secondary Checks</b>`.
    */
   ritual_secondary_checks: string | null;
-  cast: { actions: import('../../common.js').ActionCost | null; components: string[]; time: string | null; raw: string | null };
+  cast: { actions: ActionCost | null; components: string[]; time: string | null; raw: string | null };
   trigger: string | null;
   range: string | null;
   area: string | null;
@@ -135,7 +136,7 @@ export interface SpellOutput {
   affliction: Affliction | null;
   heightened: HeightenedEntry[];
   raw_fields: Record<string, string>;
-  links: import('../../common.js').LinkRef[];
+  links: LinkRef[];
   /** `<meta name="description">` content. */
   meta_description: string | null;
   /** `<meta name="keywords">` content. */
@@ -149,15 +150,15 @@ export interface RitualBaseSlice {
   name:            string;
   kind:            SpellKind;
   rank:            number | null;
-  rarity:          import('../../common.js').Rarity;
-  pfs:             import('../../common.js').PfsLegality | null;
+  rarity:          Rarity;
+  pfs:             PfsLegality | null;
   legacy:          boolean;
   alt_edition_url: string | null;
-  action_cost:     import('../../common.js').ActionCost | null;
+  action_cost:     ActionCost | null;
   traits:          string[];
   trait_ids:       Record<string, number>;
   source:          SpellOutput['source'];
-  sources:         import('../../common.js').SourceRef[];
+  sources:         SourceRef[];
 }
 
 /** Fields owned by `extract-ritual-cast`. */

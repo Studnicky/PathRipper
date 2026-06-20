@@ -3,12 +3,12 @@
  *
  * Exports: parseFamilyLinks, extractVariants, extractMonsterMeta, monsterMetaNode.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import type { MonsterMetaSlice, MonsterOutput } from './types.js';
@@ -18,10 +18,10 @@ import type { MonsterMetaSlice, MonsterOutput } from './types.js';
  * content span by common.ts, covering both the head and the post-stat-block
  * "Related Groups" section). Deduplicates by name.
  */
-export function parseFamilyLinks(c: CommonExtraction): Array<{ name: string; family_id: number | null }> {
+export function parseFamilyLinks(common: CommonExtraction): Array<{ name: string; family_id: number | null }> {
   const out: Array<{ name: string; family_id: number | null }> = [];
   const seen = new Set<string>();
-  for (const link of c.links) {
+  for (const link of common.links) {
     if (link.kind !== 'MonsterFamilies') continue;
     if (link.text === '' || seen.has(link.text)) continue;
     seen.add(link.text);
@@ -31,54 +31,56 @@ export function parseFamilyLinks(c: CommonExtraction): Array<{ name: string; fam
 }
 
 /** Pull Elite/Normal/Weak/PWL sibling URLs from the variant nav. */
-export function extractVariants($: CheerioAPI, span: CheerioNode): MonsterOutput['variants'] {
+export function extractVariants(root: CheerioAPI, span: CheerioNode): MonsterOutput['variants'] {
   const out: MonsterOutput['variants'] = [];
-  span.find('h2.hide-on-print a').each((_, el) => {
-    const $a = $(el);
-    const href = $a.attr('href') ?? '';
+  span.find('h2.hide-on-print a').each((_index, element) => {
+    const $anchor = root(element);
+    const href = $anchor.attr('href') ?? '';
     if (href === '') return;
-    const text = $a.text().trim().toLowerCase();
+    const text = $anchor.text().trim().toLowerCase();
     const kind = text === 'elite' ? 'elite' : text === 'normal' ? 'normal' : text === 'weak' ? 'weak' : null;
     if (kind !== null) out.push({ kind, url: href });
   });
-  span.find('a.monster-pwl-link').each((_, el) => {
-    const href = $(el).attr('href') ?? '';
+  span.find('a.monster-pwl-link').each((_index, element) => {
+    const href = root(element).attr('href') ?? '';
     if (href !== '') out.push({ kind: 'pwl', url: href });
   });
   return out;
 }
 
 /** Extract meta slice (variants + family links). */
-export function extractMonsterMeta(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): MonsterMetaSlice {
+export function extractMonsterMeta(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): MonsterMetaSlice {
   return {
-    variants:     extractVariants($, span),
-    family_links: parseFamilyLinks(c),
+    variants:     extractVariants(root, span),
+    family_links: parseFamilyLinks(common),
   };
 }
 
 export type MonsterMetaOutput = 'success' | 'error';
 
-export const monsterMetaNode: NodeInterface<ScrapeState, MonsterMetaOutput, RipperServices> = {
-  name:    'extract:monster-meta',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterMetaNode extends ScalarNode<ScrapeState, MonsterMetaOutput> {
+  public readonly name = 'extract:monster-meta';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterMetaOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterMetaOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const meta = extractMonsterMeta(c, $, target);
+    const meta = extractMonsterMeta(common, root, target);
 
     state.output = { ...state.output, ...meta };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterMetaNode = new MonsterMetaNode();

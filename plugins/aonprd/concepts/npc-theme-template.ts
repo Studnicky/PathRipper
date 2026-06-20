@@ -5,12 +5,12 @@
 //
 // is a first-class slice rather than being embedded inside a monolithic
 // finalize function.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -119,11 +119,11 @@ const TIER_LABEL_RE = /^(\d+)(?:st|nd|rd|th)\s+Level\s+or\s+Higher$/i;
  */
 function harvestOrderedBoldPairs(html: string): Array<{ label: string; valueHtml: string }> {
   const out: Array<{ label: string; valueHtml: string }> = [];
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     out.push({ label, valueHtml });
@@ -144,19 +144,19 @@ function cleanValueHtml(valueHtml: string): string {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for an NPC theme template page. */
-export function extractNpcThemeTemplateBase(c: CommonExtraction): NpcThemeTemplateBaseSlice {
+export function extractNpcThemeTemplateBase(common: CommonExtraction): NpcThemeTemplateBaseSlice {
   return {
-    url:                   c.url,
-    npc_theme_template_id: extractEntityId(c.url),
-    name:                  c.title.name,
-    rarity:                c.traits.rarity,
-    pfs:                   c.title.pfs,
-    legacy:                c.title.legacy,
-    alt_edition_url:       c.title.alt_edition_url,
-    traits:                c.traits.traits,
-    trait_ids:             c.traits.trait_ids,
-    source:                { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:               c.sources,
+    url:                   common.url,
+    npc_theme_template_id: extractEntityId(common.url),
+    name:                  common.title.name,
+    rarity:                common.traits.rarity,
+    pfs:                   common.title.pfs,
+    legacy:                common.title.legacy,
+    alt_edition_url:       common.title.alt_edition_url,
+    traits:                common.traits.traits,
+    trait_ids:             common.traits.trait_ids,
+    source:                { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:               common.sources,
   };
 }
 
@@ -165,8 +165,8 @@ export function extractNpcThemeTemplateBase(c: CommonExtraction): NpcThemeTempla
  * from the page body. The body is a flat sequence of `<b>Label</b> Value`
  * pairs separated by `<br/>`; there are no `<h2>` sections.
  */
-export function extractNpcThemeTemplateTraitsMods(c: CommonExtraction): NpcThemeTemplateTraitsModsSlice {
-  const html = c.body_html;
+export function extractNpcThemeTemplateTraitsMods(common: CommonExtraction): NpcThemeTemplateTraitsModsSlice {
+  const html = common.body_html;
   // Flavor = text BEFORE the first `<b>` boundary in body_html.
   let flavor: string | null = null;
   const firstBold = /<b>/i.exec(html);
@@ -207,7 +207,7 @@ export function extractNpcThemeTemplateTraitsMods(c: CommonExtraction): NpcTheme
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractNpcThemeTemplateMeta(_c: CommonExtraction): NpcThemeTemplateMetaSlice {
+export function extractNpcThemeTemplateMeta(_common: CommonExtraction): NpcThemeTemplateMetaSlice {
   return { __npc_theme_template_meta_marked: true };
 }
 
@@ -216,26 +216,26 @@ export function extractNpcThemeTemplateMeta(_c: CommonExtraction): NpcThemeTempl
 const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = ['Source'];
 
 export function finalizeNpcThemeTemplate(
-  c:           CommonExtraction,
+  common:      CommonExtraction,
   base:        NpcThemeTemplateBaseSlice,
   traitsMods:  NpcThemeTemplateTraitsModsSlice,
   _meta:       NpcThemeTemplateMetaSlice,
-  $:           CheerioAPI,
+  root:        CheerioAPI,
   _target:     CheerioNode,
 ): NpcThemeTemplateOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...traitsMods,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies NpcThemeTemplateOutput;
 }
 
@@ -247,14 +247,14 @@ export function finalizeNpcThemeTemplate(
  * the decomposed NPC-theme-template extraction nodes.
  */
 export function extractNpcThemeTemplate(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): NpcThemeTemplateOutput {
-  const base       = extractNpcThemeTemplateBase(c);
-  const traitsMods = extractNpcThemeTemplateTraitsMods(c);
-  const meta       = extractNpcThemeTemplateMeta(c);
-  return finalizeNpcThemeTemplate(c, base, traitsMods, meta, $, target);
+  const base       = extractNpcThemeTemplateBase(common);
+  const traitsMods = extractNpcThemeTemplateTraitsMods(common);
+  const meta       = extractNpcThemeTemplateMeta(common);
+  return finalizeNpcThemeTemplate(common, base, traitsMods, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -265,28 +265,29 @@ export function extractNpcThemeTemplate(
 
 export type NpcThemeTemplateBaseOutput = 'success' | 'error';
 
-export const npcThemeTemplateBaseNode: NodeInterface<ScrapeState, NpcThemeTemplateBaseOutput, RipperServices> = {
-  name:    'extract:npc-theme-template-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class NpcThemeTemplateBaseNodeImpl extends ScalarNode<ScrapeState, NpcThemeTemplateBaseOutput> {
+  public readonly name    = 'extract:npc-theme-template-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: NpcThemeTemplateBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<NpcThemeTemplateBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractNpcThemeTemplateBase(c);
+    const base = extractNpcThemeTemplateBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const npcThemeTemplateBaseNode = new NpcThemeTemplateBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -295,28 +296,29 @@ export const npcThemeTemplateBaseNode: NodeInterface<ScrapeState, NpcThemeTempla
 
 export type NpcThemeTemplateTraitsModsOutput = 'success' | 'error';
 
-export const npcThemeTemplateTraitsModsNode: NodeInterface<ScrapeState, NpcThemeTemplateTraitsModsOutput, RipperServices> = {
-  name:    'extract:npc-theme-template-traits-mods',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class NpcThemeTemplateTraitsModsNodeImpl extends ScalarNode<ScrapeState, NpcThemeTemplateTraitsModsOutput> {
+  public readonly name    = 'extract:npc-theme-template-traits-mods';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: NpcThemeTemplateTraitsModsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<NpcThemeTemplateTraitsModsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractNpcThemeTemplateTraitsMods(c);
+    const slice = extractNpcThemeTemplateTraitsMods(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const npcThemeTemplateTraitsModsNode = new NpcThemeTemplateTraitsModsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -325,31 +327,32 @@ export const npcThemeTemplateTraitsModsNode: NodeInterface<ScrapeState, NpcTheme
 
 export type FinalizeNpcThemeTemplateOutput = 'success';
 
-export const finalizeNpcThemeTemplateNode: NodeInterface<ScrapeState, FinalizeNpcThemeTemplateOutput, RipperServices> = {
-  name:    'finalize:npc-theme-template',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeNpcThemeTemplateNodeImpl extends ScalarNode<ScrapeState, FinalizeNpcThemeTemplateOutput> {
+  public readonly name    = 'finalize:npc-theme-template';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeNpcThemeTemplateOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeNpcThemeTemplateOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     const meta       = { __npc_theme_template_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as NpcThemeTemplateOutput;
-    const assembled = finalizeNpcThemeTemplate(c, acc, acc, meta, $, target);
+    const assembled = finalizeNpcThemeTemplate(common, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeNpcThemeTemplateNode = new FinalizeNpcThemeTemplateNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

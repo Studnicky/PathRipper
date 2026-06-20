@@ -25,8 +25,8 @@ export const aonStrategy: CommonStrategy = {
     },
   },
   sectionWalker: {
-    harvestSections($, target) {
-      return aonHarvestSections($, target);
+    harvestSections(root, target) {
+      return aonHarvestSections(root, target);
     },
   },
 };

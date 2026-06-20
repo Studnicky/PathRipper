@@ -1,77 +1,80 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
   type Section,
-  type CheerioNode,
 } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
 import { extractConditionBase } from './base.js';
 import { extractConditionStagesHelper } from './helpers.js';
-import { finalizeCondition, finalizeConditionWithSections } from './finalize.js';
+import { finalizeConditionWithSections } from './finalize.js';
 import type { ConditionOutput } from './types.js';
 
 export type ConditionBaseOutput = 'success' | 'error';
 
-export const conditionBaseNode: NodeInterface<ScrapeState, ConditionBaseOutput, RipperServices> = {
-  name:    'extract:condition-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ConditionBaseNode extends ScalarNode<ScrapeState, ConditionBaseOutput> {
+  public readonly name = 'extract:condition-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ConditionBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ConditionBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base   = extractConditionBase(c);
-    const stages = extractConditionStagesHelper(c);
+    const base   = extractConditionBase(common);
+    const stages = extractConditionStagesHelper(common);
 
     state.output = state.output !== null
       ? { ...state.output, ...base, ...stages }
       : { ...base, ...stages };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const conditionBaseNode = new ConditionBaseNode();
 
 export type FinalizeConditionOutput = 'success';
 
-export const finalizeConditionNode: NodeInterface<ScrapeState, FinalizeConditionOutput, RipperServices> = {
-  name:    'finalize:condition',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeConditionNode extends ScalarNode<ScrapeState, FinalizeConditionOutput> {
+  public readonly name = 'finalize:condition';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeConditionOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeConditionOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
     const acc = (state.output ?? {}) as unknown as ConditionOutput;
-    const stages = extractConditionStagesHelper(c);
-    const assembled = finalizeConditionWithSections(c, acc as never, stages, sections, $);
+    const stages = extractConditionStagesHelper(common);
+    const assembled = finalizeConditionWithSections(common, acc as never, stages, sections, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeConditionNode = new FinalizeConditionNode();
 
 export const conditionConcept: ConceptDecl<ConditionOutput> = {
   id:       'condition',

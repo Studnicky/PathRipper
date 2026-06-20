@@ -55,11 +55,11 @@ describe('AONPRD snapshot e2e (local only)', () => {
       const rawFiles = await readdir(rawDir);
       assert.ok(rawFiles.length === PROBES.length,
         `phase 1: expected ${PROBES.length.toString()} raw HTML files, got ${rawFiles.length.toString()}`);
-      for (const f of rawFiles) assert.match(f, /\.html$/);
+      for (const file of rawFiles) assert.match(file, /\.html$/);
 
       const targetDir   = resolve(outDir, 'aonprd');
       const phase1Files = await readdir(targetDir);
-      assert.equal(phase1Files.filter((f: string): boolean => f.endsWith('.json')).length, 0,
+      assert.equal(phase1Files.filter((file: string): boolean => file.endsWith('.json')).length, 0,
         'phase 1: no JSON output expected');
 
       // ── PHASE 2 ───────────────────────────────────────────────────────────
@@ -97,18 +97,18 @@ describe('AONPRD snapshot e2e (local only)', () => {
         `phase 2 must not hit the network; saw: ${fetchCalls.join(', ')}`);
 
       const pluginDir   = resolve(targetDir, 'aonprd:parse');
-      const phase2Files = (await readdir(pluginDir)).filter((f: string): boolean =>
-        f.endsWith('.json') && f !== 'failures.json',
+      const phase2Files = (await readdir(pluginDir)).filter((file: string): boolean =>
+        file.endsWith('.json') && file !== 'failures.json',
       );
       assert.ok(phase2Files.length === PROBES.length,
         `phase 2: expected ${PROBES.length.toString()} JSON files in aonprd:parse/, got ${phase2Files.length.toString()}`);
-      for (const f of phase2Files) {
-        const json = JSON.parse(await readFile(resolve(pluginDir, f), 'utf-8')) as {
+      for (const file of phase2Files) {
+        const json = JSON.parse(await readFile(resolve(pluginDir, file), 'utf-8')) as {
           _type?: string; name?: string; source?: { book: string | null }; _raw?: unknown;
         };
-        assert.ok(json.name  !== undefined && json.name  !== '', `${f}: missing name`);
-        assert.ok(json.source !== undefined && json.source.book !== null, `${f}: missing source.book`);
-        assert.equal(json._raw, undefined, `${f}: _raw must NOT be embedded in plugin JSON`);
+        assert.ok(json.name  !== undefined && json.name  !== '', `${file}: missing name`);
+        assert.ok(json.source !== undefined && json.source.book !== null, `${file}: missing source.book`);
+        assert.equal(json._raw, undefined, `${file}: _raw must NOT be embedded in plugin JSON`);
       }
     } finally {
       await rm(outDir, { recursive: true, force: true });

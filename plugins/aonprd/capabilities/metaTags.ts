@@ -9,12 +9,12 @@
 //
 // Open-world convention: soft-fail to `'success'` with no writes when
 // `aonprdCheerio` is absent (e.g. rule pages whose load short-circuits).
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import { extractMetaDescription, extractMetaKeywords } from '../common.js';
 
 /** Structured shape of the `aonprdMetaTags` metadata bag. */
@@ -25,10 +25,10 @@ export interface AonprdMetaTags {
 
 export type MetaTagsOutput = 'success';
 
-export const metaTagsNode: NodeInterface<ScrapeState, MetaTagsOutput, RipperServices> = {
-  name:    'extract:meta-tags',
-  outputs: ['success'] as const,
-  contract: {
+class MetaTagsNode extends ScalarNode<ScrapeState, MetaTagsOutput> {
+  public readonly name = 'extract:meta-tags';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCheerio'] as const,
     // `aonprdMetaTags` is consumed via direct `state.getMetadata` reads in
     // concept finalize nodes (open-world side-write convention used by other
@@ -36,19 +36,21 @@ export const metaTagsNode: NodeInterface<ScrapeState, MetaTagsOutput, RipperServ
     // would trip the `ContractRegistryValidator` "dead produces" check
     // because no node declares `hardRequired: ['aonprdMetaTags']`.
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MetaTagsOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if ($ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MetaTagsOutput>> {
+    const root = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (root === undefined) return NodeOutputBuilder.of('success');
     const meta: AonprdMetaTags = {
-      description: extractMetaDescription($),
-      keywords:    extractMetaKeywords($),
+      description: extractMetaDescription(root),
+      keywords:    extractMetaKeywords(root),
     };
     state.setMetadata('aonprdMetaTags', meta);
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const metaTagsNode = new MetaTagsNode();

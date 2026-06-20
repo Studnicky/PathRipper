@@ -6,12 +6,12 @@
 // legacy-content-warning heading).
 //
 // partial extraction and incremental composition in the taxonomy pipeline.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import { parseGrantedFeatures } from '../capabilities/grantedFeatures.js';
@@ -135,10 +135,10 @@ const SIZE_WORDS = new Set(['Tiny', 'Small', 'Medium', 'Large', 'Huge', 'Gargant
  */
 function readSectionValue(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<h[23][^>]+class="title"[^>]*>\\s*${escaped}\\s*<\\/h[23]>\\s*([\\s\\S]*?)(?=<h[23]|$)`, 'i');
-  const m = re.exec(html);
-  if (m === null) return null;
-  return htmlToText(m[1] ?? '');
+  const regex = new RegExp(`<h[23][^>]+class="title"[^>]*>\\s*${escaped}\\s*<\\/h[23]>\\s*([\\s\\S]*?)(?=<h[23]|$)`, 'i');
+  const match = regex.exec(html);
+  if (match === null) return null;
+  return htmlToText(match[1] ?? '');
 }
 
 /**
@@ -148,20 +148,20 @@ function readSectionValue(html: string, label: string): string | null {
  */
 function readSectionList(html: string, label: string): string[] | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(`<h[23][^>]+class="title"[^>]*>\\s*${escaped}\\s*<\\/h[23]>\\s*([\\s\\S]*?)(?=<h[23]|$)`, 'i');
-  const m = re.exec(html);
-  if (m === null) return null;
-  return (m[1] ?? '')
+  const regex = new RegExp(`<h[23][^>]+class="title"[^>]*>\\s*${escaped}\\s*<\\/h[23]>\\s*([\\s\\S]*?)(?=<h[23]|$)`, 'i');
+  const match = regex.exec(html);
+  if (match === null) return null;
+  return (match[1] ?? '')
     .split(/<br\s*\/?>/i)
     .map((chunk) => htmlToText(chunk))
-    .filter((t) => t !== '');
+    .filter((trimmed) => trimmed !== '');
 }
 
 /** Find inline `<b>Marker</b> VALUE` followed by next-bold or heading boundary. */
 function findInlineMarker(html: string, label: string): string | null {
-  const re = new RegExp(`<b>\\s*${label}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<h[1-6]|<hr|$)`, 'i');
-  const m = re.exec(html);
-  return m === null ? null : htmlToText(m[1] ?? '');
+  const regex = new RegExp(`<b>\\s*${label}\\s*<\\/b>\\s*([\\s\\S]*?)(?=<b>|<h[1-6]|<hr|$)`, 'i');
+  const match = regex.exec(html);
+  return match === null ? null : htmlToText(match[1] ?? '');
 }
 
 function parseLanguages(value: string | null): AncestryMechanics['languages'] {
@@ -169,21 +169,21 @@ function parseLanguages(value: string | null): AncestryMechanics['languages'] {
   const parts = splitTopLevel(value, ',');
   const fixed: string[] = [];
   const bonus_choice: string[] = [];
-  for (const p of parts) {
-    if (/intelligence|bonus|additional|number you can speak|chose/i.test(p)) {
-      bonus_choice.push(p.trim());
-    } else if (p.trim() !== '') {
-      fixed.push(p.trim());
+  for (const part of parts) {
+    if (/intelligence|bonus|additional|number you can speak|chose/i.test(part)) {
+      bonus_choice.push(part.trim());
+    } else if (part.trim() !== '') {
+      fixed.push(part.trim());
     }
   }
   return { fixed, bonus_choice, raw: value };
 }
 
 function findVision(sections: ReadonlyArray<Section>): string | null {
-  for (const s of sections) {
-    const lc = s.heading.toLowerCase();
-    if (lc.includes('darkvision') || lc.includes('low-light vision') || lc.includes('vision')) {
-      return s.heading;
+  for (const section of sections) {
+    const lcLabel = section.heading.toLowerCase();
+    if (lcLabel.includes('darkvision') || lcLabel.includes('low-light vision') || lcLabel.includes('vision')) {
+      return section.heading;
     }
   }
   return null;
@@ -192,22 +192,22 @@ function findVision(sections: ReadonlyArray<Section>): string | null {
 // ─── Slice extraction ─────────────────────────────────────────────────────────
 
 /** Extract identity + mechanics + popular edicts/anathema. */
-export function extractAncestryBase(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): AncestryBaseSlice {
-  void _$;
+export function extractAncestryBase(common: CommonExtraction, _root: CheerioAPI, _span: CheerioNode): AncestryBaseSlice {
+  void _root;
   void _span;
-  const fullHtml = c.body_html;
-  const sizeFromTraits = c.traits.size;
+  const fullHtml = common.body_html;
+  const sizeFromTraits = common.traits.size;
 
-  const hpRaw    = readSectionValue(fullHtml, 'Hit Points') ?? getField(c, 'Hit Points');
-  const sizeRaw  = readSectionValue(fullHtml, 'Size')       ?? getField(c, 'Size');
-  const speedRaw = readSectionValue(fullHtml, 'Speed')      ?? getField(c, 'Speed');
-  const langsRaw = readSectionValue(fullHtml, 'Languages')  ?? getField(c, 'Languages');
+  const hpRaw    = readSectionValue(fullHtml, 'Hit Points') ?? getField(common, 'Hit Points');
+  const sizeRaw  = readSectionValue(fullHtml, 'Size')       ?? getField(common, 'Size');
+  const speedRaw = readSectionValue(fullHtml, 'Speed')      ?? getField(common, 'Speed');
+  const langsRaw = readSectionValue(fullHtml, 'Languages')  ?? getField(common, 'Languages');
 
   const boostsList = readSectionList(fullHtml, 'Attribute Boosts') ?? readSectionList(fullHtml, 'Ability Boosts');
   const flawsList  = readSectionList(fullHtml, 'Attribute Flaw')   ?? readSectionList(fullHtml, 'Attribute Flaws')
                   ?? readSectionList(fullHtml, 'Ability Flaw')     ?? readSectionList(fullHtml, 'Ability Flaws');
-  const boostsRaw  = getField(c, 'Attribute Boosts', 'Ability Boosts');
-  const flawsRaw   = getField(c, 'Attribute Flaw', 'Attribute Flaws', 'Ability Flaws', 'Ability Flaw');
+  const boostsRaw  = getField(common, 'Attribute Boosts', 'Ability Boosts');
+  const flawsRaw   = getField(common, 'Attribute Flaw', 'Attribute Flaws', 'Ability Flaws', 'Ability Flaw');
 
   const size: string | null = sizeFromTraits ?? (sizeRaw !== null && SIZE_WORDS.has(sizeRaw) ? sizeRaw : sizeRaw);
   const speed = asInt(speedRaw);
@@ -220,15 +220,15 @@ export function extractAncestryBase(c: CommonExtraction, _$: CheerioAPI, _span: 
     : flawsRaw !== null ? splitTopLevel(flawsRaw, ',') : [];
 
   const languages = parseLanguages(langsRaw);
-  const vision = findVision(c.sections);
+  const vision = findVision(common.sections);
 
   const granted: string[] = [];
-  for (const s of c.sections) {
-    if (/^(Clan Dagger|Granted|Heritage)/i.test(s.heading)) granted.push(s.heading);
+  for (const section of common.sections) {
+    if (/^(Clan Dagger|Granted|Heritage)/i.test(section.heading)) granted.push(section.heading);
   }
 
-  const beliefs = c.sections.find((s) => /Beliefs/i.test(s.heading));
-  const beliefsHtml = beliefs?.body_html ?? c.body_html;
+  const beliefs = common.sections.find((section) => /Beliefs/i.test(section.heading));
+  const beliefsHtml = beliefs?.body_html ?? common.body_html;
   const popular_edicts   = findInlineMarker(beliefsHtml, 'Popular Edicts');
   const popular_anathema = findInlineMarker(beliefsHtml, 'Popular Anathema');
 
@@ -244,17 +244,17 @@ export function extractAncestryBase(c: CommonExtraction, _$: CheerioAPI, _span: 
   };
 
   return {
-    url:             c.url,
-    ancestry_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    ancestry_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
     mechanics,
     popular_edicts,
     popular_anathema,
@@ -267,12 +267,12 @@ export function extractAncestryBase(c: CommonExtraction, _$: CheerioAPI, _span: 
  * `<h2 class="title">Name</h2>VALUE`. Falls back to scanning all h2 sections
  * whose heading is a Title-Case single phrase when no h1 container is found.
  */
-export function extractAncestryHeritages(c: CommonExtraction): AncestryHeritagesSlice {
+export function extractAncestryHeritages(common: CommonExtraction): AncestryHeritagesSlice {
   const out: Array<{ name: string; description: string }> = [];
   const heritageRe = /<h1[^>]+class="title"[^>]*>\s*Heritages\s*<\/h1>([\s\S]*?)(?=<h1[^>]+class="title"|$)/i;
-  const m = heritageRe.exec(c.body_html);
-  if (m !== null) {
-    const inner = m[1] ?? '';
+  const match = heritageRe.exec(common.body_html);
+  if (match !== null) {
+    const inner = match[1] ?? '';
     const h2Re = /<h2[^>]+class="title"[^>]*>\s*([^<]+?)\s*<\/h2>\s*([\s\S]*?)(?=<h[123]|$)/gi;
     let h2m: RegExpExecArray | null;
     while ((h2m = h2Re.exec(inner)) !== null) {
@@ -297,19 +297,19 @@ export function extractAncestryHeritages(c: CommonExtraction): AncestryHeritages
  * Size, Speed, Languages, Attribute Boosts/Flaws) is captured as a feature
  * entry with its body_text as the description.
  */
-export function extractAncestryFeatures(c: CommonExtraction): AncestryFeaturesSlice {
-  const fullHtml = c.body_html;
+export function extractAncestryFeatures(common: CommonExtraction): AncestryFeaturesSlice {
+  const fullHtml = common.body_html;
   const initial_proficiencies: Record<string, string> = {};
   const initRe = /<h1[^>]+class="title"[^>]*>\s*Initial Proficiencies\s*<\/h1>([\s\S]*?)(?=<h1[^>]+class="title"|$)/i;
-  const m = initRe.exec(fullHtml);
-  if (m !== null) {
-    const inner = m[1] ?? '';
+  const match = initRe.exec(fullHtml);
+  if (match !== null) {
+    const inner = match[1] ?? '';
     const h2Re = /<h2[^>]+class="title"[^>]*>\s*([^<]+?)\s*<\/h2>\s*([\s\S]*?)(?=<h[123]|$)/gi;
     let h2m: RegExpExecArray | null;
     while ((h2m = h2Re.exec(inner)) !== null) {
-      const k = (h2m[1] ?? '').trim();
-      const v = htmlToText(h2m[2] ?? '');
-      if (k !== '' && v !== '' && !(k in initial_proficiencies)) initial_proficiencies[k] = v;
+      const key = (h2m[1] ?? '').trim();
+      const value = htmlToText(h2m[2] ?? '');
+      if (key !== '' && value !== '' && !(key in initial_proficiencies)) initial_proficiencies[key] = value;
     }
   }
 
@@ -318,9 +318,9 @@ export function extractAncestryFeatures(c: CommonExtraction): AncestryFeaturesSl
     'attribute boosts', 'attribute boost', 'ability boosts', 'ability boost',
     'attribute flaw', 'attribute flaws', 'ability flaw', 'ability flaws',
   ]);
-  const profKeys = new Set(Object.keys(initial_proficiencies).map((k) => k.toLowerCase()));
+  const profKeys = new Set(Object.keys(initial_proficiencies).map((key) => key.toLowerCase()));
 
-  const features = parseGrantedFeatures(c.sections, {
+  const features = parseGrantedFeatures(common.sections, {
     levels: [2],
     excludeLabels: [...mechanicLabels, ...profKeys],
   });
@@ -329,8 +329,8 @@ export function extractAncestryFeatures(c: CommonExtraction): AncestryFeaturesSl
 }
 
 /** Pass-through meta slice — currently just propagates sections from common. */
-export function extractAncestryMeta(c: CommonExtraction): AncestryMetaSlice {
-  return { sections: c.sections };
+export function extractAncestryMeta(common: CommonExtraction): AncestryMetaSlice {
+  return { sections: common.sections };
 }
 
 /**
@@ -340,15 +340,15 @@ export function extractAncestryMeta(c: CommonExtraction): AncestryMetaSlice {
  * initial-proficiencies category lifted by the features slice.
  */
 export function finalizeAncestry(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      AncestryBaseSlice,
   heritages: AncestryHeritagesSlice,
   features:  AncestryFeaturesSlice,
   meta:      AncestryMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): AncestryOutput {
   const claimedProfKeys = Object.keys(features.initial_proficiencies);
-  const raw_fields = stripStructuredKeys(c.field_map, [
+  const raw_fields = stripStructuredKeys(common.field_map, [
     ...CLAIMED_FIELD_LABELS,
     ...claimedProfKeys,
   ]);
@@ -357,11 +357,11 @@ export function finalizeAncestry(
     ...base,
     sections:              meta.sections,
     raw_fields,
-    links:                 c.links,
-    body_text:             c.body_text,
-    body_html:             c.body_html,
-    meta_description:      extractMetaDescription($),
-    meta_keywords:         extractMetaKeywords($),
+    links:                 common.links,
+    body_text:             common.body_text,
+    body_html:             common.body_html,
+    meta_description:      extractMetaDescription(root),
+    meta_keywords:         extractMetaKeywords(root),
     heritages:             heritages.heritages,
     initial_proficiencies: features.initial_proficiencies,
     features:              features.features,
@@ -375,12 +375,12 @@ export function finalizeAncestry(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed ancestry extraction nodes.
  */
-export function extractAncestry(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): AncestryOutput {
-  const base      = extractAncestryBase(c, $, span);
-  const heritages = extractAncestryHeritages(c);
-  const features  = extractAncestryFeatures(c);
-  const meta      = extractAncestryMeta(c);
-  return finalizeAncestry(c, base, heritages, features, meta, $);
+export function extractAncestry(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): AncestryOutput {
+  const base      = extractAncestryBase(common, root, span);
+  const heritages = extractAncestryHeritages(common);
+  const features  = extractAncestryFeatures(common);
+  const meta      = extractAncestryMeta(common);
+  return finalizeAncestry(common, base, heritages, features, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -391,30 +391,32 @@ export function extractAncestry(c: CommonExtraction, $: CheerioAPI, span: Cheeri
 
 export type AncestryBaseOutput = 'success' | 'error';
 
-export const ancestryBaseNode: NodeInterface<ScrapeState, AncestryBaseOutput, RipperServices> = {
-  name:    'extract:ancestry-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AncestryBaseNode extends ScalarNode<ScrapeState, AncestryBaseOutput> {
+  public readonly name = 'extract:ancestry-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AncestryBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AncestryBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractAncestryBase(c, $, target);
+    const base = extractAncestryBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ancestryBaseNode = new AncestryBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -423,28 +425,30 @@ export const ancestryBaseNode: NodeInterface<ScrapeState, AncestryBaseOutput, Ri
 
 export type AncestryHeritagesOutput = 'success' | 'error';
 
-export const ancestryHeritagesNode: NodeInterface<ScrapeState, AncestryHeritagesOutput, RipperServices> = {
-  name:    'extract:ancestry-heritages',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AncestryHeritagesNode extends ScalarNode<ScrapeState, AncestryHeritagesOutput> {
+  public readonly name = 'extract:ancestry-heritages';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AncestryHeritagesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AncestryHeritagesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractAncestryHeritages(c);
+    const slice = extractAncestryHeritages(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ancestryHeritagesNode = new AncestryHeritagesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -453,28 +457,30 @@ export const ancestryHeritagesNode: NodeInterface<ScrapeState, AncestryHeritages
 
 export type AncestryFeaturesOutput = 'success' | 'error';
 
-export const ancestryFeaturesNode: NodeInterface<ScrapeState, AncestryFeaturesOutput, RipperServices> = {
-  name:    'extract:ancestry-features',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class AncestryFeaturesNode extends ScalarNode<ScrapeState, AncestryFeaturesOutput> {
+  public readonly name = 'extract:ancestry-features';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: AncestryFeaturesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<AncestryFeaturesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractAncestryFeatures(c);
+    const slice = extractAncestryFeatures(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ancestryFeaturesNode = new AncestryFeaturesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -484,31 +490,33 @@ export const ancestryFeaturesNode: NodeInterface<ScrapeState, AncestryFeaturesOu
 
 export type FinalizeAncestryOutput = 'success';
 
-export const finalizeAncestryNode: NodeInterface<ScrapeState, FinalizeAncestryOutput, RipperServices> = {
-  name:    'finalize:ancestry',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeAncestryNode extends ScalarNode<ScrapeState, FinalizeAncestryOutput> {
+  public readonly name = 'finalize:ancestry';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeAncestryOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeAncestryOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
-    const meta      = { sections: c.sections };
+    const meta      = { sections: common.sections };
     const acc = (state.output ?? {}) as unknown as AncestryOutput;
-    const assembled = finalizeAncestry(c, acc, acc, acc, meta, $);
+    const assembled = finalizeAncestry(common, acc, acc, acc, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeAncestryNode = new FinalizeAncestryNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

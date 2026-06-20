@@ -1,8 +1,10 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { ScrapeState }  from '../state/ScrapeState.js';
-import type { RipperServices }  from '../services/RipperServices.js';
+import type { ScrapeState }   from '../state/ScrapeState.js';
+import type { RipperServices } from '../services/RipperServices.js';
+
+type TerminalOutput = 'success';
 
 /**
  * No-op terminator node.
@@ -16,22 +18,16 @@ import type { RipperServices }  from '../services/RipperServices.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const TerminalNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name:    'flow:terminate',
-  outputs: ['success'],
+class TerminalNodeImpl extends ScalarNode<ScrapeState, TerminalOutput, RipperServices> {
+  public readonly name = 'flow:terminate';
+  public readonly outputs = ['success'] as const;
 
-  async execute(
+  protected override async executeOne(
     _state:   ScrapeState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' }> {
-    return { output: 'success' };
-  },
-};
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<TerminalOutput>> {
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for TerminalNode: no inputs required, no state produced. */
-export const terminalContract: OperationContract = {
-  name:         'flow:terminate',
-  hardRequired: [],
-  produces:     [],
-  outputs:      ['success'],
-};
+export const TerminalNode = new TerminalNodeImpl();

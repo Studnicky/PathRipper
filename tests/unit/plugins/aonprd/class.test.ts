@@ -15,7 +15,7 @@ describe('extractClass — base slice (Sorcerer fixture)', () => {
   it('captures _type and name', async () => {
     const html = await loadFixture('class-sorcerer.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Classes.aspx?ID=11');
-    assert.equal(out.name, 'Sorcerer');
+    assert.equal((out as unknown as { name: string }).name, 'Sorcerer');
   });
 
   it('extracts key_attribute from inline bold label', async () => {
@@ -28,8 +28,8 @@ describe('extractClass — base slice (Sorcerer fixture)', () => {
   it('extracts hp_per_level from inline bold label', async () => {
     const html = await loadFixture('class-sorcerer.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Classes.aspx?ID=11');
-    const hp = (out as unknown as { hp_per_level: number | null }).hp_per_level;
-    assert.equal(hp, 6);
+    const hitPoints = (out as unknown as { hp_per_level: number | null }).hp_per_level;
+    assert.equal(hitPoints, 6);
   });
 
   it('extracts initial_proficiencies as h1>h2 map', async () => {
@@ -82,7 +82,7 @@ describe('parseClassFeaturesProgression — pure unit', () => {
   it('truncates trailing prose for full 20-level chain', () => {
     // Build a synthetic chain ending in level 20 with trailing prose.
     let raw = '';
-    for (let i = 1; i <= 20; i++) raw += `${i}feature ${i}, more`;
+    for (let idx = 1; idx <= 20; idx++) raw += `${idx}feature ${idx}, more`;
     raw += 'Ancestry and BackgroundExtra prose here';
     const out = parseClassFeaturesProgression(raw);
     assert.equal(out.length, 20);
@@ -102,9 +102,9 @@ describe('extractClass — progression (Alchemist via parseAonHtml)', () => {
                  + '11V, w12X, y13Z, a14B, c15D, e16F, g17H, i18J, k19L, m20N, o';
     const out = parseClassFeaturesProgression(sample);
     assert.equal(out.length, 20, 'should parse all 20 levels');
-    for (let i = 0; i < 20; i++) {
-      assert.equal(out[i]!.level, i + 1, `level ${i + 1} should be ${i + 1}`);
-      assert.ok(out[i]!.features.length > 0, `level ${i + 1} should have features`);
+    for (let idx = 0; idx < 20; idx++) {
+      assert.equal(out[idx]!.level, idx + 1, `level ${idx + 1} should be ${idx + 1}`);
+      assert.ok(out[idx]!.features.length > 0, `level ${idx + 1} should have features`);
     }
   });
 });
@@ -121,7 +121,7 @@ describe('extractClass — subclass_features', () => {
     assert.ok(Array.isArray(subs), 'subclass_features should be an array');
     // Sorcerer has no bare-bold subclass labels in the fixture; just verify
     // that generic statblock labels (Usage, Bulk, Activate) are NOT lifted.
-    const names = subs.map((s) => s.name);
+    const names = subs.map((sub) => sub.name);
     for (const blocked of ['Usage', 'Bulk', 'Activate']) {
       assert.ok(!names.includes(blocked), `should not lift generic statblock label: ${blocked}`);
     }
@@ -134,7 +134,7 @@ describe('extractClass — raw_fields strip', () => {
   it('does not contain "Class Features" key after structured progression lift', async () => {
     const html = await loadFixture('class-sorcerer.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Classes.aspx?ID=11');
-    const rf = (out as unknown as { raw_fields: Record<string, string> }).raw_fields;
-    assert.ok(!('Class Features' in rf), 'Class Features should be stripped from raw_fields');
+    const rawFields = (out as unknown as { raw_fields: Record<string, string> }).raw_fields;
+    assert.ok(!('Class Features' in rawFields), 'Class Features should be stripped from raw_fields');
   });
 });

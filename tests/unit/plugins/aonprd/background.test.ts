@@ -13,19 +13,19 @@ describe('extractBackground — base slice (Acolyte fixture)', () => {
   it('captures _type and name', async () => {
     const html = await loadFixture('background-acolyte.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be populated');
+    assert.ok(typeof (out as unknown as { name: string }).name === 'string' && (out as unknown as { name: string }).name.length > 0, 'name should be populated');
   });
 
   it('extracts background_id from URL', async () => {
     const html = await loadFixture('background-acolyte.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    assert.equal(out.background_id, 1);
+    assert.equal((out as unknown as { background_id: number }).background_id, 1);
   });
 
   it('extracts source.book', async () => {
     const html = await loadFixture('background-acolyte.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    assert.ok(out.source.book !== null, 'source.book should be populated');
+    assert.ok((out as unknown as { source: { book: string | null } }).source.book !== null, 'source.book should be populated');
   });
 });
 
@@ -44,8 +44,8 @@ describe('extractBackground — benefits slice', () => {
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
     const lores = (out as unknown as { lore_skills: Array<{ name: string }> }).lore_skills;
     assert.ok(Array.isArray(lores), 'lore_skills should be an array');
-    for (const l of lores) {
-      assert.ok(/lore/i.test(l.name), `lore_skills entry should contain "lore": ${l.name}`);
+    for (const lore of lores) {
+      assert.ok(/lore/i.test(lore.name), `lore_skills entry should contain "lore": ${lore.name}`);
     }
   });
 
@@ -71,7 +71,7 @@ describe('extractBackground — raw_fields strip', () => {
   it('does not contain "Source" key', async () => {
     const html = await loadFixture('background-acolyte.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Backgrounds.aspx?ID=1');
-    const rf = (out as unknown as { raw_fields: Record<string, string> }).raw_fields;
-    assert.ok(!('Source' in rf), 'Source should be stripped from raw_fields');
+    const rawFields = (out as unknown as { raw_fields: Record<string, string> }).raw_fields;
+    assert.ok(!('Source' in rawFields), 'Source should be stripped from raw_fields');
   });
 });

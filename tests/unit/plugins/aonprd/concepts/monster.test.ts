@@ -1,5 +1,6 @@
 // Unit tests for monster concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }   from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -15,6 +16,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/monster/index.js';
 import type { MonsterOutput } from '../../../../../plugins/aonprd/concepts/monster/index.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE_MINION   = 'monster-phantasmal-minion.html';
 const BASE_URL_MINION  = 'https://2e.aonprd.com/Monsters.aspx?ID=2750';
@@ -34,30 +36,30 @@ const BASE_URL_FAMILY  = 'https://2e.aonprd.com/Monsters.aspx?ID=4';
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await monsterBaseNode.execute(state, stubContext);
-  await monsterDefensesNode.execute(state, stubContext);
-  await monsterOffenseNode.execute(state, stubContext);
-  await monsterAbilitiesNode.execute(state, stubContext);
-  await monsterMetaNode.execute(state, stubContext);
-  await finalizeMonsterNode.execute(state, stubContext);
-  return state.output as MonsterOutput;
+  await monsterBaseNode.execute(Batch.of(state), stubContext);
+  await monsterDefensesNode.execute(Batch.of(state), stubContext);
+  await monsterOffenseNode.execute(Batch.of(state), stubContext);
+  await monsterAbilitiesNode.execute(Batch.of(state), stubContext);
+  await monsterMetaNode.execute(Batch.of(state), stubContext);
+  await finalizeMonsterNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<MonsterOutput>(state.output);
 }
 
 describe('extract:monster-base — phantasmal-minion', () => {
   it('produces _type, url, name, monster_id', async () => {
     const state = await primeState(FIXTURE_MINION, BASE_URL_MINION);
-    const r = await monsterBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await monsterBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterOutput;
+    const out = ParsedOutput.as<MonsterOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.ok(typeof out.perception === 'object', 'perception missing');
     assert.ok(typeof out.abilities === 'object', 'abilities missing');
@@ -66,19 +68,19 @@ describe('extract:monster-base — phantasmal-minion', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await monsterBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-defenses — phantasmal-minion', () => {
   it('produces ac, saves, hp, immunities, weaknesses, resistances', async () => {
     const state = await primeState(FIXTURE_MINION, BASE_URL_MINION);
-    await monsterBaseNode.execute(state, stubContext);
-    const r = await monsterDefensesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterBaseNode.execute(Batch.of(state), stubContext);
+    const result = await monsterDefensesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterOutput;
+    const out = ParsedOutput.as<MonsterOutput>(state.output);
     assert.ok(typeof out.ac === 'object', 'ac missing');
     assert.ok(typeof out.saves === 'object', 'saves missing');
     assert.ok('fort' in out.saves, 'saves.fort missing');
@@ -90,20 +92,20 @@ describe('extract:monster-defenses — phantasmal-minion', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await monsterDefensesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterDefensesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-offense — phantasmal-minion', () => {
   it('produces speed, strikes, spell_lists', async () => {
     const state = await primeState(FIXTURE_MINION, BASE_URL_MINION);
-    await monsterBaseNode.execute(state, stubContext);
-    await monsterDefensesNode.execute(state, stubContext);
-    const r = await monsterOffenseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterBaseNode.execute(Batch.of(state), stubContext);
+    await monsterDefensesNode.execute(Batch.of(state), stubContext);
+    const result = await monsterOffenseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterOutput;
+    const out = ParsedOutput.as<MonsterOutput>(state.output);
     assert.ok(typeof out.speed === 'object', 'speed missing');
     assert.ok(Array.isArray(out.strikes), 'strikes missing');
     assert.ok(Array.isArray(out.spell_lists), 'spell_lists missing');
@@ -111,21 +113,21 @@ describe('extract:monster-offense — phantasmal-minion', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await monsterOffenseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterOffenseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-abilities — phantasmal-minion', () => {
   it('produces top_abilities, defensive_abilities, offensive_abilities', async () => {
     const state = await primeState(FIXTURE_MINION, BASE_URL_MINION);
-    await monsterBaseNode.execute(state, stubContext);
-    await monsterDefensesNode.execute(state, stubContext);
-    await monsterOffenseNode.execute(state, stubContext);
-    const r = await monsterAbilitiesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterBaseNode.execute(Batch.of(state), stubContext);
+    await monsterDefensesNode.execute(Batch.of(state), stubContext);
+    await monsterOffenseNode.execute(Batch.of(state), stubContext);
+    const result = await monsterAbilitiesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterOutput;
+    const out = ParsedOutput.as<MonsterOutput>(state.output);
     assert.ok(Array.isArray(out.top_abilities), 'top_abilities missing');
     assert.ok(Array.isArray(out.defensive_abilities), 'defensive_abilities missing');
     assert.ok(Array.isArray(out.offensive_abilities), 'offensive_abilities missing');
@@ -133,27 +135,27 @@ describe('extract:monster-abilities — phantasmal-minion', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await monsterAbilitiesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterAbilitiesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-meta — phantasmal-minion', () => {
   it('produces variants and family_links arrays', async () => {
     const state = await primeState(FIXTURE_MINION, BASE_URL_MINION);
-    await monsterBaseNode.execute(state, stubContext);
-    const r = await monsterMetaNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterBaseNode.execute(Batch.of(state), stubContext);
+    const result = await monsterMetaNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterOutput;
+    const out = ParsedOutput.as<MonsterOutput>(state.output);
     assert.ok(Array.isArray(out.variants), 'variants missing');
     assert.ok(Array.isArray(out.family_links), 'family_links missing');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await monsterMetaNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterMetaNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -175,8 +177,8 @@ describe('finalize:monster — phantasmal-minion', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', BASE_URL_MINION);
-    const r = await finalizeMonsterNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeMonsterNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

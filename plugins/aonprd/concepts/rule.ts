@@ -18,12 +18,12 @@
 // strings only.
 //
 // No `raw_fields` strip: rule pages have no `<b>Label</b>` field map.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -115,21 +115,21 @@ export interface RuleContext {
 /** Extract the entity id from a hrefs like `Sources.aspx?ID=42` or `Rules.aspx?ID=7`. */
 function parseIdFromHref(href: string | undefined): number | null {
   if (href === undefined) return null;
-  const m = /[?&]ID=(\d+)/i.exec(href);
-  if (m === null) return null;
-  const n = parseInt(m[1]!, 10);
-  return Number.isFinite(n) ? n : null;
+  const match = /[?&]ID=(\d+)/i.exec(href);
+  if (match === null) return null;
+  const num = parseInt(match[1]!, 10);
+  return Number.isFinite(num) ? num : null;
 }
 
 /** Parse `"Book Title pg. 42"` into a `{ book, page }` pair. Tolerant. */
 function splitBookAndPage(label: string): { book: string | null; page: number | null } {
-  const m = /^(.*?)\s+pg\.\s*(\d+)/i.exec(label);
-  if (m === null) {
+  const match = /^(.*?)\s+pg\.\s*(\d+)/i.exec(label);
+  if (match === null) {
     const book = label.trim();
     return { book: book.length > 0 ? book : null, page: null };
   }
-  const book = (m[1] ?? '').trim();
-  const page = parseInt(m[2]!, 10);
+  const book = (match[1] ?? '').trim();
+  const page = parseInt(match[2]!, 10);
   return {
     book: book.length > 0 ? book : null,
     page: Number.isFinite(page) ? page : null,
@@ -141,10 +141,10 @@ function splitBookAndPage(label: string): { book: string | null; page: number | 
  * `<a href="/Sources.aspx?ID=N">Label</a>` into a SourceRef. Cheerio DOM
  * traversal — no regex on structure.
  */
-function harvestRuleSources($: CheerioAPI, ruleDiv: CheerioNode): SourceRef[] {
+function harvestRuleSources(root: CheerioAPI, ruleDiv: CheerioNode): SourceRef[] {
   const out: SourceRef[] = [];
-  ruleDiv.find('div.sources').each((_i, el) => {
-    const anchor = $(el).find('a[href*="Sources.aspx"]').first();
+  ruleDiv.find('div.sources').each((_index, element) => {
+    const anchor = root(element).find('a[href*="Sources.aspx"]').first();
     if (anchor.length === 0) return;
     const href = anchor.attr('href');
     const label = htmlToText(anchor.text());
@@ -160,11 +160,11 @@ function harvestRuleSources($: CheerioAPI, ruleDiv: CheerioNode): SourceRef[] {
  * RuleSection. Heading text is the anchor text when present, otherwise the
  * raw heading text. Cheerio DOM traversal — no regex on structure.
  */
-function harvestChildRules($: CheerioAPI, ruleDiv: CheerioNode): RuleSection[] {
+function harvestChildRules(root: CheerioAPI, ruleDiv: CheerioNode): RuleSection[] {
   const out: RuleSection[] = [];
-  ruleDiv.find('h2.title').each((_i, el) => {
-    const h2 = $(el);
-    const anchor = h2.find('a').first();
+  ruleDiv.find('h2.title').each((_index, element) => {
+    const h2El = root(element);
+    const anchor = h2El.find('a').first();
     let heading: string;
     let href: string | null;
     let rule_id: number | null;
@@ -173,7 +173,7 @@ function harvestChildRules($: CheerioAPI, ruleDiv: CheerioNode): RuleSection[] {
       href    = anchor.attr('href') ?? null;
       rule_id = parseIdFromHref(href ?? undefined);
     } else {
-      heading = htmlToText(h2.text());
+      heading = htmlToText(h2El.text());
       href    = null;
       rule_id = null;
     }
@@ -188,23 +188,22 @@ function harvestChildRules($: CheerioAPI, ruleDiv: CheerioNode): RuleSection[] {
  * `<h1>` and every `<div class="sources">` block, and serialising the rest.
  * Cheerio DOM traversal — no regex slicing.
  */
-function extractRuleBody($: CheerioAPI, ruleDiv: CheerioNode): { bodyHtml: string; bodyText: string } {
+function extractRuleBody(_root: CheerioAPI, ruleDiv: CheerioNode): { bodyHtml: string; bodyText: string } {
   if (ruleDiv.length === 0) return { bodyHtml: '', bodyText: '' };
   const cloned = ruleDiv.clone();
   cloned.find('h1').remove();
   cloned.find('div.sources').remove();
   const bodyHtml = (cloned.html() ?? '').trim();
   return { bodyHtml, bodyText: htmlToText(bodyHtml) };
-  void $;
 }
 
 /** Extract the title text from the first `<h1 class="title">` under div.rule. */
 function extractRuleTitleNode(ruleDiv: CheerioNode): string {
   if (ruleDiv.length === 0) return '';
-  const h1 = ruleDiv.find('h1.title').first();
-  if (h1.length === 0) return '';
-  const anchor = h1.find('a').first();
-  const text = anchor.length > 0 ? anchor.text() : h1.text();
+  const h1El = ruleDiv.find('h1.title').first();
+  if (h1El.length === 0) return '';
+  const anchor = h1El.find('a').first();
+  const text = anchor.length > 0 ? anchor.text() : h1El.text();
   return htmlToText(text).trim();
 }
 
@@ -212,12 +211,12 @@ function extractRuleTitleNode(ruleDiv: CheerioNode): string {
  * Build a `RuleContext` from a loaded CheerioAPI handle via DOM traversal.
  * Single source of structural truth for the three rule nodes (memoized).
  */
-export function buildRuleContext($: CheerioAPI): RuleContext {
-  const ruleDiv     = $('div.rule').first();
+export function buildRuleContext(root: CheerioAPI): RuleContext {
+  const ruleDiv     = root('div.rule').first();
   const name        = extractRuleTitleNode(ruleDiv);
-  const sources     = harvestRuleSources($, ruleDiv);
-  const { bodyHtml, bodyText } = extractRuleBody($, ruleDiv);
-  const childRules  = harvestChildRules($, ruleDiv);
+  const sources     = harvestRuleSources(root, ruleDiv);
+  const { bodyHtml, bodyText } = extractRuleBody(root, ruleDiv);
+  const childRules  = harvestChildRules(root, ruleDiv);
   return { ruleDiv, name, sources, bodyHtml, bodyText, childRules };
 }
 
@@ -225,10 +224,10 @@ export function buildRuleContext($: CheerioAPI): RuleContext {
  * Read the memoized `RuleContext` from state, or build and cache it.
  * Centralises the build/read pattern used by the three rule nodes.
  */
-function getOrBuildRuleContext(state: ScrapeState, $: CheerioAPI): RuleContext {
+function getOrBuildRuleContext(state: ScrapeState, root: CheerioAPI): RuleContext {
   const cached = state.getMetadata<RuleContext>('aonprdRuleContext');
   if (cached !== undefined) return cached;
-  const ctx = buildRuleContext($);
+  const ctx = buildRuleContext(root);
   state.setMetadata('aonprdRuleContext', ctx);
   return ctx;
 }
@@ -250,10 +249,10 @@ export function extractRuleBase(ctx: RuleContext, url: string): RuleBaseSlice {
 }
 
 /** Extract nested rule subsections (child links + harvested sections). */
-export function extractRuleSubsections($: CheerioAPI, ctx: RuleContext): RuleSubsectionsSlice {
+export function extractRuleSubsections(root: CheerioAPI, ctx: RuleContext): RuleSubsectionsSlice {
   return {
     child_rules: ctx.childRules,
-    sections:    harvestSections($, ctx.ruleDiv),
+    sections:    harvestSections(root, ctx.ruleDiv),
   };
 }
 
@@ -265,7 +264,7 @@ export function extractRuleSubsections($: CheerioAPI, ctx: RuleContext): RuleSub
  * Finalization attaches the body-level link harvest and the page-level meta tags.
  */
 export function finalizeRule(
-  $:            CheerioAPI,
+  root:         CheerioAPI,
   ctx:          RuleContext,
   base:         RuleBaseSlice,
   subsections:  RuleSubsectionsSlice,
@@ -274,8 +273,8 @@ export function finalizeRule(
     ...base,
     ...subsections,
     links:            harvestLinks(ctx.bodyHtml),
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies RuleOutput;
 }
 
@@ -289,11 +288,11 @@ export function finalizeRule(
  * tests. The DAG pipeline calls the per-slice helpers individually through the
  * decomposed rule extraction nodes.
  */
-export function extractRule($: CheerioAPI, url: string): RuleOutput {
-  const ctx         = buildRuleContext($);
+export function extractRule(root: CheerioAPI, url: string): RuleOutput {
+  const ctx         = buildRuleContext(root);
   const base        = extractRuleBase(ctx, url);
-  const subsections = extractRuleSubsections($, ctx);
-  return finalizeRule($, ctx, base, subsections);
+  const subsections = extractRuleSubsections(root, ctx);
+  return finalizeRule(root, ctx, base, subsections);
 }
 
 /**
@@ -301,8 +300,8 @@ export function extractRule($: CheerioAPI, url: string): RuleOutput {
  * This is the direct-call API used by `parseAonHtml` and unit tests.
  */
 export function parseRuleHtml(html: string, url: string): RuleOutput {
-  const $ = load(html);
-  return extractRule($, url);
+  const root = load(html);
+  return extractRule(root, url);
 }
 
 // ─── Capability nodes ─────────────────────────────────────────────────────────
@@ -313,10 +312,10 @@ export function parseRuleHtml(html: string, url: string): RuleOutput {
 
 export type RuleBaseOutput = 'success' | 'error';
 
-export const ruleBaseNode: NodeInterface<ScrapeState, RuleBaseOutput, RipperServices> = {
-  name:    'extract:rule-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RuleBaseNode extends ScalarNode<ScrapeState, RuleBaseOutput> {
+  public readonly name    = 'extract:rule-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCheerio'] as const,
     // `aonprdRuleContext` is memoized on `state.metadata` for the
     // companion rule nodes to pick up via `getOrBuildRuleContext`, but their
@@ -325,23 +324,25 @@ export const ruleBaseNode: NodeInterface<ScrapeState, RuleBaseOutput, RipperServ
     // `ContractRegistryValidator` registration check stays at "zero
     // warnings"; the runtime memo still happens.
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: RuleBaseOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if ($ === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RuleBaseOutput>> {
+    const root = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (root === undefined) return NodeOutputBuilder.of('error');
 
-    const ctx  = getOrBuildRuleContext(state, $);
+    const ctx  = getOrBuildRuleContext(state, root);
     const base = extractRuleBase(ctx, state.page.url);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ruleBaseNode = new RuleBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -350,29 +351,31 @@ export const ruleBaseNode: NodeInterface<ScrapeState, RuleBaseOutput, RipperServ
 
 export type RuleSubsectionsOutput = 'success' | 'error';
 
-export const ruleSubsectionsNode: NodeInterface<ScrapeState, RuleSubsectionsOutput, RipperServices> = {
-  name:    'extract:rule-subsections',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class RuleSubsectionsNode extends ScalarNode<ScrapeState, RuleSubsectionsOutput> {
+  public readonly name    = 'extract:rule-subsections';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: RuleSubsectionsOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if ($ === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<RuleSubsectionsOutput>> {
+    const root = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (root === undefined) return NodeOutputBuilder.of('error');
 
-    const ctx         = getOrBuildRuleContext(state, $);
-    const subsections = extractRuleSubsections($, ctx);
+    const ctx         = getOrBuildRuleContext(state, root);
+    const subsections = extractRuleSubsections(root, ctx);
 
     state.output = { ...state.output, ...subsections };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const ruleSubsectionsNode = new RuleSubsectionsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -383,22 +386,22 @@ export const ruleSubsectionsNode: NodeInterface<ScrapeState, RuleSubsectionsOutp
 
 export type FinalizeRuleOutput = 'success';
 
-export const finalizeRuleConceptNode: NodeInterface<ScrapeState, FinalizeRuleOutput, RipperServices> = {
-  name:    'finalize:rule',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeRuleConceptNode extends ScalarNode<ScrapeState, FinalizeRuleOutput> {
+  public readonly name    = 'finalize:rule';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeRuleOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if ($ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeRuleOutput>> {
+    const root = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (root === undefined) return NodeOutputBuilder.of('success');
 
-    const ctx = getOrBuildRuleContext(state, $);
+    const ctx = getOrBuildRuleContext(state, root);
 
     const prior = (state.output ?? {}) as Partial<RuleOutput>;
     const assembled: RuleOutput = {
@@ -414,17 +417,19 @@ export const finalizeRuleConceptNode: NodeInterface<ScrapeState, FinalizeRuleOut
       body_text:        prior.body_text ?? ctx.bodyText,
       body_html:        prior.body_html ?? ctx.bodyHtml,
       child_rules:      prior.child_rules ?? ctx.childRules,
-      sections:         prior.sections ?? harvestSections($, ctx.ruleDiv),
+      sections:         prior.sections ?? harvestSections(root, ctx.ruleDiv),
       links:            harvestLinks(ctx.bodyHtml),
-      meta_description: extractMetaDescription($),
-      meta_keywords:    extractMetaKeywords($),
+      meta_description: extractMetaDescription(root),
+      meta_keywords:    extractMetaKeywords(root),
     };
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeRuleConceptNode = new FinalizeRuleConceptNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

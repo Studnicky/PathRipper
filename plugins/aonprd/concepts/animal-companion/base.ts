@@ -1,5 +1,4 @@
 // Animal-companion base extraction node.
-import type { CheerioAPI } from 'cheerio';
 import type {
   CommonExtraction,
   CheerioNode,
@@ -34,36 +33,36 @@ function parseDescription(target: CheerioNode): string | null {
 }
 
 /** Extract base identity + variant + base-companion reference + flavor text. */
-export function extractAnimalCompanionBase(c: CommonExtraction, target: CheerioNode): AnimalCompanionBaseSlice {
-  const variant = detectVariant(c.url);
-  // Base companion reference lives in `c.fields` for statblock pages; on
+export function extractAnimalCompanionBase(common: CommonExtraction, target: CheerioNode): AnimalCompanionBaseSlice {
+  const variant = detectVariant(common.url);
+  // Base companion reference lives in `common.fields` for statblock pages; on
   // Unique pages without `<hr/>` it ends up in body_html instead.
   let baseRef = null;
-  const baseField = findField(c.fields, 'Base Animal Companion');
+  const baseField = findField(common.fields, 'Base Animal Companion');
   if (baseField !== null) {
     baseRef = parseBaseCompanion(baseField.value_html);
   } else {
-    const bodyEntries = harvestBoldEntries(c.body_html);
-    for (const e of bodyEntries) {
-      if (e.label.toLowerCase() === 'base animal companion') {
-        baseRef = parseBaseCompanion(e.value_html);
+    const bodyEntries = harvestBoldEntries(common.body_html);
+    for (const entry of bodyEntries) {
+      if (entry.label.toLowerCase() === 'base animal companion') {
+        baseRef = parseBaseCompanion(entry.value_html);
         break;
       }
     }
   }
   return {
-    url:             c.url,
-    companion_id:    extractEntityId(c.url),
+    url:             common.url,
+    companion_id:    extractEntityId(common.url),
     variant,
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
     base_companion:  baseRef,
     description:     variant === 'base' ? parseDescription(target) : null,
   };

@@ -8,9 +8,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { NodeStateBase } from '@noocodex/dagonizer';
-import { DAGDeriver }   from '@noocodex/dagonizer/derive';
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import { NodeStateBase, DAGBuilder, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, RoutedBatchType, ExecutionResultType , Batch} from '@studnicky/dagonizer';
 
 import { RipperDagonizer } from '../../../src/dispatcher/RipperDagonizer.js';
 import { Logger }          from '../../../src/modules/logger/logger.js';
@@ -25,24 +24,6 @@ interface LogCall {
   context?:  Readonly<Record<string, unknown>>;
 }
 
-// Bypass the private constructor via Object.create and patch the prototype methods.
-const makeSpyLogger = (): { logger: Logger; calls: LogCall[] } => {
-  const calls: LogCall[] = [];
-  const logger = Object.create(Logger.prototype) as Logger;
-  Object.defineProperty(logger, '#component', { value: 'Dispatcher', writable: false });
-
-  const patch = (level: LogCall['level']) =>
-    (operation: string, message: string, context?: Readonly<Record<string, unknown>>) => {
-      calls.push({ level, operation, message, context });
-    };
-
-  (logger as unknown as Record<string, unknown>)['info']  = patch('info');
-  (logger as unknown as Record<string, unknown>)['debug'] = patch('debug');
-  (logger as unknown as Record<string, unknown>)['error'] = patch('error');
-
-  return { logger, calls };
-};
-
 // ── Minimal state ──────────────────────────────────────────────────────────────
 
 class MinimalState extends NodeStateBase {}
@@ -53,30 +34,23 @@ const TEST_DAG_NAME  = 'test:single-node-dag';
 const TEST_NODE_NAME = 'test:noop';
 
 const noopNode: NodeInterface<MinimalState, 'done', RipperServices> = {
-  name:    TEST_NODE_NAME,
-  outputs: ['done'],
+  name:     TEST_NODE_NAME,
+  outputs:  ['done'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
-    _state:   MinimalState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'done' }> {
-    return { output: 'done' };
+    batch:    Batch<MinimalState>,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<RoutedBatchType<'done', MinimalState>> {
+    return RoutedBatchBuilder.of('done', batch);
   },
 };
 
 const buildTestDag = () =>
-  DAGDeriver.derive({
-    name:       TEST_DAG_NAME,
-    version:    '1.0',
-    entrypoint: TEST_NODE_NAME,
-    contracts: [
-      { name: TEST_NODE_NAME, hardRequired: [], produces: [], outputs: ['done'] },
-    ],
-    annotations: {
-      terminals: {
-        [TEST_NODE_NAME]: [{ outcome: 'done', target: null }],
-      },
-    },
-  });
+  new DAGBuilder(TEST_DAG_NAME, '1.0')
+    .node(TEST_NODE_NAME, noopNode, { done: 'test-done' })
+    .terminal('test-done', { outcome: 'completed' })
+    .build();
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -102,8 +76,8 @@ class SpyDispatcher<TState extends NodeStateBase> extends RipperDagonizer<TState
     super.onFlowStart(dagName, state);
   }
 
-  protected override onFlowEnd(dagName: string, state: TState, result: import('@noocodex/dagonizer').ExecutionResultInterface<TState>): void {
-    this.logCalls.push({ level: 'info', operation: 'flow-end', message: `DAG '${dagName}' ended: ${state.lifecycle.kind}` });
+  protected override onFlowEnd(dagName: string, state: TState, result: ExecutionResultType<TState>): void {
+    this.logCalls.push({ level: 'info', operation: 'flow-end', message: `DAG '${dagName}' ended: ${state.lifecycle.variant}` });
     super.onFlowEnd(dagName, state, result);
   }
 
@@ -112,7 +86,7 @@ class SpyDispatcher<TState extends NodeStateBase> extends RipperDagonizer<TState
     super.onNodeStart(nodeName, state);
   }
 
-  protected override onNodeEnd(nodeName: string, output: string | undefined, state: TState): void {
+  protected override onNodeEnd(nodeName: string, output: string | null, state: TState): void {
     this.logCalls.push({ level: 'debug', operation: 'node-end', message: `Node '${nodeName}' returned: ${output ?? '<skipped>'}` });
     super.onNodeEnd(nodeName, output, state);
   }
@@ -139,11 +113,13 @@ describe('RipperDagonizer', () => {
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const operations = dispatcher.logCalls.map((c) => c.operation);
+    const operations = dispatcher.logCalls.map((logCall) => logCall.operation);
+    // The DAG has two placements: the noop node and the terminal node.
+    // Both fire onNodeStart / onNodeEnd in 0.23.
     assert.deepEqual(
       operations,
-      ['flow-start', 'node-start', 'node-end', 'flow-end'],
-      `Expected flow-start → node-start → node-end → flow-end, got: ${operations.join(' → ')}`,
+      ['flow-start', 'node-start', 'node-end', 'node-start', 'node-end', 'flow-end'],
+      `Expected flow-start → (node-start → node-end) × 2 → flow-end, got: ${operations.join(' → ')}`,
     );
   });
 
@@ -152,7 +128,7 @@ describe('RipperDagonizer', () => {
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const call = dispatcher.logCalls.find((c) => c.operation === 'flow-start');
+    const call = dispatcher.logCalls.find((logCall) => logCall.operation === 'flow-start');
     assert.ok(call !== undefined);
     assert.equal(call.level, 'info');
     assert.ok(call.message.includes(TEST_DAG_NAME), `Expected message to include dag name "${TEST_DAG_NAME}", got: "${call.message}"`);
@@ -163,7 +139,7 @@ describe('RipperDagonizer', () => {
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const call = dispatcher.logCalls.find((c) => c.operation === 'node-start');
+    const call = dispatcher.logCalls.find((logCall) => logCall.operation === 'node-start');
     assert.ok(call !== undefined);
     assert.equal(call.level, 'debug');
     assert.ok(call.message.includes(TEST_NODE_NAME), `Expected message to include node name "${TEST_NODE_NAME}", got: "${call.message}"`);
@@ -174,23 +150,23 @@ describe('RipperDagonizer', () => {
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const call = dispatcher.logCalls.find((c) => c.operation === 'node-end');
+    const call = dispatcher.logCalls.find((logCall) => logCall.operation === 'node-end');
     assert.ok(call !== undefined);
     assert.equal(call.level, 'debug');
     assert.ok(call.message.includes(TEST_NODE_NAME), `Expected node name in message, got: "${call.message}"`);
     assert.ok(call.message.includes('done'), `Expected output "done" in message, got: "${call.message}"`);
   });
 
-  it('onFlowEnd logs operation "flow-end" with dag name and lifecycle kind "completed"', async () => {
+  it('onFlowEnd logs operation "flow-end" with dag name and lifecycle variant "completed"', async () => {
     const dispatcher = buildDispatcher();
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const call = dispatcher.logCalls.find((c) => c.operation === 'flow-end');
+    const call = dispatcher.logCalls.find((logCall) => logCall.operation === 'flow-end');
     assert.ok(call !== undefined);
     assert.equal(call.level, 'info');
     assert.ok(call.message.includes(TEST_DAG_NAME), `Expected dag name in message, got: "${call.message}"`);
-    assert.ok(call.message.includes('completed'), `Expected lifecycle kind "completed" in message, got: "${call.message}"`);
+    assert.ok(call.message.includes('completed'), `Expected lifecycle variant "completed" in message, got: "${call.message}"`);
   });
 
   it('onError is NOT called when the node succeeds', async () => {
@@ -198,16 +174,17 @@ describe('RipperDagonizer', () => {
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    const errorCalls = dispatcher.logCalls.filter((c) => c.operation === 'node-error');
+    const errorCalls = dispatcher.logCalls.filter((logCall) => logCall.operation === 'node-error');
     assert.equal(errorCalls.length, 0);
   });
 
-  it('total hook log calls for a single-node DAG is exactly 4', async () => {
+  it('total hook log calls for a single-node-plus-terminal DAG is exactly 6', async () => {
     const dispatcher = buildDispatcher();
 
     await dispatcher.execute(TEST_DAG_NAME, new MinimalState());
 
-    assert.equal(dispatcher.logCalls.length, 4);
+    // flow-start + (node-start + node-end) for noop + (node-start + node-end) for terminal + flow-end
+    assert.equal(dispatcher.logCalls.length, 6);
   });
 
   it('RipperDagonizer has no observer constructor parameter', () => {
@@ -217,7 +194,7 @@ describe('RipperDagonizer', () => {
     const dispatcher  = new RipperDagonizer<MinimalState>({ services });
     const keys = Object.getOwnPropertyNames(dispatcher);
     assert.ok(
-      !keys.some((k) => k.includes('observer')),
+      !keys.some((key) => key.includes('observer')),
       `Expected no observer field on instance, found: ${keys.join(', ')}`,
     );
   });

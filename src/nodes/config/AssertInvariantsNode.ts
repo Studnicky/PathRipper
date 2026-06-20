@@ -1,7 +1,18 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
+
+type AssertInvariantsOutput = 'success' | 'invariant-violated';
+
+/** OperationContractType for AssertInvariantsNode: reads normalized, produces nothing new. */
+export const assertInvariantsContract: OperationContractType = {
+  name:         'config:assert-invariants',
+  hardRequired: ['normalized'],
+  produces:     [],
+  outputs:      ['success', 'invariant-violated'],
+};
 
 /**
  * Post-normalize invariant assertions on the fully-resolved config.
@@ -17,23 +28,24 @@ import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const AssertInvariantsNode: NodeInterface<ConfigLoadState, 'success' | 'invariant-violated'> = {
-  name: 'config:assert-invariants',
-  outputs: ['success', 'invariant-violated'],
+class AssertInvariantsNodeImpl extends ScalarNode<ConfigLoadState, AssertInvariantsOutput, undefined> {
+  public readonly name = 'config:assert-invariants';
+  public readonly outputs = ['success', 'invariant-violated'] as const;
+  public override readonly contract = assertInvariantsContract;
 
-  async execute(
+  protected override async executeOne(
     state: ConfigLoadState,
-    _context: NodeContextInterface<undefined>,
-  ): Promise<{ output: 'success' | 'invariant-violated' }> {
+    _context: NodeContextType<undefined>,
+  ): Promise<NodeOutputType<AssertInvariantsOutput>> {
     if (state.normalized === null) {
-      state.collectError({
-        code:        'PRECONDITION_FAILED',
-        message:     'config:assert-invariants requires state.normalized to be set',
-        operation:   'config:assert-invariants',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      return { output: 'invariant-violated' };
+      state.collectError(NodeErrorBuilder.from(
+        'PRECONDITION_FAILED',
+        'config:assert-invariants requires state.normalized to be set',
+        'config:assert-invariants',
+        false,
+        new Date().toISOString(),
+      ));
+      return NodeOutputBuilder.of('invariant-violated');
     }
 
     const violations: string[] = [];
@@ -43,42 +55,36 @@ export const AssertInvariantsNode: NodeInterface<ConfigLoadState, 'success' | 'i
     const { targets, mediawiki } = state.normalized;
 
     if (targets !== undefined) {
-      for (const [id, target] of Object.entries(targets)) {
+      for (const [targetId, target] of Object.entries(targets)) {
         const pipeline = (target as Record<string, unknown>)['pipeline'];
         if (Array.isArray(pipeline) && (pipeline as string[]).includes('api:fetch')) {
-          violations.push(`targets.${id}.pipeline references reserved task 'api:fetch' (removed in v3.0.0)`);
+          violations.push(`targets.${targetId}.pipeline references reserved task 'api:fetch' (removed in v3.0.0)`);
         }
       }
     }
 
     if (mediawiki !== undefined) {
-      for (const [id, target] of Object.entries(mediawiki)) {
+      for (const [targetId, target] of Object.entries(mediawiki)) {
         const pipeline = (target as Record<string, unknown>)['pipeline'];
         if (Array.isArray(pipeline) && (pipeline as string[]).includes('api:fetch')) {
-          violations.push(`mediawiki.${id}.pipeline references reserved task 'api:fetch' (removed in v3.0.0)`);
+          violations.push(`mediawiki.${targetId}.pipeline references reserved task 'api:fetch' (removed in v3.0.0)`);
         }
       }
     }
 
     if (violations.length > 0) {
-      state.collectError({
-        code:        'INVARIANT_VIOLATED',
-        message:     violations.join('; '),
-        operation:   'config:assert-invariants',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      return { output: 'invariant-violated' };
+      state.collectError(NodeErrorBuilder.from(
+        'INVARIANT_VIOLATED',
+        violations.join('; '),
+        'config:assert-invariants',
+        false,
+        new Date().toISOString(),
+      ));
+      return NodeOutputBuilder.of('invariant-violated');
     }
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for AssertInvariantsNode: reads normalized, produces nothing new. */
-export const assertInvariantsContract: OperationContract = {
-  name:         'config:assert-invariants',
-  hardRequired: ['normalized'],
-  produces:     [],
-  outputs:      ['success', 'invariant-violated'],
-};
+export const AssertInvariantsNode = new AssertInvariantsNodeImpl();

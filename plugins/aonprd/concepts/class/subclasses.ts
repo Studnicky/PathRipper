@@ -14,26 +14,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
   'Initial Proficiencies', 'Class DC',
 ];
 
-export function extractClassSubclasses(c: CommonExtraction): ClassSubclassesSlice {
-  const subclasses = extractSubclasses(c.sections);
-  const claimed = new Set<string>(CLAIMED_FIELD_LABELS.map((l) => l.toLowerCase()));
-  for (const s of subclasses) claimed.add(s.name.toLowerCase());
+export function extractClassSubclasses(common: CommonExtraction): ClassSubclassesSlice {
+  const subclasses = extractSubclasses(common.sections);
+  const claimed = new Set<string>(CLAIMED_FIELD_LABELS.map((label) => label.toLowerCase()));
+  for (const sub of subclasses) claimed.add(sub.name.toLowerCase());
 
   const out: Array<{ name: string; description: string }> = [];
   const seen = new Set<string>();
 
   // Source 1: harvested fields with subclass-looking labels.
-  for (const f of c.fields) {
-    if (!isSubclassLabel(f.label, claimed)) continue;
-    if (seen.has(f.label)) continue;
-    const description = f.value_text.trim();
+  for (const field of common.fields) {
+    if (!isSubclassLabel(field.label, claimed)) continue;
+    if (seen.has(field.label)) continue;
+    const description = field.value_text.trim();
     if (description === '') continue;
-    seen.add(f.label);
-    out.push({ name: f.label, description });
+    seen.add(field.label);
+    out.push({ name: field.label, description });
   }
 
   // Source 2: bare-bold tokens in head HTML (for layouts that don't field-pair).
-  const headHtml = getHeadHtml(c.body_html);
+  const headHtml = getHeadHtml(common.body_html);
   for (const entry of extractSubclassFeaturesFromHead(headHtml, claimed)) {
     if (seen.has(entry.name)) continue;
     seen.add(entry.name);

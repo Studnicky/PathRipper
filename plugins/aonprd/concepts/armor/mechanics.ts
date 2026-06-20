@@ -13,23 +13,23 @@ const CATEGORY_ARMOR: ReadonlyMap<string, 'unarmored' | 'light' | 'medium' | 'he
 ]);
 
 /** Extract armor mechanics slice. */
-export function extractArmorMechanics(c: CommonExtraction): ArmorMechanicsSlice {
-  const groupHtml = getFieldHtml(c, 'Group');
+export function extractArmorMechanics(common: CommonExtraction): ArmorMechanicsSlice {
+  const groupHtml = getFieldHtml(common, 'Group');
   const group = readGroupAnchor(groupHtml, /ArmorGroups\.aspx/i);
 
-  const categoryRaw = getField(c, 'Category');
+  const categoryRaw = getField(common, 'Category');
   const category: ArmorOutput['category'] = categoryRaw !== null
     ? CATEGORY_ARMOR.get(categoryRaw.toLowerCase().trim()) ?? null
     : null;
 
   return {
-    price:         parsePrice(getField(c, 'Price')),
-    ac_bonus:      asInt(dashToNull(getField(c, 'AC Bonus'))),
-    dex_cap:       asInt(dashToNull(getField(c, 'Dex Cap'))),
-    check_penalty: asInt(dashToNull(getField(c, 'Check Penalty'))),
-    speed_penalty: asInt(dashToNull(getField(c, 'Speed Penalty'))),
-    strength:      asInt(dashToNull(getField(c, 'Strength'))),
-    bulk:          parseBulk(getField(c, 'Bulk')),
+    price:         parsePrice(getField(common, 'Price')),
+    ac_bonus:      asInt(dashToNull(getField(common, 'AC Bonus'))),
+    dex_cap:       asInt(dashToNull(getField(common, 'Dex Cap'))),
+    check_penalty: asInt(dashToNull(getField(common, 'Check Penalty'))),
+    speed_penalty: asInt(dashToNull(getField(common, 'Speed Penalty'))),
+    strength:      asInt(dashToNull(getField(common, 'Strength'))),
+    bulk:          parseBulk(getField(common, 'Bulk')),
     category,
     group,
   };

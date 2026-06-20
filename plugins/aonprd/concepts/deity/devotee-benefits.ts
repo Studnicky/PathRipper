@@ -5,12 +5,11 @@ import {
   harvestLinkedBoldLabels,
   findSectionBody,
   parseLinkedList,
-  parseClericSpells,
 } from './helpers.js';
-import type { DeityDevoteeBenefitsSlice, DeityClericSpellsSlice } from './types.js';
+import type { DeityDevoteeBenefitsSlice } from './types.js';
 
-export function extractDeityDevoteeBenefits(c: CommonExtraction): DeityDevoteeBenefitsSlice {
-  const body = findSectionBody(c, 'Devotee Benefits');
+export function extractDeityDevoteeBenefits(common: CommonExtraction): DeityDevoteeBenefitsSlice {
+  const body = findSectionBody(common, 'Devotee Benefits');
   const map = harvestLinkedBoldLabels(body);
   return {
     divine_attribute:      map.get('divine attribute')      ?? null,

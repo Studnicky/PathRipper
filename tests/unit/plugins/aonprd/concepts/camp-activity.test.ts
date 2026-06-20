@@ -1,5 +1,6 @@
 // Unit tests for camp-activity concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }          from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/camp-activity.js';
 import type { CampActivityOutput } from '../../../../../plugins/aonprd/concepts/camp-activity.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'camp-activity-camouflage-campsite.html';
 const URL     = 'https://2e.aonprd.com/CampActivities.aspx?ID=1472';
@@ -17,25 +19,25 @@ const URL     = 'https://2e.aonprd.com/CampActivities.aspx?ID=1472';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await campActivityBaseNode.execute(state, stubContext);
-  await campActivityMechanicsNode.execute(state, stubContext);
-  await finalizeCampActivityNode.execute(state, stubContext);
-  return state.output as CampActivityOutput;
+  await campActivityBaseNode.execute(Batch.of(state), stubContext);
+  await campActivityMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeCampActivityNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<CampActivityOutput>(state.output);
 }
 
 describe('extract:camp-activity-base — camp-activity-camouflage-campsite', () => {
   it('produces _type, name, activity_id', async () => {
     const state = await primeState();
-    const r = await campActivityBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await campActivityBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CampActivityOutput;
+    const out = ParsedOutput.as<CampActivityOutput>(state.output);
     assert.equal(out.name, 'Camouflage Campsite');
     assert.equal(out.activity_id, 1472);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -44,19 +46,19 @@ describe('extract:camp-activity-base — camp-activity-camouflage-campsite', () 
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await campActivityBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await campActivityBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:camp-activity-mechanics — camp-activity-camouflage-campsite', () => {
   it('produces outcomes array and description', async () => {
     const state = await primeState();
-    await campActivityBaseNode.execute(state, stubContext);
-    const r = await campActivityMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await campActivityBaseNode.execute(Batch.of(state), stubContext);
+    const result = await campActivityMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as CampActivityOutput;
+    const out = ParsedOutput.as<CampActivityOutput>(state.output);
     assert.ok(Array.isArray(out.outcomes), 'outcomes is array');
     assert.ok(out.outcomes.length > 0, 'at least one outcome parsed');
     assert.ok(typeof out.description === 'string', 'description is string');
@@ -66,8 +68,8 @@ describe('extract:camp-activity-mechanics — camp-activity-camouflage-campsite'
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await campActivityMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await campActivityMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -94,7 +96,7 @@ describe('finalize:camp-activity — camp-activity-camouflage-campsite', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeCampActivityNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeCampActivityNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

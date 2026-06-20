@@ -21,8 +21,8 @@ import {
  * `c.field_map` is typically empty. We scrape the labels from the pre-`<h2>`
  * prose slice of `c.body_html` instead.
  */
-export function extractFamiliarPrerequisites(c: CommonExtraction): FamiliarPrerequisitesSlice {
-  const headFragment = bodyHeadFragment(c.body_html);
+export function extractFamiliarPrerequisites(common: CommonExtraction): FamiliarPrerequisitesSlice {
+  const headFragment = bodyHeadFragment(common.body_html);
 
   const abilityTypeHtml = pullFieldHtml(headFragment, 'Ability Type');
   const { ability_type, specific_familiar_parent } = parseAbilityType(abilityTypeHtml);
@@ -38,8 +38,8 @@ export function extractFamiliarPrerequisites(c: CommonExtraction): FamiliarPrere
     specific_familiar_parent,
     required_number_of_abilities,
     granted_abilities,
-    frequency: pullField(headFragment, 'Frequency') ?? getField(c, 'Frequency'),
-    trigger:   pullField(headFragment, 'Trigger')   ?? getField(c, 'Trigger'),
-    effect:    pullField(headFragment, 'Effect')    ?? getField(c, 'Effect'),
+    frequency: pullField(headFragment, 'Frequency') ?? getField(common, 'Frequency'),
+    trigger:   pullField(headFragment, 'Trigger')   ?? getField(common, 'Trigger'),
+    effect:    pullField(headFragment, 'Effect')    ?? getField(common, 'Effect'),
   };
 }

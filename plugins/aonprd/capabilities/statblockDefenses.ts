@@ -23,11 +23,11 @@ export interface StatblockDefenses {
 /** Parse AC `N (M while …)?` plus a separate saves note. */
 function parseAc(raw: string | null, savesNote: string | null): StatblockDefenses['ac'] {
   if (raw === null) return { value: null, conditional: null, saves_note: savesNote };
-  const m = /^\s*(-?\d+)\s*(?:\(([^)]+)\))?/.exec(raw);
-  if (m === null) return { value: null, conditional: null, saves_note: savesNote };
+  const match = /^\s*(-?\d+)\s*(?:\(([^)]+)\))?/.exec(raw);
+  if (match === null) return { value: null, conditional: null, saves_note: savesNote };
   return {
-    value: parseInt(m[1]!, 10),
-    conditional: m[2] !== undefined ? m[2].trim() : null,
+    value: parseInt(match[1]!, 10),
+    conditional: match[2] !== undefined ? match[2].trim() : null,
     saves_note: savesNote,
   };
 }
@@ -41,17 +41,17 @@ function parseAc(raw: string | null, savesNote: string | null): StatblockDefense
  */
 function parseHp(raw: string | null): StatblockDefenses['hp'] {
   if (raw === null) return { value: null, special: null };
-  const m = /^\s*(-?\d+)\s*,?\s*(.+)?$/.exec(raw.trim());
-  if (m === null) return { value: null, special: null };
-  const value = parseInt(m[1]!, 10);
-  const rest = (m[2] ?? '').trim();
+  const match = /^\s*(-?\d+)\s*,?\s*(.+)?$/.exec(raw.trim());
+  if (match === null) return { value: null, special: null };
+  const value = parseInt(match[1]!, 10);
+  const rest = (match[2] ?? '').trim();
   return { value: Number.isFinite(value) ? value : null, special: rest !== '' ? rest : null };
 }
 
 /** Parse Immunities — comma-separated linked types. */
 function parseImmunities(raw: string | null): string[] {
   if (raw === null) return [];
-  return splitTopLevel(raw, ',').map((s) => s.trim()).filter((s) => s !== '');
+  return splitTopLevel(raw, ',').map((str) => str.trim()).filter((str) => str !== '');
 }
 
 /** Parse Weaknesses `type N, …`. */
@@ -59,10 +59,10 @@ function parseWeaknesses(raw: string | null): StatblockDefenses['weaknesses'] {
   if (raw === null) return [];
   const out: StatblockDefenses['weaknesses'] = [];
   for (const part of splitTopLevel(raw, ',')) {
-    const m = /^(.*?)\s+(\d+)\s*$/.exec(part.trim());
-    if (m !== null) {
-      const value = parseInt(m[2]!, 10);
-      if (Number.isFinite(value)) out.push({ type: m[1]!.trim(), value });
+    const match = /^(.*?)\s+(\d+)\s*$/.exec(part.trim());
+    if (match !== null) {
+      const value = parseInt(match[2]!, 10);
+      if (Number.isFinite(value)) out.push({ type: match[1]!.trim(), value });
     }
   }
   return out;
@@ -73,14 +73,14 @@ function parseResistances(raw: string | null): StatblockDefenses['resistances'] 
   if (raw === null) return [];
   const out: StatblockDefenses['resistances'] = [];
   for (const part of splitTopLevel(raw, ',')) {
-    const m = /^(.*?)\s+(\d+)\s*(?:\(([^)]*except[^)]*)\))?/i.exec(part.trim());
-    if (m !== null) {
-      const value = parseInt(m[2]!, 10);
+    const match = /^(.*?)\s+(\d+)\s*(?:\(([^)]*except[^)]*)\))?/i.exec(part.trim());
+    if (match !== null) {
+      const value = parseInt(match[2]!, 10);
       if (Number.isFinite(value)) {
         out.push({
-          type: m[1]!.trim(),
+          type: match[1]!.trim(),
           value,
-          exceptions: m[3] !== undefined ? m[3].replace(/^except\s*/i, '').trim() : null,
+          exceptions: match[3] !== undefined ? match[3].replace(/^except\s*/i, '').trim() : null,
         });
       }
     }
@@ -92,11 +92,11 @@ function parseResistances(raw: string | null): StatblockDefenses['resistances'] 
 function harvestFragmentLabels(html: string): Map<string, string> {
   const out = new Map<string, string>();
   for (const line of html.split(/<br\s*\/?>/i)) {
-    const re = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|$)/gi;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(line)) !== null) {
-      const label = (m[1] ?? '').replace(/:$/, '').trim();
-      const valueText = htmlToText(m[2] ?? '');
+    const regex = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|$)/gi;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(line)) !== null) {
+      const label = (match[1] ?? '').replace(/:$/, '').trim();
+      const valueText = htmlToText(match[2] ?? '');
       if (label === '' || valueText === '') continue;
       if (!out.has(label.toLowerCase())) out.set(label.toLowerCase(), valueText);
     }
@@ -114,8 +114,8 @@ export function parseStatblockDefenses(defensesHtml: string): StatblockDefenses 
   let savesNote: string | null = null;
   const noteMatch = /<b>\s*Will\s*<\/b>\s*[+-]?\d+\s*;\s*([^<]+?)(?=<br|<\/?span|<b>|$)/i.exec(defensesHtml);
   if (noteMatch !== null) {
-    const n = htmlToText(noteMatch[1] ?? '').trim();
-    if (n !== '' && !/^\+?\d/.test(n)) savesNote = n;
+    const noteText = htmlToText(noteMatch[1] ?? '').trim();
+    if (noteText !== '' && !/^\+?\d/.test(noteText)) savesNote = noteText;
   }
 
   return {

@@ -2,12 +2,12 @@
 // Monster-ability pages are simple definition pages (Trigger / Requirements /
 // Frequency / Effect labels plus prose). Adds cross-reference harvest for
 // related MonsterAbilities.aspx links.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -125,11 +125,11 @@ export interface MonsterAbilityMetaSlice {
  */
 function harvestBoldLabels(html: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     const value = htmlToText(valueHtml).replace(/^[\s;,:]+|[\s;,]+$/g, '');
@@ -141,11 +141,11 @@ function harvestBoldLabels(html: string): Map<string, string> {
 }
 
 /** Harvest sibling MonsterAbilities.aspx links from the body prose. */
-function parseRelatedAbilities(c: CommonExtraction): MonsterAbilityRef[] {
+function parseRelatedAbilities(common: CommonExtraction): MonsterAbilityRef[] {
   const out: MonsterAbilityRef[] = [];
   const seen = new Set<string>();
-  const selfId = extractEntityId(c.url);
-  for (const link of c.links) {
+  const selfId = extractEntityId(common.url);
+  for (const link of common.links) {
     if (link.kind !== 'MonsterAbilities') continue;
     if (link.text === '' || seen.has(link.href)) continue;
     if (link.id !== null && link.id === selfId) continue;
@@ -158,37 +158,37 @@ function parseRelatedAbilities(c: CommonExtraction): MonsterAbilityRef[] {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a monster-ability page. */
-export function extractMonsterAbilityBase(c: CommonExtraction): MonsterAbilityBaseSlice {
+export function extractMonsterAbilityBase(common: CommonExtraction): MonsterAbilityBaseSlice {
   return {
-    url:                c.url,
-    monster_ability_id: extractEntityId(c.url),
-    name:               c.title.name,
-    rarity:             c.traits.rarity,
-    pfs:                c.title.pfs,
-    legacy:             c.title.legacy,
-    alt_edition_url:    c.title.alt_edition_url,
-    action_cost:        c.title.action_cost,
-    traits:             c.traits.traits,
-    trait_ids:          c.traits.trait_ids,
-    source:             { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:            c.sources,
+    url:                common.url,
+    monster_ability_id: extractEntityId(common.url),
+    name:               common.title.name,
+    rarity:             common.traits.rarity,
+    pfs:                common.title.pfs,
+    legacy:             common.title.legacy,
+    alt_edition_url:    common.title.alt_edition_url,
+    action_cost:        common.title.action_cost,
+    traits:             common.traits.traits,
+    trait_ids:          common.traits.trait_ids,
+    source:             { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:            common.sources,
   };
 }
 
 /** Extract definition labels (Trigger / Requirements / Frequency / Effect). */
-export function extractMonsterAbilityDefinition(c: CommonExtraction): MonsterAbilityDefinitionSlice {
-  const map = harvestBoldLabels(c.body_html);
+export function extractMonsterAbilityDefinition(common: CommonExtraction): MonsterAbilityDefinitionSlice {
+  const map = harvestBoldLabels(common.body_html);
   return {
     trigger:           map.get('trigger')      ?? null,
     requirements:      map.get('requirements') ?? null,
     frequency:         map.get('frequency')    ?? null,
     effect:            map.get('effect')       ?? null,
-    related_abilities: parseRelatedAbilities(c),
+    related_abilities: parseRelatedAbilities(common),
   };
 }
 
 /** Meta marker — body/sections/links/meta attach during finalize. */
-export function extractMonsterAbilityMeta(_c: CommonExtraction): MonsterAbilityMetaSlice {
+export function extractMonsterAbilityMeta(_common: CommonExtraction): MonsterAbilityMetaSlice {
   return { __monster_ability_meta_marked: true };
 }
 
@@ -205,26 +205,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeMonsterAbility(
-  c:          CommonExtraction,
+  common:     CommonExtraction,
   base:       MonsterAbilityBaseSlice,
   definition: MonsterAbilityDefinitionSlice,
   _meta:      MonsterAbilityMetaSlice,
-  $:          CheerioAPI,
+  root:       CheerioAPI,
   _target:    CheerioNode,
 ): MonsterAbilityOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...definition,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies MonsterAbilityOutput;
 }
 
@@ -236,14 +236,14 @@ export function finalizeMonsterAbility(
  * the decomposed monster-ability extraction nodes.
  */
 export function extractMonsterAbility(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): MonsterAbilityOutput {
-  const base       = extractMonsterAbilityBase(c);
-  const definition = extractMonsterAbilityDefinition(c);
-  const meta       = extractMonsterAbilityMeta(c);
-  return finalizeMonsterAbility(c, base, definition, meta, $, target);
+  const base       = extractMonsterAbilityBase(common);
+  const definition = extractMonsterAbilityDefinition(common);
+  const meta       = extractMonsterAbilityMeta(common);
+  return finalizeMonsterAbility(common, base, definition, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -251,83 +251,89 @@ export function extractMonsterAbility(
 
 export type MonsterAbilityBaseOutput = 'success' | 'error';
 
-export const monsterAbilityBaseNode: NodeInterface<ScrapeState, MonsterAbilityBaseOutput, RipperServices> = {
-  name:    'extract:monster-ability-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterAbilityBaseNode extends ScalarNode<ScrapeState, MonsterAbilityBaseOutput> {
+  public readonly name    = 'extract:monster-ability-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterAbilityBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterAbilityBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractMonsterAbilityBase(c);
+    const base = extractMonsterAbilityBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterAbilityBaseNode = new MonsterAbilityBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type MonsterAbilityDefinitionOutput = 'success' | 'error';
 
-export const monsterAbilityDefinitionNode: NodeInterface<ScrapeState, MonsterAbilityDefinitionOutput, RipperServices> = {
-  name:    'extract:monster-ability-definition',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterAbilityDefinitionNode extends ScalarNode<ScrapeState, MonsterAbilityDefinitionOutput> {
+  public readonly name    = 'extract:monster-ability-definition';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterAbilityDefinitionOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterAbilityDefinitionOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const definition = extractMonsterAbilityDefinition(c);
+    const definition = extractMonsterAbilityDefinition(common);
 
     state.output = { ...state.output, ...definition };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterAbilityDefinitionNode = new MonsterAbilityDefinitionNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeMonsterAbilityOutput = 'success';
 
-export const finalizeMonsterAbilityNode: NodeInterface<ScrapeState, FinalizeMonsterAbilityOutput, RipperServices> = {
-  name:    'finalize:monster-ability',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeMonsterAbilityNode extends ScalarNode<ScrapeState, FinalizeMonsterAbilityOutput> {
+  public readonly name    = 'finalize:monster-ability';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeMonsterAbilityOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeMonsterAbilityOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as MonsterAbilityOutput;
-    const assembled = finalizeMonsterAbility(c, (acc as never), (acc as never), (acc as never), $, target);
+    const assembled = finalizeMonsterAbility(common, (acc as never), (acc as never), (acc as never), root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeMonsterAbilityNode = new FinalizeMonsterAbilityNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

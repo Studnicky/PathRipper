@@ -3,6 +3,12 @@ import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction } from '../../common.js';
 import { extractMetaDescription, extractMetaKeywords, stripStructuredKeys } from '../../common.js';
 import { isFlavorBoldLabel } from './helpers.js';
+import {
+  extractSubclassFeatureBase,
+  extractSubclassFeatureFields,
+  extractSubclassFeatureSpells,
+  extractSubclassFeatureFeatures,
+} from './base.js';
 import type {
   SubclassFeatureOutput,
   SubclassFeatureBaseSlice,
@@ -14,46 +20,46 @@ import type {
 import { CLAIMED_FIELD_LABELS } from './types.js';
 
 /** Meta slice marker — sections / links / body / meta tags attach in finalize. */
-export function extractSubclassFeatureMeta(_c: CommonExtraction): SubclassFeatureMetaSlice {
-  void _c;
+export function extractSubclassFeatureMeta(_common: CommonExtraction): SubclassFeatureMetaSlice {
+  void _common;
   return { __subclass_feature_meta_marked: true };
 }
 
 export function finalizeSubclassFeature(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     SubclassFeatureBaseSlice,
   fields:   SubclassFeatureFieldsSlice,
   spells:   SubclassFeatureSpellsSlice,
   features: SubclassFeatureFeaturesSlice,
   _meta:    SubclassFeatureMetaSlice,
-  $:        CheerioAPI,
-  _target:  any,
+  root:     CheerioAPI,
+  _target:  unknown,
 ): SubclassFeatureOutput {
   void _meta;
   void _target;
-  const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const stripped  = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   // Also strip Title-Case multi-word names that survived the claimed list —
   // these are inline ability cards or NPC mentions, not structured data.
   // The granted_features extractor already captures the ones that matter.
-  const grantedFeatureNames = new Set(features.granted_features.map((f) => f.name.toLowerCase()));
+  const grantedFeatureNames = new Set(features.granted_features.map((field) => field.name.toLowerCase()));
   const raw_fields: Record<string, string> = {};
-  for (const [k, v] of Object.entries(stripped)) {
-    if (grantedFeatureNames.has(k.toLowerCase())) continue;
-    if (isFlavorBoldLabel(k)) continue;
-    raw_fields[k] = v;
+  for (const [key, value] of Object.entries(stripped)) {
+    if (grantedFeatureNames.has(key.toLowerCase())) continue;
+    if (isFlavorBoldLabel(key)) continue;
+    raw_fields[key] = value;
   }
   return {
     ...base,
     feature_fields:   fields.feature_fields,
     granted_spells:   spells.granted_spells,
     granted_features: features.granted_features,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies SubclassFeatureOutput;
 }
 
@@ -65,19 +71,14 @@ export function finalizeSubclassFeature(
  * decomposed subclass-feature extraction nodes.
  */
 export function extractSubclassFeature(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: any,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  unknown,
 ): SubclassFeatureOutput {
-  const extractSubclassFeatureBase = require('./base.js').extractSubclassFeatureBase;
-  const extractSubclassFeatureFields = require('./base.js').extractSubclassFeatureFields;
-  const extractSubclassFeatureSpells = require('./base.js').extractSubclassFeatureSpells;
-  const extractSubclassFeatureFeatures = require('./base.js').extractSubclassFeatureFeatures;
-
-  const base     = extractSubclassFeatureBase(c);
-  const fields   = extractSubclassFeatureFields(c);
-  const spells   = extractSubclassFeatureSpells(c);
-  const features = extractSubclassFeatureFeatures(c);
-  const meta     = extractSubclassFeatureMeta(c);
-  return finalizeSubclassFeature(c, base, fields, spells, features, meta, $, target);
+  const base     = extractSubclassFeatureBase(common);
+  const fields   = extractSubclassFeatureFields(common);
+  const spells   = extractSubclassFeatureSpells(common);
+  const features = extractSubclassFeatureFeatures(common);
+  const meta     = extractSubclassFeatureMeta(common);
+  return finalizeSubclassFeature(common, base, fields, spells, features, meta, root, target);
 }

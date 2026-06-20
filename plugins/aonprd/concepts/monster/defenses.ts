@@ -3,11 +3,11 @@
  *
  * Exports: splitBodySections, extractMonsterDefenses, monsterDefensesNode.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction } from '../../common.js';
 import type { MonsterDefensesSlice } from './types.js';
@@ -15,38 +15,39 @@ import { parseStatblockDefenses } from '../../capabilities/statblockDefenses.js'
 
 /** Split body HTML on `<hr/>` into defenses + offense fragments. */
 export function splitBodySections(bodyHtml: string): { defenses: string; offense: string } {
-  const m = /<hr\s*\/?>/i.exec(bodyHtml);
-  if (m === null) return { defenses: bodyHtml, offense: '' };
-  return { defenses: bodyHtml.slice(0, m.index), offense: bodyHtml.slice(m.index + m[0].length) };
+  const match = /<hr\s*\/?>/i.exec(bodyHtml);
+  if (match === null) return { defenses: bodyHtml, offense: '' };
+  return { defenses: bodyHtml.slice(0, match.index), offense: bodyHtml.slice(match.index + match[0].length) };
 }
 
 /** Extract defensive slice (AC, saves, HP, hardness, immunities, weaknesses, resistances). */
-export function extractMonsterDefenses(c: CommonExtraction): MonsterDefensesSlice {
-  const { defenses: defensesHtml } = splitBodySections(c.body_html);
+export function extractMonsterDefenses(common: CommonExtraction): MonsterDefensesSlice {
+  const { defenses: defensesHtml } = splitBodySections(common.body_html);
   return parseStatblockDefenses(defensesHtml);
 }
 
 export type MonsterDefensesOutput = 'success' | 'error';
 
-export const monsterDefensesNode: NodeInterface<ScrapeState, MonsterDefensesOutput, RipperServices> = {
-  name:    'extract:monster-defenses',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class MonsterDefensesNodeImpl extends ScalarNode<ScrapeState, MonsterDefensesOutput> {
+  public readonly name    = 'extract:monster-defenses';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterDefensesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterDefensesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const defenses = extractMonsterDefenses(c);
+    const defenses = extractMonsterDefenses(common);
 
     state.output = { ...state.output, ...defenses };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const monsterDefensesNode = new MonsterDefensesNodeImpl();

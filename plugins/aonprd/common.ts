@@ -237,9 +237,9 @@ const URL_TO_TYPE: ReadonlyMap<string, AonPageType> = new Map(URL_TO_TYPE_ENTRIE
 
 /** Map a URL like `…/Spells.aspx?ID=1` to its page-type discriminator. */
 export function detectPageType(url: string): AonPageType {
-  const m = /\/([A-Za-z]+)\.aspx/.exec(url);
-  if (m === null) return 'unknown';
-  const path = m[1]!.toLowerCase();
+  const match = /\/([A-Za-z]+)\.aspx/.exec(url);
+  if (match === null) return 'unknown';
+  const path = match[1]!.toLowerCase();
   return URL_TO_TYPE.get(path) ?? 'generic';
 }
 
@@ -256,17 +256,17 @@ export type CheerioNode = Cheerio<AnyNode>;
  * enclosing `<span>` contains a `<b>Source</b>` field — that's the canonical
  * field block. Falls back to the first `<h1 class="title">`'s parent span.
  */
-export function findContentSpan($: CheerioAPI): CheerioNode | null {
+export function findContentSpan(root: CheerioAPI): CheerioNode | null {
   let chosen: CheerioNode | null = null;
-  $('h1.title').each((_, el) => {
+  root('h1.title').each((_index, element) => {
     if (chosen !== null) return;
-    const span = $(el).closest('span');
+    const span = root(element).closest('span');
     if (span.length === 0) return;
     const html = span.html() ?? '';
     if (/<b>\s*Source\s*<\/b>/i.test(html)) chosen = span;
   });
   if (chosen !== null) return chosen;
-  const first = $('h1.title').first();
+  const first = root('h1.title').first();
   if (first.length === 0) return null;
   const span = first.closest('span');
   return span.length > 0 ? span : null;
@@ -287,9 +287,9 @@ const ACTION_LABEL_TO_COST: ReadonlyMap<string, ActionCost> = new Map<string, Ac
 export function readActionCost(span: CheerioNode | null): ActionCost | null {
   if (span === null || span.length === 0) return null;
   const text = span.text();
-  const m = /\[([a-z-]+)\]/i.exec(text);
-  if (m === null) return null;
-  return ACTION_LABEL_TO_COST.get(m[1]!.toLowerCase()) ?? null;
+  const match = /\[([a-z-]+)\]/i.exec(text);
+  if (match === null) return null;
+  return ACTION_LABEL_TO_COST.get(match[1]!.toLowerCase()) ?? null;
 }
 
 /** Read PFS legality from an `<img alt="PFS Standard|Limited|Restricted">` badge. */
@@ -311,23 +311,23 @@ function readPfs(span: CheerioNode): PfsLegality | null {
  * styling. The leading `<span style="float:left">` holds the PFS Standard
  * icon and the closing `<a href="PFS.aspx">` anchor.
  */
-export function extractTitle($: CheerioAPI, span: CheerioNode): TitleInventory {
+export function extractTitle(root: CheerioAPI, span: CheerioNode): TitleInventory {
   // Monster pages put a "hide-on-print" header `<h1 class="title">Name</h1>`
   // ahead of the canonical `<h1 class="title monster-statblock-name">` with
   // the right-floated level marker. Prefer an h1 that has a level marker
   // (`<span style="margin-left:auto…">`); fall back to the first h1.
   const h1List = span.find('h1.title');
   let chosen = h1List.first();
-  h1List.each((_, el) => {
-    const $el = $(el);
+  h1List.each((_index, element) => {
+    const $el = root(element);
     if ($el.find('span[style*="margin-left:auto"]').length > 0) {
       chosen = $el;
       return false;
     }
     return undefined;
   });
-  const h1 = chosen;
-  const clone = h1.clone();
+  const h1El = chosen;
+  const clone = h1El.clone();
 
   // Right-floated level/category marker.
   let level_label: string | null = null;
@@ -352,17 +352,17 @@ export function extractTitle($: CheerioAPI, span: CheerioNode): TitleInventory {
   let level: number | null = null;
   let tiered = false;
   if (level_label !== null) {
-    const m = /^([A-Za-z]+)(?:\s+(-?\d+)(\+?))?/.exec(level_label);
-    if (m !== null) {
-      level_kind = m[1]!;
-      if (m[2] !== undefined) level = parseInt(m[2], 10);
-      tiered = m[3] === '+';
+    const match = /^([A-Za-z]+)(?:\s+(-?\d+)(\+?))?/.exec(level_label);
+    if (match !== null) {
+      level_kind = match[1]!;
+      if (match[2] !== undefined) level = parseInt(match[2], 10);
+      tiered = match[3] === '+';
     }
   }
 
   // Page-level legacy/remaster flags.
   const pfs = readPfs(span);
-  const legacy = $('h3.title.legacy-content-warning').length > 0;
+  const legacy = root('h3.title.legacy-content-warning').length > 0;
   const altLink = span.find('div.siderbarlook a').first().attr('href');
   const alt_edition_url = altLink !== undefined ? altLink : null;
 
@@ -378,7 +378,7 @@ const RARITY_CLASSES: ReadonlyArray<{ cls: string; rarity: Rarity }> = [
 ];
 
 /** Extract trait pills with rarity, size, and alignment classification. */
-export function extractTraits($: CheerioAPI, span: CheerioNode): TraitInventory {
+export function extractTraits(root: CheerioAPI, span: CheerioNode): TraitInventory {
   const traits: string[] = [];
   const seen = new Set<string>();
   const trait_ids: Record<string, number> = {};
@@ -387,16 +387,16 @@ export function extractTraits($: CheerioAPI, span: CheerioNode): TraitInventory 
   let alignment: string | null = null;
 
   span.find('span.trait, span.traitsize, span.traitalignment, span.traituncommon, span.traitrare, span.traitunique')
-    .each((_, el) => {
-      const $el = $(el);
+    .each((_index, element) => {
+      const $el = root(element);
       const txt = $el.text().replace(/\s+/g, ' ').trim();
       if (txt === '' || seen.has(txt)) return;
       seen.add(txt);
       traits.push(txt);
 
       const cls = ($el.attr('class') ?? '').toLowerCase();
-      for (const { cls: c, rarity: r } of RARITY_CLASSES) {
-        if (cls.includes(c)) { rarity = r; break; }
+      for (const { cls: clsCls, rarity: clsRarity } of RARITY_CLASSES) {
+        if (cls.includes(clsCls)) { rarity = clsRarity; break; }
       }
       if (cls.includes('traitsize')) size = txt;
       if (cls.includes('traitalignment')) alignment = txt;
@@ -414,10 +414,10 @@ export function extractTraits($: CheerioAPI, span: CheerioNode): TraitInventory 
 const SOURCE_RE = /<b>\s*Source\s*<\/b>\s*(?:<a[^>]*href="[^"]*Sources\.aspx\?ID=(\d+)"[^>]*>\s*<i>([^<]+)<\/i>\s*<\/a>(?:[^<]*pg\.\s*(\d+))?)/gi;
 
 function parseSourceText(raw: string): { book: string | null; page: number | null } {
-  const m = /^(.*?)\s*pg\.\s*(\d+)/i.exec(raw);
-  if (m !== null) {
-    const page = parseInt(m[2]!, 10);
-    return { book: m[1]!.trim(), page: Number.isFinite(page) ? page : null };
+  const match = /^(.*?)\s*pg\.\s*(\d+)/i.exec(raw);
+  if (match !== null) {
+    const page = parseInt(match[2]!, 10);
+    return { book: match[1]!.trim(), page: Number.isFinite(page) ? page : null };
   }
   return { book: raw.trim(), page: null };
 }
@@ -435,11 +435,11 @@ export function extractSources(span: CheerioNode): SourceRef[] {
   const html = span.html() ?? '';
   const out: SourceRef[] = [];
   const seen = new Set<string>();
-  let match: RegExpExecArray | null;
+  let srcMatch: RegExpExecArray | null;
   SOURCE_RE.lastIndex = 0;
-  while ((match = SOURCE_RE.exec(html)) !== null) {
-    const idStr = match[1];
-    const label = match[2] ?? '';
+  while ((srcMatch = SOURCE_RE.exec(html)) !== null) {
+    const idStr = srcMatch[1];
+    const label = srcMatch[2] ?? '';
     const { book, page } = parseSourceText(label);
     const source_id = idStr !== undefined ? parseInt(idStr, 10) : null;
     // Dedup by (source_id, book, page) — AON repeats the source ref under each
@@ -499,11 +499,11 @@ export function stripStructuredKeys(
   claimedKeys: Iterable<string>,
 ): Record<string, string> {
   const claimed = new Set<string>();
-  for (const k of claimedKeys) claimed.add(k.trim().toLowerCase());
+  for (const key of claimedKeys) claimed.add(key.trim().toLowerCase());
   const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(fieldMap)) {
-    if (claimed.has(k.trim().toLowerCase())) continue;
-    out[k] = v;
+  for (const [key, value] of Object.entries(fieldMap)) {
+    if (claimed.has(key.trim().toLowerCase())) continue;
+    out[key] = value;
   }
   return out;
 }
@@ -525,8 +525,8 @@ export function harvestFields(headHtml: string): { fields: HarvestedField[]; fie
     // Within a line, split on `;` only when the next non-whitespace char is `<b>`,
     // signalling a new label.
     const parts = splitOnLabelSemicolons(line);
-    for (const p of parts) {
-      const trimmed = p.trim();
+    for (const part of parts) {
+      const trimmed = part.trim();
       if (trimmed !== '') segments.push(trimmed);
     }
   }
@@ -538,10 +538,10 @@ export function harvestFields(headHtml: string): { fields: HarvestedField[]; fie
   let order = 0;
   for (const seg of segments) {
     pairRe.lastIndex = 0;
-    let m: RegExpExecArray | null;
-    while ((m = pairRe.exec(seg)) !== null) {
-      const labelRaw = m[1] ?? '';
-      const valueHtml = m[2] ?? '';
+    let pairMatch: RegExpExecArray | null;
+    while ((pairMatch = pairRe.exec(seg)) !== null) {
+      const labelRaw = pairMatch[1] ?? '';
+      const valueHtml = pairMatch[2] ?? '';
       const label = labelRaw.replace(/:$/, '').replace(/\s+/g, ' ').trim();
       const value_text = htmlToText(valueHtml);
       if (label === '' || value_text === '') continue;
@@ -565,20 +565,20 @@ function splitOnLabelSemicolons(html: string): string[] {
   const out: string[] = [];
   let buf = '';
   let depth = 0;
-  for (let i = 0; i < html.length; i++) {
-    const ch = html[i]!;
-    if (ch === '<') depth++;
-    if (ch === '>') depth = Math.max(0, depth - 1);
-    if (ch === ';' && depth === 0) {
+  for (let index = 0; index < html.length; index++) {
+    const char = html[index]!;
+    if (char === '<') depth++;
+    if (char === '>') depth = Math.max(0, depth - 1);
+    if (char === ';' && depth === 0) {
       // Look ahead — split only if next non-ws is `<b>`.
-      const rest = html.slice(i + 1).replace(/^\s+/, '');
+      const rest = html.slice(index + 1).replace(/^\s+/, '');
       if (/^<b>/i.test(rest)) {
         out.push(buf);
         buf = '';
         continue;
       }
     }
-    buf += ch;
+    buf += char;
   }
   if (buf !== '') out.push(buf);
   return out;
@@ -619,8 +619,8 @@ export function splitOnHr(html: string): { head: string; body: string } {
  * of equal-or-higher level. Skips `feel-title` and `hide-on-print` decorative
  * variants.
  */
-function isDecorativeHeading(el: Element): boolean {
-  const cls = (el.attribs?.['class'] ?? '').toLowerCase();
+function isDecorativeHeading(element: Element): boolean {
+  const cls = (element.attribs?.['class'] ?? '').toLowerCase();
   return cls.includes('feel-title')
       || cls.includes('hide-on-print')
       || cls.includes('legacy-content-warning');
@@ -631,15 +631,15 @@ function isDecorativeHeading(el: Element): boolean {
  * `SectionWalkerStrategy.harvestSections` contract. The `.title` CSS class
  * filter is AON markup — non-AON plugins supply their own implementation.
  */
-export function harvestSections($: CheerioAPI, span: CheerioNode): Section[] {
+export function harvestSections(root: CheerioAPI, span: CheerioNode): Section[] {
   const out: Section[] = [];
   const HEADING_SEL = 'h2.title, h3.title';
-  span.find(HEADING_SEL).each((_, el) => {
-    if (isDecorativeHeading(el as Element)) return;
-    const $h = $(el);
-    const tag = (el as Element).tagName.toLowerCase();
+  span.find(HEADING_SEL).each((_index, element) => {
+    if (isDecorativeHeading(element as Element)) return;
+    const $heading = root(element);
+    const tag = (element as Element).tagName.toLowerCase();
     const level: 2 | 3 = tag === 'h3' ? 3 : 2;
-    const heading = $h.text().replace(/\s+/g, ' ').trim();
+    const heading = $heading.text().replace(/\s+/g, ' ').trim();
     if (heading === '') return;
 
     // Collect siblings until the next real h1/h2/h3. Decorative title variants
@@ -647,7 +647,7 @@ export function harvestSections($: CheerioAPI, span: CheerioNode): Section[] {
     // heading and its body — skip over them entirely rather than emit them
     // into the body or treat them as a section boundary.
     const fragments: string[] = [];
-    let cur = (el as Element).next as AnyNode | null;
+    let cur = (element as Element).next as AnyNode | null;
     while (cur !== null) {
       if (cur.type === 'tag') {
         const next = cur as Element;
@@ -658,7 +658,7 @@ export function harvestSections($: CheerioAPI, span: CheerioNode): Section[] {
           continue;
         }
       }
-      fragments.push($.html(cur as AnyNode));
+      fragments.push(root.html(cur as AnyNode));
       cur = (cur as { next: AnyNode | null }).next;
     }
     const body_html = fragments.join('');
@@ -693,11 +693,11 @@ export function harvestLinks(html: string): LinkRef[] {
     if (aspxMatch === null) continue;
     const kind = aspxMatch[1]!;
     const idMatch = /\?ID=(\d+)/i.exec(href);
-    const id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
+    const entityId = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
     const key = `${href}|${text}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ href, text, kind, id });
+    out.push({ href, text, kind, id: entityId });
   }
   return out;
   void ASPX_RE; void TEXT_RE;
@@ -710,18 +710,18 @@ export function harvestLinks(html: string): LinkRef[] {
  * Returns null when the URL has no ID parameter.
  */
 export function extractEntityId(url: string): number | null {
-  const m = /[?&]ID=(\d+)/i.exec(url);
-  if (m === null) return null;
-  const n = parseInt(m[1]!, 10);
-  return Number.isFinite(n) ? n : null;
+  const match = /[?&]ID=(\d+)/i.exec(url);
+  if (match === null) return null;
+  const num = parseInt(match[1]!, 10);
+  return Number.isFinite(num) ? num : null;
 }
 
 /**
  * Read `<meta name="description" content="…">` from the full page HTML.
  * Must be called on the full-document CheerioAPI, not just the content span.
  */
-export function extractMetaDescription($: CheerioAPI): string | null {
-  const content = $('meta[name="description"]').attr('content');
+export function extractMetaDescription(root: CheerioAPI): string | null {
+  const content = root('meta[name="description"]').attr('content');
   if (content === undefined || content.trim() === '') return null;
   return content.trim();
 }
@@ -730,8 +730,8 @@ export function extractMetaDescription($: CheerioAPI): string | null {
  * Read `<meta name="keywords" content="…">` from the full page HTML.
  * AON always populates this; it includes entity name + type token.
  */
-export function extractMetaKeywords($: CheerioAPI): string | null {
-  const content = $('meta[name="keywords"]').attr('content');
+export function extractMetaKeywords(root: CheerioAPI): string | null {
+  const content = root('meta[name="keywords"]').attr('content');
   if (content === undefined || content.trim() === '') return null;
   return content.trim();
 }
@@ -748,11 +748,11 @@ export function extractMetaKeywords($: CheerioAPI): string | null {
  * strategies when a second source plugin surfaces a concrete need.
  */
 export function extractCommon(
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   url:      string,
   strategy: CommonStrategy,
 ): CommonExtraction | null {
-  const span = findContentSpan($);
+  const span = findContentSpan(root);
   if (span === null) return null;
 
   // Some monster pages wrap the stat block in an inner `<span class="monster-page">`.
@@ -763,12 +763,12 @@ export function extractCommon(
   const html = target.html() ?? '';
   const { head, body } = splitOnHr(html);
 
-  const title    = extractTitle($, target);
-  const traits   = extractTraits($, target);
-  const sources  = strategy.sourceRef.extractSources(target, $);
+  const title    = extractTitle(root, target);
+  const traits   = extractTraits(root, target);
+  const sources  = strategy.sourceRef.extractSources(target, root);
   const source   = sources[0] ?? { book: null, page: null, source_id: null, raw: '' };
   const { fields, field_map } = harvestFields(head);
-  const sections = strategy.sectionWalker.harvestSections($, target);
+  const sections = strategy.sectionWalker.harvestSections(root, target);
   const links    = harvestLinks(html);
 
   return {
@@ -790,38 +790,38 @@ export function extractCommon(
 // ─── Lookup + parse helpers used by per-type extractors ───────────────────────
 
 /** Case-insensitive lookup over `field_map` for any of the given label aliases. */
-export function getField(c: CommonExtraction, ...keys: string[]): string | null {
-  for (const k of keys) {
-    for (const fk of Object.keys(c.field_map)) {
-      if (fk.toLowerCase() === k.toLowerCase()) return c.field_map[fk]!;
+export function getField(common: CommonExtraction, ...keys: string[]): string | null {
+  for (const key of keys) {
+    for (const fieldKey of Object.keys(common.field_map)) {
+      if (fieldKey.toLowerCase() === key.toLowerCase()) return common.field_map[fieldKey]!;
     }
   }
   return null;
 }
 
 /** Same as getField, but returns the verbatim HTML value for richer parsing. */
-export function getFieldHtml(c: CommonExtraction, ...keys: string[]): string | null {
-  for (const k of keys) {
-    for (const f of c.fields) {
-      if (f.label.toLowerCase() === k.toLowerCase()) return f.value_html;
+export function getFieldHtml(common: CommonExtraction, ...keys: string[]): string | null {
+  for (const key of keys) {
+    for (const field of common.fields) {
+      if (field.label.toLowerCase() === key.toLowerCase()) return field.value_html;
     }
   }
   return null;
 }
 
 /** Pull all matching field occurrences (some labels recur, e.g. Heightened). */
-export function getAllFields(c: CommonExtraction, ...keys: string[]): HarvestedField[] {
-  const lc = keys.map((k) => k.toLowerCase());
-  return c.fields.filter((f) => lc.includes(f.label.toLowerCase()));
+export function getAllFields(common: CommonExtraction, ...keys: string[]): HarvestedField[] {
+  const lcKeys = keys.map((key) => key.toLowerCase());
+  return common.fields.filter((field) => lcKeys.includes(field.label.toLowerCase()));
 }
 
 /** Tolerant signed integer parser — extracts the first `-?\d+` from a string. */
 export function asInt(val: string | null | undefined): number | null {
   if (val === null || val === undefined) return null;
-  const m = /-?\d+/.exec(val);
-  if (m === null) return null;
-  const n = parseInt(m[0], 10);
-  return Number.isFinite(n) ? n : null;
+  const match = /-?\d+/.exec(val);
+  if (match === null) return null;
+  const num = parseInt(match[0], 10);
+  return Number.isFinite(num) ? num : null;
 }
 
 /** Treat an em-dash / `—` / `&mdash;` value as null. */
@@ -837,19 +837,19 @@ export function splitTopLevel(value: string, sep: ',' | ';' | '|' = ','): string
   const out: string[] = [];
   let buf = '';
   let depth = 0;
-  for (const ch of value) {
-    if (ch === '(' || ch === '[' || ch === '{') depth++;
-    if (ch === ')' || ch === ']' || ch === '}') depth = Math.max(0, depth - 1);
-    if (ch === sep && depth === 0) {
-      const t = buf.trim();
-      if (t !== '') out.push(t);
+  for (const char of value) {
+    if (char === '(' || char === '[' || char === '{') depth++;
+    if (char === ')' || char === ']' || char === '}') depth = Math.max(0, depth - 1);
+    if (char === sep && depth === 0) {
+      const trimmed = buf.trim();
+      if (trimmed !== '') out.push(trimmed);
       buf = '';
       continue;
     }
-    buf += ch;
+    buf += char;
   }
-  const t = buf.trim();
-  if (t !== '') out.push(t);
+  const trimmed = buf.trim();
+  if (trimmed !== '') out.push(trimmed);
   return out;
 }
 
@@ -890,16 +890,16 @@ export function loadFragment(html: string, rootId = 'fragment-root'): CheerioAPI
 export function collectHangingIndentInners(html: string): string[] {
   const out: string[] = [];
   const openRe = /<span\s+class="hanging-indent">/gi;
-  let m: RegExpExecArray | null;
-  while ((m = openRe.exec(html)) !== null) {
-    const start = m.index + m[0].length;
+  let openMatch: RegExpExecArray | null;
+  while ((openMatch = openRe.exec(html)) !== null) {
+    const start = openMatch.index + openMatch[0].length;
     let depth = 1;
-    let i = start;
-    while (i < html.length && depth > 0) {
-      const open  = html.indexOf('<span', i);
-      const close = html.indexOf('</span>', i);
+    let pos = start;
+    while (pos < html.length && depth > 0) {
+      const open  = html.indexOf('<span', pos);
+      const close = html.indexOf('</span>', pos);
       if (close === -1) break;
-      if (open !== -1 && open < close) { depth++; i = open + 5; }
+      if (open !== -1 && open < close) { depth++; pos = open + 5; }
       else {
         depth--;
         if (depth === 0) {
@@ -907,7 +907,7 @@ export function collectHangingIndentInners(html: string): string[] {
           openRe.lastIndex = close + 7;
           break;
         }
-        i = close + 7;
+        pos = close + 7;
       }
     }
   }
@@ -942,31 +942,31 @@ export function collectBareBoldBlocks(headHtml: string): BareBoldBlock[] {
   // AON occasionally emits double-bold wrappers `<b><b>Name</b></b>`.
   // Flatten before parsing so the inner `<b>` retains the value siblings it needs.
   const flattened = headHtml.replace(/<b>\s*<b>([^<]+)<\/b>\s*<\/b>/gi, '<b>$1</b>');
-  const $h = loadFragment(flattened, 'head-root');
+  const $frag = loadFragment(flattened, 'head-root');
 
-  $h('#head-root b').each((_, el) => {
-    const $b = $h(el);
-    if ($b.children().length > 0) return;                          // markup-in-name → skip
-    if ($b.parents('span.hanging-indent').length > 0) return;      // handled by hanging-indent block
-    if ($b.closest('h1, h2, h3').length > 0) return;               // heading chrome
-    if ($b.parents('a.monster-pwl-link').length > 0) return;
-    if ($b.parents('h2.hide-on-print, h3.hide-on-print').length > 0) return;
+  $frag('#head-root b').each((_index, element) => {
+    const $bold = $frag(element);
+    if ($bold.children().length > 0) return;                          // markup-in-name → skip
+    if ($bold.parents('span.hanging-indent').length > 0) return;      // handled by hanging-indent block
+    if ($bold.closest('h1, h2, h3').length > 0) return;               // heading chrome
+    if ($bold.parents('a.monster-pwl-link').length > 0) return;
+    if ($bold.parents('h2.hide-on-print, h3.hide-on-print').length > 0) return;
 
-    const name = $b.text().trim().replace(/:$/, '');
+    const name = $bold.text().trim().replace(/:$/, '');
     if (name === '') return;
 
     // When the bold is the sole child of an anchor, value siblings are anchored
     // to the parent anchor's next, not the bold's.
-    const parent = (el as import('domhandler').Element).parent;
-    const startsAfter: import('domhandler').Element = (
+    const parent = (element as Element).parent;
+    const startsAfter: Element = (
       parent !== null
       && parent !== undefined
       && parent.type === 'tag'
-      && (parent as import('domhandler').Element).tagName.toLowerCase() === 'a'
-      && (parent as import('domhandler').Element).children.length === 1
+      && (parent as Element).tagName.toLowerCase() === 'a'
+      && (parent as Element).children.length === 1
     )
-      ? (parent as import('domhandler').Element)
-      : (el as import('domhandler').Element);
+      ? (parent as Element)
+      : (element as Element);
 
     const valueNodes: AnyNode[] = [];
     let cur = startsAfter.next as AnyNode | null;
@@ -978,7 +978,7 @@ export function collectBareBoldBlocks(headHtml: string): BareBoldBlock[] {
       valueNodes.push(cur);
       cur = (cur as { next: AnyNode | null }).next;
     }
-    const value_html = valueNodes.map((n) => $h.html(n as AnyNode)).join('');
+    const value_html = valueNodes.map((node) => $frag.html(node as AnyNode)).join('');
     out.push({ name, value_html });
   });
 
@@ -1004,7 +1004,7 @@ export const LEGACY_HEADING_RE = /legacy[\s-]content[\s-]warning/i;
  * output applies the same filter.
  */
 export function filterLegacySections(sections: readonly Section[]): Section[] {
-  return sections.filter((s) => !LEGACY_HEADING_RE.test(s.heading));
+  return sections.filter((sec) => !LEGACY_HEADING_RE.test(sec.heading));
 }
 
 /**
@@ -1021,14 +1021,14 @@ export function filterLegacySections(sections: readonly Section[]): Section[] {
  * Single source of truth — language, equipment, and weapon concepts previously
  * redeclared this helper.
  */
-export function extractPfsNote($: CheerioAPI, target: CheerioNode): string | null {
+export function extractPfsNote(root: CheerioAPI, target: CheerioNode): string | null {
   let pfsAnchor: ReturnType<CheerioAPI> | null = null;
 
-  target.find('a[href*="PFS.aspx"]').each((_, el) => {
+  target.find('a[href*="PFS.aspx"]').each((_index, element) => {
     if (pfsAnchor !== null) return;
-    const text = $(el).text().replace(/\s+/g, ' ').trim();
+    const text = root(element).text().replace(/\s+/g, ' ').trim();
     if (/PFS\s*Note/i.test(text)) {
-      pfsAnchor = $(el);
+      pfsAnchor = root(element);
     }
   });
 
@@ -1036,10 +1036,10 @@ export function extractPfsNote($: CheerioAPI, target: CheerioNode): string | nul
 
   const targetHtml = target.html() ?? '';
   const pfsRe = /PFS\.aspx[^>]*>[^<]*(?:<[^>]+>)*\s*PFS\s*Note[^<]*(?:<\/[^>]+>\s*)*([\s\S]*?)(?:<br\s*\/?>|$)/i;
-  const m = pfsRe.exec(targetHtml);
-  if (m === null) return null;
+  const pfsMatch = pfsRe.exec(targetHtml);
+  if (pfsMatch === null) return null;
 
-  const raw = m[1] ?? '';
+  const raw = pfsMatch[1] ?? '';
   const text = htmlToText(raw).trim();
   return text !== '' ? text : null;
 }

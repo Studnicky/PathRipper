@@ -1,5 +1,6 @@
 // Unit tests for km-structure concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }         from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -10,6 +11,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/km-structure.js';
 import type { KmStructureOutput } from '../../../../../plugins/aonprd/concepts/km-structure.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE = 'km-structure-academy.html';
 const URL     = 'https://2e.aonprd.com/KMStructures.aspx?ID=1';
@@ -17,25 +19,25 @@ const URL     = 'https://2e.aonprd.com/KMStructures.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await kmStructureBaseNode.execute(state, stubContext);
-  await kmStructureMechanicsNode.execute(state, stubContext);
-  await finalizeKmStructureNode.execute(state, stubContext);
-  return state.output as KmStructureOutput;
+  await kmStructureBaseNode.execute(Batch.of(state), stubContext);
+  await kmStructureMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeKmStructureNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<KmStructureOutput>(state.output);
 }
 
 describe('extract:km-structure-base — km-structure-academy', () => {
   it('produces _type, name, structure_id', async () => {
     const state = await primeState();
-    const r = await kmStructureBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await kmStructureBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmStructureOutput;
+    const out = ParsedOutput.as<KmStructureOutput>(state.output);
     assert.equal(out.name, 'Academy');
     assert.equal(out.structure_id, 1);
     assert.ok(Array.isArray(out.traits), 'traits is array');
@@ -43,19 +45,19 @@ describe('extract:km-structure-base — km-structure-academy', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmStructureBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmStructureBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:km-structure-mechanics — km-structure-academy', () => {
   it('produces lots, cost_raw, and upgrade fields', async () => {
     const state = await primeState();
-    await kmStructureBaseNode.execute(state, stubContext);
-    const r = await kmStructureMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await kmStructureBaseNode.execute(Batch.of(state), stubContext);
+    const result = await kmStructureMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as KmStructureOutput;
+    const out = ParsedOutput.as<KmStructureOutput>(state.output);
     // Academy should have Lots defined
     assert.ok('lots' in out, 'lots field present');
     assert.ok('cost_raw' in out, 'cost_raw field present');
@@ -68,8 +70,8 @@ describe('extract:km-structure-mechanics — km-structure-academy', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await kmStructureMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await kmStructureMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -95,7 +97,7 @@ describe('finalize:km-structure — km-structure-academy', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL);
-    const r = await finalizeKmStructureNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeKmStructureNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

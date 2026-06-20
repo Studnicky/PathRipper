@@ -5,15 +5,14 @@
  * Recomputes from all slice helpers so the full picture of claimed labels is available
  * at strip time. Node: finalize:spell
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import {
-  CAPABILITY_OUTPUTS,
   stripStructuredKeys,
   extractMetaDescription,
   extractMetaKeywords,
@@ -29,12 +28,6 @@ import type {
   SpellHeightenedSlice,
   SpellMetaSlice,
 } from './types.js';
-import { extractSpellBase } from './base.js';
-import { extractSpellCast } from './cast.js';
-import { extractSpellOutcomes } from './outcomes.js';
-import { extractSpellAffliction } from './affliction.js';
-import { extractSpellHeightened } from './heightened.js';
-import { extractSpellMeta } from './meta.js';
 
 /**
  * AON labels every per-slice helper has lifted into structured fields.
@@ -67,24 +60,24 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * absorbed by the heightened slice. Attaches body-derived links + meta tags.
  */
 export function finalizeSpell(
-  c:          CommonExtraction,
+  common:     CommonExtraction,
   base:       SpellBaseSlice,
   cast:       SpellCastSlice,
   outcomes:   SpellOutcomesSlice,
   affliction: SpellAfflictionSlice,
   heightened: SpellHeightenedSlice,
   meta:       SpellMetaSlice,
-  $:          CheerioAPI,
+  root:       CheerioAPI,
   _span:      CheerioNode,
 ): SpellOutput {
   // Heightened field-map keys appear as `Heightened (5th)`, `Heightened (+2)`,
   // etc. — capture every key that begins with "Heightened" for stripping.
   const heightenedKeys: string[] = [];
-  for (const key of Object.keys(c.field_map)) {
+  for (const key of Object.keys(common.field_map)) {
     if (/^heightened\b/i.test(key)) heightenedKeys.push(key);
   }
 
-  const raw_fields = stripStructuredKeys(c.field_map, [
+  const raw_fields = stripStructuredKeys(common.field_map, [
     ...CLAIMED_FIELD_LABELS,
     ...heightenedKeys,
   ]);
@@ -97,34 +90,36 @@ export function finalizeSpell(
     ...heightened,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies SpellOutput;
 }
 
 export type FinalizeSpellOutput = 'success';
 
-export const finalizeSpellNode: NodeInterface<ScrapeState, FinalizeSpellOutput, RipperServices> = {
-  name:    'finalize:spell',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeSpellNode extends ScalarNode<ScrapeState, FinalizeSpellOutput> {
+  public readonly name    = 'finalize:spell';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSpellOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSpellOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as SpellOutput;
-    const assembled = finalizeSpell(c, acc, acc, acc, acc, acc, acc, $, target);
+    const assembled = finalizeSpell(common, acc, acc, acc, acc, acc, acc, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeSpellNode = new FinalizeSpellNode();

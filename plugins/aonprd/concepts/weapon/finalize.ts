@@ -1,16 +1,15 @@
 /**
  * Weapon finalization — assemble final output and node interface.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { extractMetaDescription, extractMetaKeywords, extractPfsNote, stripStructuredKeys } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
-import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { WeaponOutput, WeaponBaseSlice, WeaponMechanicsSlice, WeaponMetaSlice } from './types.js';
 import { extractWeaponMeta } from './meta.js';
 
@@ -24,54 +23,56 @@ const WEAPON_CLAIMED_LABELS: ReadonlyArray<string> = [
 
 /** Assemble a WeaponOutput from per-slice results, stripping claimed labels from raw_fields. */
 export function finalizeWeapon(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      WeaponBaseSlice,
   mechanics: WeaponMechanicsSlice,
   meta:      WeaponMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): WeaponOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, WEAPON_CLAIMED_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, WEAPON_CLAIMED_LABELS);
   return {
     ...base,
     ...mechanics,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies WeaponOutput;
 }
 
 export type FinalizeWeaponOutput = 'success';
 
-export const finalizeWeaponNode: NodeInterface<ScrapeState, FinalizeWeaponOutput, RipperServices> = {
-  name:    'finalize:weapon',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeWeaponNode extends ScalarNode<ScrapeState, FinalizeWeaponOutput> {
+  public readonly name = 'finalize:weapon';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeWeaponOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeWeaponOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as WeaponOutput;
-    const meta = extractWeaponMeta(c, $, target);
-    const pfs_note = extractPfsNote($, target);
-    const assembled = finalizeWeapon(c, acc, acc, meta, $);
+    const meta = extractWeaponMeta(common, root, target);
+    const pfs_note = extractPfsNote(root, target);
+    const assembled = finalizeWeapon(common, acc, acc, meta, root);
     setConceptOutput(state, {
       ...assembled,
       pfs_note,
-      links: c.links,
-      meta_description: extractMetaDescription($),
-      meta_keywords:    extractMetaKeywords($),
+      links: common.links,
+      meta_description: extractMetaDescription(root),
+      meta_keywords:    extractMetaKeywords(root),
     } satisfies WeaponOutput);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeWeaponNode = new FinalizeWeaponNode();

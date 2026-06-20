@@ -3,19 +3,18 @@
 // Uses the compiled AONPRD taxonomy to dispatch concept-specific capability
 // chains. Returns `state.output`; falls back to `{ url }` when the URL does
 // not match any concept and no fallback concept is configured.
-import type { NodeContextInterface } from '@noocodex/dagonizer';
+import { Batch } from '@studnicky/dagonizer';
+import type { NodeContextType } from '@studnicky/dagonizer';
 
 import { ScrapeState }  from '../../src/state/ScrapeState.js';
 import { TAXONOMY }     from './taxonomy/aonprd.js';
-import type { RipperServices } from '../../src/services/RipperServices.js';
 
-// Minimal NodeContextInterface — direct-call invokers don't have a dispatcher,
+// Minimal NodeContextType — direct-call invokers don't have a dispatcher,
 // so we synthesise the context shape the nodes receive when dispatched. The
 // node base reads `services`, `signal`, `dagName`, `nodeName` from context;
-// `services` is the only field nodes actively use in the AONPRD plugin (and
-// even then, only a handful do).
-const STUB_CONTEXT: NodeContextInterface<RipperServices> = {
-  services: {} as RipperServices,
+// AONPRD capability nodes do not use services (TServices = undefined).
+const STUB_CONTEXT: NodeContextType<undefined> = {
+  services: undefined,
   signal:   new AbortController().signal,
   dagName:  'aonprd:parse:direct',
   nodeName: 'aonprd:parse:direct',
@@ -39,7 +38,7 @@ export async function parseAonHtmlTaxonomic(html: string, url: string): Promise<
 
   const chain = TAXONOMY.chainFor(conceptId);
   for (const node of chain) {
-    await node.execute(state, STUB_CONTEXT);
+    await node.execute(Batch.of(state), STUB_CONTEXT);
   }
 
   const output = state.output;

@@ -39,13 +39,13 @@ describe('_test_secondary plugin — strategy reuse', () => {
     assert.equal(out.name,  'Sample Article');
 
     // ── H16 — SectionWalkerStrategy: bare `<h2>` / `<h3>` headings recognised
-    const sectionHeadings = out.sections.map((s) => s.heading);
+    const sectionHeadings = out.sections.map((sec) => sec.heading);
     assert.deepEqual(
       sectionHeadings,
       ['Overview', 'Background', 'Details'],
       'secondary strategy should walk plain h2/h3 headings without the AON .title class',
     );
-    const levels = out.sections.map((s) => s.level);
+    const levels = out.sections.map((sec) => sec.level);
     assert.deepEqual(levels, [2, 3, 2], 'heading levels should be preserved by the strategy');
 
     // ── H15 — SourceRefStrategy: `<div class="citation">` blocks recognised

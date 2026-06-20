@@ -1,12 +1,12 @@
 //
 // Vehicles.aspx pages document piloted transports with body-resident stat-block
 // fields, piloting checks, and operator action definitions.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -168,8 +168,8 @@ const DASH_RE = /^(?:—|–|-|&mdash;|&ndash;)$/;
 
 function isDash(value: string | null | undefined): boolean {
   if (value === null || value === undefined) return false;
-  const t = value.trim();
-  return t === '' || DASH_RE.test(t);
+  const trimmed = value.trim();
+  return trimmed === '' || DASH_RE.test(trimmed);
 }
 
 function dashToNull(value: string | null): string | null {
@@ -190,16 +190,16 @@ function parsePilotingChecks(raw: string | null): VehiclePilotingCheck[] {
   // Split on commas and ' or ' boundaries at depth 0.
   const normalized = raw.replace(/\s+or\s+/gi, ', ');
   for (const part of splitTopLevel(normalized, ',')) {
-    const m = /^(.*?)\s*\(\s*DC\s+(\d+)\s*\)\s*$/i.exec(part.trim());
-    if (m === null) {
+    const match = /^(.*?)\s*\(\s*DC\s+(\d+)\s*\)\s*$/i.exec(part.trim());
+    if (match === null) {
       const skill = part.trim();
       if (skill !== '') out.push({ skill, dc: null });
       continue;
     }
-    const skill = (m[1] ?? '').trim();
-    const dc    = parseInt(m[2]!, 10);
+    const skill   = (match[1] ?? '').trim();
+    const dcValue = parseInt(match[2]!, 10);
     if (skill === '') continue;
-    out.push({ skill, dc: Number.isFinite(dc) ? dc : null });
+    out.push({ skill, dc: Number.isFinite(dcValue) ? dcValue : null });
   }
   return out;
 }
@@ -210,14 +210,14 @@ function parsePilotingChecks(raw: string | null): VehiclePilotingCheck[] {
  */
 function parseHpBt(raw: string | null): { hp: number | null; broken_threshold: number | null } {
   if (raw === null || isDash(raw)) return { hp: null, broken_threshold: null };
-  const t = raw.trim();
-  const m = /^(-?\d+)(?:\s*\(\s*BT\s+(-?\d+)\s*\))?/i.exec(t);
-  if (m === null) return { hp: null, broken_threshold: null };
-  const hp = parseInt(m[1]!, 10);
-  const bt = m[2] !== undefined ? parseInt(m[2], 10) : null;
+  const trimmed = raw.trim();
+  const match = /^(-?\d+)(?:\s*\(\s*BT\s+(-?\d+)\s*\))?/i.exec(trimmed);
+  if (match === null) return { hp: null, broken_threshold: null };
+  const hpNum = parseInt(match[1]!, 10);
+  const btNum = match[2] !== undefined ? parseInt(match[2], 10) : null;
   return {
-    hp:               Number.isFinite(hp) ? hp : null,
-    broken_threshold: bt !== null && Number.isFinite(bt) ? bt : null,
+    hp:               Number.isFinite(hpNum) ? hpNum : null,
+    broken_threshold: btNum !== null && Number.isFinite(btNum) ? btNum : null,
   };
 }
 
@@ -234,18 +234,18 @@ const ACTION_GLYPH_RE = /<span\s+class=['"]action['"][^>]*>([\s\S]*?)<\/span>/i;
 function parseOperatorActions(bodyHtml: string): VehicleOperatorAction[] {
   const out: VehicleOperatorAction[] = [];
   const labelRe = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<h[1-3]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = labelRe.exec(bodyHtml)) !== null) {
-    const name = (m[1] ?? '').replace(/:$/, '').trim();
+  let match: RegExpExecArray | null;
+  while ((match = labelRe.exec(bodyHtml)) !== null) {
+    const name = (match[1] ?? '').replace(/:$/, '').trim();
     if (name === '') continue;
     if (STAT_BLOCK_LABELS.has(name.toLowerCase())) continue;
-    const valueHtml = m[2] ?? '';
+    const valueHtml = match[2] ?? '';
     const glyphMatch = ACTION_GLYPH_RE.exec(valueHtml);
     let action_cost: string | null = null;
     if (glyphMatch !== null) {
       const inner = glyphMatch[1] ?? '';
-      const lm = /\[([a-z-]+)\]/i.exec(inner);
-      if (lm !== null) action_cost = (lm[1] ?? '').toLowerCase();
+      const lastMatch = /\[([a-z-]+)\]/i.exec(inner);
+      if (lastMatch !== null) action_cost = (lastMatch[1] ?? '').toLowerCase();
     }
     const text = htmlToText(valueHtml);
     if (text === '') continue;
@@ -272,11 +272,11 @@ const STAT_BLOCK_LABELS: ReadonlySet<string> = new Set([
  */
 function harvestBodyFields(bodyHtml: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<hr|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(bodyHtml)) !== null) {
-    const labelRaw = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|<hr|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(bodyHtml)) !== null) {
+    const labelRaw = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = labelRaw.replace(/:$/, '').trim();
     if (label === '') continue;
     if (/^source$/i.test(label)) continue;
@@ -290,11 +290,11 @@ function harvestBodyFields(bodyHtml: string): Map<string, string> {
 
 /** Read a label from `field_map` first, falling back to a body-fields map. */
 function readField(
-  c: CommonExtraction,
+  common: CommonExtraction,
   bodyFields: Map<string, string>,
   label: string,
 ): string | null {
-  const fromHead = getField(c, label);
+  const fromHead = getField(common, label);
   if (fromHead !== null) return fromHead;
   return bodyFields.get(label.toLowerCase()) ?? null;
 }
@@ -321,60 +321,60 @@ function buildDescription(bodyHtml: string): { html: string; text: string; tail:
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a vehicle page. */
-export function extractVehicleBase(c: CommonExtraction): VehicleBaseSlice {
+export function extractVehicleBase(common: CommonExtraction): VehicleBaseSlice {
   return {
-    url:             c.url,
-    vehicle_id:      extractEntityId(c.url),
-    name:            c.title.name,
-    level:           c.title.level,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    vehicle_id:      extractEntityId(common.url),
+    name:            common.title.name,
+    level:           common.title.level,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract mechanical stat-block fields (defense, movement, crew, piloting).
  *  Vehicle pages keep most labels in the body HTML rather than the header
  *  `field_map`, so we harvest body fields as a fallback. */
-export function extractVehicleMechanics(c: CommonExtraction): VehicleMechanicsSlice {
-  const bodyFields = harvestBodyFields(c.body_html);
-  const hpBt = parseHpBt(readField(c, bodyFields, 'HP'));
+export function extractVehicleMechanics(common: CommonExtraction): VehicleMechanicsSlice {
+  const bodyFields = harvestBodyFields(common.body_html);
+  const hpBt = parseHpBt(readField(common, bodyFields, 'HP'));
   return {
-    price:            dashToNull(readField(c, bodyFields, 'Price')),
-    space:            dashToNull(readField(c, bodyFields, 'Space')),
-    crew:             dashToNull(readField(c, bodyFields, 'Crew')),
-    passengers:       dashToNull(readField(c, bodyFields, 'Passengers')),
-    piloting_checks:  parsePilotingChecks(readField(c, bodyFields, 'Piloting Check')),
-    ac:               asInt(dashToNull(readField(c, bodyFields, 'AC'))),
-    fort:             asInt(dashToNull(readField(c, bodyFields, 'Fort'))),
-    ref:              asInt(dashToNull(readField(c, bodyFields, 'Ref'))),
-    hardness:         asInt(dashToNull(readField(c, bodyFields, 'Hardness'))),
+    price:            dashToNull(readField(common, bodyFields, 'Price')),
+    space:            dashToNull(readField(common, bodyFields, 'Space')),
+    crew:             dashToNull(readField(common, bodyFields, 'Crew')),
+    passengers:       dashToNull(readField(common, bodyFields, 'Passengers')),
+    piloting_checks:  parsePilotingChecks(readField(common, bodyFields, 'Piloting Check')),
+    ac:               asInt(dashToNull(readField(common, bodyFields, 'AC'))),
+    fort:             asInt(dashToNull(readField(common, bodyFields, 'Fort'))),
+    ref:              asInt(dashToNull(readField(common, bodyFields, 'Ref'))),
+    hardness:         asInt(dashToNull(readField(common, bodyFields, 'Hardness'))),
     hp:               hpBt.hp,
     broken_threshold: hpBt.broken_threshold,
-    immunities:       dashToNull(readField(c, bodyFields, 'Immunities')),
-    weaknesses:       dashToNull(readField(c, bodyFields, 'Weaknesses')),
-    speed:            dashToNull(readField(c, bodyFields, 'Speed')),
-    collision:        dashToNull(readField(c, bodyFields, 'Collision')),
+    immunities:       dashToNull(readField(common, bodyFields, 'Immunities')),
+    weaknesses:       dashToNull(readField(common, bodyFields, 'Weaknesses')),
+    speed:            dashToNull(readField(common, bodyFields, 'Speed')),
+    collision:        dashToNull(readField(common, bodyFields, 'Collision')),
   };
 }
 
 /** Extract operator actions and the description prose. */
-export function extractVehicleOperation(c: CommonExtraction): VehicleOperationSlice {
-  const desc = buildDescription(c.body_html);
+export function extractVehicleOperation(common: CommonExtraction): VehicleOperationSlice {
+  const desc = buildDescription(common.body_html);
   return {
-    operator_actions: parseOperatorActions(c.body_html),
+    operator_actions: parseOperatorActions(common.body_html),
     description_html: desc.html,
     description_text: desc.text,
   };
 }
 
 /** Extract vehicle meta slice marker. */
-export function extractVehicleMeta(_c: CommonExtraction): VehicleMetaSlice {
+export function extractVehicleMeta(_common: CommonExtraction): VehicleMetaSlice {
   return { __vehicle_meta_marked: true };
 }
 
@@ -389,26 +389,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeVehicle(
-  c:          CommonExtraction,
+  common:     CommonExtraction,
   base:       VehicleBaseSlice,
   mechanics:  VehicleMechanicsSlice,
   operation:  VehicleOperationSlice,
   _meta:      VehicleMetaSlice,
-  $:          CheerioAPI,
+  root:       CheerioAPI,
 ): VehicleOutput {
   void _meta;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...mechanics,
     ...operation,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies VehicleOutput;
 }
 
@@ -420,16 +420,16 @@ export function finalizeVehicle(
  * the decomposed vehicle extraction nodes.
  */
 export function extractVehicle(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   _span:  CheerioNode,
 ): VehicleOutput {
   void _span;
-  const base      = extractVehicleBase(c);
-  const mechanics = extractVehicleMechanics(c);
-  const operation = extractVehicleOperation(c);
-  const meta      = extractVehicleMeta(c);
-  return finalizeVehicle(c, base, mechanics, operation, meta, $);
+  const base      = extractVehicleBase(common);
+  const mechanics = extractVehicleMechanics(common);
+  const operation = extractVehicleOperation(common);
+  const meta      = extractVehicleMeta(common);
+  return finalizeVehicle(common, base, mechanics, operation, meta, root);
 }
 
 // Re-export output types so tests can import from here.
@@ -437,84 +437,87 @@ export function extractVehicle(
 
 export type VehicleBaseOutput = 'success' | 'error';
 
-export const vehicleBaseNode: NodeInterface<ScrapeState, VehicleBaseOutput, RipperServices> = {
-  name:    'extract:vehicle-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class VehicleBaseNodeImpl extends ScalarNode<ScrapeState, VehicleBaseOutput> {
+  public readonly name = 'extract:vehicle-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: VehicleBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<VehicleBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractVehicleBase(c);
+    const base = extractVehicleBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const vehicleBaseNode = new VehicleBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type VehicleMechanicsOutput = 'success' | 'error';
 
-export const vehicleMechanicsNode: NodeInterface<ScrapeState, VehicleMechanicsOutput, RipperServices> = {
-  name:    'extract:vehicle-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class VehicleMechanicsNodeImpl extends ScalarNode<ScrapeState, VehicleMechanicsOutput> {
+  public readonly name = 'extract:vehicle-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: VehicleMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<VehicleMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mechanics = extractVehicleMechanics(c);
+    const mechanics = extractVehicleMechanics(common);
 
     state.output = { ...state.output, ...mechanics };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const vehicleMechanicsNode = new VehicleMechanicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeVehicleOutput = 'success';
 
-export const finalizeVehicleNode: NodeInterface<ScrapeState, FinalizeVehicleOutput, RipperServices> = {
-  name:    'finalize:vehicle',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeVehicleNodeImpl extends ScalarNode<ScrapeState, FinalizeVehicleOutput> {
+  public readonly name = 'finalize:vehicle';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeVehicleOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeVehicleOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as VehicleOutput;
-    const operation = extractVehicleOperation(c);
-    const meta      = extractVehicleMeta(c);
-    const assembled = finalizeVehicle(c, acc, acc, operation, meta, $);
+    const operation = extractVehicleOperation(common);
+    const meta      = extractVehicleMeta(common);
+    const assembled = finalizeVehicle(common, acc, acc, operation, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeVehicleNode = new FinalizeVehicleNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

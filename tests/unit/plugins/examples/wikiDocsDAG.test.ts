@@ -4,7 +4,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { wikiDocsParseNode, wikiDocsParseFlow as wikiDocsParseDAG } from '../../../../examples/wiki-docs/plugin.js';
@@ -41,9 +41,10 @@ describe('wiki-docs wrapper DAG (Flavor 2 universal)', () => {
     assert.equal(wikiDocsParseNode.name, 'wiki-docs:parse-impl');
   });
 
-  it('DAG has exactly one node placement', () => {
-    assert.equal(wikiDocsParseDAG.nodes.length, 1);
+  it('DAG has exactly one SingleNode placement and one TerminalNode', () => {
+    assert.equal(wikiDocsParseDAG.nodes.length, 2);
     assert.equal(wikiDocsParseDAG.nodes[0]?.['@type'], 'SingleNode');
+    assert.equal(wikiDocsParseDAG.nodes[1]?.['@type'], 'TerminalNode');
   });
 
   it('dispatching wiki-docs:parse parses the RipperoniComponent template', async () => {

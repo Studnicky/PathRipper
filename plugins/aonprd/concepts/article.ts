@@ -1,14 +1,13 @@
 //
 // Article pages are prose-only entries; no structured improvements warranted
 // beyond legacy-section filtering.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
-import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -88,30 +87,30 @@ export interface ArticleMetaSlice {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for an article page. */
-export function extractArticleBase(c: CommonExtraction): ArticleBaseSlice {
+export function extractArticleBase(common: CommonExtraction): ArticleBaseSlice {
   return {
-    url:             c.url,
-    article_id:      extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    article_id:      extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract the article description (body prose after the Source line). */
-export function extractArticleContent(c: CommonExtraction): ArticleContentSlice {
-  const text = c.body_text.trim();
+export function extractArticleContent(common: CommonExtraction): ArticleContentSlice {
+  const text = common.body_text.trim();
   return { description: text === '' ? null : text };
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractArticleMeta(_c: CommonExtraction): ArticleMetaSlice {
+export function extractArticleMeta(_common: CommonExtraction): ArticleMetaSlice {
   return { __article_meta_marked: true };
 }
 
@@ -128,26 +127,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeArticle(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     ArticleBaseSlice,
   content:  ArticleContentSlice,
   _meta:    ArticleMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   _target:  CheerioNode,
 ): ArticleOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     description:      content.description,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ArticleOutput;
 }
 
@@ -159,14 +158,14 @@ export function finalizeArticle(
  * the decomposed article extraction nodes.
  */
 export function extractArticle(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: CheerioNode,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  CheerioNode,
 ): ArticleOutput {
-  const base    = extractArticleBase(c);
-  const content = extractArticleContent(c);
-  const meta    = extractArticleMeta(c);
-  return finalizeArticle(c, base, content, meta, $, target);
+  const base    = extractArticleBase(common);
+  const content = extractArticleContent(common);
+  const meta    = extractArticleMeta(common);
+  return finalizeArticle(common, base, content, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -178,57 +177,58 @@ export function extractArticle(
 
 export type ArticleBaseOutput = 'success' | 'error';
 
-export const articleBaseNode: NodeInterface<ScrapeState, ArticleBaseOutput, RipperServices> = {
-  name:    'extract:article-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class ArticleBaseNodeImpl extends ScalarNode<ScrapeState, ArticleBaseOutput> {
+  public readonly name    = 'extract:article-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArticleBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArticleBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base    = extractArticleBase(c);
-    const content = extractArticleContent(c);
+    const base    = extractArticleBase(common);
+    const content = extractArticleContent(common);
 
     state.output = state.output !== null
       ? { ...state.output, ...base, ...content }
       : { ...base, ...content };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const articleBaseNode = new ArticleBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeArticleOutput = 'success';
 
-export const finalizeArticleNode: NodeInterface<ScrapeState, FinalizeArticleOutput, RipperServices> = {
-  name:    'finalize:article',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeArticleNodeImpl extends ScalarNode<ScrapeState, FinalizeArticleOutput> {
+  public readonly name    = 'finalize:article';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeArticleOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeArticleOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     state.output = state.output !== null
       ? {
@@ -236,8 +236,8 @@ export const finalizeArticleNode: NodeInterface<ScrapeState, FinalizeArticleOutp
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       }
@@ -245,15 +245,16 @@ export const finalizeArticleNode: NodeInterface<ScrapeState, FinalizeArticleOutp
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeArticleNode = new FinalizeArticleNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

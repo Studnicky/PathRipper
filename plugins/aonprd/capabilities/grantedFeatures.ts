@@ -7,7 +7,6 @@
 // and project them into feature entries.
 
 import type { Section } from './strategy.js';
-import { htmlToText } from '../common.js';
 
 /** A granted feature with name and description. */
 export interface GrantedFeature {
@@ -50,29 +49,26 @@ export function parseGrantedFeatures(
 ): GrantedFeature[] {
   const out: GrantedFeature[] = [];
   const levels = options?.levels ?? [2] as const;
-  const excludeSet = new Set((options?.excludeLabels ?? []).map((l) => l.toLowerCase()));
+  const excludeSet = new Set((options?.excludeLabels ?? []).map((label) => label.toLowerCase()));
   const predicate = options?.predicate;
 
-  for (const s of sections) {
+  for (const section of sections) {
     // Apply custom predicate if provided, otherwise use level filter.
-    let include = false;
-    if (predicate !== undefined) {
-      include = predicate(s);
-    } else {
-      include = (levels as readonly (2 | 3)[]).includes(s.level);
-    }
+    const include = predicate !== undefined
+      ? predicate(section)
+      : (levels as readonly (2 | 3)[]).includes(section.level);
     if (!include) continue;
 
     // Skip if the heading matches an excluded label.
-    const lc = s.heading.toLowerCase();
-    if (excludeSet.has(lc)) continue;
+    const headingLower = section.heading.toLowerCase();
+    if (excludeSet.has(headingLower)) continue;
 
     // Skip if body text is empty.
-    const description = s.body_text.trim();
+    const description = section.body_text.trim();
     if (description === '') continue;
 
     out.push({
-      name: s.heading,
+      name: section.heading,
       description,
     });
   }

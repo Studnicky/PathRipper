@@ -30,21 +30,16 @@ describe('detectPageType — new URL patterns', () => {
 // ─── MonsterFamily extractor ─────────────────────────────────────────────────
 
 describe('extractMonsterFamily — Elemental Metal family', () => {
-  it('returns _type monster-family', async () => {
-    const html = await loadFixture('monster-family-elemental-metal.html');
-    const out  = await parseAonHtml(html, 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343');
-  });
-
   it('extracts the correct name', async () => {
     const html = await loadFixture('monster-family-elemental-metal.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343');
-    assert.equal(out.name, 'Elemental, Metal');
+    assert.equal((out as unknown as { name: string }).name, 'Elemental, Metal');
   });
 
   it('extracts monster_family_id from URL', async () => {
     const html = await loadFixture('monster-family-elemental-metal.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343');
-    assert.equal(out.monster_family_id, 343);
+    assert.equal((out as unknown as { monster_family_id: number }).monster_family_id, 343);
   });
 
   it('extracts at least one member', async () => {
@@ -66,35 +61,30 @@ describe('extractMonsterFamily — Elemental Metal family', () => {
   it('extracts source', async () => {
     const html = await loadFixture('monster-family-elemental-metal.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343');
-    assert.ok(out.source.book !== null, 'source.book should be populated');
+    assert.ok((out as unknown as { source: { book: string | null } }).source.book !== null, 'source.book should be populated');
   });
 });
 
 // ─── Rule extractor ───────────────────────────────────────────────────────────
 
 describe('extractRule — Alchemy Unleashed rule page', () => {
-  it('returns _type rule', async () => {
-    const html = await loadFixture('rule-alchemy-unleashed.html');
-    const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-  });
-
   it('extracts the correct rule name', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-    assert.equal(out.name, 'Alchemy Unleashed');
+    assert.equal((out as unknown as { name: string }).name, 'Alchemy Unleashed');
   });
 
   it('extracts rule_id from URL', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-    assert.equal(out.rule_id, 3589);
+    assert.equal((out as unknown as { rule_id: number }).rule_id, 3589);
   });
 
   it('extracts source from div.sources', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-    assert.equal(out.source.book, 'Treasure Vault');
-    assert.equal(out.source.page, 41);
+    assert.equal((out as unknown as { source: { book: string | null; page: number | null } }).source.book, 'Treasure Vault');
+    assert.equal((out as unknown as { source: { book: string | null; page: number | null } }).source.page, 41);
   });
 
   it('extracts child_rules', async () => {
@@ -108,22 +98,17 @@ describe('extractRule — Alchemy Unleashed rule page', () => {
   it('has body_text with rule prose', async () => {
     const html = await loadFixture('rule-alchemy-unleashed.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/Rules.aspx?ID=3589&NoRedirect=1');
-    assert.ok((out.body_text?.length ?? 0) > 50, 'rule should have prose body_text');
+    assert.ok(((out as unknown as { body_text?: string }).body_text?.length ?? 0) > 50, 'rule should have prose body_text');
   });
 });
 
 // ─── NPC routing as monster ───────────────────────────────────────────────────
 
 describe('NPCs.aspx routed to monster extractor', () => {
-  it('returns _type monster for NPCs.aspx URL', async () => {
-    const html = await loadFixture('npc-advisor.html');
-    const out  = await parseAonHtml(html, 'https://2e.aonprd.com/NPCs.aspx?ID=3420');
-  });
-
   it('extracts name correctly', async () => {
     const html = await loadFixture('npc-advisor.html');
     const out  = await parseAonHtml(html, 'https://2e.aonprd.com/NPCs.aspx?ID=3420');
-    assert.equal(out.name, 'Advisor');
+    assert.equal((out as unknown as { name: string }).name, 'Advisor');
   });
 
   it('extracts creature level', async () => {

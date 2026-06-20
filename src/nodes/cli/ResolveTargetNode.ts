@@ -1,8 +1,10 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { CliState }    from '../../state/CliState.js';
 import type { CliServices } from './Services.js';
+
+type ResolveTargetOutput = 'html' | 'wiki' | 'not-found';
 
 /**
  * Resolves `state.targetId` against the loaded config.
@@ -22,21 +24,21 @@ import type { CliServices } from './Services.js';
  * @category Nodes
  * @since 3.1.0
  */
-export const ResolveTargetNode: NodeInterface<CliState, 'html' | 'wiki' | 'not-found', CliServices> = {
-  name:    'cli:resolve-target',
-  outputs: ['html', 'wiki', 'not-found'],
+class ResolveTargetNodeImpl extends ScalarNode<CliState, ResolveTargetOutput, CliServices> {
+  public readonly name = 'cli:resolve-target';
+  public readonly outputs = ['html', 'wiki', 'not-found'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'html' | 'wiki' | 'not-found' }> {
+    context: NodeContextType<CliServices>,
+  ): Promise<NodeOutputType<ResolveTargetOutput>> {
     const log = context.services.log;
     const config = state.config;
 
     if (config === null) {
       state.errorMessage = 'ResolveTargetNode: config is null — LoadConfigNode must run first';
       log.error('ResolveTargetNode', state.errorMessage);
-      return { output: 'not-found' };
+      return NodeOutputBuilder.of('not-found');
     }
 
     const inTargets  = config.targets?.[state.targetId] !== undefined;
@@ -48,47 +50,41 @@ export const ResolveTargetNode: NodeInterface<CliState, 'html' | 'wiki' | 'not-f
       if (!inTargets) {
         state.errorMessage = `Unknown target: ${state.targetId}`;
         log.error('ResolveTargetNode', state.errorMessage);
-        return { output: 'not-found' };
+        return NodeOutputBuilder.of('not-found');
       }
       state.targetKind = 'html';
       log.debug('ResolveTargetNode', `Target "${state.targetId}" resolved as html (scrape-html)`);
-      return { output: 'html' };
+      return NodeOutputBuilder.of('html');
     }
 
     if (state.command === 'scrape-wiki') {
       if (!inWiki) {
         state.errorMessage = `Unknown mediawiki target: ${state.targetId}`;
         log.error('ResolveTargetNode', state.errorMessage);
-        return { output: 'not-found' };
+        return NodeOutputBuilder.of('not-found');
       }
       state.targetKind = 'wiki';
       log.debug('ResolveTargetNode', `Target "${state.targetId}" resolved as wiki (scrape-wiki)`);
-      return { output: 'wiki' };
+      return NodeOutputBuilder.of('wiki');
     }
 
     // Generic 'scrape' command: check targets first, then mediawiki.
     if (inTargets) {
       state.targetKind = 'html';
       log.debug('ResolveTargetNode', `Target "${state.targetId}" resolved as html`);
-      return { output: 'html' };
+      return NodeOutputBuilder.of('html');
     }
 
     if (inWiki) {
       state.targetKind = 'wiki';
       log.debug('ResolveTargetNode', `Target "${state.targetId}" resolved as wiki`);
-      return { output: 'wiki' };
+      return NodeOutputBuilder.of('wiki');
     }
 
     state.errorMessage = `Unknown target: ${state.targetId}`;
     log.error('ResolveTargetNode', state.errorMessage);
-    return { output: 'not-found' };
-  },
-};
+    return NodeOutputBuilder.of('not-found');
+  }
+}
 
-/** OperationContract for ResolveTargetNode: reads config + targetId, produces targetKind. */
-export const resolveTargetContract: OperationContract = {
-  name:         'cli:resolve-target',
-  hardRequired: ['config', 'targetId'],
-  produces:     ['targetKind'],
-  outputs:      ['html', 'wiki', 'not-found'],
-};
+export const ResolveTargetNode = new ResolveTargetNodeImpl();

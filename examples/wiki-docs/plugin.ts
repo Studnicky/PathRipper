@@ -8,9 +8,9 @@
 
 import wtf from 'wtf_wikipedia';
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { NodeInterface, NodeContextInterface, DAG } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType }           from '@studnicky/dagonizer/contracts';
 
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
@@ -33,14 +33,18 @@ interface RawPageOutput {
   readonly wikitext: string;
 }
 
-export const wikiDocsParseNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name:    'wiki-docs:parse-impl',
-  outputs: ['success'],
+class WikiDocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
+  public readonly name    = 'wiki-docs:parse-impl';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['page.wikitext'],
+    produces:     [] as const,
+  };
 
-  async execute(
-    state:   ScrapeState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' }> {
+  protected override async executeOne(
+    state:    ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success'>> {
     const wikitext = state.page.wikitext ?? '';
     const title    = state.page.title;
 
@@ -60,7 +64,7 @@ export const wikiDocsParseNode: NodeInterface<ScrapeState, 'success', RipperServ
             source:      data['source']      ?? '',
           };
           state.output = output as unknown as Record<string, unknown>;
-          return { output: 'success' };
+          return NodeOutputBuilder.of('success');
         }
       }
     }
@@ -68,9 +72,11 @@ export const wikiDocsParseNode: NodeInterface<ScrapeState, 'success', RipperServ
     // No recognized template — return raw page output.
     const fallback: RawPageOutput = { _type: 'raw_page', title, wikitext };
     state.output = fallback as unknown as Record<string, unknown>;
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const wikiDocsParseNode = new WikiDocsParseNodeImpl();
 
 /**
  * Contract-derived wiki-docs parse DAG.
@@ -78,27 +84,11 @@ export const wikiDocsParseNode: NodeInterface<ScrapeState, 'success', RipperServ
  * @category Flows
  * @since 4.0.0
  */
-export const wikiDocsParseFlow: DAG = DAGDeriver.derive({
-  name:       'wiki-docs:parse',
-  version:    '2.0',
-  entrypoint: 'wiki-docs:parse-impl',
-  contracts: [
-    { name: 'wiki-docs:parse-impl', hardRequired: ['page.wikitext'], produces: ['output'], outputs: ['success'] },
-  ],
-  annotations: {
-    terminals: {
-      'wiki-docs:parse-impl': [{ outcome: 'success', target: null }],
-    },
-  },
-});
-
-/** OperationContract for wikiDocsParseNode: reads page.wikitext, produces output. */
-export const wikiDocsParseContract: OperationContract = {
-  name:         'wiki-docs:parse-impl',
-  hardRequired: ['page.wikitext'],
-  produces:     ['output'],
-  outputs:      ['success'],
-};
+export const wikiDocsParseFlow: DAGType = new DAGBuilder('wiki-docs:parse', '2.0')
+  .entrypoint('wiki-docs:parse-impl')
+  .node('wiki-docs:parse-impl', wikiDocsParseNode, { success: 'wiki-docs:parse:done' })
+  .terminal('wiki-docs:parse:done', { outcome: 'completed' })
+  .build();
 
 // ── Plugin contract ────────────────────────────────────────────────────────────
 

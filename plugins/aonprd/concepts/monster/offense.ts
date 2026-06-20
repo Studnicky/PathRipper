@@ -3,12 +3,12 @@
  *
  * Exports: extractMonsterOffense, monsterOffenseNode.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import type { MonsterOffenseSlice } from './types.js';
@@ -16,34 +16,36 @@ import { parseStatblockOffense } from '../../capabilities/statblockOffense.js';
 import { splitBodySections } from './defenses.js';
 
 /** Extract offensive slice (speed, strikes, spell lists). */
-export function extractMonsterOffense(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): MonsterOffenseSlice {
-  const { offense: offenseHtml } = splitBodySections(c.body_html);
-  return parseStatblockOffense(offenseHtml, c);
+export function extractMonsterOffense(common: CommonExtraction, _root: CheerioAPI, _span: CheerioNode): MonsterOffenseSlice {
+  const { offense: offenseHtml } = splitBodySections(common.body_html);
+  return parseStatblockOffense(offenseHtml, common);
 }
 
 export type MonsterOffenseOutput = 'success' | 'error';
 
-export const monsterOffenseNode: NodeInterface<ScrapeState, MonsterOffenseOutput, RipperServices> = {
-  name:    'extract:monster-offense',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterOffenseNode extends ScalarNode<ScrapeState, MonsterOffenseOutput> {
+  public readonly name    = 'extract:monster-offense';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterOffenseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterOffenseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const offense = extractMonsterOffense(c, $, target);
+    const offense = extractMonsterOffense(common, root, target);
 
     state.output = { ...state.output, ...offense };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterOffenseNode = new MonsterOffenseNode();

@@ -1,8 +1,10 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { CliState }    from '../../state/CliState.js';
 import type { CliServices } from './Services.js';
+
+type WriteManifestOutput = 'success' | 'skipped';
 
 /**
  * Logs the final scrape manifest state at the CLI layer.
@@ -25,31 +27,25 @@ import type { CliServices } from './Services.js';
  * @category Nodes
  * @since 3.1.0
  */
-export const WriteManifestNode: NodeInterface<CliState, 'success' | 'skipped', CliServices> = {
-  name:    'cli:write-manifest',
-  outputs: ['success', 'skipped'],
+class WriteManifestNodeImpl extends ScalarNode<CliState, WriteManifestOutput, CliServices> {
+  public readonly name = 'cli:write-manifest';
+  public readonly outputs = ['success', 'skipped'] as const;
 
-  async execute(
+  protected override async executeOne(
     state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' | 'skipped' }> {
+    context: NodeContextType<CliServices>,
+  ): Promise<NodeOutputType<WriteManifestOutput>> {
     const log = context.services.log;
 
     if (state.failedCount > 0) {
       log.warn('WriteManifestNode',
         `${state.failedCount.toString()} pages failed after retry — failures.json written by orchestrator`);
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     }
 
     log.debug('WriteManifestNode', 'No failures — manifest skipped');
-    return { output: 'skipped' };
-  },
-};
+    return NodeOutputBuilder.of('skipped');
+  }
+}
 
-/** OperationContract for WriteManifestNode: reads failedCount, no state field produced. */
-export const writeManifestContract: OperationContract = {
-  name:         'cli:write-manifest',
-  hardRequired: ['failedCount'],
-  produces:     [],
-  outputs:      ['success', 'skipped'],
-};
+export const WriteManifestNode = new WriteManifestNodeImpl();

@@ -5,6 +5,6 @@ import { extractEntityId } from '../../common.js';
 import { parseDeityRelationships } from './helpers.js';
 import type { DeityRelationshipsSlice } from './types.js';
 
-export function extractDeityRelationships(c: CommonExtraction): DeityRelationshipsSlice {
-  return { deity_relationships: parseDeityRelationships(c, extractEntityId) };
+export function extractDeityRelationships(common: CommonExtraction): DeityRelationshipsSlice {
+  return { deity_relationships: parseDeityRelationships(common, extractEntityId) };
 }

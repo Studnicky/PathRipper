@@ -42,9 +42,9 @@ function parseSpeed(raw: string | null): StatblockOffense['speed'] {
 
 /** Read action cost from a `<span class='action'>[label]</span>` glyph. */
 function parseActionGlyph(html: string): MonsterStrike['action'] {
-  const m = /<span\s+class=['"]action['"][^>]*>\s*\[([a-z-]+)\]/i.exec(html);
-  if (m === null) return null;
-  const label = m[1]!.toLowerCase();
+  const match = /<span\s+class=['"]action['"][^>]*>\s*\[([a-z-]+)\]/i.exec(html);
+  if (match === null) return null;
+  const label = match[1]!.toLowerCase();
   const actionMap = new Map<string, MonsterStrike['action']>([
     ['one-action', 'one-action'], ['single-action', 'one-action'],
     ['two-actions', 'two-actions'], ['three-actions', 'three-actions'],
@@ -78,25 +78,25 @@ function parseStrikeBody(kind: 'melee' | 'ranged', innerHtml: string): MonsterSt
   const dmgHtml = dmgSplit !== null ? (dmgSplit[1] ?? '') : '';
 
   const cleaned = htmlToText(stripActionGlyphs(headHtml));
-  const m = /^(.*?)\s*([+-]\d+)\s*(?:\[([+\-\d/]+)\])?\s*(?:\(([^)]*)\))?\s*,?\s*$/.exec(cleaned);
+  const match = /^(.*?)\s*([+-]\d+)\s*(?:\[([+\-\d/]+)\])?\s*(?:\(([^)]*)\))?\s*,?\s*$/.exec(cleaned);
   let weapon: string;
   let attack_bonus: number | null = null;
   let map_bonuses: [number, number] | null = null;
   let traits: string[] = [];
-  if (m !== null) {
-    weapon = m[1]!.trim();
-    const ab = parseInt(m[2]!, 10);
-    attack_bonus = Number.isFinite(ab) ? ab : null;
-    if (m[3] !== undefined) {
-      const bm = /([+-]?\d+)\s*\/\s*([+-]?\d+)/.exec(m[3]);
-      if (bm !== null) {
-        const a = parseInt(bm[1]!, 10);
-        const b = parseInt(bm[2]!, 10);
-        if (Number.isFinite(a) && Number.isFinite(b)) map_bonuses = [a, b];
+  if (match !== null) {
+    weapon = match[1]!.trim();
+    const attackBonus = parseInt(match[2]!, 10);
+    attack_bonus = Number.isFinite(attackBonus) ? attackBonus : null;
+    if (match[3] !== undefined) {
+      const bonusMatch = /([+-]?\d+)\s*\/\s*([+-]?\d+)/.exec(match[3]);
+      if (bonusMatch !== null) {
+        const aVal = parseInt(bonusMatch[1]!, 10);
+        const bVal = parseInt(bonusMatch[2]!, 10);
+        if (Number.isFinite(aVal) && Number.isFinite(bVal)) map_bonuses = [aVal, bVal];
       }
     }
-    if (m[4] !== undefined) {
-      traits = splitTopLevel(m[4], ',').map((s) => s.trim()).filter((s) => s !== '');
+    if (match[4] !== undefined) {
+      traits = splitTopLevel(match[4], ',').map((str) => str.trim()).filter((str) => str !== '');
     }
   } else {
     weapon = cleaned;
@@ -108,13 +108,13 @@ function parseStrikeBody(kind: 'melee' | 'ranged', innerHtml: string): MonsterSt
     const dmgText = htmlToText(dmgHtml).trim().replace(/[,;]\s*$/, '');
     const tail: string[] = [];
     for (const chunk of dmgText.split(/\s+plus\s+/i)) {
-      const c = chunk.trim();
-      if (c === '') continue;
-      const persistent = /^persistent\s+/i.test(c);
-      const body = persistent ? c.replace(/^persistent\s+/i, '') : c;
-      const dm = /^(\d+d\d+(?:[+-]\d+)?)\s+(.+)$/i.exec(body);
-      if (dm !== null) damage.push({ dice: dm[1]!, type: dm[2]!.trim(), persistent });
-      else tail.push(c);
+      const chunkTrimmed = chunk.trim();
+      if (chunkTrimmed === '') continue;
+      const persistent = /^persistent\s+/i.test(chunkTrimmed);
+      const body = persistent ? chunkTrimmed.replace(/^persistent\s+/i, '') : chunkTrimmed;
+      const damageMatch = /^(\d+d\d+(?:[+-]\d+)?)\s+(.+)$/i.exec(body);
+      if (damageMatch !== null) damage.push({ dice: damageMatch[1]!, type: damageMatch[2]!.trim(), persistent });
+      else tail.push(chunkTrimmed);
     }
     if (tail.length > 0) effects = tail.join('; ');
   }
@@ -123,14 +123,14 @@ function parseStrikeBody(kind: 'melee' | 'ranged', innerHtml: string): MonsterSt
 
 /** Classify a spell-list label into kind + tradition. */
 function classifySpellList(label: string): { tradition: string | null; kind: MonsterSpellList['kind'] } | null {
-  const m = /(Innate Spells|Focus Spells|Rituals|Spells)$/i.exec(label.trim());
-  if (m === null) return null;
-  const tail = m[1]!.toLowerCase();
+  const match = /(Innate Spells|Focus Spells|Rituals|Spells)$/i.exec(label.trim());
+  if (match === null) return null;
+  const tail = match[1]!.toLowerCase();
   const kind: MonsterSpellList['kind'] =
     tail === 'innate spells' ? 'innate' :
     tail === 'focus spells' ? 'focus' :
     tail === 'rituals' ? 'rituals' : 'spells';
-  const tradition = label.slice(0, m.index).trim();
+  const tradition = label.slice(0, match.index).trim();
   return { tradition: tradition === '' ? null : tradition, kind };
 }
 
@@ -138,23 +138,23 @@ function classifySpellList(label: string): { tradition: string | null; kind: Mon
 function parseSpellList(label: string, valueHtml: string): MonsterSpellList | null {
   const cls = classifySpellList(label);
   if (cls === null) return null;
-  let dc: number | null = null;
+  let dcVal: number | null = null;
   let attack: number | null = null;
   const firstBold = /<b>/i.exec(valueHtml);
   const headerText = htmlToText(firstBold !== null ? valueHtml.slice(0, firstBold.index) : valueHtml);
   const dcMatch = /DC\s+(\d+)/i.exec(headerText);
-  if (dcMatch !== null) dc = parseInt(dcMatch[1]!, 10);
+  if (dcMatch !== null) dcVal = parseInt(dcMatch[1]!, 10);
   const atkMatch = /attack\s+([+-]\d+)/i.exec(headerText);
   if (atkMatch !== null) attack = parseInt(atkMatch[1]!, 10);
 
   const slots: MonsterSpellList['slots'] = [];
   const body = firstBold !== null ? valueHtml.slice(firstBold.index) : '';
   const chunkRe = /<b>\s*([^<]+?)\s*<\/b>([\s\S]*?)(?=<b>|$)/gi;
-  let cm: RegExpExecArray | null;
-  while ((cm = chunkRe.exec(body)) !== null) {
-    slots.push({ rank: cm[1]!.trim(), spells: parseSpellEntries(cm[2] ?? '') });
+  let chunkMatch: RegExpExecArray | null;
+  while ((chunkMatch = chunkRe.exec(body)) !== null) {
+    slots.push({ rank: chunkMatch[1]!.trim(), spells: parseSpellEntries(chunkMatch[2] ?? '') });
   }
-  return { tradition: cls.tradition, kind: cls.kind, dc, attack, slots };
+  return { tradition: cls.tradition, kind: cls.kind, dc: dcVal, attack, slots };
 }
 
 /** Parse the comma-separated spell list inside one rank chunk. */
@@ -165,13 +165,13 @@ function parseSpellEntries(html: string): Array<{ name: string; frequency: strin
   for (const raw of splitTopLevel(text, ',')) {
     const part = raw.trim();
     if (part === '') continue;
-    const m = /^(.*?)(?:\s*\(([^)]+)\))?\s*$/.exec(part);
-    if (m === null) continue;
-    const name = m[1]!.trim();
+    const match = /^(.*?)(?:\s*\(([^)]+)\))?\s*$/.exec(part);
+    if (match === null) continue;
+    const name = match[1]!.trim();
     let frequency: string | null = null;
     let count: number | null = null;
-    if (m[2] !== undefined) {
-      const annot = m[2].trim();
+    if (match[2] !== undefined) {
+      const annot = match[2].trim();
       const xMatch = /^[x×]\s*(\d+)$/i.exec(annot);
       if (xMatch !== null) count = parseInt(xMatch[1]!, 10);
       frequency = annot;
@@ -182,20 +182,20 @@ function parseSpellEntries(html: string): Array<{ name: string; frequency: strin
 }
 
 /** Discover spell-list fields in head fields + offense fragment. */
-function collectSpellLists(c: CommonExtraction, offenseHtml: string): MonsterSpellList[] {
+function collectSpellLists(common: CommonExtraction, offenseHtml: string): MonsterSpellList[] {
   const out: MonsterSpellList[] = [];
-  for (const f of c.fields) {
-    if (SPELL_LIST_LABEL_RE.test(f.label)) {
-      const list = parseSpellList(f.label, f.value_html);
+  for (const field of common.fields) {
+    if (SPELL_LIST_LABEL_RE.test(field.label)) {
+      const list = parseSpellList(field.label, field.value_html);
       if (list !== null) out.push(list);
     }
   }
   const spellLabelRe = /<b>\s*([^<]+?)\s*<\/b>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = spellLabelRe.exec(offenseHtml)) !== null) {
-    const label = (m[1] ?? '').replace(/:$/, '').trim();
+  let match: RegExpExecArray | null;
+  while ((match = spellLabelRe.exec(offenseHtml)) !== null) {
+    const label = (match[1] ?? '').replace(/:$/, '').trim();
     if (!SPELL_LIST_LABEL_RE.test(label)) continue;
-    const valueStart = m.index + m[0].length;
+    const valueStart = match.index + match[0].length;
     const boundaryRe = /<span\s+class="hanging-indent"|<div\b/i;
     const boundaryMatch = boundaryRe.exec(offenseHtml.slice(valueStart));
     const valueEnd = boundaryMatch !== null ? valueStart + boundaryMatch.index : offenseHtml.length;
@@ -210,12 +210,12 @@ function collectSpellLists(c: CommonExtraction, offenseHtml: string): MonsterSpe
  * Parse statblock offense from HTML fragment.
  * Extracts speed, strikes, spell lists.
  */
-export function parseStatblockOffense(offenseHtml: string, c: CommonExtraction): StatblockOffense {
+export function parseStatblockOffense(offenseHtml: string, common: CommonExtraction): StatblockOffense {
   const offLabels = harvestFragmentLabels(offenseHtml);
   return {
     speed:       parseSpeed(offLabels.get('speed') ?? null),
     strikes:     parseStrikes(offenseHtml),
-    spell_lists: collectSpellLists(c, offenseHtml),
+    spell_lists: collectSpellLists(common, offenseHtml),
   };
 }
 
@@ -223,11 +223,11 @@ export function parseStatblockOffense(offenseHtml: string, c: CommonExtraction):
 function harvestFragmentLabels(html: string): Map<string, string> {
   const out = new Map<string, string>();
   for (const line of html.split(/<br\s*\/?>/i)) {
-    const re = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|$)/gi;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(line)) !== null) {
-      const label = (m[1] ?? '').replace(/:$/, '').trim();
-      const valueText = htmlToText(m[2] ?? '');
+    const regex = /<b>\s*([^<]+?)\s*<\/b>\s*([\s\S]*?)(?=<b>|$)/gi;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(line)) !== null) {
+      const label = (match[1] ?? '').replace(/:$/, '').trim();
+      const valueText = htmlToText(match[2] ?? '');
       if (label === '' || valueText === '') continue;
       if (!out.has(label.toLowerCase())) out.set(label.toLowerCase(), valueText);
     }

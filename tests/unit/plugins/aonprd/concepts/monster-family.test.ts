@@ -1,5 +1,6 @@
 // Unit tests for monster-family concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }   from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -12,6 +13,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/monster-family.js';
 import type { MonsterFamilyOutput } from '../../../../../plugins/aonprd/concepts/monster-family.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE  = 'monster-family-elemental-metal.html';
 const BASE_URL = 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343';
@@ -19,53 +21,53 @@ const BASE_URL = 'https://2e.aonprd.com/MonsterFamilies.aspx?ID=343';
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await monsterFamilyBaseNode.execute(state, stubContext);
-  await monsterFamilyMembersNode.execute(state, stubContext);
-  await finalizeMonsterFamilyNode.execute(state, stubContext);
-  return state.output as MonsterFamilyOutput;
+  await monsterFamilyBaseNode.execute(Batch.of(state), stubContext);
+  await monsterFamilyMembersNode.execute(Batch.of(state), stubContext);
+  await finalizeMonsterFamilyNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<MonsterFamilyOutput>(state.output);
 }
 
 describe('extract:monster-family-base — elemental-metal', () => {
   it('produces _type, url, name, monster_family_id', async () => {
     const state = await primeState(FIXTURE, BASE_URL);
-    const r = await monsterFamilyBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await monsterFamilyBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterFamilyOutput;
+    const out = ParsedOutput.as<MonsterFamilyOutput>(state.output);
     assert.equal(out.monster_family_id, 343);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL);
-    const r = await monsterFamilyBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterFamilyBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:monster-family-members — elemental-metal', () => {
   it('produces members array', async () => {
     const state = await primeState(FIXTURE, BASE_URL);
-    await monsterFamilyBaseNode.execute(state, stubContext);
-    const r = await monsterFamilyMembersNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await monsterFamilyBaseNode.execute(Batch.of(state), stubContext);
+    const result = await monsterFamilyMembersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as MonsterFamilyOutput;
+    const out = ParsedOutput.as<MonsterFamilyOutput>(state.output);
     assert.ok(Array.isArray(out.members), 'members should be an array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', BASE_URL);
-    const r = await monsterFamilyMembersNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await monsterFamilyMembersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -82,7 +84,7 @@ describe('finalize:monster-family — elemental-metal', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', BASE_URL);
-    const r = await finalizeMonsterFamilyNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeMonsterFamilyNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });

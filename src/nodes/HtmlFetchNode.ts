@@ -1,17 +1,19 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import type { ScrapedPageInterface } from '../scrapers/HtmlScraper.js';
 import type { RawContentInterface } from '../types/PipelineState.js';
 import { toNodeError }              from './fileUtils.js';
 import type { ScrapeState }         from '../state/ScrapeState.js';
-import type { RipperServices }         from '../services/RipperServices.js';
+import type { RipperServices }      from '../services/RipperServices.js';
 
 /** Returns true when the value looks like an HtmlScraper. */
-const isHtmlScraper = (s: unknown): s is { fetchPage(url: string): Promise<ScrapedPageInterface> } => {
-  return typeof s === 'object' && s !== null && typeof (s as { fetchPage?: unknown }).fetchPage === 'function';
+const isHtmlScraper = (val: unknown): val is { fetchPage(url: string): Promise<ScrapedPageInterface> } => {
+  return typeof val === 'object' && val !== null && typeof (val as { fetchPage?: unknown }).fetchPage === 'function';
 };
+
+type HtmlFetchOutput = 'success' | 'error' | 'cached';
 
 /**
  * Fetches `state.page.url` via `services.htmlScraper` and stores the response
@@ -25,11 +27,14 @@ const isHtmlScraper = (s: unknown): s is { fetchPage(url: string): Promise<Scrap
  * @category Nodes
  * @since 3.0.0
  */
-export const HtmlFetchNode: NodeInterface<ScrapeState, 'success' | 'error' | 'cached', RipperServices> = {
-  name: 'html:fetch',
-  outputs: ['success', 'error', 'cached'],
+class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperServices> {
+  public readonly name = 'html:fetch';
+  public readonly outputs = ['success', 'error', 'cached'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' | 'error' | 'cached' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<HtmlFetchOutput>> {
     const { services } = context;
     const scraper = services.htmlScraper;
 
@@ -38,7 +43,7 @@ export const HtmlFetchNode: NodeInterface<ScrapeState, 'success' | 'error' | 'ca
         ExternalSchemaError.create('html:fetch requires services.htmlScraper to be an HtmlScraper', { metadata: { task: 'html:fetch' } }),
         'html:fetch',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const url = state.page.url;
@@ -47,7 +52,7 @@ export const HtmlFetchNode: NodeInterface<ScrapeState, 'success' | 'error' | 'ca
         ExternalSchemaError.create('html:fetch requires state.page.url to be set', { metadata: { task: 'html:fetch', targetId: services.target.id } }),
         'html:fetch',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     let result: ScrapedPageInterface;
@@ -58,7 +63,7 @@ export const HtmlFetchNode: NodeInterface<ScrapeState, 'success' | 'error' | 'ca
       state.collectError(toNodeError(err, 'html:fetch'));
       const currentUrl = state.getMetadata<string>('currentUrl') ?? url;
       state.failed.push(currentUrl);
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const includeRaw = services.target.cfg['includeRawContent'] !== false;
@@ -73,14 +78,8 @@ export const HtmlFetchNode: NodeInterface<ScrapeState, 'success' | 'error' | 'ca
       ...(raw !== undefined ? { _raw: raw } : {}),
     };
 
-    return { output: fromCache ? 'cached' : 'success' };
-  },
-};
+    return NodeOutputBuilder.of(fromCache ? 'cached' : 'success');
+  }
+}
 
-/** OperationContract for HtmlFetchNode: reads page.url, produces page.html. */
-export const htmlFetchContract: OperationContract = {
-  name:         'html:fetch',
-  hardRequired: ['page.url'],
-  produces:     ['page.html'],
-  outputs:      ['success', 'error', 'cached'],
-};
+export const HtmlFetchNode = new HtmlFetchNodeImpl();

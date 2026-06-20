@@ -12,14 +12,15 @@
  * single-node slot for docs-build registration (the real `CrawlListTargetsNode` is
  * registered separately on the dispatcher before dispatch).
  *
- * The `execute` function throws immediately — any call indicates a registration
+ * The `executeOne` function throws immediately — any call indicates a registration
  * bug (the dispatcher resolved the stub instead of the registered node).
  *
  * @module flows/stub
  * @since 4.0.0
  */
 
-import type { NodeInterface } from '@noocodex/dagonizer';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeInterface, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
@@ -29,7 +30,7 @@ import type { RipperServices } from '../services/RipperServices.js';
  *
  * @param name    - The node name (must match what the dispatcher registers).
  * @param outputs - The full set of output ports the node may return.
- * @returns A stub node that throws when `execute` is called.
+ * @returns A stub node that throws when `executeOne` is called.
  *
  * @category Flows
  * @since 4.0.0
@@ -38,13 +39,26 @@ export function stub<TOutput extends string>(
   name:    string,
   outputs: readonly TOutput[],
 ): NodeInterface<ScrapeState, TOutput, RipperServices> {
-  return {
-    name,
-    outputs,
-    async execute(): Promise<{ output: TOutput }> {
+  class StubNode extends ScalarNode<ScrapeState, TOutput, RipperServices> {
+    public readonly name = name;
+    public readonly outputs = outputs;
+    public override readonly contract = {
+      hardRequired: [] as string[],
+      produces:     [] as string[],
+    };
+
+    protected override async executeOne(
+      _state:   ScrapeState,
+      _context: NodeContextType<RipperServices>,
+    ): Promise<NodeOutputType<TOutput>> {
       throw new Error(
         `stub for '${name}' called — the real node must be registered on the dispatcher`,
       );
-    },
-  };
+
+      // Unreachable — satisfies the return type for the compiler.
+      return NodeOutputBuilder.of(outputs[0] as TOutput);
+    }
+  }
+
+  return new StubNode();
 }

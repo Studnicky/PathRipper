@@ -1,7 +1,7 @@
 // Test suite for grantedFeatures capability helper.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseGrantedFeatures, type GrantedFeature } from '../../../../../plugins/aonprd/capabilities/grantedFeatures.js';
+import { parseGrantedFeatures } from '../../../../../plugins/aonprd/capabilities/grantedFeatures.js';
 import type { Section } from '../../../../../plugins/aonprd/capabilities/strategy.js';
 
 describe('parseGrantedFeatures', () => {
@@ -127,7 +127,7 @@ describe('parseGrantedFeatures', () => {
     ];
 
     const result = parseGrantedFeatures(sections, {
-      predicate: (s) => s.heading.includes('Special'),
+      predicate: (sec) => sec.heading.includes('Special'),
     });
 
     assert.equal(result.length, 1);

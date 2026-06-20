@@ -1,7 +1,7 @@
 import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
-import { baseFrom, setConceptOutput } from '../_helpers.js';
+import { baseFrom } from '../_helpers.js';
 import type { ConditionOutput, ConditionBaseSlice, ConditionStagesSlice } from './types.js';
 
 /** AON labels every condition-slice helper has lifted into structured fields. */
@@ -11,12 +11,12 @@ const CONDITION_CLAIMED_LABELS: ReadonlyArray<string> = [
 
 /** Assemble the final ConditionOutput from per-slice results. */
 export function finalizeCondition(
-  c:      CommonExtraction,
-  base:   ConditionBaseSlice,
-  stages: ConditionStagesSlice,
-  $:      CheerioAPI,
+  common:  CommonExtraction,
+  base:    ConditionBaseSlice,
+  stages:  ConditionStagesSlice,
+  root:    CheerioAPI,
 ): ConditionOutput {
-  const baseShape = baseFrom(c, $);
+  const baseShape = baseFrom(common, root);
   return {
     ...baseShape,
     url:                base.url,
@@ -30,23 +30,23 @@ export function finalizeCondition(
     trait_ids:          base.trait_ids,
     source:             base.source,
     sources:            base.sources,
-    raw_fields:         stripStructuredKeys(c.field_map, CONDITION_CLAIMED_LABELS),
+    raw_fields:         stripStructuredKeys(common.field_map, CONDITION_CLAIMED_LABELS),
     stages:             stages.stages,
     related_conditions: stages.related_conditions,
   } satisfies ConditionOutput;
 }
 
 export function finalizeConditionWithSections(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     ConditionBaseSlice,
   stages:   ConditionStagesSlice,
   sections: Section[],
-  $:        CheerioAPI,
+  root:     CheerioAPI,
 ): ConditionOutput {
-  const output = finalizeCondition(c, base, stages, $);
+  const output = finalizeCondition(common, base, stages, root);
   return {
     ...output,
     sections: filterLegacySections(sections),
-    raw_fields: stripStructuredKeys(c.field_map, CONDITION_CLAIMED_LABELS),
+    raw_fields: stripStructuredKeys(common.field_map, CONDITION_CLAIMED_LABELS),
   };
 }

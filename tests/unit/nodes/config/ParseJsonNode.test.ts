@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { ParseJsonNode } from '../../../../src/nodes/config/ParseJsonNode.js';
@@ -16,9 +17,9 @@ describe('ParseJsonNode', () => {
     const state = new ConfigLoadState();
     state.raw   = '{"output":{"basePath":"./out"}}';
 
-    const result = await ParseJsonNode.execute(state, makeContext());
+    const result = await ParseJsonNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.deepEqual(state.parsed, { output: { basePath: './out' } });
     assert.equal(state.errors.length, 0);
   });
@@ -27,9 +28,9 @@ describe('ParseJsonNode', () => {
     const state = new ConfigLoadState();
     state.raw   = '{ invalid json }';
 
-    const result = await ParseJsonNode.execute(state, makeContext());
+    const result = await ParseJsonNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.equal(state.errors.length, 1);
     const err = state.errors[0];
     assert.ok(err !== undefined);
@@ -43,7 +44,7 @@ describe('ParseJsonNode', () => {
     // Force a parse error with recognizable content
     state.raw = '{broken';
 
-    await ParseJsonNode.execute(state, makeContext());
+    await ParseJsonNode.execute(Batch.of(state), makeContext());
 
     const err = state.errors[0];
     assert.ok(err !== undefined);
@@ -55,7 +56,7 @@ describe('ParseJsonNode', () => {
     const state = new ConfigLoadState();
     state.raw   = 'not-json';
 
-    await ParseJsonNode.execute(state, makeContext());
+    await ParseJsonNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.parsed, undefined);
   });

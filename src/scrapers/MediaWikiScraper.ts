@@ -131,9 +131,9 @@ export class MediaWikiScraper {
           rvprop: 'content', format: 'json',
         });
         const data = await this.#get<RevisionsResponseInterface>(params);
-        return Object.values(data.query?.pages ?? {}).map((p: RevisionsPageInterface): WikiPageInterface => ({
-          title:    p.title,
-          wikitext: MediaWikiScraper.wikitextOf(p),
+        return Object.values(data.query?.pages ?? {}).map((pageData: RevisionsPageInterface): WikiPageInterface => ({
+          title:    pageData.title,
+          wikitext: MediaWikiScraper.wikitextOf(pageData),
         }));
       }),
     );
@@ -180,8 +180,8 @@ export class MediaWikiScraper {
         ),
       );
 
-      for (const m of data.query?.categorymembers ?? []) {
-        members.push({ title: m.title, pageid: m.pageid });
+      for (const catMember of data.query?.categorymembers ?? []) {
+        members.push({ title: catMember.title, pageid: catMember.pageid });
       }
 
       continueParams = data.continue ?? {};
@@ -216,8 +216,8 @@ export class MediaWikiScraper {
         ),
       );
 
-      for (const p of data.query?.allpages ?? []) {
-        members.push({ title: p.title, pageid: p.pageid });
+      for (const pageEntry of data.query?.allpages ?? []) {
+        members.push({ title: pageEntry.title, pageid: pageEntry.pageid });
       }
 
       continueParams = data.continue ?? {};

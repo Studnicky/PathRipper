@@ -4,12 +4,12 @@
 // Helpers are inlined.
 //
 // bespoke node-folder under nodes/km-structure/.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -145,13 +145,13 @@ export interface KmStructureMetaSlice {
 /** Parse "qty Label, qty Label, ..." into structured components. */
 function parseCostComponents(raw: string | null): KmStructureCostComponent[] {
   if (raw === null || raw.trim() === '') return [];
-  const parts = raw.split(',').map((p) => p.trim()).filter((p) => p !== '');
+  const parts = raw.split(',').map((part) => part.trim()).filter((part) => part !== '');
   const out: KmStructureCostComponent[] = [];
   for (const part of parts) {
-    const m = /^(\d+)\s+(.+)$/.exec(part);
-    if (m !== null) {
-      const qty = parseInt(m[1]!, 10);
-      out.push({ qty: Number.isFinite(qty) ? qty : null, label: m[2]!.trim() });
+    const match = /^(\d+)\s+(.+)$/.exec(part);
+    if (match !== null) {
+      const qty = parseInt(match[1]!, 10);
+      out.push({ qty: Number.isFinite(qty) ? qty : null, label: match[2]!.trim() });
     } else {
       out.push({ qty: null, label: part });
     }
@@ -166,9 +166,9 @@ function parseCostComponents(raw: string | null): KmStructureCostComponent[] {
 function pickLabelHtml(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const labelRe = new RegExp(`<b>\\s*${escaped}\\s*<\\/b>`, 'i');
-  const m = labelRe.exec(html);
-  if (m === null) return null;
-  const start    = m.index + m[0].length;
+  const match = labelRe.exec(html);
+  if (match === null) return null;
+  const start    = match.index + match[0].length;
   const rest     = html.slice(start);
   const boundary = /<b>|<br\s*\/?>|<hr\s*\/?>|<\/span>|<h[23]\s+class="title"/i.exec(rest);
   const end      = boundary !== null ? boundary.index : rest.length;
@@ -181,10 +181,10 @@ function parseStructureRefs(valueHtml: string | null): KmStructureRef[] {
   const out: KmStructureRef[] = [];
   const seen = new Set<string>();
   const anchorRe = /<a\b[^>]*href="([^"]*KMStructures\.aspx[^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(valueHtml)) !== null) {
-    const href = m[1] ?? '';
-    const name = htmlToText(m[2] ?? '');
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(valueHtml)) !== null) {
+    const href = match[1] ?? '';
+    const name = htmlToText(match[2] ?? '');
     if (name === '') continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
     const structure_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
@@ -197,51 +197,51 @@ function parseStructureRefs(valueHtml: string | null): KmStructureRef[] {
 }
 
 /** Extract the flavor description (pre-`<hr/>` body line). */
-function extractDescription(c: CommonExtraction): string {
+function extractDescription(common: CommonExtraction): string {
   // AON km-structure pages put the flavor line between the Source line and
-  // <hr/>. With <hr/> present, c.body_html starts after the <hr/> (mechanics).
+  // <hr/>. With <hr/> present, common.body_html starts after the <hr/> (mechanics).
   // The flavor line lives in the head fragment; we extract it from the field
   // head by scanning for trailing prose after the Source <br/>.
   // Strategy: look for the trailing prose in fields' head. Since our
   // CommonExtraction head/body split via splitOnHr, when there IS an <hr/>,
   // the pre-<hr/> region was head; harvestFields harvested labels there. The
   // flavor sits between the <br/> after Source and the <hr/>. We can recover
-  // it by scanning c.url's raw HTML — but we only have CommonExtraction.
+  // it by scanning common.url's raw HTML — but we only have CommonExtraction.
   // Use the body_html: km-structure body starts with `<b>Lots</b>...` if it
   // has <hr/>. Otherwise body_html includes flavor at start.
   //
   // Practical approach: if body_html starts with `<b>Lots</b>` (no leading
   // flavor), then no inline flavor description was found. Otherwise capture
   // everything before the first `<b>Lots</b>`.
-  const body = c.body_html;
+  const body = common.body_html;
   const lotsRe = /<b>\s*Lots\s*<\/b>/i;
-  const m = lotsRe.exec(body);
-  if (m === null) return htmlToText(body).trim();
-  const prefix = body.slice(0, m.index);
+  const match = lotsRe.exec(body);
+  if (match === null) return htmlToText(body).trim();
+  const prefix = body.slice(0, match.index);
   return htmlToText(prefix).trim();
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractKmStructureBase(c: CommonExtraction): KmStructureBaseSlice {
+export function extractKmStructureBase(common: CommonExtraction): KmStructureBaseSlice {
   return {
-    url:             c.url,
-    structure_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    level:           c.title.level,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
+    url:             common.url,
+    structure_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    level:           common.title.level,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
   };
 }
 
-export function extractKmStructureMechanics(c: CommonExtraction): KmStructureMechanicsSlice {
-  const body = c.body_html;
+export function extractKmStructureMechanics(common: CommonExtraction): KmStructureMechanicsSlice {
+  const body = common.body_html;
 
   // `Lots N; Cost ...` line. Lots and Cost share the same line separated by `;`.
   const lotsValue        = pickLabelHtml(body, 'Lots');
@@ -268,10 +268,10 @@ export function extractKmStructureMechanics(c: CommonExtraction): KmStructureMec
   }
 
   // Strip trailing semicolon/comma punctuation that can appear on the same line.
-  function clean(s: string | null): string | null {
-    if (s === null) return null;
-    const t = s.trim().replace(/[;,]\s*$/, '').trim();
-    return t === '' ? null : t;
+  function clean(str: string | null): string | null {
+    if (str === null) return null;
+    const trimmed = str.trim().replace(/[;,]\s*$/, '').trim();
+    return trimmed === '' ? null : trimmed;
   }
 
   return {
@@ -285,11 +285,11 @@ export function extractKmStructureMechanics(c: CommonExtraction): KmStructureMec
     effects:      effectsVal !== null ? clean(htmlToText(effectsVal)) : null,
     ruin:         ruinVal !== null ? clean(htmlToText(ruinVal)) : null,
     special:      specialVal !== null ? clean(htmlToText(specialVal)) : null,
-    description:  extractDescription(c),
+    description:  extractDescription(common),
   };
 }
 
-export function extractKmStructureMeta(_c: CommonExtraction): KmStructureMetaSlice {
+export function extractKmStructureMeta(_common: CommonExtraction): KmStructureMetaSlice {
   return { __km_structure_meta_marked: true };
 }
 
@@ -305,24 +305,24 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeKmStructure(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     KmStructureBaseSlice,
   mech:     KmStructureMechanicsSlice,
   _meta:    KmStructureMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
 ): KmStructureOutput {
   void _meta;
   void getField;
   return {
     ...base,
     ...mech,
-    sections:         c.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    sections:         common.sections,
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies KmStructureOutput;
 }
 
@@ -330,12 +330,12 @@ export function finalizeKmStructure(
  * Project a KMStructures.aspx page into a typed KmStructureOutput. Thin
  * assembly wrapper for `parseAonHtml` and unit-test direct-call paths.
  */
-export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: CheerioNode): KmStructureOutput {
+export function extractKmStructure(common: CommonExtraction, root: CheerioAPI, target: CheerioNode): KmStructureOutput {
   void target;
-  const base = extractKmStructureBase(c);
-  const mech = extractKmStructureMechanics(c);
-  const meta = extractKmStructureMeta(c);
-  return finalizeKmStructure(c, base, mech, meta, $);
+  const base = extractKmStructureBase(common);
+  const mech = extractKmStructureMechanics(common);
+  const meta = extractKmStructureMeta(common);
+  return finalizeKmStructure(common, base, mech, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -343,87 +343,90 @@ export function extractKmStructure(c: CommonExtraction, $: CheerioAPI, target: C
 
 export type KmStructureBaseOutput = 'success' | 'error';
 
-export const kmStructureBaseNode: NodeInterface<ScrapeState, KmStructureBaseOutput, RipperServices> = {
-  name:    'extract:km-structure-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class KmStructureBaseNodeImpl extends ScalarNode<ScrapeState, KmStructureBaseOutput> {
+  public readonly name = 'extract:km-structure-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmStructureBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmStructureBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractKmStructureBase(c);
+    const base = extractKmStructureBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const kmStructureBaseNode = new KmStructureBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type KmStructureMechanicsOutput = 'success' | 'error';
 
-export const kmStructureMechanicsNode: NodeInterface<ScrapeState, KmStructureMechanicsOutput, RipperServices> = {
-  name:    'extract:km-structure-mechanics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class KmStructureMechanicsNodeImpl extends ScalarNode<ScrapeState, KmStructureMechanicsOutput> {
+  public readonly name = 'extract:km-structure-mechanics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: KmStructureMechanicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<KmStructureMechanicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const mech = extractKmStructureMechanics(c);
+    const mech = extractKmStructureMechanics(common);
 
     state.output = { ...state.output, ...mech };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const kmStructureMechanicsNode = new KmStructureMechanicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeKmStructureOutput = 'success';
 
-export const finalizeKmStructureNode: NodeInterface<ScrapeState, FinalizeKmStructureOutput, RipperServices> = {
-  name:    'finalize:km-structure',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeKmStructureNodeImpl extends ScalarNode<ScrapeState, FinalizeKmStructureOutput> {
+  public readonly name = 'finalize:km-structure';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeKmStructureOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeKmStructureOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
 
     // meta arg is unused by finalizeKmStructure (marker only)
     const acc = (state.output ?? {}) as unknown as KmStructureOutput;
-    const assembled = finalizeKmStructure(c, acc, acc, { __km_structure_meta_marked: true }, $);
+    const assembled = finalizeKmStructure(common, acc, acc, { __km_structure_meta_marked: true }, root);
     void target;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeKmStructureNode = new FinalizeKmStructureNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

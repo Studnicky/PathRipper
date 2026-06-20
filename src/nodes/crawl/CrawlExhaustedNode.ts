@@ -1,5 +1,5 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { LinkCrawlState }   from '../../state/LinkCrawlState.js';
 import type { LinkCrawlServices } from './Services.js';
@@ -21,14 +21,14 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
  * @category Nodes
  * @since 3.0.0
  */
-export const CrawlExhaustedNode: NodeInterface<LinkCrawlState, 'success', LinkCrawlServices> = {
-  name: 'crawl:exhausted',
-  outputs: ['success'],
+class CrawlExhaustedNodeImpl extends ScalarNode<LinkCrawlState, 'success', LinkCrawlServices> {
+  public readonly name = 'crawl:exhausted';
+  public readonly outputs = ['success'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: LinkCrawlState,
-    context: NodeContextInterface<LinkCrawlServices>,
-  ): Promise<{ output: 'success' }> {
+    context: NodeContextType<LinkCrawlServices>,
+  ): Promise<NodeOutputType<'success'>> {
     const { services } = context;
 
     // Final dedup + sort
@@ -44,14 +44,8 @@ export const CrawlExhaustedNode: NodeInterface<LinkCrawlState, 'success', LinkCr
       `Crawl complete: ${state.discovered.length.toString()} URLs in ${state.depth.toString()} level(s)`,
     );
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for CrawlExhaustedNode: reads discovered, produces sorted discovered. */
-export const crawlExhaustedContract: OperationContract = {
-  name:         'crawl:exhausted',
-  hardRequired: ['discovered'],
-  produces:     ['discovered'],
-  outputs:      ['success'],
-};
+export const CrawlExhaustedNode = new CrawlExhaustedNodeImpl();

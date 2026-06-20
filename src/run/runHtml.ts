@@ -6,13 +6,8 @@
  * from the config directory, then dispatches the outer scrape DAG and returns.
  *
  * Phase DAG construction:
- *   Phase DAGs (htmlScrapePhase, htmlRetryPhase, htmlCrawlPhase) are derived
- *   inline via `DAGDeriver.derive` with `strategy: 'partition'` fanout
- *   annotations pointing at the real `html:dispatch-page-dag` node.
- *
- *   Outer composition DAGs (htmlScrapeDAG / htmlScrapeDAGCrawl) wrap the phase
- *   DAGs as `DeepDAGNode` placements via `DAGDeriver.derive` with
- *   `annotations.subDAGs` (adopted in 0.7.0).
+ *   Phase DAGs and composition DAGs are built via `DAGBuilder` factory functions
+ *   in `src/flows/htmlScrapeDag.ts`, mirroring the wiki flow pattern.
  *
  * @module run/runHtml
  * @since 4.0.0
@@ -21,8 +16,17 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve }          from 'node:path';
 
-import { DAGDeriver }               from '@noocodex/dagonizer/derive';
-import type { DagonizerInterface }  from '@noocodex/dagonizer';
+import type { DagonizerInterface }  from '@studnicky/dagonizer';
+
+import {
+  buildHtmlScrapePhaseDag,
+  buildHtmlRetryPhaseDag,
+  buildHtmlCrawlPhaseDag,
+  buildHtmlScrapeDag,
+  buildHtmlScrapeDagCrawl,
+  HTML_SCRAPE_DAG,
+  HTML_SCRAPE_DAG_CRAWL,
+}                                     from '../flows/htmlScrapeDag.js';
 
 import type { RipperServices }        from '../services/RipperServices.js';
 import { RipperDagonizer }            from '../dispatcher/RipperDagonizer.js';
@@ -54,12 +58,6 @@ const BUILTIN_PREFIXES: ReadonlyArray<string> = [
   'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
 ];
 
-// ── Phase DAG names ────────────────────────────────────────────────────────────
-
-const HTML_SCRAPE_PHASE = 'htmlScrapePhase';
-const HTML_RETRY_PHASE  = 'htmlRetryPhase';
-const HTML_CRAWL_PHASE  = 'htmlCrawlPhase';
-
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 const log = Logger.forComponent('runHtml');
@@ -79,7 +77,7 @@ const requirePipeline = (target: Record<string, unknown>, targetId: string): str
 
 const derivePluginTaskName = (pipeline: ReadonlyArray<string>): string | undefined => {
   for (const entry of pipeline) {
-    if (BUILTIN_PREFIXES.some((p) => entry.startsWith(p))) continue;
+    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
     return entry;
   }
   return undefined;
@@ -94,7 +92,7 @@ const loadAndRegisterPlugins = async (
   const seen = new Set<string>();
 
   for (const entry of pipelineNames) {
-    if (BUILTIN_PREFIXES.some((p) => entry.startsWith(p))) continue;
+    if (BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
     const colon = entry.indexOf(':');
     if (colon <= 0) continue;
     const word = entry.slice(0, colon);
@@ -117,14 +115,14 @@ const loadAndRegisterPlugins = async (
       }
       throw err;
     }
-    const m = mod as Record<string, unknown>;
-    if (typeof m['register'] !== 'function') {
+    const modRecord = mod as Record<string, unknown>;
+    if (typeof modRecord['register'] !== 'function') {
       throw new Error(
         `Plugin at ${absPath} does not export register(dispatcher): void. `
         + `Add: export function register(dispatcher: RipperDagonizer<ScrapeState>): void { ... }`,
       );
     }
-    (m['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
+    (modRecord['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
     pluginDagNames.add(entry);
   }
   return pluginDagNames;
@@ -205,7 +203,7 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   const holder: { current: RipperServices | null } = { current: null };
   const dispatcher = new RipperDagonizer<ScrapeState>({
     services: new Proxy({} as RipperServices, {
-      get(_t, prop) {
+      get(_target, prop) {
         if (holder.current === null) {
           throw new Error('RipperServices accessed before initialisation');
         }
@@ -242,147 +240,25 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
   });
   dispatcher.registerNode(htmlDispatchNode);
 
-  // ── Phase DAG registration ─────────────────────────────────────────────────
-  // Phase DAGs use DAGDeriver.derive with strategy: 'partition' fanout
-  // annotations pointing at the registered html:dispatch-page-dag node.
-
-  const htmlScrapePhaseDAG = DAGDeriver.derive({
-    name:       HTML_SCRAPE_PHASE,
-    version:    '2.0',
-    entrypoint: 'scrape-urls',
-    contracts: [
-      { name: 'scrape-urls', hardRequired: ['urls'], produces: ['succeeded', 'failed'], outputs: ['success', 'error', 'empty'] },
-    ],
-    annotations: {
-      fanouts: {
-        'scrape-urls': {
-          source:     'urls',
-          itemKey:    'currentUrl',
-          concurrency: 4,
-          node:       'html:dispatch-page-dag',
-          strategy:   'partition',
-          partitions: { success: 'succeeded', error: 'failed' },
-          outcomes:   ['success', 'error', 'empty'],
-        },
-      },
-      terminals: {
-        'scrape-urls': [
-          { outcome: 'success', target: null },
-          { outcome: 'error',   target: null },
-          { outcome: 'empty',   target: null },
-        ],
-      },
-    },
-  });
-
-  const htmlRetryPhaseDAG = DAGDeriver.derive({
-    name:       HTML_RETRY_PHASE,
-    version:    '2.0',
-    entrypoint: 'retry-urls',
-    contracts: [
-      { name: 'retry-urls', hardRequired: ['failed'], produces: ['recovered', 'failedAfterRetry'], outputs: ['success', 'error', 'empty'] },
-    ],
-    annotations: {
-      fanouts: {
-        'retry-urls': {
-          source:     'failed',
-          itemKey:    'currentRetryUrl',
-          concurrency: 4,
-          node:       'html:dispatch-page-dag',
-          strategy:   'partition',
-          partitions: { success: 'recovered', error: 'failedAfterRetry' },
-          outcomes:   ['success', 'error', 'empty'],
-        },
-      },
-      terminals: {
-        'retry-urls': [
-          { outcome: 'success', target: null },
-          { outcome: 'error',   target: null },
-          { outcome: 'empty',   target: null },
-        ],
-      },
-    },
-  });
-
+  // ── Phase and composition DAG registration (DAGBuilder) ───────────────────
   dispatcher.registerDAG(buildHtmlPageFlow(pipelineNames, opts.target, htmlPluginDagNames));
-  dispatcher.registerDAG(htmlScrapePhaseDAG);
-  dispatcher.registerDAG(htmlRetryPhaseDAG);
+  dispatcher.registerDAG(buildHtmlScrapePhaseDag(htmlDispatchNode));
+  dispatcher.registerDAG(buildHtmlRetryPhaseDag(htmlDispatchNode));
 
   // Bounded scrape: when explicit --paths are supplied, skip the crawl
   // phase even if the pipeline declares it. The crawler is the default
   // for a full-target scrape; --paths overrides it.
-  const hasCrawl  = pipelineNames.includes('crawl:list-targets');
-  const useCrawl  = hasCrawl && opts.paths.length === 0;
+  const hasCrawl   = pipelineNames.includes('crawl:list-targets');
+  const useCrawl   = hasCrawl && opts.paths.length === 0;
   let outerDagName: string;
 
   if (useCrawl) {
-    const htmlCrawlPhaseDAG = DAGDeriver.derive({
-      name:       HTML_CRAWL_PHASE,
-      version:    '2.0',
-      entrypoint: 'crawl:list-targets',
-      contracts: [
-        { name: 'crawl:list-targets', hardRequired: [], produces: ['urls'], outputs: ['success', 'error', 'empty'] },
-      ],
-      annotations: {
-        terminals: {
-          'crawl:list-targets': [
-            { outcome: 'success', target: null },
-            { outcome: 'error',   target: null },
-            { outcome: 'empty',   target: null },
-          ],
-        },
-      },
-    });
-
-    const htmlScrapeDAGCrawl = DAGDeriver.derive({
-      name:       'htmlScrapeDAGCrawl',
-      version:    '2.0',
-      entrypoint: 'crawl',
-      contracts: [
-        { name: 'crawl',  hardRequired: [],              produces: ['crawl-done'],  outputs: ['success', 'error'] },
-        { name: 'scrape', hardRequired: ['crawl-done'],  produces: ['scrape-done'], outputs: ['success', 'error'] },
-        { name: 'retry',  hardRequired: ['scrape-done'], produces: ['retry-done'],  outputs: ['success', 'error'] },
-        { name: 'flow:terminate', hardRequired: ['retry-done'],  produces: [],              outputs: ['success'] },
-      ],
-      annotations: {
-        subDAGs: {
-          crawl:  { dag: HTML_CRAWL_PHASE,  outputs: ['success', 'error'], stateMapping: { output: { urls: 'urls' } } },
-          scrape: { dag: HTML_SCRAPE_PHASE, outputs: ['success', 'error'], stateMapping: { output: { succeeded: 'succeeded', failed: 'failed' } } },
-          retry:  { dag: HTML_RETRY_PHASE,  outputs: ['success', 'error'], stateMapping: { output: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' } } },
-        },
-        terminals: {
-          crawl:            [{ outcome: 'error', target: 'flow:terminate' }],
-          'flow:terminate': [{ outcome: 'success', target: null }],
-        },
-      },
-    });
-
-    dispatcher.registerDAG(htmlCrawlPhaseDAG);
-    dispatcher.registerDAG(htmlScrapeDAGCrawl);
-    outerDagName = 'htmlScrapeDAGCrawl';
+    dispatcher.registerDAG(buildHtmlCrawlPhaseDag());
+    dispatcher.registerDAG(buildHtmlScrapeDagCrawl());
+    outerDagName = HTML_SCRAPE_DAG_CRAWL;
   } else {
-    const htmlScrapeDAG = DAGDeriver.derive({
-      name:       'htmlScrapeDAG',
-      version:    '2.0',
-      entrypoint: 'scrape',
-      contracts: [
-        { name: 'scrape', hardRequired: [],              produces: ['scrape-done'], outputs: ['success', 'error'] },
-        { name: 'retry',  hardRequired: ['scrape-done'], produces: ['retry-done'],  outputs: ['success', 'error'] },
-        { name: 'flow:terminate', hardRequired: ['retry-done'],  produces: [],              outputs: ['success'] },
-      ],
-      annotations: {
-        subDAGs: {
-          scrape: { dag: HTML_SCRAPE_PHASE, outputs: ['success', 'error'], stateMapping: { output: { succeeded: 'succeeded', failed: 'failed' } } },
-          retry:  { dag: HTML_RETRY_PHASE,  outputs: ['success', 'error'], stateMapping: { output: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' } } },
-        },
-        terminals: {
-          'flow:terminate': [{ outcome: 'success', target: null }],
-        },
-      },
-    });
-
-    dispatcher.registerDAG(htmlScrapeDAG);
-    outerDagName = 'htmlScrapeDAG';
+    dispatcher.registerDAG(buildHtmlScrapeDag());
+    outerDagName = HTML_SCRAPE_DAG;
   }
 
   // ── Dispatch ───────────────────────────────────────────────────────────────
@@ -394,7 +270,7 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
     }
   }
 
-  if (outerDagName === 'htmlScrapeDAG' && state.urls.length === 0) {
+  if (outerDagName === HTML_SCRAPE_DAG && state.urls.length === 0) {
     log.info('runHtml', 'No URLs to scrape');
     return;
   }

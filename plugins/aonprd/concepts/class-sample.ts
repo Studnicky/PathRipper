@@ -4,12 +4,12 @@
 // implements + extra_sections). Finalize assembles raw_fields + meta.
 //
 // captures any unclassified h2 sections so no data is silently dropped.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -143,19 +143,19 @@ export interface ClassSampleMetaSlice {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a class sample page. */
-export function extractClassSampleBase(c: CommonExtraction): ClassSampleBaseSlice {
+export function extractClassSampleBase(common: CommonExtraction): ClassSampleBaseSlice {
   return {
-    url:             c.url,
-    class_sample_id: extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    class_sample_id: extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -163,13 +163,13 @@ export function extractClassSampleBase(c: CommonExtraction): ClassSampleBaseSlic
  * Extract the italic flavor blurb between `<b>Source</b>` and the first
  * `<h2 class="title">` heading. Returns `null` when no flavor is present.
  */
-export function extractClassSampleIdentity(c: CommonExtraction): ClassSampleIdentitySlice {
+export function extractClassSampleIdentity(common: CommonExtraction): ClassSampleIdentitySlice {
   // body_html (post-Source) holds: `<i>flavor</i><br /><h2 class="title">…</h2>`
   // Cut at the first `<h2 class="title">` boundary, then strip the surrounding
   // italics. body_html on class-sample pages with no `<hr/>` is the post-
   // Source fragment courtesy of `splitOnHr`'s no-hr fallback.
-  const headingCut = /<h2\b[^>]*class="[^"]*\btitle\b[^"]*"[^>]*>/i.exec(c.body_html);
-  const head = headingCut !== null ? c.body_html.slice(0, headingCut.index) : c.body_html;
+  const headingCut = /<h2\b[^>]*class="[^"]*\btitle\b[^"]*"[^>]*>/i.exec(common.body_html);
+  const head = headingCut !== null ? common.body_html.slice(0, headingCut.index) : common.body_html;
   const flavorText = htmlToText(head);
   return { flavor: flavorText === '' ? null : flavorText };
 }
@@ -183,18 +183,18 @@ export function extractClassSampleIdentity(c: CommonExtraction): ClassSampleIden
  */
 function parseAnchorList(html: string): Array<{ name: string; href: string; id: number | null; kind: string }> {
   const out: Array<{ name: string; href: string; id: number | null; kind: string }> = [];
-  const re = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const href = m[1] ?? '';
-    const inner = m[2] ?? '';
+  const regex = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const href = match[1] ?? '';
+    const inner = match[2] ?? '';
     const name = htmlToText(inner);
     if (name === '') continue;
     const aspxMatch = /([A-Za-z][A-Za-z0-9]*)\.aspx/.exec(href);
     const kind = aspxMatch !== null ? aspxMatch[1]! : '';
     const idMatch = /[?&]ID=(\d+)/i.exec(href);
-    const id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-    out.push({ name, href, id: id !== null && Number.isFinite(id) ? id : null, kind });
+    const anchorId = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
+    out.push({ name, href, id: anchorId !== null && Number.isFinite(anchorId) ? anchorId : null, kind });
   }
   return out;
 }
@@ -208,32 +208,32 @@ function parseHigherLevelFeats(body_html: string): ClassSampleFeatRef[] {
   // `<name> (Nth)`. We do the latter for reliability.
   const text = htmlToText(body_html);
   const idsByName = new Map<string, number | null>();
-  for (const a of anchors) {
-    if (a.kind !== 'Feats') continue;
-    if (!idsByName.has(a.name)) idsByName.set(a.name, a.id);
+  for (const anchor of anchors) {
+    if (anchor.kind !== 'Feats') continue;
+    if (!idsByName.has(anchor.name)) idsByName.set(anchor.name, anchor.id);
   }
   const out: ClassSampleFeatRef[] = [];
   // Split on commas at depth 0 (parens) so `(Nth)` annotations stay with names.
   const parts: string[] = [];
   let buf = '';
   let depth = 0;
-  for (const ch of text) {
-    if (ch === '(') depth++;
-    else if (ch === ')') depth = Math.max(0, depth - 1);
-    if (ch === ',' && depth === 0) {
+  for (const char of text) {
+    if (char === '(') depth++;
+    else if (char === ')') depth = Math.max(0, depth - 1);
+    if (char === ',' && depth === 0) {
       parts.push(buf);
       buf = '';
       continue;
     }
-    buf += ch;
+    buf += char;
   }
   if (buf.trim() !== '') parts.push(buf);
   for (const part of parts) {
-    const m = /^\s*(.+?)\s*(?:\((\d+)(?:st|nd|rd|th)\))?\s*$/i.exec(part);
-    if (m === null) continue;
-    const rawName = m[1]?.trim() ?? '';
+    const partMatch = /^\s*(.+?)\s*(?:\((\d+)(?:st|nd|rd|th)\))?\s*$/i.exec(part);
+    if (partMatch === null) continue;
+    const rawName = partMatch[1]?.trim() ?? '';
     if (rawName === '') continue;
-    const level = m[2] !== undefined ? parseInt(m[2]!, 10) : null;
+    const level = partMatch[2] !== undefined ? parseInt(partMatch[2]!, 10) : null;
     const feat_id = idsByName.get(rawName) ?? null;
     out.push({ name: rawName, feat_id, level: Number.isFinite(level) ? level : null });
   }
@@ -266,7 +266,7 @@ const KNOWN_BUILD_HEADINGS = new Set<string>([
  * preserving any unclassified sections under `extra_sections` so no data is
  * silently dropped.
  */
-export function extractClassSampleBuild(c: CommonExtraction): ClassSampleBuildSlice {
+export function extractClassSampleBuild(common: CommonExtraction): ClassSampleBuildSlice {
   let ability_scores:     string | null = null;
   const skills:           ClassSampleSkillRef[] = [];
   let research_field:     ClassSampleNamedRef | null = null;
@@ -275,7 +275,7 @@ export function extractClassSampleBuild(c: CommonExtraction): ClassSampleBuildSl
   const implements_:      ClassSampleNamedRef[] = [];
   const extra_sections:   Section[] = [];
 
-  for (const section of c.sections) {
+  for (const section of common.sections) {
     if (section.level !== 2) {
       extra_sections.push(section);
       continue;
@@ -327,7 +327,7 @@ export function extractClassSampleBuild(c: CommonExtraction): ClassSampleBuildSl
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractClassSampleMeta(_c: CommonExtraction): ClassSampleMetaSlice {
+export function extractClassSampleMeta(_common: CommonExtraction): ClassSampleMetaSlice {
   return { __class_sample_meta_marked: true };
 }
 
@@ -336,28 +336,28 @@ export function extractClassSampleMeta(_c: CommonExtraction): ClassSampleMetaSli
 const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = ['Source'];
 
 export function finalizeClassSample(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     ClassSampleBaseSlice,
   identity: ClassSampleIdentitySlice,
   build:    ClassSampleBuildSlice,
   _meta:    ClassSampleMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   _target:  CheerioNode,
 ): ClassSampleOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...identity,
     ...build,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ClassSampleOutput;
 }
 
@@ -369,15 +369,15 @@ export function finalizeClassSample(
  * the decomposed class-sample extraction nodes.
  */
 export function extractClassSample(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
-  target: CheerioNode,
+  common:  CommonExtraction,
+  root:    CheerioAPI,
+  target:  CheerioNode,
 ): ClassSampleOutput {
-  const base     = extractClassSampleBase(c);
-  const identity = extractClassSampleIdentity(c);
-  const build    = extractClassSampleBuild(c);
-  const meta     = extractClassSampleMeta(c);
-  return finalizeClassSample(c, base, identity, build, meta, $, target);
+  const base     = extractClassSampleBase(common);
+  const identity = extractClassSampleIdentity(common);
+  const build    = extractClassSampleBuild(common);
+  const meta     = extractClassSampleMeta(common);
+  return finalizeClassSample(common, base, identity, build, meta, root, target);
 }
 
 // Re-export output type so tests can import from here.
@@ -388,28 +388,30 @@ export function extractClassSample(
 
 export type ClassSampleBaseOutput = 'success' | 'error';
 
-export const classSampleBaseNode: NodeInterface<ScrapeState, ClassSampleBaseOutput, RipperServices> = {
-  name:    'extract:class-sample-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassSampleBaseNode extends ScalarNode<ScrapeState, ClassSampleBaseOutput> {
+  public readonly name = 'extract:class-sample-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassSampleBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassSampleBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractClassSampleBase(c);
+    const base = extractClassSampleBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classSampleBaseNode = new ClassSampleBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -418,28 +420,30 @@ export const classSampleBaseNode: NodeInterface<ScrapeState, ClassSampleBaseOutp
 
 export type ClassSampleIdentityOutput = 'success' | 'error';
 
-export const classSampleIdentityNode: NodeInterface<ScrapeState, ClassSampleIdentityOutput, RipperServices> = {
-  name:    'extract:class-sample-identity',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassSampleIdentityNode extends ScalarNode<ScrapeState, ClassSampleIdentityOutput> {
+  public readonly name = 'extract:class-sample-identity';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassSampleIdentityOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassSampleIdentityOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractClassSampleIdentity(c);
+    const slice = extractClassSampleIdentity(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classSampleIdentityNode = new ClassSampleIdentityNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -448,28 +452,30 @@ export const classSampleIdentityNode: NodeInterface<ScrapeState, ClassSampleIden
 
 export type ClassSampleBuildOutput = 'success' | 'error';
 
-export const classSampleBuildNode: NodeInterface<ScrapeState, ClassSampleBuildOutput, RipperServices> = {
-  name:    'extract:class-sample-build',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassSampleBuildNode extends ScalarNode<ScrapeState, ClassSampleBuildOutput> {
+  public readonly name = 'extract:class-sample-build';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassSampleBuildOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassSampleBuildOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractClassSampleBuild(c);
+    const slice = extractClassSampleBuild(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classSampleBuildNode = new ClassSampleBuildNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -478,31 +484,33 @@ export const classSampleBuildNode: NodeInterface<ScrapeState, ClassSampleBuildOu
 
 export type FinalizeClassSampleOutput = 'success';
 
-export const finalizeClassSampleNode: NodeInterface<ScrapeState, FinalizeClassSampleOutput, RipperServices> = {
-  name:    'finalize:class-sample',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeClassSampleNode extends ScalarNode<ScrapeState, FinalizeClassSampleOutput> {
+  public readonly name = 'finalize:class-sample';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeClassSampleOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeClassSampleOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     const meta     = { __class_sample_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as ClassSampleOutput;
-    const assembled = finalizeClassSample(c, acc, acc, acc, meta, $, target);
+    const assembled = finalizeClassSample(common, acc, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeClassSampleNode = new FinalizeClassSampleNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

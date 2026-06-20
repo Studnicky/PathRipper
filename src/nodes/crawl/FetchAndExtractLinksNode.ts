@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import type { Element } from 'domhandler';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ScraperCache }           from '../../modules/cache/ScraperCache.js';
 import type { RateLimiter }        from '../../modules/http/rateLimiter.js';
@@ -35,23 +35,23 @@ import type { LinkCrawlServices }  from './Services.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const FetchAndExtractLinksNode: NodeInterface<
+class FetchAndExtractLinksNodeImpl extends ScalarNode<
   LinkCrawlState,
   'success' | 'empty' | 'error' | 'permanent',
   LinkCrawlServices
-> = {
-  name: 'crawl:fetch-and-extract',
-  outputs: ['success', 'empty', 'error', 'permanent'],
+> {
+  public readonly name = 'crawl:fetch-and-extract';
+  public readonly outputs = ['success', 'empty', 'error', 'permanent'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: LinkCrawlState,
-    context: NodeContextInterface<LinkCrawlServices>,
-  ): Promise<{ output: 'success' | 'empty' | 'error' | 'permanent' }> {
+    context: NodeContextType<LinkCrawlServices>,
+  ): Promise<NodeOutputType<'success' | 'empty' | 'error' | 'permanent'>> {
     const { services } = context;
     const { log, limiter, policy, cache } = services;
 
     if (state.frontier.length === 0) {
-      return { output: 'empty' };
+      return NodeOutputBuilder.of('empty');
     }
 
     const domainRe    = new RegExp(state.domainRe);
@@ -90,8 +90,8 @@ export const FetchAndExtractLinksNode: NodeInterface<
       visitedSet.add(url);
 
       const allLinks = extractLinks(html, url)
-        .filter((l) => domainRe.test(l))
-        .filter((l) => delimiterRe.test(l));
+        .filter((link) => domainRe.test(link))
+        .filter((link) => delimiterRe.test(link));
 
       for (const link of allLinks) {
         if (budget !== undefined && discoveredSet.size >= budget) break;
@@ -118,27 +118,21 @@ export const FetchAndExtractLinksNode: NodeInterface<
         + `${state.nextFrontierRaw.length.toString()} traversable links`,
     );
 
-    if (transientErrors > 0) return { output: 'error' };
-    if (permanentErrors > 0 && !anyLinksFound) return { output: 'permanent' };
-    if (!anyLinksFound) return { output: 'empty' };
-    return { output: 'success' };
-  },
-};
+    if (transientErrors > 0) return NodeOutputBuilder.of('error');
+    if (permanentErrors > 0 && !anyLinksFound) return NodeOutputBuilder.of('permanent');
+    if (!anyLinksFound) return NodeOutputBuilder.of('empty');
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for FetchAndExtractLinksNode: reads frontier, produces discoveredRaw. */
-export const fetchAndExtractLinksContract: OperationContract = {
-  name:         'crawl:fetch-and-extract',
-  hardRequired: ['frontier'],
-  produces:     ['discoveredRaw'],
-  outputs:      ['success', 'empty', 'error', 'permanent'],
-};
+export const FetchAndExtractLinksNode = new FetchAndExtractLinksNodeImpl();
 
 // ── Private helpers ────────────────────────────────────────────────────────────
 
 const extractStatus = (err: unknown): number | null => {
   if (err !== null && typeof err === 'object' && 'status' in err) {
-    const s = (err as { status: unknown }).status;
-    return typeof s === 'number' ? s : null;
+    const status = (err as { status: unknown }).status;
+    return typeof status === 'number' ? status : null;
   }
   return null;
 };
@@ -153,12 +147,12 @@ const fetchBody = async (
   const networkFetch = (): Promise<string> =>
     limiter.schedule((): Promise<string> =>
       policy.run((): Promise<string> =>
-        fetch(url, { headers }).then((r: Response): Promise<string> => {
-          if (!r.ok) {
-            const e = Object.assign(new Error(`HTTP ${r.status.toString()} for ${url}`), { status: r.status });
-            return Promise.reject(e);
+        fetch(url, { headers }).then((response: Response): Promise<string> => {
+          if (!response.ok) {
+            const fetchError = Object.assign(new Error(`HTTP ${response.status.toString()} for ${url}`), { status: response.status });
+            return Promise.reject(fetchError);
           }
-          return r.text();
+          return response.text();
         }),
       ),
     );
@@ -177,10 +171,10 @@ const fetchBody = async (
 };
 
 const extractLinks = (html: string, baseUrl: string): string[] => {
-  const $ = load(html);
+  const root = load(html);
   const links: string[] = [];
-  $('a[href]').each((_i: number, el: Element): void => {
-    const href = $(el).attr('href');
+  root('a[href]').each((_index: number, element: Element): void => {
+    const href = root(element).attr('href');
     if (href === undefined) return;
     try {
       links.push(new URL(href, baseUrl).href);

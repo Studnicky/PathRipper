@@ -1,4 +1,4 @@
-import { Dagonizer }    from '@noocodex/dagonizer';
+import { Dagonizer }    from '@studnicky/dagonizer';
 
 import type { BuildListResult }         from '../types/Results.js';
 import { Logger }                       from '../modules/logger/logger.js';

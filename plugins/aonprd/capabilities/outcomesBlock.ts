@@ -53,10 +53,10 @@ export function parseOutcomesBlock(bodyHtml: string): Outcomes {
   const scope = hrIdx === null ? bodyHtml : bodyHtml.slice(0, hrIdx.index);
 
   for (const { key, pattern } of labels) {
-    const m = pattern.exec(scope);
-    if (m === null) continue;
+    const match = pattern.exec(scope);
+    if (match === null) continue;
 
-    const after = m.index + m[0].length;
+    const after = match.index + match[0].length;
     const body = readTierBody(scope, after);
     const text = htmlToText(body);
     out[key] = text === '' ? null : text;
@@ -73,8 +73,8 @@ export function parseOutcomesBlock(bodyHtml: string): Outcomes {
 function readTierBody(html: string, after: number): string {
   const stop = /<b>\s*(?:Critical\s+Success|Success|Failure|Critical\s+Failure|Heightened)\b|<hr\s*\/?>/i;
   const slice = html.slice(after);
-  const m = stop.exec(slice);
-  const end = m === null ? slice.length : m.index;
+  const match = stop.exec(slice);
+  const end = match === null ? slice.length : match.index;
   return slice.slice(0, end);
 }
 

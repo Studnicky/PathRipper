@@ -1,11 +1,11 @@
 //
 // SetRelics.aspx pages describe linked relic sets with tiered benefits.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -132,11 +132,11 @@ const ANCHOR_RE = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
 /** Pull every anchor in the value, capturing href + name. */
 function harvestAnchors(html: string): Array<{ href: string; name: string }> {
   const out: Array<{ href: string; name: string }> = [];
-  const re = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const href = m[1] ?? '';
-    const name = htmlToText(m[2] ?? '');
+  const regex = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const href = match[1] ?? '';
+    const name = htmlToText(match[2] ?? '');
     if (name === '') continue;
     out.push({ href, name });
   }
@@ -149,9 +149,9 @@ function parseAspects(valueHtml: string | null): string[] {
   const anchors = harvestAnchors(valueHtml);
   if (anchors.length === 0) {
     // Plain-text fallback.
-    return splitTopLevel(htmlToText(valueHtml), ',').filter((s) => s !== '');
+    return splitTopLevel(htmlToText(valueHtml), ',').filter((str) => str !== '');
   }
-  return anchors.map((a) => a.name);
+  return anchors.map((anchor) => anchor.name);
 }
 
 /**
@@ -161,9 +161,9 @@ function parseAspects(valueHtml: string | null): string[] {
  */
 function parseSetItems(html: string): SetRelicItem[] {
   // Locate the `<b>Set Items</b>:` block.
-  const m = /<b>\s*Set\s+Items\s*<\/b>\s*:?\s*([\s\S]*?)(?=<hr|<b>|<h[1-6]\b|$)/i.exec(html);
-  if (m === null) return [];
-  const block = m[1] ?? '';
+  const match = /<b>\s*Set\s+Items\s*<\/b>\s*:?\s*([\s\S]*?)(?=<hr|<b>|<h[1-6]\b|$)/i.exec(html);
+  if (match === null) return [];
+  const block = match[1] ?? '';
 
   const out: SetRelicItem[] = [];
   // Each component is an anchor (optionally wrapped in `<u><i>…</i></u>`)
@@ -171,12 +171,12 @@ function parseSetItems(html: string): SetRelicItem[] {
   // the anchor first and then look ahead through any trailing closing tags to
   // capture the level qualifier.
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>((?:<\/[a-z]+>)*\s*\(\s*level\s+(-?\d+)\s*\))?/gi;
-  let am: RegExpExecArray | null;
-  while ((am = anchorRe.exec(block)) !== null) {
-    const href  = am[1] ?? '';
-    const name  = htmlToText(am[2] ?? '');
+  let attackMatch: RegExpExecArray | null;
+  while ((attackMatch = anchorRe.exec(block)) !== null) {
+    const href  = attackMatch[1] ?? '';
+    const name  = htmlToText(attackMatch[2] ?? '');
     if (name === '') continue;
-    const lvl   = am[4] !== undefined ? parseInt(am[4], 10) : null;
+    const lvl   = attackMatch[4] !== undefined ? parseInt(attackMatch[4], 10) : null;
     const idM   = /\?ID=(\d+)/i.exec(href);
     const equipment_id = idM !== null ? parseInt(idM[1]!, 10) : null;
     out.push({
@@ -194,15 +194,15 @@ function parseSetItems(html: string): SetRelicItem[] {
  */
 function parseGifts(html: string): SetRelicGift[] {
   // Locate the `<b>Gifts</b>:` block, capturing up to the next `<hr />` or `<b>`.
-  const m = /<b>\s*Gifts\s*<\/b>\s*:?\s*[\s\S]*?<ul>([\s\S]*?)<\/ul>/i.exec(html);
-  if (m === null) return [];
-  const block = m[1] ?? '';
+  const match = /<b>\s*Gifts\s*<\/b>\s*:?\s*[\s\S]*?<ul>([\s\S]*?)<\/ul>/i.exec(html);
+  if (match === null) return [];
+  const block = match[1] ?? '';
 
   const out: SetRelicGift[] = [];
   const liRe = /<li>([\s\S]*?)<\/li>/gi;
-  let lm: RegExpExecArray | null;
-  while ((lm = liRe.exec(block)) !== null) {
-    const inner = lm[1] ?? '';
+  let lastMatch: RegExpExecArray | null;
+  while ((lastMatch = liRe.exec(block)) !== null) {
+    const inner = lastMatch[1] ?? '';
     const tierMatch = /<i>\s*(\d+)\s*<\/i>/i.exec(inner);
     if (tierMatch === null) continue;
     const tier = parseInt(tierMatch[1]!, 10);
@@ -230,9 +230,9 @@ function parseFeatures(html: string): SetRelicFeature[] {
 
   const out: SetRelicFeature[] = [];
   const liRe = /<li>([\s\S]*?)<\/li>/gi;
-  let lm: RegExpExecArray | null;
-  while ((lm = liRe.exec(featBlock)) !== null) {
-    const inner  = lm[1] ?? '';
+  let lastMatch: RegExpExecArray | null;
+  while ((lastMatch = liRe.exec(featBlock)) !== null) {
+    const inner  = lastMatch[1] ?? '';
     const labelM = /<i>\s*([^<]+?)\s*<\/i>\s*:?\s*([\s\S]*)/i.exec(inner);
     if (labelM === null) continue;
     const tier_label = (labelM[1] ?? '').trim();
@@ -257,35 +257,35 @@ function buildDescription(bodyHtml: string): string {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for a set-relic page. */
-export function extractSetRelicBase(c: CommonExtraction): SetRelicBaseSlice {
+export function extractSetRelicBase(common: CommonExtraction): SetRelicBaseSlice {
   return {
-    url:             c.url,
-    set_relic_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    set_relic_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 /** Extract set components, gifts, and tier features. */
-export function extractSetRelicComponents(c: CommonExtraction): SetRelicComponentsSlice {
+export function extractSetRelicComponents(common: CommonExtraction): SetRelicComponentsSlice {
   return {
-    aspects:          parseAspects(getFieldHtml(c, 'Aspects')),
-    components:       parseSetItems(c.body_html),
-    gifts:            parseGifts(c.body_html),
-    features:         parseFeatures(c.body_html),
-    description_text: buildDescription(c.body_html),
+    aspects:          parseAspects(getFieldHtml(common, 'Aspects')),
+    components:       parseSetItems(common.body_html),
+    gifts:            parseGifts(common.body_html),
+    features:         parseFeatures(common.body_html),
+    description_text: buildDescription(common.body_html),
   };
 }
 
 /** Extract meta slice marker. */
-export function extractSetRelicMeta(_c: CommonExtraction): SetRelicMetaSlice {
+export function extractSetRelicMeta(_common: CommonExtraction): SetRelicMetaSlice {
   return { __set_relic_meta_marked: true };
 }
 
@@ -297,25 +297,25 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeSetRelic(
-  c:           CommonExtraction,
+  common:      CommonExtraction,
   base:        SetRelicBaseSlice,
   components:  SetRelicComponentsSlice,
   _meta:       SetRelicMetaSlice,
-  $:           CheerioAPI,
+  root:        CheerioAPI,
 ): SetRelicOutput {
   void _meta;
   void getField;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     ...components,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies SetRelicOutput;
 }
 
@@ -327,15 +327,15 @@ export function finalizeSetRelic(
  * the decomposed set-relic extraction nodes.
  */
 export function extractSetRelic(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   _span:  CheerioNode,
 ): SetRelicOutput {
   void _span;
-  const base       = extractSetRelicBase(c);
-  const components = extractSetRelicComponents(c);
-  const meta       = extractSetRelicMeta(c);
-  return finalizeSetRelic(c, base, components, meta, $);
+  const base       = extractSetRelicBase(common);
+  const components = extractSetRelicComponents(common);
+  const meta       = extractSetRelicMeta(common);
+  return finalizeSetRelic(common, base, components, meta, root);
 }
 
 // Re-export output types so tests can import from here.
@@ -343,82 +343,88 @@ export function extractSetRelic(
 
 export type SetRelicBaseOutput = 'success' | 'error';
 
-export const setRelicBaseNode: NodeInterface<ScrapeState, SetRelicBaseOutput, RipperServices> = {
-  name:    'extract:set-relic-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SetRelicBaseNode extends ScalarNode<ScrapeState, SetRelicBaseOutput> {
+  public readonly name = 'extract:set-relic-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SetRelicBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SetRelicBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSetRelicBase(c);
+    const base = extractSetRelicBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const setRelicBaseNode = new SetRelicBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SetRelicComponentsOutput = 'success' | 'error';
 
-export const setRelicComponentsNode: NodeInterface<ScrapeState, SetRelicComponentsOutput, RipperServices> = {
-  name:    'extract:set-relic-components',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SetRelicComponentsNode extends ScalarNode<ScrapeState, SetRelicComponentsOutput> {
+  public readonly name = 'extract:set-relic-components';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SetRelicComponentsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SetRelicComponentsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const components = extractSetRelicComponents(c);
+    const components = extractSetRelicComponents(common);
 
     state.output = { ...state.output, ...components };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const setRelicComponentsNode = new SetRelicComponentsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeSetRelicOutput = 'success';
 
-export const finalizeSetRelicNode: NodeInterface<ScrapeState, FinalizeSetRelicOutput, RipperServices> = {
-  name:    'finalize:set-relic',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeSetRelicNode extends ScalarNode<ScrapeState, FinalizeSetRelicOutput> {
+  public readonly name = 'finalize:set-relic';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSetRelicOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSetRelicOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as SetRelicOutput;
-    const assembled = finalizeSetRelic(c, (acc as never), (acc as never), (acc as never), $);
+    const assembled = finalizeSetRelic(common, (acc as never), (acc as never), (acc as never), root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeSetRelicNode = new FinalizeSetRelicNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

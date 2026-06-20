@@ -1,5 +1,6 @@
 // Unit tests for vehicle concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -13,59 +14,60 @@ import {
 } from '../../../../../plugins/aonprd/concepts/vehicle.js';
 import type { VehicleOutput } from '../../../../../plugins/aonprd/concepts/vehicle.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await vehicleBaseNode.execute(state, stubContext);
-  await vehicleMechanicsNode.execute(state, stubContext);
-  await finalizeVehicleNode.execute(state, stubContext);
-  return state.output as VehicleOutput;
+  await vehicleBaseNode.execute(Batch.of(state), stubContext);
+  await vehicleMechanicsNode.execute(Batch.of(state), stubContext);
+  await finalizeVehicleNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<VehicleOutput>(state.output);
 }
 
 describe('extract:vehicle-base — vehicle-airship', () => {
   it('produces _type, name, vehicle_id', async () => {
     const state = await primeState('vehicle-airship.html', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    const r = await vehicleBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await vehicleBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as VehicleOutput;
+    const out = ParsedOutput.as<VehicleOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.vehicle_id, 1);
   });
 
   it('captures source and traits', async () => {
     const state = await primeState('vehicle-airship.html', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    await vehicleBaseNode.execute(state, stubContext);
-    const out = state.output as VehicleOutput;
+    await vehicleBaseNode.execute(Batch.of(state), stubContext);
+    const out = ParsedOutput.as<VehicleOutput>(state.output);
     assert.ok(out.source !== undefined, 'source missing');
     assert.ok(Array.isArray(out.traits), 'traits should be array');
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    const r = await vehicleBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await vehicleBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:vehicle-mechanics — vehicle-airship', () => {
   it('produces price, crew, ac, hp, piloting_checks', async () => {
     const state = await primeState('vehicle-airship.html', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    await vehicleBaseNode.execute(state, stubContext);
-    const r = await vehicleMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await vehicleBaseNode.execute(Batch.of(state), stubContext);
+    const result = await vehicleMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as VehicleOutput;
+    const out = ParsedOutput.as<VehicleOutput>(state.output);
     assert.ok('price' in out, 'price missing');
     assert.ok('crew' in out, 'crew missing');
     assert.ok('ac' in out, 'ac missing');
@@ -75,20 +77,20 @@ describe('extract:vehicle-mechanics — vehicle-airship', () => {
 
   it('error path — returns error when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    const r = await vehicleMechanicsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await vehicleMechanicsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('finalize:vehicle — vehicle-airship', () => {
   it('produces operator_actions, description, sections, raw_fields', async () => {
     const state = await primeState('vehicle-airship.html', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    await vehicleBaseNode.execute(state, stubContext);
-    await vehicleMechanicsNode.execute(state, stubContext);
-    const r = await finalizeVehicleNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await vehicleBaseNode.execute(Batch.of(state), stubContext);
+    await vehicleMechanicsNode.execute(Batch.of(state), stubContext);
+    const result = await finalizeVehicleNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as VehicleOutput;
+    const out = ParsedOutput.as<VehicleOutput>(state.output);
     assert.ok(Array.isArray(out.operator_actions), 'operator_actions missing');
     assert.ok('description_text' in out, 'description_text missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');
@@ -97,8 +99,8 @@ describe('finalize:vehicle — vehicle-airship', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Vehicles.aspx?ID=1');
-    const r = await finalizeVehicleNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeVehicleNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

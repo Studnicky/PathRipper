@@ -7,12 +7,12 @@
 //   - `section_counts` is NEW.
 //   - `pfs_note` is NEW.
 //   - `sections[]` filters out legacy-content-warning headings.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type {
   CommonExtraction,
   CheerioNode,
@@ -196,9 +196,9 @@ const BUCKET_KIND: ReadonlyMap<keyof Omit<LanguageSpeakers, 'other'>, string> = 
  * E.g. `"Ancestries (48)"` → `{ base: 'ancestries', count: 48 }`.
  */
 function parseHeading(heading: string): { base: string; count: number | null } {
-  const m = /^(.*?)\s*\((\d+)\)\s*$/.exec(heading.trim());
-  if (m !== null) {
-    return { base: m[1]!.trim().toLowerCase(), count: parseInt(m[2]!, 10) };
+  const match = /^(.*?)\s*\((\d+)\)\s*$/.exec(heading.trim());
+  if (match !== null) {
+    return { base: match[1]!.trim().toLowerCase(), count: parseInt(match[2]!, 10) };
   }
   return { base: heading.trim().toLowerCase(), count: null };
 }
@@ -217,10 +217,10 @@ function harvestSectionLinks(html: string, kind: string): SpeakerRef[] {
   const out: SpeakerRef[] = [];
   const seen = new Set<string>();
   const anchorRe = /<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = anchorRe.exec(html)) !== null) {
-    const href  = m[1] ?? '';
-    const inner = m[2] ?? '';
+  let match: RegExpExecArray | null;
+  while ((match = anchorRe.exec(html)) !== null) {
+    const href  = match[1] ?? '';
+    const inner = match[2] ?? '';
     const name  = htmlToText(inner);
     if (name === '') continue;
     if (seen.has(href)) continue;
@@ -298,45 +298,47 @@ const CLAIMED_FIELD_LABELS: readonly string[] = [
 /** Output type for extract:language-base. */
 export type LanguageBaseOutput = 'success' | 'error';
 
-export const languageBaseNode: NodeInterface<ScrapeState, LanguageBaseOutput, RipperServices> = {
-  name:    'extract:language-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class LanguageBaseNode extends ScalarNode<ScrapeState, LanguageBaseOutput> {
+  public readonly name = 'extract:language-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: LanguageBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<LanguageBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const kindRaw   = c.field_map['Type'] ?? c.field_map['Kind'] ?? null;
-    const scriptRaw = c.field_map['Script'] ?? null;
+    const kindRaw   = common.field_map['Type'] ?? common.field_map['Kind'] ?? null;
+    const scriptRaw = common.field_map['Script'] ?? null;
 
     const base: Partial<LanguageOutput> = {
-      url:             c.url,
-      language_id:     extractEntityId(c.url),
-      name:            c.title.name,
-      rarity:          c.traits.rarity,
-      pfs:             c.title.pfs,
-      legacy:          c.title.legacy,
-      alt_edition_url: c.title.alt_edition_url,
-      traits:          c.traits.traits,
-      trait_ids:       c.traits.trait_ids,
-      source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-      sources:         c.sources,
+      url:             common.url,
+      language_id:     extractEntityId(common.url),
+      name:            common.title.name,
+      rarity:          common.traits.rarity,
+      pfs:             common.title.pfs,
+      legacy:          common.title.legacy,
+      alt_edition_url: common.title.alt_edition_url,
+      traits:          common.traits.traits,
+      trait_ids:       common.traits.trait_ids,
+      source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+      sources:         common.sources,
       kind:            parseKind(kindRaw),
       script:          scriptRaw !== null && scriptRaw.trim() !== '' ? scriptRaw.trim() : null,
     };
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const languageBaseNode = new LanguageBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -346,20 +348,20 @@ export const languageBaseNode: NodeInterface<ScrapeState, LanguageBaseOutput, Ri
 /** Output type for extract:language-speakers. */
 export type LanguageSpeakersOutput = 'success' | 'error';
 
-export const languageSpeakersNode: NodeInterface<ScrapeState, LanguageSpeakersOutput, RipperServices> = {
-  name:    'extract:language-speakers',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class LanguageSpeakersNode extends ScalarNode<ScrapeState, LanguageSpeakersOutput> {
+  public readonly name = 'extract:language-speakers';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: LanguageSpeakersOutput }> {
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<LanguageSpeakersOutput>> {
     const sections = state.getMetadata<Section[]>('sections');
-    if (sections === undefined) return { output: 'error' };
+    if (sections === undefined) return NodeOutputBuilder.of('error');
 
     const buckets = emptyLanguageSpeakers();
     const section_counts: Record<string, number> = {};
@@ -390,9 +392,11 @@ export const languageSpeakersNode: NodeInterface<ScrapeState, LanguageSpeakersOu
       ? { ...state.output, speakers, section_counts }
       : { speakers, section_counts };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const languageSpeakersNode = new LanguageSpeakersNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -402,31 +406,33 @@ export const languageSpeakersNode: NodeInterface<ScrapeState, LanguageSpeakersOu
 /** Output type for extract:language-pfs-note. */
 export type LanguagePfsNoteOutput = 'success' | 'error';
 
-export const languagePfsNoteNode: NodeInterface<ScrapeState, LanguagePfsNoteOutput, RipperServices> = {
-  name:    'extract:language-pfs-note',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class LanguagePfsNoteNode extends ScalarNode<ScrapeState, LanguagePfsNoteOutput> {
+  public readonly name = 'extract:language-pfs-note';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: LanguagePfsNoteOutput }> {
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<LanguagePfsNoteOutput>> {
+    const root = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if ($ === undefined || target === undefined) return { output: 'error' };
+    if (root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const pfs_note = extractPfsNote($, target);
+    const pfs_note = extractPfsNote(root, target);
 
     state.output = state.output !== null
       ? { ...state.output, pfs_note }
       : { pfs_note };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const languagePfsNoteNode = new LanguagePfsNoteNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -437,23 +443,23 @@ export const languagePfsNoteNode: NodeInterface<ScrapeState, LanguagePfsNoteOutp
 /** Output type for extract:language-description. */
 export type LanguageDescriptionOutput = 'success' | 'error';
 
-export const languageDescriptionNode: NodeInterface<ScrapeState, LanguageDescriptionOutput, RipperServices> = {
-  name:    'extract:language-description',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class LanguageDescriptionNode extends ScalarNode<ScrapeState, LanguageDescriptionOutput> {
+  public readonly name = 'extract:language-description';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: LanguageDescriptionOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<LanguageDescriptionOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || sections === undefined) return { output: 'error' };
+    if (common === undefined || sections === undefined) return NodeOutputBuilder.of('error');
 
-    const description = extractDescription(c.body_html);
+    const description = extractDescription(common.body_html);
     const filteredSections = filterLegacySections(sections);
 
     state.output = state.output !== null
@@ -469,9 +475,11 @@ export const languageDescriptionNode: NodeInterface<ScrapeState, LanguageDescrip
         sections:         filteredSections,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const languageDescriptionNode = new LanguageDescriptionNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -482,23 +490,23 @@ export const languageDescriptionNode: NodeInterface<ScrapeState, LanguageDescrip
 /** Output type for finalize:language. */
 export type FinalizeLanguageOutput = 'success';
 
-export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOutput, RipperServices> = {
-  name:    'finalize:language',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeLanguageNode extends ScalarNode<ScrapeState, FinalizeLanguageOutput> {
+  public readonly name = 'finalize:language';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeLanguageOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeLanguageOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
     // Open-world soft-fail: any missing prerequisite becomes a no-op success.
     // Upstream extract nodes are responsible for the typed fields on
     // `state.output`; this finalize node layers in the meta slice only.
-    if (c === undefined) return { output: 'success' };
+    if (common === undefined) return NodeOutputBuilder.of('success');
 
     // Read meta tags from the shared `extract:meta-tags` capability instead of
     // calling `extractMetaDescription` / `extractMetaKeywords` here.
@@ -511,17 +519,17 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
     const acc = (state.output ?? {}) as Partial<LanguageOutput>;
 
     const assembled = {
-      url:              c.url,
+      url:              common.url,
       language_id:      acc.language_id ?? null,
-      name:             acc.name ?? c.title.name,
-      rarity:           acc.rarity ?? c.traits.rarity,
-      pfs:              acc.pfs ?? c.title.pfs,
-      legacy:           acc.legacy ?? c.title.legacy,
-      alt_edition_url:  acc.alt_edition_url ?? c.title.alt_edition_url,
-      traits:           acc.traits ?? c.traits.traits,
-      trait_ids:        acc.trait_ids ?? c.traits.trait_ids,
-      source:           acc.source ?? { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-      sources:          acc.sources ?? c.sources,
+      name:             acc.name ?? common.title.name,
+      rarity:           acc.rarity ?? common.traits.rarity,
+      pfs:              acc.pfs ?? common.title.pfs,
+      legacy:           acc.legacy ?? common.title.legacy,
+      alt_edition_url:  acc.alt_edition_url ?? common.title.alt_edition_url,
+      traits:           acc.traits ?? common.traits.traits,
+      trait_ids:        acc.trait_ids ?? common.traits.trait_ids,
+      source:           acc.source ?? { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+      sources:          acc.sources ?? common.sources,
       kind:             acc.kind ?? null,
       script:           acc.script ?? null,
       speakers:         acc.speakers ?? {
@@ -539,19 +547,21 @@ export const finalizeLanguageNode: NodeInterface<ScrapeState, FinalizeLanguageOu
       description_text: acc.description_text ?? '',
       description_html: acc.description_html ?? '',
       sections:         acc.sections ?? [],
-      raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-      links:            c.links,
-      body_text:        c.body_text,
-      body_html:        c.body_html,
+      raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+      links:            common.links,
+      body_text:        common.body_text,
+      body_html:        common.body_html,
       meta_description: meta?.description ?? null,
       meta_keywords:    meta?.keywords    ?? null,
     } satisfies LanguageOutput;
 
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeLanguageNode = new FinalizeLanguageNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

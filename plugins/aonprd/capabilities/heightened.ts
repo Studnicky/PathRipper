@@ -44,15 +44,15 @@ function parseHeightenedLabel(label: string): { rank: number | null; increment: 
   const trimmed = label.trim();
   const incM = /^\+\s*(\d+)$/.exec(trimmed);
   if (incM !== null) {
-    const n = parseInt(incM[1] ?? '', 10);
-    return { rank: null, increment: Number.isFinite(n) ? n : null };
+    const num = parseInt(incM[1] ?? '', 10);
+    return { rank: null, increment: Number.isFinite(num) ? num : null };
   }
   const ord = ORDINAL_MAP.get(trimmed.toLowerCase());
   if (ord !== undefined) return { rank: ord, increment: null };
   const numM = /^(\d+)/.exec(trimmed);
   if (numM !== null) {
-    const n = parseInt(numM[1] ?? '', 10);
-    return { rank: Number.isFinite(n) ? n : null, increment: null };
+    const num = parseInt(numM[1] ?? '', 10);
+    return { rank: Number.isFinite(num) ? num : null, increment: null };
   }
   return { rank: null, increment: null };
 }
@@ -68,15 +68,15 @@ function parseHeightenedLabel(label: string): { rank: number | null; increment: 
  */
 export function parseHeightened(bodyHtml: string): HeightenedEntry[] {
   const out: HeightenedEntry[] = [];
-  const re = /<b>\s*Heightened\s*\(([^)]+)\)\s*<\/b>/gi;
+  const regex = /<b>\s*Heightened\s*\(([^)]+)\)\s*<\/b>/gi;
   const matches: Array<{ label: string; index: number; end: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(bodyHtml)) !== null) {
-    matches.push({ label: (m[1] ?? '').trim(), index: m.index, end: m.index + m[0].length });
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(bodyHtml)) !== null) {
+    matches.push({ label: (match[1] ?? '').trim(), index: match.index, end: match.index + match[0].length });
   }
-  for (let i = 0; i < matches.length; i++) {
-    const cur = matches[i]!;
-    const next = matches[i + 1];
+  for (let index = 0; index < matches.length; index++) {
+    const cur = matches[index]!;
+    const next = matches[index + 1];
     const end = next === undefined ? bodyHtml.length : next.index;
     const seg = bodyHtml.slice(cur.end, end);
     // Drop trailing decorative `<ul></ul>` placeholders.

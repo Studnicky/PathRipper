@@ -1,4 +1,5 @@
 import { describe, it, mock, before } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { CliState }  from '../../../../src/state/CliState.js';
@@ -24,7 +25,7 @@ const MOCK_CONFIG: NormalizedRipperConfigInterface = {
 };
 
 // Module-level mock: set up once, control per-test via implementation.
-const runWikiMock = mock.fn(async () => undefined);
+const runWikiMock = mock.fn(async (_opts?: unknown) => undefined);
 
 before(() => {
   mock.module('../../../../src/run/runWiki.js', {
@@ -38,9 +39,9 @@ describe('DispatchWikiScrapeNode', () => {
     const state = new CliState();
     state.config = null;
 
-    const result = await DispatchWikiScrapeNode.execute(state, makeContext());
+    const result = await DispatchWikiScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -50,9 +51,9 @@ describe('DispatchWikiScrapeNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'unknown';
 
-    const result = await DispatchWikiScrapeNode.execute(state, makeContext());
+    const result = await DispatchWikiScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -69,9 +70,9 @@ describe('DispatchWikiScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    const result = await DispatchWikiScrapeNode.execute(state, makeContext());
+    const result = await DispatchWikiScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.equal(state.failedCount, 0);
     assert.equal(state.errorMessage, '');
     assert.equal(runWikiMock.mock.calls.length, 1);
@@ -91,7 +92,7 @@ describe('DispatchWikiScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    await DispatchWikiScrapeNode.execute(state, makeContext());
+    await DispatchWikiScrapeNode.execute(Batch.of(state), makeContext());
 
     const opts = capturedOpts as Record<string, unknown>;
     assert.equal(opts['category'], 'Monsters');
@@ -111,9 +112,9 @@ describe('DispatchWikiScrapeNode', () => {
     state.configPath = '/some/config.json';
     state.outDir     = '/tmp/test-out';
 
-    const result = await DispatchWikiScrapeNode.execute(state, makeContext());
+    const result = await DispatchWikiScrapeNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.ok(state.errorMessage.includes('api unreachable'));
   });
 });

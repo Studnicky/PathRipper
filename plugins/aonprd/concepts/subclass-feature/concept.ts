@@ -1,152 +1,157 @@
 // Subclass-feature concept — DAG nodes and concept declaration.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
-import type { CommonExtraction, CheerioNode } from '../../common.js';
+import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
 import { extractSubclassFeatureBase, extractSubclassFeatureFields, extractSubclassFeatureSpells, extractSubclassFeatureFeatures } from './base.js';
-import { extractSubclassFeatureMeta, finalizeSubclassFeature } from './finalize.js';
+import { finalizeSubclassFeature } from './finalize.js';
 import type { SubclassFeatureOutput } from './types.js';
 
 export type SubclassFeatureBaseOutput = 'success' | 'error';
 
-export const subclassFeatureBaseNode: NodeInterface<ScrapeState, SubclassFeatureBaseOutput, RipperServices> = {
-  name:    'extract:subclass-feature-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SubclassFeatureBaseNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureBaseOutput> {
+  public readonly name    = 'extract:subclass-feature-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SubclassFeatureBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SubclassFeatureBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSubclassFeatureBase(c);
+    const base = extractSubclassFeatureBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const subclassFeatureBaseNode = new SubclassFeatureBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SubclassFeatureFieldsOutput = 'success' | 'error';
 
-export const subclassFeatureFieldsNode: NodeInterface<ScrapeState, SubclassFeatureFieldsOutput, RipperServices> = {
-  name:    'extract:subclass-feature-fields',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SubclassFeatureFieldsNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureFieldsOutput> {
+  public readonly name    = 'extract:subclass-feature-fields';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SubclassFeatureFieldsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SubclassFeatureFieldsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractSubclassFeatureFields(c);
+    const slice = extractSubclassFeatureFields(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const subclassFeatureFieldsNode = new SubclassFeatureFieldsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SubclassFeatureSpellsOutput = 'success' | 'error';
 
-export const subclassFeatureSpellsNode: NodeInterface<ScrapeState, SubclassFeatureSpellsOutput, RipperServices> = {
-  name:    'extract:subclass-feature-spells',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SubclassFeatureSpellsNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureSpellsOutput> {
+  public readonly name    = 'extract:subclass-feature-spells';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SubclassFeatureSpellsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SubclassFeatureSpellsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractSubclassFeatureSpells(c);
+    const slice = extractSubclassFeatureSpells(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const subclassFeatureSpellsNode = new SubclassFeatureSpellsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SubclassFeatureFeaturesOutput = 'success' | 'error';
 
-export const subclassFeatureFeaturesNode: NodeInterface<ScrapeState, SubclassFeatureFeaturesOutput, RipperServices> = {
-  name:    'extract:subclass-feature-features',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class SubclassFeatureFeaturesNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureFeaturesOutput> {
+  public readonly name    = 'extract:subclass-feature-features';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SubclassFeatureFeaturesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SubclassFeatureFeaturesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractSubclassFeatureFeatures(c);
+    const slice = extractSubclassFeatureFeatures(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const subclassFeatureFeaturesNode = new SubclassFeatureFeaturesNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeSubclassFeatureOutput = 'success';
 
-export const finalizeSubclassFeatureNode: NodeInterface<ScrapeState, FinalizeSubclassFeatureOutput, RipperServices> = {
-  name:    'finalize:subclass-feature',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeSubclassFeatureNodeImpl extends ScalarNode<ScrapeState, FinalizeSubclassFeatureOutput> {
+  public readonly name    = 'finalize:subclass-feature';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSubclassFeatureOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSubclassFeatureOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     const meta     = { __subclass_feature_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as SubclassFeatureOutput;
-    const assembled = finalizeSubclassFeature(c, acc, acc, acc, acc, meta, $, target);
+    const assembled = finalizeSubclassFeature(common, acc, acc, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeSubclassFeatureNode = new FinalizeSubclassFeatureNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

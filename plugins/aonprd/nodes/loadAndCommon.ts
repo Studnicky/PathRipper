@@ -7,11 +7,11 @@
 // exported below is wired with the AON strategy (`aonStrategy`). A non-AON
 // plugin builds its own node via `makeLoadAndCommonNode(strategy)` and binds
 // the same Layer-1 capabilities downstream.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }  from '../../../src/state/ScrapeState.js';
-import type { RipperServices }  from '../../../src/services/RipperServices.js';
 import {
   CAPABILITY_OUTPUTS, loadHtml, extractCommon, findContentSpan, detectPageType } from '../common.js';
 import type { CommonStrategy } from '../capabilities/strategy.js';
@@ -41,25 +41,25 @@ export type LoadAndCommonOutput = 'success' | 'error';
  */
 export function makeLoadAndCommonNode(
   strategy: CommonStrategy,
-): NodeInterface<ScrapeState, LoadAndCommonOutput, RipperServices> & {
-  readonly contract: OperationContractFragment;
+): ScalarNode<ScrapeState, LoadAndCommonOutput> & {
+  readonly contract: OperationContractFragmentType;
 } {
-  return {
-    name:    'aonprd:load-and-common',
-    outputs: CAPABILITY_OUTPUTS,
-    contract: {
+  class LoadAndCommonNodeImpl extends ScalarNode<ScrapeState, LoadAndCommonOutput> {
+    public readonly name    = 'aonprd:load-and-common';
+    public readonly outputs = CAPABILITY_OUTPUTS;
+    public override readonly contract: OperationContractFragmentType = {
       hardRequired: [] as const,
       produces:     ['aonprdCheerio', 'aonprdCommon', 'aonprdTarget'] as const,
-    } satisfies OperationContractFragment,
+    };
 
-    async execute(
+    protected override async executeOne(
       state:    ScrapeState,
-      _context: NodeContextInterface<RipperServices>,
-    ): Promise<{ output: LoadAndCommonOutput }> {
+      _context: NodeContextType,
+    ): Promise<NodeOutputType<LoadAndCommonOutput>> {
       const html = state.page.html;
-      if (html === undefined) return { output: 'error' };
+      if (html === undefined) return NodeOutputBuilder.of('error');
 
-      const $ = loadHtml(html);
+      const root = loadHtml(html);
 
       // Rule pages (Rules.aspx) use a div.rule container rather than the standard
       // <span> wrapper. extractCommon returns null for them, but we still want the
@@ -72,27 +72,29 @@ export function makeLoadAndCommonNode(
       // be lifted to the strategy in a future wave (see `extractCommon`).
       const pageType = detectPageType(state.page.url);
       if (pageType === 'rule') {
-        state.setMetadata('aonprdCheerio', $);
-        return { output: 'success' };
+        state.setMetadata('aonprdCheerio', root);
+        return NodeOutputBuilder.of('success');
       }
 
-      const common = extractCommon($, state.page.url, strategy);
-      if (common === null) return { output: 'error' };
+      const common = extractCommon(root, state.page.url, strategy);
+      if (common === null) return NodeOutputBuilder.of('error');
 
       // Resolve the target span (monster pages nest their statblock in a child span).
-      const span = findContentSpan($);
+      const span = findContentSpan(root);
       const target = span !== null && span.find('span.monster-page').first().length > 0
         ? span.find('span.monster-page').first()
         : span;
 
       // Stash transient values on metadata — not serialized by snapshotData().
-      state.setMetadata('aonprdCheerio', $);
+      state.setMetadata('aonprdCheerio', root);
       state.setMetadata('aonprdCommon',  common);
       state.setMetadata('aonprdTarget',  target);
 
-      return { output: 'success' };
-    },
-  };
+      return NodeOutputBuilder.of('success');
+    }
+  }
+
+  return new LoadAndCommonNodeImpl();
 }
 
 /**

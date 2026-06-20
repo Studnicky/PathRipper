@@ -7,9 +7,9 @@
 
 import { load } from 'cheerio';
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { NodeInterface, NodeContextInterface, DAG } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType }           from '@studnicky/dagonizer/contracts';
 
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
@@ -31,14 +31,18 @@ interface DocsPageOutput {
 
 type DocsOutput = DocsSectionOutput | DocsPageOutput;
 
-export const docsParseNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name:    'docs:parse-impl',
-  outputs: ['success'],
+class DocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
+  public readonly name    = 'docs:parse-impl';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['page.html'],
+    produces:     [] as const,
+  };
 
-  async execute(
-    state:   ScrapeState,
-    _context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' }> {
+  protected override async executeOne(
+    state:    ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success'>> {
     const html = state.page.html ?? '';
     const url  = state.page.url;
     const $    = load(html);
@@ -66,9 +70,11 @@ export const docsParseNode: NodeInterface<ScrapeState, 'success', RipperServices
       state.output = output as unknown as Record<string, unknown>;
     }
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const docsParseNode = new DocsParseNodeImpl();
 
 /**
  * Contract-derived docs parse DAG.
@@ -76,27 +82,11 @@ export const docsParseNode: NodeInterface<ScrapeState, 'success', RipperServices
  * @category Flows
  * @since 4.0.0
  */
-export const docsParseFlow: DAG = DAGDeriver.derive({
-  name:       'docs:parse',
-  version:    '2.0',
-  entrypoint: 'docs:parse-impl',
-  contracts: [
-    { name: 'docs:parse-impl', hardRequired: ['page.html'], produces: ['output'], outputs: ['success'] },
-  ],
-  annotations: {
-    terminals: {
-      'docs:parse-impl': [{ outcome: 'success', target: null }],
-    },
-  },
-});
-
-/** OperationContract for docsParseNode: reads page.html, produces output. */
-export const docsParseContract: OperationContract = {
-  name:         'docs:parse-impl',
-  hardRequired: ['page.html'],
-  produces:     ['output'],
-  outputs:      ['success'],
-};
+export const docsParseFlow: DAGType = new DAGBuilder('docs:parse', '2.0')
+  .entrypoint('docs:parse-impl')
+  .node('docs:parse-impl', docsParseNode, { success: 'docs:parse:done' })
+  .terminal('docs:parse:done', { outcome: 'completed' })
+  .build();
 
 // ── Plugin contract ────────────────────────────────────────────────────────────
 

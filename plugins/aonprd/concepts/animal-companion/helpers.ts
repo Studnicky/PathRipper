@@ -3,7 +3,6 @@ import type { HarvestedField } from '../../common.js';
 import {
   htmlToText,
   splitTopLevel,
-  asInt,
 } from '../../common.js';
 import type {
   AnimalCompanionVariant,
@@ -14,25 +13,25 @@ import type {
 
 /** Read the `Type=` query parameter and map it to an AnimalCompanionVariant. */
 export function detectVariant(url: string): AnimalCompanionVariant {
-  const m = /[?&]Type=([A-Za-z]+)/i.exec(url);
-  if (m === null) return 'base';
-  const t = m[1]!.toLowerCase();
-  if (t === 'unique')       return 'unique';
-  if (t === 'specialized')  return 'specialized';
-  if (t === 'advancement')  return 'advancement';
+  const match = /[?&]Type=([A-Za-z]+)/i.exec(url);
+  if (match === null) return 'base';
+  const trimmed = match[1]!.toLowerCase();
+  if (trimmed === 'unique')       return 'unique';
+  if (trimmed === 'specialized')  return 'specialized';
+  if (trimmed === 'advancement')  return 'advancement';
   return 'base';
 }
 
 /**
  * Find the first HarvestedField (case-insensitive) matching `label`, or null.
  *
- * Companion pages have all structured labels surfaced into `c.fields` by the
+ * Companion pages have all structured labels surfaced into `common.fields` by the
  * shared field harvester. Multi-occurrence labels (`Melee`, `Damage`) keep
  * their source order in the array.
  */
 export function findField(fields: ReadonlyArray<HarvestedField>, label: string): HarvestedField | null {
   const target = label.toLowerCase();
-  for (const f of fields) if (f.label.toLowerCase() === target) return f;
+  for (const field of fields) if (field.label.toLowerCase() === target) return field;
   return null;
 }
 
@@ -44,11 +43,11 @@ export function findField(fields: ReadonlyArray<HarvestedField>, label: string):
  */
 export function harvestBoldEntries(html: string): Array<{ label: string; value_text: string; value_html: string }> {
   const out: Array<{ label: string; value_text: string; value_html: string }> = [];
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     out.push({
@@ -72,9 +71,9 @@ const ACTION_LABEL_TO_COST: ReadonlyMap<string, 'one-action' | 'two-actions' | '
 ]);
 
 export function readActionGlyph(text: string): 'one-action' | 'two-actions' | 'three-actions' | 'reaction' | 'free-action' | null {
-  const m = ACTION_GLYPH_RE.exec(text);
-  if (m === null) return null;
-  return ACTION_LABEL_TO_COST.get(m[1]!.toLowerCase()) ?? null;
+  const match = ACTION_GLYPH_RE.exec(text);
+  if (match === null) return null;
+  return ACTION_LABEL_TO_COST.get(match[1]!.toLowerCase()) ?? null;
 }
 
 /**
@@ -104,7 +103,7 @@ export function parseStrikeValue(kind: 'melee' | 'ranged', valueHtml: string, da
     const closeIdx = flat.lastIndexOf(')');
     if (closeIdx > parenIdx) {
       const traitStr = flat.slice(parenIdx + 1, closeIdx);
-      traits = splitTopLevel(traitStr, ',').map((s) => s.trim()).filter((s) => s !== '');
+      traits = splitTopLevel(traitStr, ',').map((str) => str.trim()).filter((str) => str !== '');
     }
   } else {
     name = flat.trim();
@@ -133,11 +132,11 @@ export function parseAbilities(fields: ReadonlyArray<HarvestedField>): AnimalCom
     const entry = findField(fields, lbl);
     if (entry === null) continue;
     // Ability values can carry trailing commas/segments; pull leading signed int.
-    const m = /-?\d+/.exec(entry.value_text);
-    if (m === null) continue;
-    const n = parseInt(m[0], 10);
-    if (!Number.isFinite(n)) continue;
-    out[setMap[lbl]] = n;
+    const match = /-?\d+/.exec(entry.value_text);
+    if (match === null) continue;
+    const num = parseInt(match[0], 10);
+    if (!Number.isFinite(num)) continue;
+    out[setMap[lbl]] = num;
   }
   return out;
 }
@@ -145,24 +144,24 @@ export function parseAbilities(fields: ReadonlyArray<HarvestedField>): AnimalCom
 /** Walk anchor links in a fragment to harvest the base companion reference (Unique pages). */
 export function parseBaseCompanion(valueHtml: string | null): AnimalCompanionRef | null {
   if (valueHtml === null) return null;
-  const m = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i.exec(valueHtml);
-  if (m === null) {
+  const match = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i.exec(valueHtml);
+  if (match === null) {
     const text = htmlToText(valueHtml);
     return text === '' ? null : { name: text, companion_id: null, variant: null, href: '' };
   }
-  const href = m[1] ?? '';
-  const text = htmlToText(m[2] ?? '');
+  const href = match[1] ?? '';
+  const text = htmlToText(match[2] ?? '');
   const idMatch = /[?&]ID=(\d+)/i.exec(href);
-  const id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
+  const companionId = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
   const typeMatch = /[?&]Type=([A-Za-z]+)/i.exec(href);
   let variant: AnimalCompanionVariant | null = null;
   if (typeMatch !== null) {
-    const t = typeMatch[1]!.toLowerCase();
-    if (t === 'unique')       variant = 'unique';
-    else if (t === 'specialized')  variant = 'specialized';
-    else if (t === 'advancement')  variant = 'advancement';
+    const trimmed = typeMatch[1]!.toLowerCase();
+    if (trimmed === 'unique')       variant = 'unique';
+    else if (trimmed === 'specialized')  variant = 'specialized';
+    else if (trimmed === 'advancement')  variant = 'advancement';
   }
-  return { name: text, companion_id: id, variant, href };
+  return { name: text, companion_id: companionId, variant, href };
 }
 
 /**

@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { WriteManifestNode } from '../../../../src/nodes/cli/WriteManifestNode.js';
@@ -17,17 +18,17 @@ describe('WriteManifestNode', () => {
     const state = new CliState();
     state.failedCount = 0;
 
-    const result = await WriteManifestNode.execute(state, makeContext());
+    const result = await WriteManifestNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'skipped');
+    assert.ok(result.has('skipped'));
   });
 
   it('returns success when failedCount > 0', async () => {
     const state = new CliState();
     state.failedCount = 3;
 
-    const result = await WriteManifestNode.execute(state, makeContext());
+    const result = await WriteManifestNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
   });
 });

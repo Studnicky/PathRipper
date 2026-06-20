@@ -3,14 +3,13 @@
 //
 // (mirrors the language concept pattern); the `legacy: true` flag already
 // carries that signal from the title extraction.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
-import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -143,8 +142,8 @@ const NONE_RE = /^(?:none|—|–|-|n\/a)$/i;
  * value-HTML rather than the flattened text because the Divinities and Native
  * Inhabitants lines contain linked anchors we need to walk for ids.
  */
-function fieldHtmlByLabel(c: CommonExtraction, label: string): string | null {
-  for (const field of c.fields) {
+function fieldHtmlByLabel(common: CommonExtraction, label: string): string | null {
+  for (const field of common.fields) {
     if (field.label === label) return field.value_html;
   }
   return null;
@@ -234,12 +233,12 @@ function toInhabitantRefs(tokens: LinkedToken[]): PlaneInhabitantRef[] {
  *
  *   <h1 class="title"><a>...</a><span style="margin-left:auto;...">Plane</span></h1>
  */
-function extractAspect($: CheerioAPI): string | null {
+function extractAspect(root: CheerioAPI): string | null {
   // First H1 with class="title" — the named title row.
-  const h1 = $('h1.title').first();
-  if (h1.length === 0) return null;
-  const tagSpan = h1.find('span').filter((_, el) => {
-    const style = ($(el).attr('style') ?? '').toLowerCase();
+  const h1El = root('h1.title').first();
+  if (h1El.length === 0) return null;
+  const tagSpan = h1El.find('span').filter((_index, element) => {
+    const style = (root(element).attr('style') ?? '').toLowerCase();
     return style.includes('margin-left:auto') || style.includes('margin-right:0');
   }).first();
   if (tagSpan.length === 0) return null;
@@ -248,30 +247,30 @@ function extractAspect($: CheerioAPI): string | null {
 }
 
 /** Extract the prose description from `body_html` (post-`<hr />`). */
-function extractDescription(c: CommonExtraction): { html: string; text: string } {
+function extractDescription(common: CommonExtraction): { html: string; text: string } {
   // Planes.aspx pages always emit `<hr />` between the field block and prose,
-  // so `c.body_html` already begins with the description. Trim trailing
+  // so `common.body_html` already begins with the description. Trim trailing
   // `</span>` artifacts.
-  const trimmed = c.body_html.replace(/\s*<\/span>\s*$/i, '').trim();
+  const trimmed = common.body_html.replace(/\s*<\/span>\s*$/i, '').trim();
   return { html: trimmed, text: htmlToText(trimmed) };
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract identity + header scalars + sources + traits for a plane page. */
-export function extractPlaneBase(c: CommonExtraction): PlaneBaseSlice {
+export function extractPlaneBase(common: CommonExtraction): PlaneBaseSlice {
   return {
-    url:             c.url,
-    plane_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    plane_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -279,9 +278,9 @@ export function extractPlaneBase(c: CommonExtraction): PlaneBaseSlice {
  * Extract divinities + native inhabitants from their respective `<b>Label</b>`
  * lines in the field block.
  */
-export function extractPlaneDenizens(c: CommonExtraction): PlaneDenizensSlice {
-  const divHtml = fieldHtmlByLabel(c, 'Divinities');
-  const natHtml = fieldHtmlByLabel(c, 'Native Inhabitants');
+export function extractPlaneDenizens(common: CommonExtraction): PlaneDenizensSlice {
+  const divHtml = fieldHtmlByLabel(common, 'Divinities');
+  const natHtml = fieldHtmlByLabel(common, 'Native Inhabitants');
   return {
     divinities:         toDivinityRefs(parseLinkedList(divHtml)),
     native_inhabitants: toInhabitantRefs(parseLinkedList(natHtml)),
@@ -293,23 +292,23 @@ export function extractPlaneDenizens(c: CommonExtraction): PlaneDenizensSlice {
  * the right-aligned title span).
  */
 export function extractPlaneCharacteristics(
-  c: CommonExtraction,
-  $: CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
 ): PlaneCharacteristicsSlice {
-  const categoryRaw = c.field_map['Category'] ?? null;
+  const categoryRaw = common.field_map['Category'] ?? null;
   return {
     category: categoryRaw !== null && categoryRaw.trim() !== '' ? categoryRaw.trim() : null,
-    aspect:   extractAspect($),
+    aspect:   extractAspect(root),
   };
 }
 
 /** Extract the description body + harvested sections owned by the meta slice. */
-export function extractPlaneMeta(c: CommonExtraction): PlaneMetaSlice {
-  const description = extractDescription(c);
+export function extractPlaneMeta(common: CommonExtraction): PlaneMetaSlice {
+  const description = extractDescription(common);
   return {
     description_text: description.text,
     description_html: description.html,
-    sections:         c.sections,
+    sections:         common.sections,
   };
 }
 
@@ -321,12 +320,12 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizePlane(
-  c:                CommonExtraction,
+  common:           CommonExtraction,
   base:             PlaneBaseSlice,
   denizens:         PlaneDenizensSlice,
   characteristics:  PlaneCharacteristicsSlice,
   meta:             PlaneMetaSlice,
-  $:                CheerioAPI,
+  root:             CheerioAPI,
 ): PlaneOutput {
   return {
     ...base,
@@ -335,12 +334,12 @@ export function finalizePlane(
     description_text: meta.description_text,
     description_html: meta.description_html,
     sections:         meta.sections,
-    raw_fields:       stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    raw_fields:       stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies PlaneOutput;
 }
 
@@ -352,16 +351,16 @@ export function finalizePlane(
  * the decomposed plane extraction nodes.
  */
 export function extractPlane(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): PlaneOutput {
   void target;
-  const base            = extractPlaneBase(c);
-  const denizens        = extractPlaneDenizens(c);
-  const characteristics = extractPlaneCharacteristics(c, $);
-  const meta            = extractPlaneMeta(c);
-  return finalizePlane(c, base, denizens, characteristics, meta, $);
+  const base            = extractPlaneBase(common);
+  const denizens        = extractPlaneDenizens(common);
+  const characteristics = extractPlaneCharacteristics(common, root);
+  const meta            = extractPlaneMeta(common);
+  return finalizePlane(common, base, denizens, characteristics, meta, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -373,86 +372,88 @@ export function extractPlane(
 
 export type PlaneBaseOutput = 'success' | 'error';
 
-export const planeBaseNode: NodeInterface<ScrapeState, PlaneBaseOutput, RipperServices> = {
-  name:    'extract:plane-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class PlaneBaseNodeImpl extends ScalarNode<ScrapeState, PlaneBaseOutput> {
+  public readonly name = 'extract:plane-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: PlaneBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<PlaneBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base     = extractPlaneBase(c);
-    const denizens = extractPlaneDenizens(c);
+    const base     = extractPlaneBase(common);
+    const denizens = extractPlaneDenizens(common);
 
     state.output = state.output !== null
       ? { ...state.output, ...base, ...denizens }
       : { ...base, ...denizens };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const planeBaseNode = new PlaneBaseNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type PlaneCharacteristicsOutput = 'success' | 'error';
 
-export const planeCharacteristicsNode: NodeInterface<ScrapeState, PlaneCharacteristicsOutput, RipperServices> = {
-  name:    'extract:plane-characteristics',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class PlaneCharacteristicsNodeImpl extends ScalarNode<ScrapeState, PlaneCharacteristicsOutput> {
+  public readonly name = 'extract:plane-characteristics';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: PlaneCharacteristicsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<PlaneCharacteristicsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('error');
 
-    const chars = extractPlaneCharacteristics(c, $);
+    const chars = extractPlaneCharacteristics(common, root);
 
     state.output = { ...state.output, ...chars };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const planeCharacteristicsNode = new PlaneCharacteristicsNodeImpl();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizePlaneOutput = 'success';
 
-export const finalizePlaneNode: NodeInterface<ScrapeState, FinalizePlaneOutput, RipperServices> = {
-  name:    'finalize:plane',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizePlaneNodeImpl extends ScalarNode<ScrapeState, FinalizePlaneOutput> {
+  public readonly name = 'finalize:plane';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizePlaneOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizePlaneOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
-    const trimmed = c.body_html.replace(/\s*<\/span>\s*$/i, '').trim();
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const trimmed = common.body_html.replace(/\s*<\/span>\s*$/i, '').trim();
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     state.output = state.output !== null
       ? {
@@ -462,8 +463,8 @@ export const finalizePlaneNode: NodeInterface<ScrapeState, FinalizePlaneOutput, 
         sections:           filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:          c.body_text,
-        body_html:          c.body_html,
+        body_text:          common.body_text,
+        body_html:          common.body_html,
         meta_description,
         meta_keywords,
       }
@@ -473,15 +474,16 @@ export const finalizePlaneNode: NodeInterface<ScrapeState, FinalizePlaneOutput, 
         sections:           filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:          c.body_text,
-        body_html:          c.body_html,
+        body_text:          common.body_text,
+        body_html:          common.body_html,
         meta_description,
         meta_keywords,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizePlaneNode = new FinalizePlaneNodeImpl();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

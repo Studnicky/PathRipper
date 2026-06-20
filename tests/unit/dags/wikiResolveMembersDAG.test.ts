@@ -9,7 +9,7 @@ import { mkdtemp, rm, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join }   from 'node:path';
 
-import { Dagonizer } from '@noocodex/dagonizer';
+import { Dagonizer } from '@studnicky/dagonizer';
 
 import { MemberResolutionState }                        from '../../../src/state/MemberResolutionState.js';
 import { wikiResolveMembersFlow, WIKI_RESOLVE_MEMBERS_FLOW } from '../../../src/flows/wikiScrapeFlow.js';
@@ -98,10 +98,10 @@ describe('wikiResolveMembersFlow', () => {
 
     assert.equal(state.members.length, 2);
     assert.deepEqual(
-      state.members.map((m) => m.title),
+      state.members.map((member) => member.title),
       ['Alpha', 'Beta'],
     );
-    assert.ok(state.members.every((m) => m.pageid === 0));
+    assert.ok(state.members.every((member) => member.pageid === 0));
   });
 
   it('single-category branch fetches members for the given category', async () => {
@@ -117,7 +117,7 @@ describe('wikiResolveMembersFlow', () => {
     await dispatcher.execute(WIKI_RESOLVE_MEMBERS_FLOW, state);
 
     assert.equal(state.members.length, 2);
-    assert.deepEqual(state.members.map((m) => m.title), ['Galleon', 'Frigate']);
+    assert.deepEqual(state.members.map((member) => member.title), ['Galleon', 'Frigate']);
   });
 
   it('by-categories branch fetches multiple categories and deduplicates members', async () => {
@@ -136,7 +136,7 @@ describe('wikiResolveMembersFlow', () => {
     await dispatcher.execute(WIKI_RESOLVE_MEMBERS_FLOW, state);
 
     assert.equal(state.members.length, 3, 'deduplicated set should have 3 unique titles');
-    const titles = state.members.map((m) => m.title);
+    const titles = state.members.map((member) => member.title);
     assert.ok(titles.includes('Galleon'));
     assert.ok(titles.includes('Frigate'));
     assert.ok(titles.includes('Goblin'));
@@ -155,7 +155,7 @@ describe('wikiResolveMembersFlow', () => {
     await dispatcher.execute(WIKI_RESOLVE_MEMBERS_FLOW, state);
 
     assert.equal(state.members.length, 2);
-    assert.deepEqual(state.members.map((m) => m.title), ['PageA', 'PageB']);
+    assert.deepEqual(state.members.map((member) => member.title), ['PageA', 'PageB']);
   });
 
   it('resume-failures branch returns error output when failures.json is missing', async () => {

@@ -5,6 +5,7 @@
 // annotation is added. Tests verify the capability node works correctly when
 // invoked directly.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }   from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -14,6 +15,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/generic/concept.js';
 import type { GenericOutput } from '../../../../../plugins/aonprd/concepts/generic/types.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 // Use an unknown-type fixture — any page works for the generic fallback.
 const FIXTURE = 'generic-unknown-type.html';
@@ -23,23 +25,23 @@ const URL     = 'https://2e.aonprd.com/UnknownType.aspx?ID=1';
 async function primeState() {
   const html  = await loadFixture(FIXTURE);
   const state = makeState(html, URL);
-  await loadAndCommonNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull() {
   const state = await primeState();
-  await genericExtractNode.execute(state, stubContext);
-  return state.output as GenericOutput;
+  await genericExtractNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<GenericOutput>(state.output);
 }
 
 describe('extract:generic — generic-unknown-type', () => {
   it('produces _type: generic, name, and generic_id', async () => {
     const state = await primeState();
-    const r = await genericExtractNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await genericExtractNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as GenericOutput;
+    const out = ParsedOutput.as<GenericOutput>(state.output);
     // `_type` is stamped by the router via the concept's discriminator —
     // not by the slice extractor — so we only assert structural fields here.
     assert.ok(typeof out.name === 'string', 'name is string');
@@ -52,8 +54,8 @@ describe('extract:generic — generic-unknown-type', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL);
-    const r = await genericExtractNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await genericExtractNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 

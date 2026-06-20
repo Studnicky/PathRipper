@@ -1,14 +1,13 @@
 //
 // Armor-group pages have well-defined structure; the inlined helpers fully
 // cover the content shape.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
-import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -111,45 +110,45 @@ function splitContent(spanHtml: string): { specHtml: string; armorsHtml: string 
 function parseArmors(armorsHtml: string): ArmorGroupArmor[] {
   const out: ArmorGroupArmor[] = [];
   const seen = new Set<string>();
-  const re = /<a[^>]*href=["'][^"']*Armor\.aspx\?ID=(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(armorsHtml)) !== null) {
-    const id = parseInt(m[1]!, 10);
-    const name = htmlToText(m[2] ?? '').trim();
+  const regex = /<a[^>]*href=["'][^"']*Armor\.aspx\?ID=(\d+)[^"']*["'][^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(armorsHtml)) !== null) {
+    const armorId = parseInt(match[1]!, 10);
+    const name = htmlToText(match[2] ?? '').trim();
     if (name === '') continue;
-    const key = `${id}|${name}`;
+    const key = `${armorId}|${name}`;
     if (seen.has(key)) continue;
     seen.add(key);
-    out.push({ name, armor_id: Number.isFinite(id) ? id : null });
+    out.push({ name, armor_id: Number.isFinite(armorId) ? armorId : null });
   }
   return out;
 }
 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
-export function extractArmorGroupBase(c: CommonExtraction): ArmorGroupBaseSlice {
+export function extractArmorGroupBase(common: CommonExtraction): ArmorGroupBaseSlice {
   return {
-    url:             c.url,
-    group_id:        extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    group_id:        extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
 export function extractArmorGroupContent(
-  _c:   CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  _common: CommonExtraction,
+  root:    CheerioAPI,
+  span:    CheerioNode,
 ): ArmorGroupContentSlice {
-  void $;
-  void _c;
+  void root;
+  void _common;
   const spanHtml = span.html() ?? '';
   const { specHtml, armorsHtml } = splitContent(spanHtml);
   return {
@@ -168,26 +167,26 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeArmorGroup(
-  c:       CommonExtraction,
+  common:  CommonExtraction,
   base:    ArmorGroupBaseSlice,
   content: ArmorGroupContentSlice,
-  $:       CheerioAPI,
+  root:    CheerioAPI,
   _target: CheerioNode,
 ): ArmorGroupOutput {
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     ...base,
     armor_specialization_html: content.armor_specialization_html,
     armor_specialization_text: content.armor_specialization_text,
     armors:                    content.armors,
-    sections:                  c.sections,
+    sections:                  common.sections,
     raw_fields,
-    links:                     c.links,
-    body_text:                 c.body_text,
-    body_html:                 c.body_html,
-    meta_description:          extractMetaDescription($),
-    meta_keywords:             extractMetaKeywords($),
+    links:                     common.links,
+    body_text:                 common.body_text,
+    body_html:                 common.body_html,
+    meta_description:          extractMetaDescription(root),
+    meta_keywords:             extractMetaKeywords(root),
   } satisfies ArmorGroupOutput;
 }
 
@@ -197,13 +196,13 @@ export function finalizeArmorGroup(
  * Thin assembly wrapper for `parseAonHtml` direct-call paths and unit tests.
  */
 export function extractArmorGroup(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): ArmorGroupOutput {
-  const base    = extractArmorGroupBase(c);
-  const content = extractArmorGroupContent(c, $, target);
-  return finalizeArmorGroup(c, base, content, $, target);
+  const base    = extractArmorGroupBase(common);
+  const content = extractArmorGroupContent(common, root, target);
+  return finalizeArmorGroup(common, base, content, root, target);
 }
 
 // Re-export output types so tests can import from here.
@@ -215,83 +214,87 @@ export function extractArmorGroup(
 
 export type ArmorGroupBaseOutput = 'success' | 'error';
 
-export const armorGroupBaseNode: NodeInterface<ScrapeState, ArmorGroupBaseOutput, RipperServices> = {
-  name:    'extract:armor-group-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArmorGroupBaseNode extends ScalarNode<ScrapeState, ArmorGroupBaseOutput> {
+  public readonly name = 'extract:armor-group-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArmorGroupBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArmorGroupBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractArmorGroupBase(c);
+    const base = extractArmorGroupBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const armorGroupBaseNode = new ArmorGroupBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type ArmorGroupContentOutput = 'success' | 'error';
 
-export const armorGroupContentNode: NodeInterface<ScrapeState, ArmorGroupContentOutput, RipperServices> = {
-  name:    'extract:armor-group-content',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArmorGroupContentNode extends ScalarNode<ScrapeState, ArmorGroupContentOutput> {
+  public readonly name = 'extract:armor-group-content';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArmorGroupContentOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArmorGroupContentOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const content = extractArmorGroupContent(c, $, target);
+    const content = extractArmorGroupContent(common, root, target);
 
     state.output = { ...state.output, ...content };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const armorGroupContentNode = new ArmorGroupContentNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeArmorGroupOutput = 'success';
 
-export const finalizeArmorGroupNode: NodeInterface<ScrapeState, FinalizeArmorGroupOutput, RipperServices> = {
-  name:    'finalize:armor-group',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeArmorGroupNode extends ScalarNode<ScrapeState, FinalizeArmorGroupOutput> {
+  public readonly name = 'finalize:armor-group';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeArmorGroupOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeArmorGroupOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     state.output = state.output !== null
       ? {
@@ -299,8 +302,8 @@ export const finalizeArmorGroupNode: NodeInterface<ScrapeState, FinalizeArmorGro
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       }
@@ -308,15 +311,17 @@ export const finalizeArmorGroupNode: NodeInterface<ScrapeState, FinalizeArmorGro
         sections:         filterLegacySections(sections),
         raw_fields,
         links,
-        body_text:        c.body_text,
-        body_html:        c.body_html,
+        body_text:        common.body_text,
+        body_html:        common.body_html,
         meta_description,
         meta_keywords,
       };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeArmorGroupNode = new FinalizeArmorGroupNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

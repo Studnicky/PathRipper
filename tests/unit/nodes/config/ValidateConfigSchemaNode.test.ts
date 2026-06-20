@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { ValidateConfigSchemaNode } from '../../../../src/nodes/config/ValidateConfigSchemaNode.js';
@@ -16,9 +17,9 @@ describe('ValidateConfigSchemaNode', () => {
     const state = new ConfigLoadState();
     state.parsed = { output: { basePath: './out' } };
 
-    const result = await ValidateConfigSchemaNode.execute(state, makeContext());
+    const result = await ValidateConfigSchemaNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'valid');
+    assert.ok(result.has('valid'));
     assert.deepEqual(state.validated, { output: { basePath: './out' } });
     assert.equal(state.errors.length, 0);
   });
@@ -27,9 +28,9 @@ describe('ValidateConfigSchemaNode', () => {
     const state = new ConfigLoadState();
     state.parsed = {}; // missing `output`
 
-    const result = await ValidateConfigSchemaNode.execute(state, makeContext());
+    const result = await ValidateConfigSchemaNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invalid');
+    assert.ok(result.has('invalid'));
     assert.equal(state.validated, null);
     assert.equal(state.errors.length, 1);
   });
@@ -38,7 +39,7 @@ describe('ValidateConfigSchemaNode', () => {
     const state = new ConfigLoadState();
     state.parsed = { output: { basePath: './out' }, mystery: 1 }; // additionalProperties
 
-    await ValidateConfigSchemaNode.execute(state, makeContext());
+    await ValidateConfigSchemaNode.execute(Batch.of(state), makeContext());
 
     const err = state.errors[0];
     assert.ok(err !== undefined);
@@ -54,9 +55,9 @@ describe('ValidateConfigSchemaNode', () => {
       mediawiki: { x: { apiUrl: 'not-a-url', pipeline: ['wiki:fetch'] } },
     };
 
-    const result = await ValidateConfigSchemaNode.execute(state, makeContext());
+    const result = await ValidateConfigSchemaNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'invalid');
+    assert.ok(result.has('invalid'));
     const err = state.errors[0];
     assert.ok(err !== undefined);
     assert.ok(err.message.includes('uri'));

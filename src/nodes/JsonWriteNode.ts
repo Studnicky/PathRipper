@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join }    from 'node:path';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { Logger }           from '../modules/logger/logger.js';
 import { pageSlug }         from './fileUtils.js';
@@ -10,6 +10,8 @@ import type { ScrapeState } from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
 
 const logger = Logger.forComponent('JsonWriteNode');
+
+type JsonWriteOutput = 'success' | 'skipped';
 
 /**
  * Writes `state.output` as 2-space JSON to `<outDir>/<targetId>/<pluginTaskName>/<slug>.json`.
@@ -25,15 +27,18 @@ const logger = Logger.forComponent('JsonWriteNode');
  * @category Nodes
  * @since 3.0.0
  */
-export const JsonWriteNode: NodeInterface<ScrapeState, 'success' | 'skipped', RipperServices> = {
-  name: 'json:write',
-  outputs: ['success', 'skipped'],
+class JsonWriteNodeImpl extends ScalarNode<ScrapeState, JsonWriteOutput, RipperServices> {
+  public readonly name = 'json:write';
+  public readonly outputs = ['success', 'skipped'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' | 'skipped' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<JsonWriteOutput>> {
     const { services } = context;
     if (state.output === null) {
       logger.debug('json:write', 'Skipping write — state.output is null', { task: 'json:write' });
-      return { output: 'skipped' };
+      return NodeOutputBuilder.of('skipped');
     }
     const slug            = pageSlug(state.page);
     const splitByTaskName = services.splitByTaskName !== false;
@@ -48,14 +53,8 @@ export const JsonWriteNode: NodeInterface<ScrapeState, 'success' | 'skipped', Ri
     const payload: Record<string, unknown> = { ...state.output };
     await writeFile(outFile, JSON.stringify(payload, null, 2), 'utf8');
     logger.debug('json:write', `Wrote JSON: ${outFile}`, { task: 'json:write', outFile });
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for JsonWriteNode: reads output, writes to disk (no state field). */
-export const jsonWriteContract: OperationContract = {
-  name:         'json:write',
-  hardRequired: ['output'],
-  produces:     [],
-  outputs:      ['success', 'skipped'],
-};
+export const JsonWriteNode = new JsonWriteNodeImpl();

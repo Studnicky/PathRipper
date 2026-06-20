@@ -4,12 +4,12 @@
 // related sources), plus a finalize step for raw_fields + meta.
 //
 // a single taxonomy node rather than an inline switch arm.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -98,21 +98,21 @@ const ATTR_NAMES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wi
 // ─── Slice extraction ─────────────────────────────────────────────────────────
 
 /** Extract identity + source metadata. */
-export function extractBackgroundBase(c: CommonExtraction, _$: CheerioAPI, _span: CheerioNode): BackgroundBaseSlice {
-  void _$;
+export function extractBackgroundBase(common: CommonExtraction, _root: CheerioAPI, _span: CheerioNode): BackgroundBaseSlice {
+  void _root;
   void _span;
   return {
-    url:             c.url,
-    background_id:       extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    background_id:       extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -129,21 +129,21 @@ export function extractBackgroundBase(c: CommonExtraction, _$: CheerioAPI, _span
  *   - related_sources: Sources.aspx anchors inside the `<b>Related Sources</b>`
  *     inline field block.
  */
-export function extractBackgroundBenefits(c: CommonExtraction): BackgroundBenefitsSlice {
+export function extractBackgroundBenefits(common: CommonExtraction): BackgroundBenefitsSlice {
   let attribute_boost_choice: BackgroundBenefitsSlice['attribute_boost_choice'] = null;
-  const boostMatch = /must be to ([A-Z][a-z]+)(?: or ([A-Z][a-z]+))?/.exec(c.body_text);
+  const boostMatch = /must be to ([A-Z][a-z]+)(?: or ([A-Z][a-z]+))?/.exec(common.body_text);
   if (boostMatch !== null) {
     const fixed = [boostMatch[1]!];
     if (boostMatch[2] !== undefined) fixed.push(boostMatch[2]);
     attribute_boost_choice = {
-      fixed_options: fixed.filter((f) => ATTR_NAMES.includes(f)),
-      free: /free attribute boost/i.test(c.body_text),
+      fixed_options: fixed.filter((field) => ATTR_NAMES.includes(field)),
+      free: /free attribute boost/i.test(common.body_text),
     };
   }
 
   const trained_skills: BackgroundBenefitsSlice['trained_skills'] = [];
   const lore_skills:    BackgroundBenefitsSlice['lore_skills']    = [];
-  for (const link of c.links) {
+  for (const link of common.links) {
     if (link.kind === 'Skills') {
       const entry = { name: link.text, skill_id: link.id };
       if (/lore/i.test(link.text)) lore_skills.push(entry);
@@ -151,26 +151,26 @@ export function extractBackgroundBenefits(c: CommonExtraction): BackgroundBenefi
     }
   }
 
-  const featLink = c.links.find((l) => l.kind === 'Feats');
+  const featLink = common.links.find((link) => link.kind === 'Feats');
   const granted_feat = featLink === undefined
     ? null
     : { name: featLink.text, feat_id: featLink.id };
 
-  const flavorIdx = c.body_text.search(/Choose (?:two|an) attribute/i);
-  const flavor_text = flavorIdx === -1 ? c.body_text : c.body_text.slice(0, flavorIdx).trim();
+  const flavorIdx = common.body_text.search(/Choose (?:two|an) attribute/i);
+  const flavor_text = flavorIdx === -1 ? common.body_text : common.body_text.slice(0, flavorIdx).trim();
 
   const related_sources: BackgroundBenefitsSlice['related_sources'] = [];
-  const rsIdx = c.body_html.search(/<b>\s*Related Sources?\s*<\/b>/i);
+  const rsIdx = common.body_html.search(/<b>\s*Related Sources?\s*<\/b>/i);
   if (rsIdx !== -1) {
-    const fragment = c.body_html.slice(rsIdx).replace(/^[\s\S]*?<\/b>\s*/, '').slice(0, 600);
+    const fragment = common.body_html.slice(rsIdx).replace(/^[\s\S]*?<\/b>\s*/, '').slice(0, 600);
     const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-    let am: RegExpExecArray | null;
-    while ((am = anchorRe.exec(fragment)) !== null) {
-      const href = am[1] ?? '';
+    let anchorMatch: RegExpExecArray | null;
+    while ((anchorMatch = anchorRe.exec(fragment)) !== null) {
+      const href = anchorMatch[1] ?? '';
       if (!/Sources\.aspx/i.test(href)) continue;
       const idMatch = /\?ID=(\d+)/i.exec(href);
       const source_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-      const name = htmlToText(am[2] ?? '');
+      const name = htmlToText(anchorMatch[2] ?? '');
       if (name !== '') related_sources.push({ name, source_id });
     }
   }
@@ -191,23 +191,23 @@ export function extractBackgroundBenefits(c: CommonExtraction): BackgroundBenefi
  * `raw_fields` strips the source/related-sources labels claimed by the slices.
  */
 export function finalizeBackground(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     BackgroundBaseSlice,
   benefits: BackgroundBenefitsSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
 ): BackgroundOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
 
   return {
     ...base,
     ...benefits,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies BackgroundOutput;
 }
 
@@ -218,10 +218,10 @@ export function finalizeBackground(
  * tests. The DAG pipeline calls the per-slice helpers individually through
  * the decomposed background extraction nodes.
  */
-export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): BackgroundOutput {
-  const base     = extractBackgroundBase(c, $, span);
-  const benefits = extractBackgroundBenefits(c);
-  return finalizeBackground(c, base, benefits, $);
+export function extractBackground(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): BackgroundOutput {
+  const base     = extractBackgroundBase(common, root, span);
+  const benefits = extractBackgroundBenefits(common);
+  return finalizeBackground(common, base, benefits, root);
 }
 
 // Re-export output type so tests can import from here.
@@ -232,30 +232,32 @@ export function extractBackground(c: CommonExtraction, $: CheerioAPI, span: Chee
 
 export type BackgroundBaseOutput = 'success' | 'error';
 
-export const backgroundBaseNode: NodeInterface<ScrapeState, BackgroundBaseOutput, RipperServices> = {
-  name:    'extract:background-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class BackgroundBaseNode extends ScalarNode<ScrapeState, BackgroundBaseOutput> {
+  public readonly name = 'extract:background-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: BackgroundBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<BackgroundBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractBackgroundBase(c, $, target);
+    const base = extractBackgroundBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const backgroundBaseNode = new BackgroundBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -264,28 +266,30 @@ export const backgroundBaseNode: NodeInterface<ScrapeState, BackgroundBaseOutput
 
 export type BackgroundBenefitsOutput = 'success' | 'error';
 
-export const backgroundBenefitsNode: NodeInterface<ScrapeState, BackgroundBenefitsOutput, RipperServices> = {
-  name:    'extract:background-benefits',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class BackgroundBenefitsNode extends ScalarNode<ScrapeState, BackgroundBenefitsOutput> {
+  public readonly name = 'extract:background-benefits';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: BackgroundBenefitsOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<BackgroundBenefitsOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const benefits = extractBackgroundBenefits(c);
+    const benefits = extractBackgroundBenefits(common);
 
     state.output = { ...state.output, ...benefits };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const backgroundBenefitsNode = new BackgroundBenefitsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -294,29 +298,31 @@ export const backgroundBenefitsNode: NodeInterface<ScrapeState, BackgroundBenefi
 
 export type FinalizeBackgroundOutput = 'success';
 
-export const finalizeBackgroundNode: NodeInterface<ScrapeState, FinalizeBackgroundOutput, RipperServices> = {
-  name:    'finalize:background',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeBackgroundNode extends ScalarNode<ScrapeState, FinalizeBackgroundOutput> {
+  public readonly name = 'finalize:background';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeBackgroundOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeBackgroundOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as BackgroundOutput;
-    const assembled = finalizeBackground(c, acc, acc, $);
+    const assembled = finalizeBackground(common, acc, acc, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeBackgroundNode = new FinalizeBackgroundNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

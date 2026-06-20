@@ -2,12 +2,12 @@
 // Wraps extractGeneric, extractCondition, extractTrait, and extractHazard
 // helpers in contract-carrying capability nodes.
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -19,30 +19,32 @@ import type { GenericOutput } from './types.js';
 
 export type GenericExtractOutput = 'success' | 'error';
 
-export const genericExtractNode: NodeInterface<ScrapeState, GenericExtractOutput, RipperServices> = {
-  name:    'extract:generic',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class GenericExtractNode extends ScalarNode<ScrapeState, GenericExtractOutput> {
+  public readonly name    = 'extract:generic';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: GenericExtractOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<GenericExtractOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const result = extractGeneric(c, $, target);
+    const result = extractGeneric(common, root, target);
 
     setConceptOutput(state, result);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const genericExtractNode = new GenericExtractNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

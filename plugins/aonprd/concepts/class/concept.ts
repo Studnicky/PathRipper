@@ -1,10 +1,10 @@
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -13,13 +13,7 @@ import { extractClassBase } from './base.js';
 import { extractClassProgression } from './progression.js';
 import { extractClassSubclasses } from './subclasses.js';
 import { finalizeClass } from './finalize.js';
-import type { ClassOutput, ClassMetaSlice } from './types.js';
-
-// ─── Meta slice extraction ────────────────────────────────────────────────────
-
-function extractClassMeta(c: CommonExtraction): ClassMetaSlice {
-  return { sections: c.sections };
-}
+import type { ClassOutput } from './types.js';
 
 // ─── Capability nodes ─────────────────────────────────────────────────────────
 
@@ -27,30 +21,32 @@ function extractClassMeta(c: CommonExtraction): ClassMetaSlice {
 
 export type ClassBaseOutput = 'success' | 'error';
 
-export const classBaseNode: NodeInterface<ScrapeState, ClassBaseOutput, RipperServices> = {
-  name:    'extract:class-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassBaseNode extends ScalarNode<ScrapeState, ClassBaseOutput> {
+  public readonly name = 'extract:class-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractClassBase(c, $, target);
+    const base = extractClassBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classBaseNode = new ClassBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -58,28 +54,30 @@ export const classBaseNode: NodeInterface<ScrapeState, ClassBaseOutput, RipperSe
 
 export type ClassProgressionOutput = 'success' | 'error';
 
-export const classProgressionNode: NodeInterface<ScrapeState, ClassProgressionOutput, RipperServices> = {
-  name:    'extract:class-progression',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassProgressionNode extends ScalarNode<ScrapeState, ClassProgressionOutput> {
+  public readonly name = 'extract:class-progression';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassProgressionOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassProgressionOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractClassProgression(c);
+    const slice = extractClassProgression(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classProgressionNode = new ClassProgressionNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -87,28 +85,30 @@ export const classProgressionNode: NodeInterface<ScrapeState, ClassProgressionOu
 
 export type ClassSubclassesOutput = 'success' | 'error';
 
-export const classSubclassesNode: NodeInterface<ScrapeState, ClassSubclassesOutput, RipperServices> = {
-  name:    'extract:class-subclasses',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ClassSubclassesNode extends ScalarNode<ScrapeState, ClassSubclassesOutput> {
+  public readonly name = 'extract:class-subclasses';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ClassSubclassesOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ClassSubclassesOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractClassSubclasses(c);
+    const slice = extractClassSubclasses(common);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const classSubclassesNode = new ClassSubclassesNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -116,31 +116,33 @@ export const classSubclassesNode: NodeInterface<ScrapeState, ClassSubclassesOutp
 
 export type FinalizeClassOutput = 'success';
 
-export const finalizeClassNode: NodeInterface<ScrapeState, FinalizeClassOutput, RipperServices> = {
-  name:    'finalize:class',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeClassNode extends ScalarNode<ScrapeState, FinalizeClassOutput> {
+  public readonly name = 'finalize:class';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeClassOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeClassOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
-    const meta        = { sections: c.sections };
+    const meta        = { sections: common.sections };
     const acc = (state.output ?? {}) as unknown as ClassOutput;
-    const assembled = finalizeClass(c, acc, acc, acc, meta, $);
+    const assembled = finalizeClass(common, acc, acc, acc, meta, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeClassNode = new FinalizeClassNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

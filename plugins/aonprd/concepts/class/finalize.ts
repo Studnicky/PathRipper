@@ -1,7 +1,7 @@
 // finalize:class node.
 
 import type { CheerioAPI } from 'cheerio';
-import type { CommonExtraction, CheerioNode } from '../../common.js';
+import type { CommonExtraction } from '../../common.js';
 import {
   extractMetaDescription,
   extractMetaKeywords,
@@ -37,15 +37,15 @@ const NON_SUBCLASS_LABELS: ReadonlySet<string> = new Set<string>([
 ]);
 
 export function finalizeClass(
-  c:            CommonExtraction,
+  common:       CommonExtraction,
   base:         ClassBaseSlice,
   progression:  ClassProgressionSlice,
   subclasses:   ClassSubclassesSlice,
   meta:         ClassMetaSlice,
-  $:            CheerioAPI,
+  root:         CheerioAPI,
 ): ClassOutput {
-  const claimedSubclassLabels = subclasses.subclass_features.map((f) => f.name);
-  const raw_fields = stripStructuredKeys(c.field_map, [
+  const claimedSubclassLabels = subclasses.subclass_features.map((field) => field.name);
+  const raw_fields = stripStructuredKeys(common.field_map, [
     ...CLAIMED_FIELD_LABELS,
     ...claimedSubclassLabels,
     ...NON_SUBCLASS_LABELS,
@@ -55,11 +55,11 @@ export function finalizeClass(
     ...base,
     sections:         meta.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
     subclasses:       subclasses.subclasses,
     progression:      progression.progression,
     subclass_features: subclasses.subclass_features,

@@ -1,11 +1,11 @@
 import { describe, it, before, after } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { FetchAndExtractLinksNode } from '../../../../src/nodes/crawl/FetchAndExtractLinksNode.js';
 import { makeState }                from './helpers.js';
-import type { NodeContextInterface } from '@noocodex/dagonizer';
+import type { NodeContextType } from '@studnicky/dagonizer';
 import type { LinkCrawlServices }   from '../../../../src/nodes/crawl/Services.js';
-import type { LinkCrawlState }      from '../../../../src/state/LinkCrawlState.js';
 import { RateLimiter }              from '../../../../src/modules/http/rateLimiter.js';
 import { HttpRetryPolicy }          from '../../../../src/modules/http/httpRetryPolicy.js';
 
@@ -29,7 +29,7 @@ const realFetch = globalThis.fetch;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const makeCtx = (): NodeContextInterface<LinkCrawlServices> => {
+const makeCtx = (): NodeContextType<LinkCrawlServices> => {
   const limiter = RateLimiter.create({ minTimeMs: 0 });
   const policy  = HttpRetryPolicy.create({ maxAttempts: 1 });
   return {
@@ -69,8 +69,8 @@ describe('FetchAndExtractLinksNode', () => {
 
   it('routes empty when frontier is empty', async () => {
     const state = makeState({ frontier: [] });
-    const result = await FetchAndExtractLinksNode.execute(state, makeCtx());
-    assert.equal(result.output, 'empty');
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    assert.ok(result.has('empty'));
   });
 
   it('collects target links into discoveredRaw', async () => {
@@ -81,9 +81,9 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    const result = await FetchAndExtractLinksNode.execute(state, makeCtx());
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.ok(state.discoveredRaw.includes('https://example.com/category/item?id=1'));
     assert.ok(state.discoveredRaw.includes('https://example.com/category/item?id=2'));
   });
@@ -96,7 +96,7 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    await FetchAndExtractLinksNode.execute(state, makeCtx());
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
 
     assert.ok(state.nextFrontierRaw.includes('https://example.com/category/a'));
     assert.ok(state.nextFrontierRaw.includes('https://example.com/category/b'));
@@ -111,7 +111,7 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    await FetchAndExtractLinksNode.execute(state, makeCtx());
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
 
     const allLinks = [...state.discoveredRaw, ...state.nextFrontierRaw];
     for (const link of allLinks) {
@@ -126,8 +126,8 @@ describe('FetchAndExtractLinksNode', () => {
       delimiterRe: 'category',
       targetRe:    '\\?id=',
     });
-    const result = await FetchAndExtractLinksNode.execute(state, makeCtx());
-    assert.equal(result.output, 'permanent');
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    assert.ok(result.has('permanent'));
   });
 
   it('marks visited URLs after processing', async () => {
@@ -135,7 +135,7 @@ describe('FetchAndExtractLinksNode', () => {
       frontier: ['https://example.com/category/a'],
     });
 
-    await FetchAndExtractLinksNode.execute(state, makeCtx());
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
     assert.ok(state.visited.includes('https://example.com/category/a'));
   });
 });

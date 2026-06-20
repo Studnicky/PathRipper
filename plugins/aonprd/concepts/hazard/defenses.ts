@@ -9,20 +9,20 @@ import {
 } from './helpers.js';
 
 /** Extract defenses slice (AC, saves, hardness, HP, immunities, weaknesses, resistances). */
-export function extractHazardDefenses(c: CommonExtraction): HazardDefensesSlice {
+export function extractHazardDefenses(common: CommonExtraction): HazardDefensesSlice {
   return {
     defenses: {
-      ac:    asInt(getHazardField(c, 'AC')),
+      ac:    asInt(getHazardField(common, 'AC')),
       saves: {
-        fort: asInt(getHazardField(c, 'Fort')),
-        ref:  asInt(getHazardField(c, 'Ref')),
-        will: asInt(getHazardField(c, 'Will')),
+        fort: asInt(getHazardField(common, 'Fort')),
+        ref:  asInt(getHazardField(common, 'Ref')),
+        will: asInt(getHazardField(common, 'Will')),
       },
-      hardness:    parseHazardComponents(c, 'Hardness'),
-      hp:          parseHazardComponents(c, 'HP'),
-      immunities:  splitTopLevel(getHazardField(c, 'Immunities') ?? '', ',').filter(Boolean),
-      weaknesses:  parseWeaknesses(getHazardField(c, 'Weaknesses')),
-      resistances: parseResistances(getHazardField(c, 'Resistances')),
+      hardness:    parseHazardComponents(common, 'Hardness'),
+      hp:          parseHazardComponents(common, 'HP'),
+      immunities:  splitTopLevel(getHazardField(common, 'Immunities') ?? '', ',').filter(Boolean),
+      weaknesses:  parseWeaknesses(getHazardField(common, 'Weaknesses')),
+      resistances: parseResistances(getHazardField(common, 'Resistances')),
     },
   };
 }

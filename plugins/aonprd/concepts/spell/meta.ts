@@ -5,12 +5,12 @@
  * patron themes, catalysts, lesson, access, spoiler source.
  * Node: extract:spell-meta
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS, getField, getFieldHtml } from '../../common.js';
 
@@ -24,25 +24,25 @@ import {
 } from './helpers.js';
 
 /** Extract spell-list metadata, ref lists, lesson, access, spoiler source. */
-export function extractSpellMeta(c: CommonExtraction, $: CheerioAPI): SpellMetaSlice {
-  const bloodlines = parseRefList(getFieldHtml(c, 'Bloodline', 'Bloodlines'))
-    .map((r) => ({ name: r.name, bloodline_id: r.id }));
-  const cult = parseRefList(getFieldHtml(c, 'Cult', 'Cults'))
-    .map((r) => ({ name: r.name, cult_id: r.id }));
-  const domain = parseRefList(getFieldHtml(c, 'Domain', 'Domains'))
-    .map((r) => ({ name: r.name, domain_id: r.id }));
-  const deities = parseFilteredRefList(getFieldHtml(c, 'Deities', 'Deity'), /Deities\.aspx/i)
-    .map((r) => ({ name: r.name, deity_id: r.id }));
-  const mysteries = parseFilteredRefList(getFieldHtml(c, 'Mystery', 'Mysteries'), /Mysteries\.aspx/i)
-    .map((r) => ({ name: r.name, mystery_id: r.id }));
-  const patron_themes = parseFilteredRefList(getFieldHtml(c, 'Patron Theme', 'Patron Themes'), /Patrons\.aspx/i)
-    .map((r) => ({ name: r.name, patron_id: r.id }));
-  const catalysts = parseFilteredRefList(getFieldHtml(c, 'Catalysts', 'Catalyst'), /Equipment\.aspx/i)
-    .map((r) => ({ name: r.name, equipment_id: r.id }));
+export function extractSpellMeta(common: CommonExtraction, root: CheerioAPI): SpellMetaSlice {
+  const bloodlines = parseRefList(getFieldHtml(common, 'Bloodline', 'Bloodlines'))
+    .map((ref) => ({ name: ref.name, bloodline_id: ref.id }));
+  const cult = parseRefList(getFieldHtml(common, 'Cult', 'Cults'))
+    .map((ref) => ({ name: ref.name, cult_id: ref.id }));
+  const domain = parseRefList(getFieldHtml(common, 'Domain', 'Domains'))
+    .map((ref) => ({ name: ref.name, domain_id: ref.id }));
+  const deities = parseFilteredRefList(getFieldHtml(common, 'Deities', 'Deity'), /Deities\.aspx/i)
+    .map((ref) => ({ name: ref.name, deity_id: ref.id }));
+  const mysteries = parseFilteredRefList(getFieldHtml(common, 'Mystery', 'Mysteries'), /Mysteries\.aspx/i)
+    .map((ref) => ({ name: ref.name, mystery_id: ref.id }));
+  const patron_themes = parseFilteredRefList(getFieldHtml(common, 'Patron Theme', 'Patron Themes'), /Patrons\.aspx/i)
+    .map((ref) => ({ name: ref.name, patron_id: ref.id }));
+  const catalysts = parseFilteredRefList(getFieldHtml(common, 'Catalysts', 'Catalyst'), /Equipment\.aspx/i)
+    .map((ref) => ({ name: ref.name, equipment_id: ref.id }));
 
   return {
-    traditions:     parseTraditions(c),
-    spell_list:     getField(c, 'Spell List'),
+    traditions:     parseTraditions(common),
+    spell_list:     getField(common, 'Spell List'),
     bloodlines,
     cult,
     domain,
@@ -50,34 +50,36 @@ export function extractSpellMeta(c: CommonExtraction, $: CheerioAPI): SpellMetaS
     mysteries,
     patron_themes,
     catalysts,
-    lesson:         parseLesson(c),
-    access:         getField(c, 'Access'),
-    spoiler_source: parseSpoilerSource($),
+    lesson:         parseLesson(common),
+    access:         getField(common, 'Access'),
+    spoiler_source: parseSpoilerSource(root),
   };
 }
 
 export type SpellMetaOutput = 'success' | 'error';
 
-export const spellMetaNode: NodeInterface<ScrapeState, SpellMetaOutput, RipperServices> = {
-  name:    'extract:spell-meta',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SpellMetaNode extends ScalarNode<ScrapeState, SpellMetaOutput> {
+  public readonly name = 'extract:spell-meta';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SpellMetaOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $ = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    if (c === undefined || $ === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SpellMetaOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root   = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    if (common === undefined || root === undefined) return NodeOutputBuilder.of('error');
 
-    const meta = extractSpellMeta(c, $);
+    const meta = extractSpellMeta(common, root);
 
     state.output = { ...state.output, ...meta };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const spellMetaNode = new SpellMetaNode();

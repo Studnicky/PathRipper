@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { InitFrontierNode } from '../../../../src/nodes/crawl/InitFrontierNode.js';
@@ -9,15 +10,15 @@ describe('InitFrontierNode', () => {
   it('routes empty when seedUrls is empty', async () => {
     const state = new LinkCrawlState();
     state.seedUrls = [];
-    const result = await InitFrontierNode.execute(state, makeTestContext());
-    assert.equal(result.output, 'empty');
+    const result = await InitFrontierNode.execute(Batch.of(state), makeTestContext());
+    assert.ok(result.has('empty'));
   });
 
   it('routes ready and initialises frontier from seedUrls', async () => {
     const state = new LinkCrawlState();
     state.seedUrls = ['https://example.com/a', 'https://example.com/b'];
-    const result = await InitFrontierNode.execute(state, makeTestContext());
-    assert.equal(result.output, 'ready');
+    const result = await InitFrontierNode.execute(Batch.of(state), makeTestContext());
+    assert.ok(result.has('ready'));
     assert.deepEqual(state.frontier, ['https://example.com/a', 'https://example.com/b']);
   });
 
@@ -30,7 +31,7 @@ describe('InitFrontierNode', () => {
     state.nextFrontierRaw = ['stale'];
     state.depth = 5;
 
-    await InitFrontierNode.execute(state, makeTestContext());
+    await InitFrontierNode.execute(Batch.of(state), makeTestContext());
 
     assert.deepEqual(state.visited,         []);
     assert.deepEqual(state.discovered,      []);

@@ -45,20 +45,20 @@ export function parseAfflictionStages(html: string): AfflictionStage[] {
   const stopMatch = stopRe.exec(html);
   const scope = stopMatch !== null ? html.slice(0, stopMatch.index) : html;
 
-  const re = /<b>\s*Stage\s+(\d+)\s*<\/b>/gi;
+  const regex = /<b>\s*Stage\s+(\d+)\s*<\/b>/gi;
   const matches: Array<{ stage: number; index: number; end: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(scope)) !== null) {
-    const stage = parseInt(m[1] ?? '0', 10);
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(scope)) !== null) {
+    const stage = parseInt(match[1] ?? '0', 10);
     if (Number.isFinite(stage)) {
-      matches.push({ stage, index: m.index, end: m.index + m[0].length });
+      matches.push({ stage, index: match.index, end: match.index + match[0].length });
     }
   }
   if (matches.length === 0) return out;
 
-  for (let i = 0; i < matches.length; i++) {
-    const cur = matches[i]!;
-    const next = matches[i + 1];
+  for (let index = 0; index < matches.length; index++) {
+    const cur = matches[index]!;
+    const next = matches[index + 1];
     const endIdx = next !== undefined ? next.index : scope.length;
     const segHtml = scope.slice(cur.end, endIdx);
     // Strip leading punctuation/whitespace + trailing whitespace, but preserve

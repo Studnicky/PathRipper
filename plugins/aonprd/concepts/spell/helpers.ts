@@ -7,7 +7,7 @@
  */
 import type { CheerioAPI } from 'cheerio';
 
-import type { CommonExtraction, CheerioNode } from '../../common.js';
+import type { CommonExtraction } from '../../common.js';
 import {
   getField,
   getFieldHtml,
@@ -32,23 +32,23 @@ import type {
 import { TRADITIONS, ACTION_LABEL_MAP, ORDINAL_MAP } from './types.js';
 
 /** Resolve the spell `kind` discriminator from a CommonExtraction title block. */
-export function resolveKind(c: CommonExtraction): SpellKind {
-  const lk = (c.title.level_kind ?? '').toLowerCase();
-  if (lk === 'cantrip') return 'cantrip';
-  if (lk === 'focus') return 'focus';
-  if (lk === 'ritual') return 'ritual';
-  if (c.page_type === 'ritual') return 'ritual';
+export function resolveKind(common: CommonExtraction): SpellKind {
+  const levelKind = (common.title.level_kind ?? '').toLowerCase();
+  if (levelKind === 'cantrip') return 'cantrip';
+  if (levelKind === 'focus') return 'focus';
+  if (levelKind === 'ritual') return 'ritual';
+  if (common.page_type === 'ritual') return 'ritual';
   return 'spell';
 }
 
 /** Lower-case + filter the Traditions field down to the canonical whitelist. */
-export function parseTraditions(c: CommonExtraction): Tradition[] {
-  const raw = getField(c, 'Traditions', 'Tradition');
+export function parseTraditions(common: CommonExtraction): Tradition[] {
+  const raw = getField(common, 'Traditions', 'Tradition');
   if (raw === null) return [];
   const out: Tradition[] = [];
   for (const part of splitTopLevel(raw, ',')) {
-    const lc = part.toLowerCase().trim();
-    if (TRADITIONS.has(lc as Tradition)) out.push(lc as Tradition);
+    const lower = part.toLowerCase().trim();
+    if (TRADITIONS.has(lower as Tradition)) out.push(lower as Tradition);
   }
   return out;
 }
@@ -57,15 +57,15 @@ export function parseTraditions(c: CommonExtraction): Tradition[] {
 export function parseRefList(html: string | null): Array<{ name: string; id: number | null }> {
   if (html === null) return [];
   const out: Array<{ name: string; id: number | null }> = [];
-  const re = /<a[^>]*href="[^"]*\?ID=(\d+)[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const idStr = m[1] ?? '';
-    const inner = m[2] ?? '';
+  const regex = /<a[^>]*href="[^"]*\?ID=(\d+)[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const idStr = match[1] ?? '';
+    const inner = match[2] ?? '';
     const name = htmlToText(inner);
     if (name === '') continue;
-    const id = idStr === '' ? null : parseInt(idStr, 10);
-    out.push({ name, id: Number.isFinite(id ?? NaN) ? id : null });
+    const idNum = idStr === '' ? null : parseInt(idStr, 10);
+    out.push({ name, id: Number.isFinite(idNum ?? NaN) ? idNum : null });
   }
   return out;
 }
@@ -74,39 +74,39 @@ export function parseRefList(html: string | null): Array<{ name: string; id: num
 export function parseFilteredRefList(html: string | null, aspxPattern: RegExp): Array<{ name: string; id: number | null }> {
   if (html === null) return [];
   const out: Array<{ name: string; id: number | null }> = [];
-  const re = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const href = m[1] ?? '';
+  const regex = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const href = match[1] ?? '';
     if (!aspxPattern.test(href)) continue;
     const idMatch = /\?ID=(\d+)/i.exec(href);
-    const id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-    const name = htmlToText(m[2] ?? '');
+    const idNum = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
+    const name = htmlToText(match[2] ?? '');
     if (name === '') continue;
-    out.push({ name, id });
+    out.push({ name, id: idNum });
   }
   return out;
 }
 
 /** Pull aria-label tokens from any `<span class='action'>` glyph in a fragment. */
 export function parseActionCostFromHtml(html: string): ActionCost | null {
-  const re = /<span\s+class=['"]action['"][^>]*aria-label=['"]([^'"]+)['"]/i;
-  const m = re.exec(html);
-  if (m === null) return null;
-  const lc = (m[1] ?? '').toLowerCase().replace(/\s+/g, '-');
-  return ACTION_LABEL_MAP.get(lc) ?? null;
+  const regex = /<span\s+class=['"]action['"][^>]*aria-label=['"]([^'"]+)['"]/i;
+  const match = regex.exec(html);
+  if (match === null) return null;
+  const lower = (match[1] ?? '').toLowerCase().replace(/\s+/g, '-');
+  return ACTION_LABEL_MAP.get(lower) ?? null;
 }
 
 /** Parse the heterogeneous `<b>Cast</b>` field — actions + components OR pure duration. */
-export function parseCast(c: CommonExtraction): SpellOutput['cast'] {
-  const html = getFieldHtml(c, 'Cast');
+export function parseCast(common: CommonExtraction): SpellOutput['cast'] {
+  const html = getFieldHtml(common, 'Cast');
   if (html === null) return { actions: null, components: [], time: null, raw: null };
   const actions = parseActionCostFromHtml(html);
   const components: string[] = [];
   const compRe = /<a[^>]*href="[^"]*Rules\.aspx\?ID=\d+[^"]*"[^>]*>([\s\S]*?)<\/a>/gi;
-  let cm: RegExpExecArray | null;
-  while ((cm = compRe.exec(html)) !== null) {
-    const txt = htmlToText(cm[1] ?? '');
+  let compMatch: RegExpExecArray | null;
+  while ((compMatch = compRe.exec(html)) !== null) {
+    const txt = htmlToText(compMatch[1] ?? '');
     if (txt !== '') components.push(txt.toLowerCase());
   }
   const text = htmlToText(html);
@@ -127,8 +127,8 @@ export function parseCast(c: CommonExtraction): SpellOutput['cast'] {
 }
 
 /** Saving Throw breakdown — strip leading "basic " marker and capture the kind. */
-export function parseSavingThrow(c: CommonExtraction): SpellOutput['saving_throw'] {
-  const raw = getField(c, 'Saving Throw');
+export function parseSavingThrow(common: CommonExtraction): SpellOutput['saving_throw'] {
+  const raw = getField(common, 'Saving Throw');
   if (raw === null) return null;
   const trimmed = raw.trim();
   if (trimmed === '') return null;
@@ -141,8 +141,8 @@ export function parseSavingThrow(c: CommonExtraction): SpellOutput['saving_throw
  * Parse the `<b>Defense</b>` field present on remaster spell pages.
  * Returns null when the field is absent.
  */
-export function parseDefense(c: CommonExtraction): string | null {
-  const raw = getField(c, 'Defense');
+export function parseDefense(common: CommonExtraction): string | null {
+  const raw = getField(common, 'Defense');
   if (raw === null || raw.trim() === '') return null;
   return raw.trim();
 }
@@ -169,12 +169,12 @@ interface AfflictionStart {
 
 /** Find the inline `<b>Name</b> (type); <b>Level</b> N.` affliction header. */
 function findAfflictionStart(html: string): AfflictionStart | null {
-  const re = /<b>\s*([^<]+?)\s*<\/b>\s*\(([^)]+)\)\s*;\s*<b>\s*Level\s*<\/b>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const type = (m[2] ?? '').toLowerCase().trim();
+  const regex = /<b>\s*([^<]+?)\s*<\/b>\s*\(([^)]+)\)\s*;\s*<b>\s*Level\s*<\/b>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const type = (match[2] ?? '').toLowerCase().trim();
     if (!/disease|poison|curse|venom|toxin|hex|infection|plague|affliction/.test(type)) continue;
-    return { index: m.index, end: m.index + m[0].length, name: (m[1] ?? '').trim(), type };
+    return { index: match.index, end: match.index + match[0].length, name: (match[1] ?? '').trim(), type };
   }
   return null;
 }
@@ -204,13 +204,13 @@ export function parseAffliction(bodyHtml: string): Affliction | null {
   const stages: AfflictionStage[] = [];
   const stageRe = /<b>\s*Stage\s+(\d+)\s*<\/b>/gi;
   const matches: Array<{ stage: number; index: number; end: number }> = [];
-  let sm: RegExpExecArray | null;
-  while ((sm = stageRe.exec(block)) !== null) {
-    matches.push({ stage: parseInt(sm[1] ?? '0', 10), index: sm.index, end: sm.index + sm[0].length });
+  let stageMatch: RegExpExecArray | null;
+  while ((stageMatch = stageRe.exec(block)) !== null) {
+    matches.push({ stage: parseInt(stageMatch[1] ?? '0', 10), index: stageMatch.index, end: stageMatch.index + stageMatch[0].length });
   }
-  for (let i = 0; i < matches.length; i++) {
-    const cur = matches[i]!;
-    const next = matches[i + 1];
+  for (let index = 0; index < matches.length; index++) {
+    const cur = matches[index]!;
+    const next = matches[index + 1];
     const end = next === undefined ? block.length : next.index;
     const seg = block.slice(cur.end, end);
     const text = htmlToText(seg).replace(/^[\s;]+/, '').replace(/[\s;]+$/, '');
@@ -244,16 +244,16 @@ export function parseHeightenedWithFields(bodyHtml: string, fields: CommonExtrac
   const out = parseHeightened(bodyHtml);
   // Some pages place Heightened in header fields (rare; defensive).
   if (out.length === 0) {
-    for (const f of fields) {
-      if (!/^heightened\b/i.test(f.label)) continue;
-      const labM = /\(([^)]+)\)/.exec(f.label);
-      const label = labM === null ? f.label.replace(/^heightened\s*/i, '').trim() : (labM[1] ?? '').trim();
+    for (const field of fields) {
+      if (!/^heightened\b/i.test(field.label)) continue;
+      const labM = /\(([^)]+)\)/.exec(field.label);
+      const label = labM === null ? field.label.replace(/^heightened\s*/i, '').trim() : (labM[1] ?? '').trim();
       out.push({
         rank_label: label,
         rank: parseHeightenedRank(label),
         increment: parseHeightenedIncrement(label),
-        body_html: f.value_html,
-        body_text: f.value_text,
+        body_html: field.value_html,
+        body_text: field.value_text,
       });
     }
   }
@@ -269,8 +269,8 @@ function parseHeightenedRank(label: string): number | null {
   if (ord !== undefined) return ord;
   const numM = /^(\d+)/.exec(trimmed);
   if (numM !== null) {
-    const n = parseInt(numM[1] ?? '', 10);
-    return Number.isFinite(n) ? n : null;
+    const num = parseInt(numM[1] ?? '', 10);
+    return Number.isFinite(num) ? num : null;
   }
   return null;
 }
@@ -280,8 +280,8 @@ function parseHeightenedIncrement(label: string): number | null {
   const trimmed = label.trim();
   const incM = /^\+\s*(\d+)$/.exec(trimmed);
   if (incM !== null) {
-    const n = parseInt(incM[1] ?? '', 10);
-    return Number.isFinite(n) ? n : null;
+    const num = parseInt(incM[1] ?? '', 10);
+    return Number.isFinite(num) ? num : null;
   }
   return null;
 }
@@ -290,18 +290,18 @@ function parseHeightenedIncrement(label: string): number | null {
  * Extract the `<b>Lesson</b>` field present on witch focus spells.
  * Returns a structured ref with name + Lessons.aspx ID, or null.
  */
-export function parseLesson(c: CommonExtraction): SpellOutput['lesson'] {
-  const html = getFieldHtml(c, 'Lesson');
+export function parseLesson(common: CommonExtraction): SpellOutput['lesson'] {
+  const html = getFieldHtml(common, 'Lesson');
   if (html === null) return null;
   const anchorRe = /<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
-  const m = anchorRe.exec(html);
-  if (m === null) {
+  const match = anchorRe.exec(html);
+  if (match === null) {
     const text = htmlToText(html).trim();
     return text === '' ? null : { name: text, lesson_id: null };
   }
-  const idMatch = /\?ID=(\d+)/i.exec(m[1] ?? '');
+  const idMatch = /\?ID=(\d+)/i.exec(match[1] ?? '');
   const lesson_id = idMatch !== null ? parseInt(idMatch[1]!, 10) : null;
-  const name = htmlToText(m[2] ?? '').trim();
+  const name = htmlToText(match[2] ?? '').trim();
   return name === '' ? null : { name, lesson_id };
 }
 
@@ -309,10 +309,10 @@ export function parseLesson(c: CommonExtraction): SpellOutput['lesson'] {
  * Extract the `<h2 class="title">This Spell may contain spoilers from …</h2>`
  * advisory notice. Returns the Adventure Path / product name portion, or null.
  */
-export function parseSpoilerSource($: CheerioAPI): string | null {
-  const headings = $('h2.title, h3.title').toArray();
-  for (const el of headings) {
-    const text = $(el).text().trim();
+export function parseSpoilerSource(root: CheerioAPI): string | null {
+  const headings = root('h2.title, h3.title').toArray();
+  for (const element of headings) {
+    const text = root(element).text().trim();
     if (/^This \w+ may contain spoilers/i.test(text)) return text;
   }
   return null;

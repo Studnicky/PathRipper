@@ -4,11 +4,11 @@
  * Extract casting components, targeting, defenses, and duration/cost fields.
  * Node: extract:spell-cast
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS, getField } from '../../common.js';
 
@@ -16,42 +16,44 @@ import type { SpellCastSlice } from './types.js';
 import { parseCast, parseSavingThrow, parseDefense } from './helpers.js';
 
 /** Extract casting components, targeting, defenses, and duration/cost fields. */
-export function extractSpellCast(c: CommonExtraction): SpellCastSlice {
+export function extractSpellCast(common: CommonExtraction): SpellCastSlice {
   return {
-    cast:         parseCast(c),
-    trigger:      getField(c, 'Trigger'),
-    range:        getField(c, 'Range'),
-    area:         getField(c, 'Area'),
-    targets:      getField(c, 'Targets', 'Target', 'Target(s)'),
-    defense:      parseDefense(c),
-    saving_throw: parseSavingThrow(c),
-    duration:     getField(c, 'Duration'),
-    cost:         getField(c, 'Cost'),
-    requirements: getField(c, 'Requirements'),
+    cast:         parseCast(common),
+    trigger:      getField(common, 'Trigger'),
+    range:        getField(common, 'Range'),
+    area:         getField(common, 'Area'),
+    targets:      getField(common, 'Targets', 'Target', 'Target(s)'),
+    defense:      parseDefense(common),
+    saving_throw: parseSavingThrow(common),
+    duration:     getField(common, 'Duration'),
+    cost:         getField(common, 'Cost'),
+    requirements: getField(common, 'Requirements'),
   };
 }
 
 export type SpellCastOutput = 'success' | 'error';
 
-export const spellCastNode: NodeInterface<ScrapeState, SpellCastOutput, RipperServices> = {
-  name:    'extract:spell-cast',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SpellCastNode extends ScalarNode<ScrapeState, SpellCastOutput> {
+  public readonly name = 'extract:spell-cast';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SpellCastOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SpellCastOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const cast = extractSpellCast(c);
+    const cast = extractSpellCast(common);
 
     state.output = { ...state.output, ...cast };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const spellCastNode = new SpellCastNode();

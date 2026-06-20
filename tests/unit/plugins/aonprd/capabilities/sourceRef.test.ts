@@ -1,6 +1,7 @@
 // Unit tests for extract:source-ref capability.
 // Proves byte-equivalence with extractSources() from common.ts.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { sourceRefNode }       from '../../../../../plugins/aonprd/capabilities/sourceRef.js';
@@ -12,10 +13,10 @@ import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
 async function primeAndRun(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  const r1    = await loadAndCommonNode.execute(state, stubContext);
-  assert.equal(r1.output, 'success', `loadAndCommon failed for ${fixtureName}`);
-  const r2 = await sourceRefNode.execute(state, stubContext);
-  assert.equal(r2.output, 'success', `sourceRef failed for ${fixtureName}`);
+  const result1    = await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  assert.ok(result1.has('success'), `loadAndCommon failed for ${fixtureName}`);
+  const result2 = await sourceRefNode.execute(Batch.of(state), stubContext);
+  assert.ok(result2.has('success'), `sourceRef failed for ${fixtureName}`);
   return state;
 }
 
@@ -83,8 +84,8 @@ describe('extract:source-ref — weapon-longsword', () => {
 describe('extract:source-ref — open-world soft-fail', () => {
   it('outputs success and writes nothing when aonprdTarget metadata is missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Spells.aspx?ID=1');
-    const r = await sourceRefNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await sourceRefNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
     assert.equal(state.getMetadata('source'), undefined);
     assert.equal(state.getMetadata('sources'), undefined);
   });

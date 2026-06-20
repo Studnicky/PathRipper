@@ -1,5 +1,5 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { LinkCrawlState }   from '../../state/LinkCrawlState.js';
 import type { LinkCrawlServices } from './Services.js';
@@ -14,18 +14,18 @@ import type { LinkCrawlServices } from './Services.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const InitFrontierNode: NodeInterface<LinkCrawlState, 'ready' | 'empty', LinkCrawlServices> = {
-  name: 'crawl:init-frontier',
-  outputs: ['ready', 'empty'],
+class InitFrontierNodeImpl extends ScalarNode<LinkCrawlState, 'ready' | 'empty', LinkCrawlServices> {
+  public readonly name = 'crawl:init-frontier';
+  public readonly outputs = ['ready', 'empty'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: LinkCrawlState,
-    context: NodeContextInterface<LinkCrawlServices>,
-  ): Promise<{ output: 'ready' | 'empty' }> {
+    context: NodeContextType<LinkCrawlServices>,
+  ): Promise<NodeOutputType<'ready' | 'empty'>> {
     const { services } = context;
     if (state.seedUrls.length === 0) {
       services.log.warn('InitFrontierNode', 'crawl:init-frontier called with empty seedUrls');
-      return { output: 'empty' };
+      return NodeOutputBuilder.of('empty');
     }
 
     state.frontier        = [...state.seedUrls];
@@ -36,14 +36,8 @@ export const InitFrontierNode: NodeInterface<LinkCrawlState, 'ready' | 'empty', 
     state.depth           = 0;
 
     services.log.debug('InitFrontierNode', `Frontier initialised with ${state.frontier.length.toString()} seed(s)`);
-    return { output: 'ready' };
-  },
-};
+    return NodeOutputBuilder.of('ready');
+  }
+}
 
-/** OperationContract for InitFrontierNode: reads seedUrls, produces frontier. */
-export const initFrontierContract: OperationContract = {
-  name:         'crawl:init-frontier',
-  hardRequired: ['seedUrls'],
-  produces:     ['frontier'],
-  outputs:      ['ready', 'empty'],
-};
+export const InitFrontierNode = new InitFrontierNodeImpl();

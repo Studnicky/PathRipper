@@ -1,26 +1,49 @@
 /**
  * wikiPageFlow — per-title child DAG for one wiki page scrape.
  *
- * Contract-derived via `DAGDeriver.derive` with `annotations.subDAGs` for
- * plugin DAG placements (adopted in 0.7.0). Each pipeline step maps to an
- * `OperationContract`; plugin steps additionally appear in `annotations.subDAGs`
- * so the deriver emits a `DeepDAGNode` placement instead of `SingleNode`.
+ * Built directly with `DAGBuilder`: walks the pipeline node names in order,
+ * resolving each to its real registered node instance, wires routes
+ * (success → next step, error ports → terminal), and appends the
+ * `wikiPage:completed` / `wikiPage:failed` terminals.
  *
- * The dynamic-construction concern (pipeline comes from user config) is orthogonal
- * to DAGDeriver — we call `DAGDeriver.derive({...})` with the per-target
- * contracts list at construction time, same dynamism the previous DAGBuilder
- * version had, just declarative.
+ * Plugin DAG steps (names present in `pluginDagNames`) are placed via
+ * `.embeddedDAG()` — no node instance required.
  *
- * Chain: wiki:fetch → [parse steps] → [write steps]
- *
- * `flow:terminate` is a required terminal node appended to the pipeline so that
- * DeepDAGNode error exits can route to a real node rather than null (DeepDAG
- * placements cannot terminate the run directly).
+ * Chain: wiki:fetch → [parse steps] → [write steps] → wikiPage:completed
  */
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { OperationContract, DAGDeriverAnnotations, DAGDeriverSubDAG, DAGDeriverTerminal } from '@noocodex/dagonizer/derive';
-import type { DAG } from '@noocodex/dagonizer';
+import { DAGBuilder } from '@studnicky/dagonizer';
+import type { DAGType, NodeInterface } from '@studnicky/dagonizer';
+
+import type { ScrapeState }   from '../state/ScrapeState.js';
+import type { RipperServices } from '../services/RipperServices.js';
+
+import {
+  WikiFetchNode,
+  WikiWriteRawNode,
+  JsonWriteNode,
+  JsonlAppendNode,
+  ValidateSchemaNode,
+} from '../nodes/index.js';
+
+// ── Terminal names ─────────────────────────────────────────────────────────────
+
+const COMPLETED = 'wikiPage:completed';
+const FAILED    = 'wikiPage:failed';
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+type WikiNode = NodeInterface<ScrapeState, string, RipperServices>;
+
+// ── Builtin name → node instance registry ─────────────────────────────────────
+
+const BUILTIN_NODES: ReadonlyMap<string, WikiNode> = new Map<string, WikiNode>([
+  [WikiFetchNode.name,       WikiFetchNode],
+  [WikiWriteRawNode.name,    WikiWriteRawNode],
+  [JsonWriteNode.name,       JsonWriteNode],
+  [JsonlAppendNode.name,     JsonlAppendNode],
+  [ValidateSchemaNode.name,  ValidateSchemaNode],
+]);
 
 /**
  * Deterministic DAG name for a target's per-title child flow.
@@ -32,43 +55,23 @@ import type { DAG } from '@noocodex/dagonizer';
  */
 export const wikiPageFlowName = (targetId: string): string => `wikiPageDAG:${targetId}`;
 
-// ── Per-step contract shapes ───────────────────────────────────────────────────
-
-/**
- * Contract for a named step in the pipeline. Each step uses a unique
- * fictional produce key (`step_${i}`) so the data graph chains them linearly.
- */
-const stepContract = (
-  name:    string,
-  i:       number,
-  outputs: readonly string[],
-): OperationContract => ({
-  name,
-  hardRequired: i === 0 ? [] : [`step_${(i - 1).toString()}`],
-  produces:     [`step_${i.toString()}`],
-  outputs:      [...outputs],
-});
-
 /**
  * Builds a per-title child DAG from the user's `pipeline: string[]` config.
  *
  * Node routing:
- *   - `wiki:fetch`    → `success` continues; `error` terminates to null.
- *   - `wiki:write-raw`→ `success` continues.
- *   - `json:write`    → `success`/`skipped` continue.
- *   - `jsonl:append`  → `success`/`skipped` continue.
- *   - `validate:schema`→ `valid` continues; `invalid` terminates to null.
- *   - Plugin DAG steps → `DeepDAGNode` placement via `annotations.subDAGs`
- *                         (`success` continues; `error` routes to `flow:terminate`).
- *   - Plugin node steps → `success` continues; `error` terminates to null.
+ *   - `wiki:fetch`     → `success` continues; `error` terminates (failed).
+ *   - `wiki:write-raw` → `success` continues.
+ *   - `json:write`     → `success`/`skipped` continue.
+ *   - `jsonl:append`   → `success`/`skipped` continue.
+ *   - `validate:schema`→ `valid` continues; `invalid` terminates (failed).
+ *   - Plugin DAG steps → `.embeddedDAG()` (`success` continues; `error` terminates failed).
  *
  * @param pipelineNames  - Ordered list of node names from the target config.
- *   `flow:terminate` is appended if absent.
  * @param targetId       - Used to build the deterministic DAG name.
  * @param pluginDagNames - Names of pipeline entries that are registered as DAGs
- *                         (not nodes). These get `DeepDAGNode` placements via
- *                         `annotations.subDAGs`. Defaults to empty set.
- * @returns A `DAG` ready for `dispatcher.registerDAG()`.
+ *                         (not nodes). These get `.embeddedDAG()` placements.
+ *                         Defaults to empty set.
+ * @returns A `DAGType` ready for `dispatcher.registerDAG()`.
  *
  * @category Flows
  * @since 4.0.0
@@ -77,75 +80,58 @@ export const buildWikiPageFlow = (
   pipelineNames:  ReadonlyArray<string>,
   targetId:       string,
   pluginDagNames: ReadonlySet<string> = new Set(),
-): DAG => {
+): DAGType => {
   if (pipelineNames.length === 0) {
     throw new Error(`Target "${targetId}" pipeline has no steps`);
   }
 
-  // Append flow:terminate if not already present — DeepDAGNode error exits route here.
-  const allSteps = pipelineNames.includes('flow:terminate')
-    ? [...pipelineNames]
-    : [...pipelineNames, 'flow:terminate'];
+  const dagName = wikiPageFlowName(targetId);
+  const builder = new DAGBuilder(dagName, '2.0');
 
-  const dagName    = wikiPageFlowName(targetId);
-  const contracts: OperationContract[] = [];
-  const subDAGs:   Record<string, DAGDeriverSubDAG> = {};
-  const terminals: Record<string, DAGDeriverTerminal[]> = {};
+  const steps = [...pipelineNames];
 
-  for (let i = 0; i < allSteps.length; i++) {
-    const name = allSteps[i] as string;
+  for (let index = 0; index < steps.length; index++) {
+    const name = steps[index] as string;
+    const next = index + 1 < steps.length ? (steps[index + 1] as string) : COMPLETED;
 
-    if (name === 'flow:terminate') {
-      contracts.push({
-        name,
-        hardRequired: i === 0 ? [] : [`step_${(i - 1).toString()}`],
-        produces:     [],
-        outputs:      ['success'],
-      });
-      terminals['flow:terminate'] = [{ outcome: 'success', target: null }];
+    if (pluginDagNames.has(name)) {
+      // Plugin DAG step: embedded sub-DAG, no node instance needed.
+      builder.embeddedDAG(name, name, { success: next, error: FAILED });
+      continue;
+    }
+
+    const node = BUILTIN_NODES.get(name);
+
+    if (node === undefined) {
+      // Unknown step: treat as a plugin embedded DAG (success continues, error terminates).
+      // This covers steps registered on the dispatcher outside of BUILTIN_NODES that are
+      // not explicitly declared in pluginDagNames (e.g. plugin DAGs with defaulted callers).
+      builder.embeddedDAG(name, name, { success: next, error: FAILED });
       continue;
     }
 
     if (name === 'wiki:fetch') {
-      contracts.push(stepContract(name, i, ['success', 'error']));
-      terminals[name] = [{ outcome: 'error', target: null }];
+      builder.node(name, node, { success: next, error: FAILED });
     } else if (name === 'wiki:write-raw') {
-      contracts.push(stepContract(name, i, ['success']));
+      builder.node(name, node, { success: next });
     } else if (name === 'json:write') {
-      contracts.push(stepContract(name, i, ['success', 'skipped']));
+      builder.node(name, node, { success: next, skipped: next });
     } else if (name === 'jsonl:append') {
-      contracts.push(stepContract(name, i, ['success', 'skipped']));
+      builder.node(name, node, { success: next, skipped: next });
     } else if (name === 'validate:schema') {
-      contracts.push(stepContract(name, i, ['valid', 'invalid']));
-      // valid continues to next stage; invalid terminates.
-      terminals[name] = [{ outcome: 'invalid', target: null }];
-    } else if (pluginDagNames.has(name)) {
-      // Plugin DAG step: DeepDAGNode placement via subDAGs annotation.
-      // error routes to flow:terminate (DeepDAG placements cannot route to null).
-      contracts.push(stepContract(name, i, ['success', 'error']));
-      subDAGs[name] = {
-        dag:     name,
-        outputs: ['success', 'error'],
-        stateMapping: { output: { output: 'output' } },
-      };
-      terminals[name] = [{ outcome: 'error', target: 'flow:terminate' }];
+      builder.node(name, node, { valid: next, invalid: FAILED });
     } else {
-      // Parse node steps: success continues, error terminates.
-      contracts.push(stepContract(name, i, ['success', 'error']));
-      terminals[name] = [{ outcome: 'error', target: null }];
+      // Known builtin not matched above: route success, terminate on error.
+      const routes: Record<string, string> = {};
+      for (const output of node.outputs) {
+        routes[output] = output === 'error' || output === 'invalid' ? FAILED : next;
+      }
+      builder.node(name, node, routes);
     }
   }
 
-  const annotations: DAGDeriverAnnotations = {
-    ...(Object.keys(terminals).length > 0 ? { terminals } : {}),
-    ...(Object.keys(subDAGs).length   > 0 ? { subDAGs }  : {}),
-  };
+  builder.terminal(COMPLETED, { outcome: 'completed' });
+  builder.terminal(FAILED,    { outcome: 'failed' });
 
-  return DAGDeriver.derive({
-    name:        dagName,
-    version:     '2.0',
-    entrypoint:  allSteps[0] as string,
-    contracts,
-    annotations,
-  });
+  return builder.build();
 };

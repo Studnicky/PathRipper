@@ -1,5 +1,5 @@
-import { NodeStateBase } from '@noocodex/dagonizer';
-import type { JsonObject } from '@noocodex/dagonizer/entities';
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 import type { PipelinePageInterface } from '../types/PipelineState.js';
 
@@ -7,7 +7,7 @@ import type { PipelinePageInterface } from '../types/PipelineState.js';
  * Shared state flowing through every node in a scrape DAG.
  *
  * @remarks
- * Extends `NodeStateBase` from `@noocodex/dagonizer` so the dispatcher can
+ * Extends `NodeStateBase` from `@studnicky/dagonizer` so the dispatcher can
  * manage the execution lifecycle, collect errors/warnings, and checkpoint the
  * state for resumable runs.
  *
@@ -88,7 +88,7 @@ export class ScrapeState extends NodeStateBase {
    * runs the child phase against this clone, and `mapOutputState` copies the
    * mutated buckets back to the parent.
    */
-  public override clone(): ScrapeState {
+  public override clone(): this {
     const cloned = new ScrapeState();
     // Preserve metadata (the base class does this; mirror the contract).
     for (const [key, value] of Object.entries(this.metadata)) {
@@ -103,7 +103,7 @@ export class ScrapeState extends NodeStateBase {
     cloned.failed           = [...this.failed];
     cloned.recovered        = [...this.recovered];
     cloned.failedAfterRetry = [...this.failedAfterRetry];
-    return cloned;
+    return cloned as this;
   }
 
   /**
@@ -146,10 +146,10 @@ export class ScrapeState extends NodeStateBase {
    * CheerioNode objects) and are cheaply re-derived from `state.page.html`
    * if a checkpoint resumes.
    */
-  protected override snapshotData(): JsonObject {
+  protected override snapshotData(): JsonObjectType {
     return {
-      page:             this.page as unknown as JsonObject,
-      output:           this.output as JsonObject | null,
+      page:             this.page as unknown as JsonObjectType,
+      output:           this.output as JsonObjectType | null,
       urls:             [...this.urls],
       titles:           [...this.titles],
       succeeded:        [...this.succeeded],
@@ -163,7 +163,7 @@ export class ScrapeState extends NodeStateBase {
    * Restores domain-specific fields from a checkpoint snapshot.
    * Called by `Checkpoint.restore()`; do not call directly.
    */
-  protected override restoreData(snap: JsonObject): void {
+  protected override restoreData(snap: JsonObjectType): void {
     const page = snap['page'];
     if (page !== null && typeof page === 'object' && !Array.isArray(page)) {
       this.page = page as unknown as PipelinePageInterface;
@@ -182,7 +182,7 @@ export class ScrapeState extends NodeStateBase {
     if (Array.isArray(fail)) this.failed = fail as string[];
     const rec = snap['recovered'];
     if (Array.isArray(rec)) this.recovered = rec as string[];
-    const fr = snap['failedAfterRetry'];
-    if (Array.isArray(fr)) this.failedAfterRetry = fr as string[];
+    const failedAfterRetrySnap = snap['failedAfterRetry'];
+    if (Array.isArray(failedAfterRetrySnap)) this.failedAfterRetry = failedAfterRetrySnap as string[];
   }
 }

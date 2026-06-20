@@ -17,7 +17,7 @@
     "plugins/aonprd/concepts/**/*.ts",
     "plugins/aonprd/parse.taxonomic.ts",
     "plugins/aonprd/common.ts",
-    "tests/typecheck/**/*.ts"
+    "tests/**/*.ts"
   ],
   "exclude": [
     "node_modules"

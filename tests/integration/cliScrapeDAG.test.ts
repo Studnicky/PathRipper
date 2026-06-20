@@ -15,8 +15,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { Dagonizer }       from '@noocodex/dagonizer';
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
+import { Dagonizer, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { CliState }        from '../../src/state/CliState.js';
 import {
@@ -57,49 +57,55 @@ let wikiRunCalls = 0;
 let htmlShouldThrow = false;
 
 const FakeDispatchHtmlScrapeNode: NodeInterface<CliState, 'success' | 'partial' | 'error', CliServices> = {
-  name:    'cli:dispatch-html-scrape',
-  outputs: ['success', 'partial', 'error'],
+  name:     'cli:dispatch-html-scrape',
+  outputs:  ['success', 'partial', 'error'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
-    state:   CliState,
-    context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' | 'partial' | 'error' }> {
+    batch:   Batch<CliState>,
+    context: NodeContextType<CliServices>,
+  ): Promise<RoutedBatchType<'success' | 'partial' | 'error', CliState>> {
+    const state = batch.row(0).state;
     if (state.config === null) {
       state.errorMessage = 'FakeDispatch: config is null';
-      return { output: 'error' };
+      return RoutedBatchBuilder.of('error', batch);
     }
     if (state.config.targets?.[state.targetId] === undefined) {
       state.errorMessage = `FakeDispatch: target "${state.targetId}" not found`;
-      return { output: 'error' };
+      return RoutedBatchBuilder.of('error', batch);
     }
     htmlRunCalls++;
     if (htmlShouldThrow) {
       state.errorMessage = 'HTML scrape failed: something exploded';
       context.services.log.error('FakeDispatchHtmlScrapeNode', state.errorMessage);
-      return { output: 'error' };
+      return RoutedBatchBuilder.of('error', batch);
     }
     state.failedCount = 0;
-    return { output: 'success' };
+    return RoutedBatchBuilder.of('success', batch);
   },
 };
 
 const FakeDispatchWikiScrapeNode: NodeInterface<CliState, 'success' | 'partial' | 'error', CliServices> = {
-  name:    'cli:dispatch-wiki-scrape',
-  outputs: ['success', 'partial', 'error'],
+  name:     'cli:dispatch-wiki-scrape',
+  outputs:  ['success', 'partial', 'error'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
-    state:   CliState,
-    _context: NodeContextInterface<CliServices>,
-  ): Promise<{ output: 'success' | 'partial' | 'error' }> {
+    batch:    Batch<CliState>,
+    _context: NodeContextType<CliServices>,
+  ): Promise<RoutedBatchType<'success' | 'partial' | 'error', CliState>> {
+    const state = batch.row(0).state;
     if (state.config === null) {
       state.errorMessage = 'FakeDispatch: config is null';
-      return { output: 'error' };
+      return RoutedBatchBuilder.of('error', batch);
     }
     if (state.config.mediawiki?.[state.targetId] === undefined) {
       state.errorMessage = `FakeDispatch: wiki target "${state.targetId}" not found`;
-      return { output: 'error' };
+      return RoutedBatchBuilder.of('error', batch);
     }
     wikiRunCalls++;
     state.failedCount = 0;
-    return { output: 'success' };
+    return RoutedBatchBuilder.of('success', batch);
   },
 };
 
@@ -109,7 +115,7 @@ const buildDispatcher = (): Dagonizer<CliState, CliServices> => {
   const holder: { current: CliServices | null } = { current: null };
   const dispatcher = new Dagonizer<CliState, CliServices>({
     services: new Proxy({} as CliServices, {
-      get(_t, prop) {
+      get(_target, prop) {
         if (holder.current === null) throw new Error('services accessed before init');
         return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
       },
@@ -245,19 +251,22 @@ describe('cliScrapeDAG integration', () => {
 
     let capturedOutDir: string | undefined;
     const capturingNode: NodeInterface<CliState, 'success' | 'partial' | 'error', CliServices> = {
-      name:    'cli:dispatch-html-scrape',
-      outputs: ['success', 'partial', 'error'],
-      async execute(state: CliState): Promise<{ output: 'success' }> {
+      name:     'cli:dispatch-html-scrape',
+      outputs:  ['success', 'partial', 'error'],
+      timeout:  Timeout.none(),
+      contract: EMPTY_CONTRACT_FRAGMENT,
+      async execute(batch: Batch<CliState>): Promise<RoutedBatchType<'success' | 'partial' | 'error', CliState>> {
+        const state = batch.row(0).state;
         capturedOutDir = state.outDir;
         state.failedCount = 0;
-        return { output: 'success' };
+        return RoutedBatchBuilder.of('success', batch);
       },
     };
 
     const holder: { current: CliServices | null } = { current: null };
     const dispatcher2 = new Dagonizer<CliState, CliServices>({
       services: new Proxy({} as CliServices, {
-        get(_t, prop) {
+        get(_target, prop) {
           if (holder.current === null) throw new Error('services accessed before init');
           return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
         },

@@ -1,5 +1,6 @@
 // Unit tests for hazard concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }           from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -13,32 +14,33 @@ import {
 } from '../../../../../plugins/aonprd/concepts/hazard/index.js';
 import type { HazardOutput } from '../../../../../plugins/aonprd/concepts/hazard/index.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  await loadAndCommonNode.execute(state, stubContext);
-  await labelPairBlockNode.execute(state, stubContext);
-  await sectionWalkerNode.execute(state, stubContext);
-  await sourceRefNode.execute(state, stubContext);
+  await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  await labelPairBlockNode.execute(Batch.of(state), stubContext);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
+  await sourceRefNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await hazardBaseNode.execute(state, stubContext);
-  await hazardDefensesNode.execute(state, stubContext);
-  await finalizeHazardNode.execute(state, stubContext);
-  return state.output as HazardOutput;
+  await hazardBaseNode.execute(Batch.of(state), stubContext);
+  await hazardDefensesNode.execute(Batch.of(state), stubContext);
+  await finalizeHazardNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<HazardOutput>(state.output);
 }
 
 describe('extract:hazard-base — hazard-haunted-bridge', () => {
   it('produces _type, name, hazard_id, complexity, stealth', async () => {
     const state = await primeState('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    const r = await hazardBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await hazardBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as HazardOutput;
+    const out = ParsedOutput.as<HazardOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name should be non-empty');
     assert.equal(out.hazard_id, 1);
     assert.ok('complexity' in out, 'complexity field missing');
@@ -47,36 +49,36 @@ describe('extract:hazard-base — hazard-haunted-bridge', () => {
 
   it('complexity is "simple" for haunted bridge', async () => {
     const state = await primeState('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    await hazardBaseNode.execute(state, stubContext);
+    await hazardBaseNode.execute(Batch.of(state), stubContext);
 
-    const out = state.output as HazardOutput;
+    const out = ParsedOutput.as<HazardOutput>(state.output);
     assert.equal(out.complexity, 'simple', 'haunted bridge has Complexity Simple');
   });
 
   it('stealth has a dc value', async () => {
     const state = await primeState('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    await hazardBaseNode.execute(state, stubContext);
+    await hazardBaseNode.execute(Batch.of(state), stubContext);
 
-    const out = state.output as HazardOutput;
+    const out = ParsedOutput.as<HazardOutput>(state.output);
     assert.ok(out.stealth.dc !== null, 'stealth.dc should be non-null for haunted bridge');
     assert.equal(out.stealth.dc, 20);
   });
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    const r = await hazardBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await hazardBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('extract:hazard-defenses — hazard-haunted-bridge', () => {
   it('produces defenses with ac, saves, hp', async () => {
     const state = await primeState('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    await hazardBaseNode.execute(state, stubContext);
-    const r = await hazardDefensesNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await hazardBaseNode.execute(Batch.of(state), stubContext);
+    const result = await hazardDefensesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as HazardOutput;
+    const out = ParsedOutput.as<HazardOutput>(state.output);
     assert.ok(typeof out.defenses === 'object', 'defenses missing');
     // ac and saves may be null but the fields must exist
     assert.ok('ac' in out.defenses, 'defenses.ac missing');
@@ -86,20 +88,20 @@ describe('extract:hazard-defenses — hazard-haunted-bridge', () => {
 
   it('error path — returns error when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    const r = await hazardDefensesNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await hazardDefensesNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
 describe('finalize:hazard — hazard-haunted-bridge', () => {
   it('produces routines, reset, sections, raw_fields', async () => {
     const state = await primeState('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    await hazardBaseNode.execute(state, stubContext);
-    await hazardDefensesNode.execute(state, stubContext);
-    const r = await finalizeHazardNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await hazardBaseNode.execute(Batch.of(state), stubContext);
+    await hazardDefensesNode.execute(Batch.of(state), stubContext);
+    const result = await finalizeHazardNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as HazardOutput;
+    const out = ParsedOutput.as<HazardOutput>(state.output);
     assert.ok(Array.isArray(out.routines), 'routines missing');
     assert.ok('reset' in out, 'reset field missing');
     assert.ok(Array.isArray(out.sections), 'sections missing');
@@ -108,8 +110,8 @@ describe('finalize:hazard — hazard-haunted-bridge', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    const r = await finalizeHazardNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeHazardNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 
@@ -126,8 +128,8 @@ describe('full hazard pipeline — hazard-haunted-bridge', () => {
 
   it('sections[] does not contain legacy-content-warning', async () => {
     const out = await primeAndRunFull('hazard-haunted-bridge.html', 'https://2e.aonprd.com/Hazards.aspx?ID=1');
-    const legacySection = out.sections.find((s) =>
-      /legacy[\s-]content[\s-]warning/i.test(s.heading),
+    const legacySection = out.sections.find((sec) =>
+      /legacy[\s-]content[\s-]warning/i.test(sec.heading),
     );
     assert.equal(legacySection, undefined, 'legacy-content-warning section should be filtered');
   });

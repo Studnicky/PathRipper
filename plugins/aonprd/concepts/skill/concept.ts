@@ -1,9 +1,9 @@
 // Skill concept — DAG nodes and concept declaration.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -17,117 +17,125 @@ import type { SkillOutput } from './types.js';
 // Re-export output types for tests
 export type SkillBaseOutput = 'success' | 'error';
 
-export const skillBaseNode: NodeInterface<ScrapeState, SkillBaseOutput, RipperServices> = {
-  name:    'extract:skill-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SkillBaseNode extends ScalarNode<ScrapeState, SkillBaseOutput> {
+  public readonly name = 'extract:skill-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SkillBaseOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SkillBaseOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractSkillBase(c, $, target);
+    const base = extractSkillBase(common, root, target);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const skillBaseNode = new SkillBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SkillActionsOutput = 'success' | 'error';
 
-export const skillActionsNode: NodeInterface<ScrapeState, SkillActionsOutput, RipperServices> = {
-  name:    'extract:skill-actions',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SkillActionsNode extends ScalarNode<ScrapeState, SkillActionsOutput> {
+  public readonly name = 'extract:skill-actions';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SkillActionsOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SkillActionsOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractSkillActions(c, $, target);
+    const slice = extractSkillActions(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const skillActionsNode = new SkillActionsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SkillProficiencyTiersOutput = 'success' | 'error';
 
-export const skillProficiencyTiersNode: NodeInterface<ScrapeState, SkillProficiencyTiersOutput, RipperServices> = {
-  name:    'extract:skill-proficiency-tiers',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class SkillProficiencyTiersNode extends ScalarNode<ScrapeState, SkillProficiencyTiersOutput> {
+  public readonly name = 'extract:skill-proficiency-tiers';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: SkillProficiencyTiersOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<SkillProficiencyTiersOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractSkillProficiencyTiers(c, $, target);
+    const slice = extractSkillProficiencyTiers(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const skillProficiencyTiersNode = new SkillProficiencyTiersNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeSkillOutput = 'success';
 
-export const finalizeSkillNode: NodeInterface<ScrapeState, FinalizeSkillOutput, RipperServices> = {
-  name:    'finalize:skill',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeSkillNode extends ScalarNode<ScrapeState, FinalizeSkillOutput> {
+  public readonly name = 'finalize:skill';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeSkillOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeSkillOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as SkillOutput;
-    const meta = extractSkillMeta(c, $, target);
-    const assembled = finalizeSkill(c, acc, acc, acc, meta);
+    const meta = extractSkillMeta(common, root, target);
+    const assembled = finalizeSkill(common, acc, acc, acc, meta);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeSkillNode = new FinalizeSkillNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

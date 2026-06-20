@@ -1,72 +1,75 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../../taxonomy.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
   type Section,
-  type CheerioNode,
 } from '../../common.js';
 import { setConceptOutput } from '../_helpers.js';
 import { extractTraitBase } from './base.js';
-import { finalizeTrait, finalizeTraitWithSections } from './finalize.js';
+import { finalizeTraitWithSections } from './finalize.js';
 import type { TraitOutput } from './types.js';
 
 export type TraitBaseOutput = 'success' | 'error';
 
-export const traitBaseNode: NodeInterface<ScrapeState, TraitBaseOutput, RipperServices> = {
-  name:    'extract:trait-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class TraitBaseNode extends ScalarNode<ScrapeState, TraitBaseOutput> {
+  public readonly name    = 'extract:trait-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: TraitBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<TraitBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractTraitBase(c);
+    const base = extractTraitBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const traitBaseNode = new TraitBaseNode();
 
 export type FinalizeTraitOutput = 'success';
 
-export const finalizeTraitNode: NodeInterface<ScrapeState, FinalizeTraitOutput, RipperServices> = {
-  name:    'finalize:trait',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeTraitNode extends ScalarNode<ScrapeState, FinalizeTraitOutput> {
+  public readonly name    = 'finalize:trait';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeTraitOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeTraitOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || sections === undefined) return { output: 'success' };
+    if (common === undefined || root === undefined || sections === undefined) return NodeOutputBuilder.of('success');
 
     const acc = (state.output ?? {}) as unknown as TraitOutput;
-    const assembled = finalizeTraitWithSections(c, acc, sections, $);
+    const assembled = finalizeTraitWithSections(common, acc, sections, root);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeTraitNode = new FinalizeTraitNode();
 
 export const traitConcept: ConceptDecl<TraitOutput> = {
   id:       'trait',

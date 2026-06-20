@@ -1,11 +1,11 @@
 //
 // the `legacy: true` flag already carries that signal from title extraction.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
@@ -114,13 +114,13 @@ function parseWeatherHazardEffects(html: string): { description: string | null; 
   // Locate every `<b>…</b>` label in the body.
   const labelRe = /<b>([\s\S]*?)<\/b>/gi;
   const labels: Array<{ name: string; index: number; end: number }> = [];
-  let m: RegExpExecArray | null;
-  while ((m = labelRe.exec(html)) !== null) {
-    const name = htmlToText(m[1] ?? '').replace(/[:?]$/, '').trim();
+  let match: RegExpExecArray | null;
+  while ((match = labelRe.exec(html)) !== null) {
+    const name = htmlToText(match[1] ?? '').replace(/[:?]$/, '').trim();
     if (name === '') continue;
     // Skip the `Source` label — the header source is structured separately.
     if (/^source$/i.test(name)) continue;
-    labels.push({ name, index: m.index, end: m.index + m[0].length });
+    labels.push({ name, index: match.index, end: match.index + match[0].length });
   }
 
   if (labels.length === 0) {
@@ -138,9 +138,9 @@ function parseWeatherHazardEffects(html: string): { description: string | null; 
 
   const stopRe = /<h[1-6]\b/i;
   const effects: WeatherHazardEffect[] = [];
-  for (let i = 0; i < labels.length; i++) {
-    const cur  = labels[i]!;
-    const next = labels[i + 1];
+  for (let index = 0; index < labels.length; index++) {
+    const cur  = labels[index]!;
+    const next = labels[index + 1];
     const tail = html.slice(cur.end);
     const stopMatch = stopRe.exec(tail);
     const stopIdx = stopMatch === null ? tail.length : stopMatch.index;
@@ -158,30 +158,30 @@ function parseWeatherHazardEffects(html: string): { description: string | null; 
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract identity + header scalars for a weather-hazard page. */
-export function extractWeatherHazardBase(c: CommonExtraction): WeatherHazardBaseSlice {
+export function extractWeatherHazardBase(common: CommonExtraction): WeatherHazardBaseSlice {
   return {
-    url:               c.url,
-    weather_hazard_id: extractEntityId(c.url),
-    name:              c.title.name,
-    level:             c.title.level,
-    rarity:            c.traits.rarity,
-    pfs:               c.title.pfs,
-    legacy:            c.title.legacy,
-    alt_edition_url:   c.title.alt_edition_url,
-    traits:            c.traits.traits,
-    trait_ids:         c.traits.trait_ids,
-    source:            { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:           c.sources,
+    url:               common.url,
+    weather_hazard_id: extractEntityId(common.url),
+    name:              common.title.name,
+    level:             common.title.level,
+    rarity:            common.traits.rarity,
+    pfs:               common.title.pfs,
+    legacy:            common.title.legacy,
+    alt_edition_url:   common.title.alt_edition_url,
+    traits:            common.traits.traits,
+    trait_ids:         common.traits.trait_ids,
+    source:            { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:           common.sources,
   };
 }
 
 /** Extract the labelled effect paragraphs from the body. */
-export function extractWeatherHazardEffects(c: CommonExtraction): WeatherHazardEffectsSlice {
-  return parseWeatherHazardEffects(c.body_html);
+export function extractWeatherHazardEffects(common: CommonExtraction): WeatherHazardEffectsSlice {
+  return parseWeatherHazardEffects(common.body_html);
 }
 
 /** Extract meta-slice marker — sections/links/body/meta attach in finalize. */
-export function extractWeatherHazardMeta(_c: CommonExtraction): WeatherHazardMetaSlice {
+export function extractWeatherHazardMeta(_common: CommonExtraction): WeatherHazardMetaSlice {
   return { __weather_hazard_meta_marked: true };
 }
 
@@ -195,16 +195,16 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
 ];
 
 export function finalizeWeatherHazard(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      WeatherHazardBaseSlice,
   effects:   WeatherHazardEffectsSlice,
   _meta:     WeatherHazardMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
   _target:   CheerioNode,
 ): WeatherHazardOutput {
   void _meta;
   void _target;
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
   return {
     url:               base.url,
     weather_hazard_id: base.weather_hazard_id,
@@ -220,26 +220,26 @@ export function finalizeWeatherHazard(
     sources:           base.sources,
     description:       effects.description,
     effects:           effects.effects,
-    sections:          c.sections,
+    sections:          common.sections,
     raw_fields,
-    links:             c.links,
-    body_text:         c.body_text,
-    body_html:         c.body_html,
-    meta_description:  extractMetaDescription($),
-    meta_keywords:     extractMetaKeywords($),
+    links:             common.links,
+    body_text:         common.body_text,
+    body_html:         common.body_html,
+    meta_description:  extractMetaDescription(root),
+    meta_keywords:     extractMetaKeywords(root),
   } satisfies WeatherHazardOutput;
 }
 
 /** Project a WeatherHazards.aspx page into a typed WeatherHazardOutput. */
 export function extractWeatherHazard(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): WeatherHazardOutput {
-  const base    = extractWeatherHazardBase(c);
-  const effects = extractWeatherHazardEffects(c);
-  const meta    = extractWeatherHazardMeta(c);
-  return finalizeWeatherHazard(c, base, effects, meta, $, target);
+  const base    = extractWeatherHazardBase(common);
+  const effects = extractWeatherHazardEffects(common);
+  const meta    = extractWeatherHazardMeta(common);
+  return finalizeWeatherHazard(common, base, effects, meta, root, target);
 }
 
 // Re-export output types so tests can import from here.
@@ -251,63 +251,65 @@ export function extractWeatherHazard(
 
 export type WeatherHazardBaseOutput = 'success' | 'error';
 
-export const weatherHazardBaseNode: NodeInterface<ScrapeState, WeatherHazardBaseOutput, RipperServices> = {
-  name:    'extract:weather-hazard-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class WeatherHazardBaseNode extends ScalarNode<ScrapeState, WeatherHazardBaseOutput> {
+  public readonly name = 'extract:weather-hazard-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: WeatherHazardBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<WeatherHazardBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base    = extractWeatherHazardBase(c);
-    const effects = extractWeatherHazardEffects(c);
+    const base    = extractWeatherHazardBase(common);
+    const effects = extractWeatherHazardEffects(common);
 
     state.output = state.output !== null
       ? { ...state.output, ...base, ...effects }
       : { ...base, ...effects };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const weatherHazardBaseNode = new WeatherHazardBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type FinalizeWeatherHazardOutput = 'success';
 
-export const finalizeWeatherHazardNode: NodeInterface<ScrapeState, FinalizeWeatherHazardOutput, RipperServices> = {
-  name:    'finalize:weather-hazard',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeWeatherHazardNode extends ScalarNode<ScrapeState, FinalizeWeatherHazardOutput> {
+  public readonly name = 'finalize:weather-hazard';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget', 'sections'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeWeatherHazardOutput }> {
-    const c        = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $        = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeWeatherHazardOutput>> {
+    const common   = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root     = state.getMetadata<CheerioAPI>('aonprdCheerio');
     const target   = state.getMetadata<CheerioNode>('aonprdTarget');
     const sections = state.getMetadata<Section[]>('sections');
-    if (c === undefined || $ === undefined || target === undefined || sections === undefined) {
-      return { output: 'success' };
+    if (common === undefined || root === undefined || target === undefined || sections === undefined) {
+      return NodeOutputBuilder.of('success');
     }
 
-    const base    = extractWeatherHazardBase(c);
-    const effects = extractWeatherHazardEffects(c);
+    const base    = extractWeatherHazardBase(common);
+    const effects = extractWeatherHazardEffects(common);
 
-    const raw_fields       = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-    const links            = c.links;
-    const meta_description = extractMetaDescription($);
-    const meta_keywords    = extractMetaKeywords($);
+    const raw_fields       = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+    const links            = common.links;
+    const meta_description = extractMetaDescription(root);
+    const meta_keywords    = extractMetaKeywords(root);
 
     setConceptOutput(state, {
       url:               base.url,
@@ -327,15 +329,17 @@ export const finalizeWeatherHazardNode: NodeInterface<ScrapeState, FinalizeWeath
       sections:          filterLegacySections(sections),
       raw_fields,
       links,
-      body_text:         c.body_text,
-      body_html:         c.body_html,
+      body_text:         common.body_text,
+      body_html:         common.body_html,
       meta_description,
       meta_keywords,
     } satisfies WeatherHazardOutput);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeWeatherHazardNode = new FinalizeWeatherHazardNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

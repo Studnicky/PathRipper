@@ -4,12 +4,12 @@
  * Exports: finalizeMonster, finalizeMonsterNode.
  * Strips claimed field labels from raw_fields and assembles final MonsterOutput.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { setConceptOutput } from '../_helpers.js';
 import {
   extractMetaDescription,
@@ -45,19 +45,19 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * junk key. Whatever remains is genuine unstructured residue.
  */
 export function finalizeMonster(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      MonsterBaseSlice,
   defenses:  MonsterDefensesSlice,
   offense:   MonsterOffenseSlice,
   abilities: MonsterAbilitiesSlice,
   meta:      MonsterMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
   _span:     CheerioNode,
 ): MonsterOutput {
   const claimedAbilityNames: string[] = [
-    ...abilities.top_abilities.map((a) => a.name),
-    ...abilities.defensive_abilities.map((a) => a.name),
-    ...abilities.offensive_abilities.map((a) => a.name),
+    ...abilities.top_abilities.map((ability) => ability.name),
+    ...abilities.defensive_abilities.map((ability) => ability.name),
+    ...abilities.offensive_abilities.map((ability) => ability.name),
   ];
 
   const claimedSpellListLabels: string[] = [];
@@ -72,11 +72,11 @@ export function finalizeMonster(
   }
 
   const junkKeys: string[] = [];
-  for (const key of Object.keys(c.field_map)) {
+  for (const key of Object.keys(common.field_map)) {
     if (isVariantOverlayJunk(key)) junkKeys.push(key);
   }
 
-  const raw_fields = stripStructuredKeys(c.field_map, [
+  const raw_fields = stripStructuredKeys(common.field_map, [
     ...CLAIMED_FIELD_LABELS,
     ...claimedAbilityNames,
     ...claimedSpellListLabels,
@@ -90,36 +90,37 @@ export function finalizeMonster(
     ...abilities,
     ...meta,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies MonsterOutput;
 }
 
 export type FinalizeMonsterOutput = 'success';
 
-export const finalizeMonsterNode: NodeInterface<ScrapeState, FinalizeMonsterOutput, RipperServices> = {
-  name:    'finalize:monster',
-  outputs: ['success'] as const,
-  contract: {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  } satisfies OperationContractFragment,
+class FinalizeMonsterNodeImpl extends ScalarNode<ScrapeState, FinalizeMonsterOutput> {
+  public readonly name = 'finalize:monster';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
+    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
+    produces:     [],
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeMonsterOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeMonsterOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
     const acc = (state.output ?? {}) as unknown as MonsterOutput;
-    const assembled = finalizeMonster(c, acc, acc, acc, acc, acc, $, target);
+    const assembled = finalizeMonster(common, acc, acc, acc, acc, acc, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+export const finalizeMonsterNode = new FinalizeMonsterNodeImpl();

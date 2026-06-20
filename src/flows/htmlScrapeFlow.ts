@@ -1,222 +1,114 @@
 /**
- * htmlScrapeFlow — contract-derived replacement for:
- *   - htmlScrapePhase (fan-out scrape pass)
- *   - htmlRetryPhase  (fan-out retry pass)
- *   - htmlCrawlPhase  (optional URL discovery pass)
- *   - htmlScrapeDAG / htmlScrapeDAGCrawl (outer composition)
+ * htmlScrapeFlow — DAGBuilder-backed exports for every built-in HTML DAG.
  *
- * **Phase DAGs** — expressed as separate `DAGDeriver.derive` calls with
- * `annotations.fanouts` for the fan-out placements and `annotations.terminals`
- * for alternate exit routing. The `fanInOperation` is excluded from the
- * top-level contract chain (DAGDeriver filters fan-in names from `eligibleContracts`).
+ * Phase DAGs and outer composition DAGs delegate directly to the `DAGBuilder`
+ * factories in `htmlScrapeDag.ts`. A minimal docs-path dispatch node
+ * (returning `success` immediately, inheriting `EMPTY_CONTRACT_FRAGMENT`) is
+ * passed to the scatter factories so the phase DAGs can be registered for
+ * docs-build visualisation without a real runtime dispatcher.
  *
- * **Outer composition** — the outer DAGs (`htmlScrapeFlow`, `htmlScrapeFlowCrawl`)
- * wrap the phase flows as `DeepDAGNode` placements via `annotations.subDAGs`
- * (adopted in 0.7.0). Each phase step is an operation contract; the `subDAGs`
- * annotation declares the registered DAG name so DAGDeriver renders
- * `DeepDAGNode` instead of `SingleNode`.
+ * Name constants are re-exported from `htmlScrapeDag.ts` (source of truth)
+ * plus the flow-file–specific aliases consumed by tests and `registerAllFlows`.
  *
- * **Crawl phase** — single-contract flow whose only operation is
- * `crawl:list-targets` (produces `urls`); alternate exits terminate via
- * `annotations.terminals`.
+ * @module flows/htmlScrapeFlow
+ * @since 4.0.0
  */
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { OperationContract } from '@noocodex/dagonizer/derive';
-import type { DAG } from '@noocodex/dagonizer';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { DAGType, NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-// ── Phase names ────────────────────────────────────────────────────────────────
+import {
+  buildHtmlScrapePhaseDag,
+  buildHtmlRetryPhaseDag,
+  buildHtmlCrawlPhaseDag,
+  buildHtmlScrapeDag,
+  buildHtmlScrapeDagCrawl,
+  HTML_SCRAPE_PHASE,
+  HTML_RETRY_PHASE,
+  HTML_CRAWL_PHASE,
+} from './htmlScrapeDag.js';
 
-/** Canonical name for the HTML initial-scrape phase flow. */
-export const HTML_SCRAPE_PHASE_FLOW = 'htmlScrapePhase';
+import type { ScrapeState }    from '../state/ScrapeState.js';
+import type { RipperServices } from '../services/RipperServices.js';
 
-/** Canonical name for the HTML failure-retry phase flow. */
-export const HTML_RETRY_PHASE_FLOW = 'htmlRetryPhase';
+// ── Name constants ─────────────────────────────────────────────────────────────
 
-/** Canonical name for the HTML URL-discovery phase flow. */
-export const HTML_CRAWL_PHASE_FLOW = 'htmlCrawlPhase';
+/** Canonical name for the HTML initial-scrape phase flow (alias of HTML_SCRAPE_PHASE). */
+export const HTML_SCRAPE_PHASE_FLOW: string = HTML_SCRAPE_PHASE;
 
-// ── htmlCrawlPhase ─────────────────────────────────────────────────────────────
+/** Canonical name for the HTML failure-retry phase flow (alias of HTML_RETRY_PHASE). */
+export const HTML_RETRY_PHASE_FLOW: string = HTML_RETRY_PHASE;
 
-const crawlContracts: readonly OperationContract[] = [
-  { name: 'crawl:list-targets', hardRequired: [], produces: ['urls'], outputs: ['success', 'error', 'empty'] },
-];
+/** Canonical name for the HTML URL-discovery phase flow (alias of HTML_CRAWL_PHASE). */
+export const HTML_CRAWL_PHASE_FLOW: string = HTML_CRAWL_PHASE;
+
+// ── Docs-path dispatch node ────────────────────────────────────────────────────
+// A minimal ScalarNode that satisfies the DAGBuilder scatter factories for
+// docs-build and visualisation. EMPTY_CONTRACT_FRAGMENT is inherited (no
+// contract override). executeOne is never reached at docs-build time.
+
+class HtmlDocsDispatchNode extends ScalarNode<ScrapeState, string, RipperServices> {
+  public readonly name    = 'html:dispatch-page-dag';
+  public readonly outputs = ['success', 'error'] as const;
+
+  protected override async executeOne(
+    _state:   ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<string>> {
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+const htmlDocsDispatchNode = new HtmlDocsDispatchNode();
+
+// ── Phase DAGs ─────────────────────────────────────────────────────────────────
 
 /**
- * Contract-derived HTML URL-discovery phase.
- * Populates `state.urls` from the crawl config; alternate exits terminate.
+ * HTML URL-discovery phase DAG (docs-path instance).
+ *
+ * Delegates to `buildHtmlCrawlPhaseDag`. At runtime `runHtml` builds its own
+ * instance and registers it on the per-run dispatcher.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const htmlCrawlPhaseFlow: DAG = DAGDeriver.derive({
-  name:       HTML_CRAWL_PHASE_FLOW,
-  version:    '2.0',
-  entrypoint: 'crawl:list-targets',
-  contracts:  crawlContracts,
-  annotations: {
-    terminals: {
-      'crawl:list-targets': [
-        { outcome: 'error', target: null },
-        { outcome: 'empty', target: null },
-      ],
-    },
-  },
-});
-
-// ── htmlScrapePhase ────────────────────────────────────────────────────────────
+export const htmlCrawlPhaseFlow: DAGType = buildHtmlCrawlPhaseDag();
 
 /**
- * Contract-derived HTML initial-scrape phase (fan-out over `state.urls`).
+ * HTML initial-scrape phase DAG (docs-path instance).
+ *
+ * Delegates to `buildHtmlScrapePhaseDag` with a minimal docs-path dispatch
+ * node. At docs-build time the node is registered via the stub already present
+ * in `registerAllFlows`; at runtime `runHtml` builds its own instance with the
+ * real `makeDispatchPageDagNode`.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapePhaseFlow: DAG = DAGDeriver.derive({
-  name:       HTML_SCRAPE_PHASE_FLOW,
-  version:    '2.0',
-  entrypoint: 'scrape-urls',
-  contracts: [
-    { name: 'scrape-urls',    hardRequired: ['urls'],      produces: ['succeeded', 'failed'], outputs: ['all-success', 'partial', 'all-error', 'empty'] },
-    { name: 'html:partition', hardRequired: ['succeeded'], produces: [],                      outputs: ['success'] },
-  ],
-  annotations: {
-    fanouts: {
-      'scrape-urls': {
-        source:         'urls',
-        itemKey:        'currentUrl',
-        concurrency:    4,
-        node:           'scrape-urls',
-        strategy:       'custom',
-        fanInOperation: 'html:partition',
-        outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
-      },
-    },
-    terminals: {
-      'scrape-urls': [
-        { outcome: 'all-success', target: null },
-        { outcome: 'partial',     target: null },
-        { outcome: 'all-error',   target: null },
-        { outcome: 'empty',       target: null },
-      ],
-    },
-  },
-});
-
-// ── htmlRetryPhase ─────────────────────────────────────────────────────────────
+export const htmlScrapePhaseFlow: DAGType = buildHtmlScrapePhaseDag(htmlDocsDispatchNode);
 
 /**
- * Contract-derived HTML failure-retry phase (fan-out over `state.failed`).
+ * HTML failure-retry phase DAG (docs-path instance).
  *
  * @category Flows
  * @since 4.0.0
  */
-export const htmlRetryPhaseFlow: DAG = DAGDeriver.derive({
-  name:       HTML_RETRY_PHASE_FLOW,
-  version:    '2.0',
-  entrypoint: 'retry-urls',
-  contracts: [
-    { name: 'retry-urls',          hardRequired: ['failed'],    produces: ['recovered', 'failedAfterRetry'], outputs: ['all-success', 'partial', 'all-error', 'empty'] },
-    { name: 'html:retryPartition', hardRequired: ['recovered'], produces: [],                               outputs: ['success'] },
-  ],
-  annotations: {
-    fanouts: {
-      'retry-urls': {
-        source:         'failed',
-        itemKey:        'currentRetryUrl',
-        concurrency:    4,
-        node:           'retry-urls',
-        strategy:       'custom',
-        fanInOperation: 'html:retryPartition',
-        outcomes:       ['all-success', 'partial', 'all-error', 'empty'],
-      },
-    },
-    terminals: {
-      'retry-urls': [
-        { outcome: 'all-success', target: null },
-        { outcome: 'partial',     target: null },
-        { outcome: 'all-error',   target: null },
-        { outcome: 'empty',       target: null },
-      ],
-    },
-  },
-});
+export const htmlRetryPhaseFlow: DAGType = buildHtmlRetryPhaseDag(htmlDocsDispatchNode);
 
 // ── Outer composition DAGs ─────────────────────────────────────────────────────
 
-// Phase operations for the outer composition chain. Each phase has a unique
-// fictional produce key so DAGDeriver can chain them linearly:
-//   scrape (produces: scrape-done) → retry (produces: retry-done) → done
-//
-// All outputs of scrape and retry route uniformly to the next derived stage
-// (DAGDeriver auto-wires all declared ports), matching the previous DAGBuilder
-// { success: next, error: next } routing.
-
-const SCRAPE_OUTPUT_MAPPING: Readonly<Record<string, string>> = { succeeded: 'succeeded', failed: 'failed' };
-const RETRY_OUTPUT_MAPPING:  Readonly<Record<string, string>> = { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' };
-const CRAWL_OUTPUT_MAPPING:  Readonly<Record<string, string>> = { urls: 'urls' };
-
 /**
- * Outer HTML scrape flow (no discovery phase).
- *
- * Operations:
- *   scrape (DeepDAG: htmlScrapePhase) → retry (DeepDAG: htmlRetryPhase) → done
+ * Outer HTML scrape DAG — no-crawl path (docs-path instance).
  *
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapeFlow: DAG = DAGDeriver.derive({
-  name:       'htmlScrapeDAG',
-  version:    '2.0',
-  entrypoint: 'scrape',
-  contracts: [
-    { name: 'scrape',         hardRequired: [],             produces: ['scrape-done'], outputs: ['success', 'error'] },
-    { name: 'retry',          hardRequired: ['scrape-done'], produces: ['retry-done'], outputs: ['success', 'error'] },
-    { name: 'flow:terminate', hardRequired: ['retry-done'],  produces: [],             outputs: ['success'] },
-  ],
-  annotations: {
-    subDAGs: {
-      scrape: { dag: HTML_SCRAPE_PHASE_FLOW, outputs: ['success', 'error'], stateMapping: { output: SCRAPE_OUTPUT_MAPPING } },
-      retry:  { dag: HTML_RETRY_PHASE_FLOW,  outputs: ['success', 'error'], stateMapping: { output: RETRY_OUTPUT_MAPPING  } },
-    },
-    terminals: {
-      'flow:terminate': [{ outcome: 'success', target: null }],
-    },
-  },
-});
+export const htmlScrapeFlow: DAGType = buildHtmlScrapeDag();
 
 /**
- * Outer HTML scrape flow with URL-discovery phase.
- *
- * Operations:
- *   crawl (DeepDAG: htmlCrawlPhase) → scrape (DeepDAG: htmlScrapePhase)
- *     → retry (DeepDAG: htmlRetryPhase) → done
- *
- * crawl error exits to done (not scrape) via terminal annotation.
+ * Outer HTML scrape DAG — crawl path (docs-path instance).
  *
  * @category Flows
  * @since 4.0.0
  */
-export const htmlScrapeFlowCrawl: DAG = DAGDeriver.derive({
-  name:       'htmlScrapeDAGCrawl',
-  version:    '2.0',
-  entrypoint: 'crawl',
-  contracts: [
-    { name: 'crawl',          hardRequired: [],              produces: ['crawl-done'],  outputs: ['success', 'error'] },
-    { name: 'scrape',         hardRequired: ['crawl-done'],  produces: ['scrape-done'], outputs: ['success', 'error'] },
-    { name: 'retry',          hardRequired: ['scrape-done'], produces: ['retry-done'],  outputs: ['success', 'error'] },
-    { name: 'flow:terminate', hardRequired: ['retry-done'],  produces: [],              outputs: ['success'] },
-  ],
-  annotations: {
-    subDAGs: {
-      crawl:  { dag: HTML_CRAWL_PHASE_FLOW,  outputs: ['success', 'error'], stateMapping: { output: CRAWL_OUTPUT_MAPPING  } },
-      scrape: { dag: HTML_SCRAPE_PHASE_FLOW, outputs: ['success', 'error'], stateMapping: { output: SCRAPE_OUTPUT_MAPPING } },
-      retry:  { dag: HTML_RETRY_PHASE_FLOW,  outputs: ['success', 'error'], stateMapping: { output: RETRY_OUTPUT_MAPPING  } },
-    },
-    terminals: {
-      // crawl error routes directly to flow:terminate (skip scrape when discovery fails)
-      crawl:            [{ outcome: 'error', target: 'flow:terminate' }],
-      'flow:terminate': [{ outcome: 'success', target: null }],
-    },
-  },
-});
+export const htmlScrapeFlowCrawl: DAGType = buildHtmlScrapeDagCrawl();

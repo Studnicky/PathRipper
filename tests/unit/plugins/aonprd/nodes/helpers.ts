@@ -20,6 +20,6 @@ export function makeState(html: string, url: string): ScrapeState {
   return state;
 }
 
-/** Minimal NodeContextInterface stub (nodes don't use services in unit tests). */
+/** Minimal NodeContextType stub (nodes don't use services in unit tests). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const stubContext: any = { services: {} };

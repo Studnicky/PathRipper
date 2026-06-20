@@ -1,4 +1,5 @@
 import { describe, it, before, after } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -40,9 +41,9 @@ describe('LoadConfigNode', () => {
     state.configPath = configPath;
     state.outDir     = '';
 
-    const result = await LoadConfigNode.execute(state, makeContext());
+    const result = await LoadConfigNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'success');
+    assert.ok(result.has('success'));
     assert.notEqual(state.config, null);
     assert.equal(state.config?.output.basePath, './output');
     assert.equal(state.errorMessage, '');
@@ -56,7 +57,7 @@ describe('LoadConfigNode', () => {
     state.configPath = configPath;
     state.outDir     = '';
 
-    await LoadConfigNode.execute(state, makeContext());
+    await LoadConfigNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.outDir, './output');
   });
@@ -69,7 +70,7 @@ describe('LoadConfigNode', () => {
     state.configPath = configPath;
     state.outDir     = '/custom/out';
 
-    await LoadConfigNode.execute(state, makeContext());
+    await LoadConfigNode.execute(Batch.of(state), makeContext());
 
     assert.equal(state.outDir, '/custom/out');
   });
@@ -78,9 +79,9 @@ describe('LoadConfigNode', () => {
     const state = new CliState();
     state.configPath = join(tmpDir, 'does-not-exist.json');
 
-    const result = await LoadConfigNode.execute(state, makeContext());
+    const result = await LoadConfigNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.equal(state.config, null);
     assert.ok(state.errorMessage.length > 0);
   });
@@ -92,9 +93,9 @@ describe('LoadConfigNode', () => {
     const state = new CliState();
     state.configPath = configPath;
 
-    const result = await LoadConfigNode.execute(state, makeContext());
+    const result = await LoadConfigNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'error');
+    assert.ok(result.has('error'));
     assert.equal(state.config, null);
     assert.ok(state.errorMessage.length > 0);
   });

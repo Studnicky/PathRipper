@@ -1,10 +1,21 @@
 import { readFile } from 'node:fs/promises';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 import { toNodeError } from '../fileUtils.js';
+
+type ReadFileOutput = 'success' | 'not-found' | 'error';
+
+/** OperationContractType for ReadFileNode: reads path, produces raw. */
+export const readFileContract: OperationContractType = {
+  name:         'config:read-file',
+  hardRequired: ['path'],
+  produces:     ['raw'],
+  outputs:      ['success', 'not-found', 'error'],
+};
 
 /**
  * Reads the config file at `state.path` and stores the raw content in `state.raw`.
@@ -17,17 +28,18 @@ import { toNodeError } from '../fileUtils.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const ReadFileNode: NodeInterface<ConfigLoadState, 'success' | 'not-found' | 'error'> = {
-  name: 'config:read-file',
-  outputs: ['success', 'not-found', 'error'],
+class ReadFileNodeImpl extends ScalarNode<ConfigLoadState, ReadFileOutput, undefined> {
+  public readonly name = 'config:read-file';
+  public readonly outputs = ['success', 'not-found', 'error'] as const;
+  public override readonly contract = readFileContract;
 
-  async execute(
+  protected override async executeOne(
     state: ConfigLoadState,
-    _context: NodeContextInterface<undefined>,
-  ): Promise<{ output: 'success' | 'not-found' | 'error' }> {
+    _context: NodeContextType<undefined>,
+  ): Promise<NodeOutputType<ReadFileOutput>> {
     try {
       state.raw = await readFile(state.path, 'utf-8');
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     } catch (err: unknown) {
       const isEnoent =
         typeof err === 'object' &&
@@ -35,15 +47,9 @@ export const ReadFileNode: NodeInterface<ConfigLoadState, 'success' | 'not-found
         (err as { code?: string }).code === 'ENOENT';
 
       state.collectError(toNodeError(err, 'config:read-file'));
-      return { output: isEnoent ? 'not-found' : 'error' };
+      return NodeOutputBuilder.of(isEnoent ? 'not-found' : 'error');
     }
-  },
-};
+  }
+}
 
-/** OperationContract for ReadFileNode: reads path, produces raw. */
-export const readFileContract: OperationContract = {
-  name:         'config:read-file',
-  hardRequired: ['path'],
-  produces:     ['raw'],
-  outputs:      ['success', 'not-found', 'error'],
-};
+export const ReadFileNode = new ReadFileNodeImpl();

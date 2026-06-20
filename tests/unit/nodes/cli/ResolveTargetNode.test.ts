@@ -1,4 +1,5 @@
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { ResolveTargetNode } from '../../../../src/nodes/cli/ResolveTargetNode.js';
@@ -38,9 +39,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'htmlsite';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'html');
+    assert.ok(result.has('html'));
     assert.equal(state.targetKind, 'html');
     assert.equal(state.errorMessage, '');
   });
@@ -51,9 +52,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'mywiki';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'wiki');
+    assert.ok(result.has('wiki'));
     assert.equal(state.targetKind, 'wiki');
     assert.equal(state.errorMessage, '');
   });
@@ -64,9 +65,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'unknown';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'not-found');
+    assert.ok(result.has('not-found'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -76,9 +77,9 @@ describe('ResolveTargetNode', () => {
     state.config   = null;
     state.targetId = 'anything';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'not-found');
+    assert.ok(result.has('not-found'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -88,9 +89,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'mywiki';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'not-found');
+    assert.ok(result.has('not-found'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -100,9 +101,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'htmlsite';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'html');
+    assert.ok(result.has('html'));
     assert.equal(state.targetKind, 'html');
   });
 
@@ -112,9 +113,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'htmlsite';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'not-found');
+    assert.ok(result.has('not-found'));
     assert.ok(state.errorMessage.length > 0);
   });
 
@@ -124,9 +125,9 @@ describe('ResolveTargetNode', () => {
     state.config   = MOCK_CONFIG;
     state.targetId = 'mywiki';
 
-    const result = await ResolveTargetNode.execute(state, makeContext());
+    const result = await ResolveTargetNode.execute(Batch.of(state), makeContext());
 
-    assert.equal(result.output, 'wiki');
+    assert.ok(result.has('wiki'));
     assert.equal(state.targetKind, 'wiki');
   });
 });

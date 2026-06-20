@@ -1,5 +1,5 @@
-import { NodeStateBase } from '@noocodex/dagonizer';
-import type { JsonObject } from '@noocodex/dagonizer/entities';
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 import type { RipperConfigInterface, NormalizedRipperConfigInterface } from '../types/Config.js';
 
@@ -7,7 +7,7 @@ import type { RipperConfigInterface, NormalizedRipperConfigInterface } from '../
  * State flowing through every node in the config-load DAG.
  *
  * @remarks
- * Extends `NodeStateBase` from `@noocodex/dagonizer` so the dispatcher can
+ * Extends `NodeStateBase` from `@studnicky/dagonizer` so the dispatcher can
  * manage the execution lifecycle, collect errors/warnings, and checkpoint the
  * state for resumable runs.
  *
@@ -46,7 +46,7 @@ export class ConfigLoadState extends NodeStateBase {
   /**
    * Clone state for isolated execution (sub-flows and fan-out).
    */
-  public override clone(): ConfigLoadState {
+  public override clone(): this {
     const cloned = new ConfigLoadState();
     for (const [key, value] of Object.entries(this.metadata)) {
       cloned.setMetadata(key, value);
@@ -56,20 +56,20 @@ export class ConfigLoadState extends NodeStateBase {
     cloned.parsed     = this.parsed;
     cloned.validated  = this.validated;
     cloned.normalized = this.normalized;
-    return cloned;
+    return cloned as this;
   }
 
   /**
    * Snapshots domain-specific fields for `Checkpoint.from()`.
    * Called by the engine automatically; do not call directly.
    */
-  protected override snapshotData(): JsonObject {
+  protected override snapshotData(): JsonObjectType {
     return {
       path:       this.path,
       raw:        this.raw,
-      parsed:     this.parsed as JsonObject | null,
-      validated:  this.validated as unknown as JsonObject | null,
-      normalized: this.normalized as unknown as JsonObject | null,
+      parsed:     this.parsed as JsonObjectType | null,
+      validated:  this.validated as unknown as JsonObjectType | null,
+      normalized: this.normalized as unknown as JsonObjectType | null,
     };
   }
 
@@ -77,7 +77,7 @@ export class ConfigLoadState extends NodeStateBase {
    * Restores domain-specific fields from a checkpoint snapshot.
    * Called by `Checkpoint.restore()`; do not call directly.
    */
-  protected override restoreData(snap: JsonObject): void {
+  protected override restoreData(snap: JsonObjectType): void {
     const path = snap['path'];
     if (typeof path === 'string') this.path = path;
 

@@ -6,6 +6,7 @@
 //   - `execute()` throws with a message naming the stub
 
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { stub } from '../../../src/flows/stub.js';
@@ -25,7 +26,7 @@ describe('stub()', () => {
     const node = stub('test:stub', ['ok'] as const);
 
     await assert.rejects(
-      async () => { await node.execute({} as never, {} as never); },
+      async () => { await node.execute(Batch.of({} as never), {} as never); },
       (err: unknown) => {
         assert.ok(err instanceof Error);
         assert.ok(
@@ -41,7 +42,7 @@ describe('stub()', () => {
     const node = stub('foo:bar', ['done'] as const);
 
     await assert.rejects(
-      async () => { await node.execute({} as never, {} as never); },
+      async () => { await node.execute(Batch.of({} as never), {} as never); },
       (err: unknown) => {
         assert.ok(err instanceof Error);
         assert.ok(
@@ -54,9 +55,9 @@ describe('stub()', () => {
   });
 
   it('each call returns a distinct object', () => {
-    const a = stub('n', ['ok'] as const);
-    const b = stub('n', ['ok'] as const);
-    assert.notEqual(a, b, 'stub() must return a new object each invocation');
+    const stubA = stub('n', ['ok'] as const);
+    const stubB = stub('n', ['ok'] as const);
+    assert.notEqual(stubA, stubB, 'stub() must return a new object each invocation');
   });
 
   it('single-output stubs have a single-element outputs array', () => {

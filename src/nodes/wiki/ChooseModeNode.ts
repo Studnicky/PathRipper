@@ -1,8 +1,10 @@
-import type { NodeInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { MemberResolutionState } from '../../state/MemberResolutionState.js';
-import type { RipperServices }           from '../../services/RipperServices.js';
+import type { RipperServices }        from '../../services/RipperServices.js';
+
+type ChooseModeOutput = 'resume-failures' | 'single-category' | 'by-categories' | 'all-pages';
 
 /**
  * Selects the member-resolution mode from `state` flags and config.
@@ -22,35 +24,26 @@ import type { RipperServices }           from '../../services/RipperServices.js'
  * @category Nodes
  * @since 3.0.0
  */
-export const ChooseModeNode: NodeInterface<
-  MemberResolutionState,
-  'resume-failures' | 'single-category' | 'by-categories' | 'all-pages',
-  RipperServices
-> = {
-  name: 'wiki:choose-mode',
-  outputs: ['resume-failures', 'single-category', 'by-categories', 'all-pages'],
+class ChooseModeNodeImpl extends ScalarNode<MemberResolutionState, ChooseModeOutput, RipperServices> {
+  public readonly name = 'wiki:choose-mode';
+  public readonly outputs = ['resume-failures', 'single-category', 'by-categories', 'all-pages'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: MemberResolutionState,
-  ): Promise<{ output: 'resume-failures' | 'single-category' | 'by-categories' | 'all-pages' }> {
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<ChooseModeOutput>> {
     if (state.resumeFailures) {
-      return { output: 'resume-failures' };
+      return NodeOutputBuilder.of('resume-failures');
     }
     if (state.category !== undefined) {
-      return { output: 'single-category' };
+      return NodeOutputBuilder.of('single-category');
     }
     const configCategories = state.config['categories'];
     if (Array.isArray(configCategories) && configCategories.length > 0) {
-      return { output: 'by-categories' };
+      return NodeOutputBuilder.of('by-categories');
     }
-    return { output: 'all-pages' };
-  },
-};
+    return NodeOutputBuilder.of('all-pages');
+  }
+}
 
-/** OperationContract for ChooseModeNode: reads resumeFailures + category, routes only. */
-export const chooseModeContract: OperationContract = {
-  name:         'wiki:choose-mode',
-  hardRequired: [],
-  produces:     [],
-  outputs:      ['resume-failures', 'single-category', 'by-categories', 'all-pages'],
-};
+export const ChooseModeNode = new ChooseModeNodeImpl();

@@ -1,6 +1,7 @@
 // Unit tests for ritual concept capability nodes.
 // Rituals share the spell HTML structure — same slices, different URL paths.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode } from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -15,6 +16,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/ritual/index.js';
 import type { RitualOutput } from '../../../../../plugins/aonprd/concepts/ritual/index.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE_RITUAL = 'ritual-awaken-animal.html';
 const URL_RITUAL     = 'https://2e.aonprd.com/Rituals.aspx?ID=3';
@@ -22,21 +24,21 @@ const URL_RITUAL     = 'https://2e.aonprd.com/Rituals.aspx?ID=3';
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  const r = await loadAndCommonNode.execute(state, stubContext);
-  assert.equal(r.output, 'success', `loadAndCommon failed for ${fixtureName}`);
+  const result = await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  assert.ok(result.has('success'), `loadAndCommon failed for ${fixtureName}`);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await ritualBaseNode.execute(state, stubContext);
-  await ritualCastNode.execute(state, stubContext);
-  await ritualOutcomesNode.execute(state, stubContext);
-  await ritualAfflictionNode.execute(state, stubContext);
-  await ritualHeightenedNode.execute(state, stubContext);
-  await ritualMetaNode.execute(state, stubContext);
-  await finalizeRitualNode.execute(state, stubContext);
-  return state.output as RitualOutput;
+  await ritualBaseNode.execute(Batch.of(state), stubContext);
+  await ritualCastNode.execute(Batch.of(state), stubContext);
+  await ritualOutcomesNode.execute(Batch.of(state), stubContext);
+  await ritualAfflictionNode.execute(Batch.of(state), stubContext);
+  await ritualHeightenedNode.execute(Batch.of(state), stubContext);
+  await ritualMetaNode.execute(Batch.of(state), stubContext);
+  await finalizeRitualNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<RitualOutput>(state.output);
 }
 
 // ─── extract:ritual-base ─────────────────────────────────────────────────────
@@ -44,10 +46,10 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:ritual-base — awaken-animal', () => {
   it('produces _type, name, url, kind resolves to ritual', async () => {
     const state = await primeState(FIXTURE_RITUAL, URL_RITUAL);
-    const r = await ritualBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await ritualBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as RitualOutput;
+    const out = ParsedOutput.as<RitualOutput>(state.output);
     // `_type` is stamped by the taxonomy router, not by the slice
     // extractor — so we only assert structural fields here.
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
@@ -56,8 +58,8 @@ describe('extract:ritual-base — awaken-animal', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL_RITUAL);
-    const r = await ritualBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await ritualBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -66,10 +68,10 @@ describe('extract:ritual-base — awaken-animal', () => {
 describe('extract:ritual-affliction — awaken-animal (ritual check fields)', () => {
   it('populates ritual_primary_check and ritual_secondary_casters', async () => {
     const state = await primeState(FIXTURE_RITUAL, URL_RITUAL);
-    const r = await ritualAfflictionNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await ritualAfflictionNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as RitualOutput;
+    const out = ParsedOutput.as<RitualOutput>(state.output);
     assert.ok('ritual_primary_check' in out, 'ritual_primary_check missing');
     assert.ok('ritual_secondary_casters' in out, 'ritual_secondary_casters missing');
     assert.ok('ritual_secondary_checks' in out, 'ritual_secondary_checks missing');
@@ -77,8 +79,8 @@ describe('extract:ritual-affliction — awaken-animal (ritual check fields)', ()
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL_RITUAL);
-    const r = await ritualAfflictionNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await ritualAfflictionNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -104,8 +106,8 @@ describe('finalize:ritual — awaken-animal', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL_RITUAL);
-    const r = await finalizeRitualNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeRitualNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

@@ -41,32 +41,33 @@ describe('rawContent integration (folder-split layout)', () => {
     // from a tmp directory where node_modules is not accessible via traversal.
     pluginDir = join(outDir, 'plugins', 'stub');
     await mkdir(pluginDir, { recursive: true });
-    const dagDeriverAbsPath = resolve(
-      __dirname, '..', '..', 'node_modules', '@noocodex', 'dagonizer', 'dist', 'derive', 'index.js',
+    const dagBuilderAbsPath = resolve(
+      __dirname, '..', '..', 'node_modules', '@studnicky', 'dagonizer', 'dist', 'builder', 'index.js',
+    );
+    const dagonzerIndexPath = resolve(
+      __dirname, '..', '..', 'node_modules', '@studnicky', 'dagonizer', 'dist', 'index.js',
     );
     await writeFile(join(pluginDir, 'parse.task.js'), `
-import { DAGDeriver } from ${JSON.stringify(`file://${dagDeriverAbsPath}`)};
+import { DAGBuilder } from ${JSON.stringify(`file://${dagBuilderAbsPath}`)};
+import { RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from ${JSON.stringify(`file://${dagonzerIndexPath}`)};
 
 const stubParseNode = {
-  name: 'stub:parse',
-  outputs: ['success'],
-  async execute(state) {
-    state.output = { _type: 'stub', name: 'fixture-page' };
-    return { output: 'success' };
+  name:     'stub:parse',
+  outputs:  ['success'],
+  timeout:  Timeout.none(),
+  contract: EMPTY_CONTRACT_FRAGMENT,
+  async execute(batch) {
+    for (const { state } of batch) {
+      state.output = { _type: 'stub', name: 'fixture-page' };
+    }
+    return RoutedBatchBuilder.of('success', batch);
   },
 };
 
-const stubParseDAG = DAGDeriver.derive({
-  name:       'stub:parse',
-  version:    '1.0',
-  entrypoint: 'parse',
-  contracts: [
-    { name: 'parse', hardRequired: [], produces: [], outputs: ['success'] },
-  ],
-  annotations: {
-    terminals: { parse: [{ outcome: 'success', target: null }] },
-  },
-});
+const stubParseDAG = new DAGBuilder('stub:parse', '1.0')
+  .node('stub:parse', stubParseNode, { success: 'stub-done' })
+  .terminal('stub-done', { outcome: 'completed' })
+  .build();
 
 export function register(dispatcher) {
   dispatcher.registerNode(stubParseNode);
@@ -110,7 +111,7 @@ export function register(dispatcher) {
     });
 
     const pDir   = join(outDir, 'raw-default', 'stub:parse');
-    const files  = (await readdir(pDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const files  = (await readdir(pDir)).filter((file: string) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(files.length === 1, `expected 1 plugin JSON file, got ${files.length.toString()}`);
 
     const parsed = JSON.parse(
@@ -132,12 +133,12 @@ export function register(dispatcher) {
     });
 
     const rawDir   = join(outDir, 'raw-html', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file: string) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(await readFile(join(rawDir, rawFiles[0]!), 'utf8'), fixtureHtml, 'raw HTML must match fixture byte-for-byte');
 
     const pDir     = join(outDir, 'raw-html', 'stub:parse');
-    const jsonFiles = (await readdir(pDir)).filter((f: string) => f.endsWith('.json'));
+    const jsonFiles = (await readdir(pDir)).filter((file: string) => file.endsWith('.json'));
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in stub:parse/, got ${jsonFiles.length.toString()}`);
   });
 
@@ -152,11 +153,11 @@ export function register(dispatcher) {
     });
 
     const rawDir   = join(outDir, 'raw-only', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file: string) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
 
     const targetFiles = await readdir(join(outDir, 'raw-only'));
-    const jsonFiles   = targetFiles.filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const jsonFiles   = targetFiles.filter((file: string) => file.endsWith('.json') && file !== 'failures.json');
     assert.equal(jsonFiles.length, 0, 'no JSON output expected without a plugin step');
   });
 
@@ -171,7 +172,7 @@ export function register(dispatcher) {
     });
 
     const pDir  = join(outDir, 'raw-off', 'stub:parse');
-    const names = (await readdir(pDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const names = (await readdir(pDir)).filter((file: string) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
 
     const parsed = JSON.parse(
@@ -184,7 +185,7 @@ export function register(dispatcher) {
   it('scrape + retry: deliberately-failing URL surfaces in failures.json', async () => {
     const FAILING_URL  = 'https://fixture.test/will-fail';
     const PASSING_URL  = 'https://fixture.test/condition-blinded';
-    globalThis.fetch = (async (input: RequestInfo | URL): Promise<Response> => {
+    globalThis.fetch = (async (input: Request | URL | string): Promise<Response> => {
       const url = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
       if (url.endsWith('/will-fail')) {
         return new Response('not found', { status: 404 });
@@ -216,7 +217,7 @@ export function register(dispatcher) {
     assert.equal(manifest.titles[0], FAILING_URL, 'failing URL must be present after retry exhaustion');
 
     const pDir  = join(outDir, 'retry-flow', 'stub:parse');
-    const files = (await readdir(pDir)).filter((f: string) => f.endsWith('.json'));
+    const files = (await readdir(pDir)).filter((file: string) => file.endsWith('.json'));
     assert.equal(files.length, 1, 'expected exactly one JSON output for the passing URL');
   });
 
@@ -231,12 +232,12 @@ export function register(dispatcher) {
     });
 
     const rawDir   = join(outDir, 'aonprd', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file: string) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html');
 
     const pDir     = join(outDir, 'aonprd', 'stub:parse');
-    const jsonFiles = (await readdir(pDir)).filter((f: string) => f.endsWith('.json'));
+    const jsonFiles = (await readdir(pDir)).filter((file: string) => file.endsWith('.json'));
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file, got ${jsonFiles.length.toString()}`);
     assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json');
 

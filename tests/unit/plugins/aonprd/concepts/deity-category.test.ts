@@ -1,5 +1,6 @@
 // Unit tests for deity-category concept capability nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { loadAndCommonNode }   from '../../../../../plugins/aonprd/nodes/loadAndCommon.js';
@@ -12,6 +13,7 @@ import {
 } from '../../../../../plugins/aonprd/concepts/deity-category.js';
 import type { DeityCategoryOutput } from '../../../../../plugins/aonprd/concepts/deity-category.js';
 import { loadFixture, makeState, stubContext } from '../nodes/helpers.js';
+import { ParsedOutput } from '../../../../helpers/ParsedOutput.js';
 
 const FIXTURE_INNER_SEA   = 'deity-category-gods-of-the-inner-sea.html';
 const URL_INNER_SEA       = 'https://2e.aonprd.com/DeityCategories.aspx?ID=1';
@@ -22,19 +24,19 @@ const URL_EMPYREAL        = 'https://2e.aonprd.com/DeityCategories.aspx?ID=2';
 async function primeState(fixtureName: string, url: string) {
   const html  = await loadFixture(fixtureName);
   const state = makeState(html, url);
-  const r = await loadAndCommonNode.execute(state, stubContext);
-  assert.equal(r.output, 'success', `loadAndCommon failed for ${fixtureName}`);
-  await sectionWalkerNode.execute(state, stubContext);
+  const result = await loadAndCommonNode.execute(Batch.of(state), stubContext);
+  assert.ok(result.has('success'), `loadAndCommon failed for ${fixtureName}`);
+  await sectionWalkerNode.execute(Batch.of(state), stubContext);
   return state;
 }
 
 async function primeAndRunFull(fixtureName: string, url: string) {
   const state = await primeState(fixtureName, url);
-  await deityCategoryBaseNode.execute(state, stubContext);
-  await deityCategoryMembersNode.execute(state, stubContext);
-  await deityCategoryAspectsNode.execute(state, stubContext);
-  await finalizeDeityCategoryNode.execute(state, stubContext);
-  return state.output as DeityCategoryOutput;
+  await deityCategoryBaseNode.execute(Batch.of(state), stubContext);
+  await deityCategoryMembersNode.execute(Batch.of(state), stubContext);
+  await deityCategoryAspectsNode.execute(Batch.of(state), stubContext);
+  await finalizeDeityCategoryNode.execute(Batch.of(state), stubContext);
+  return ParsedOutput.as<DeityCategoryOutput>(state.output);
 }
 
 // ─── extract:deity-category-base ─────────────────────────────────────────────
@@ -42,10 +44,10 @@ async function primeAndRunFull(fixtureName: string, url: string) {
 describe('extract:deity-category-base — gods-of-the-inner-sea', () => {
   it('produces _type, name, url, deity_category_id', async () => {
     const state = await primeState(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    const r = await deityCategoryBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await deityCategoryBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DeityCategoryOutput;
+    const out = ParsedOutput.as<DeityCategoryOutput>(state.output);
     assert.ok(typeof out.name === 'string' && out.name.length > 0, 'name missing');
     assert.ok('deity_category_id' in out, 'deity_category_id missing');
     assert.ok(Array.isArray(out.traits), 'traits missing');
@@ -53,8 +55,8 @@ describe('extract:deity-category-base — gods-of-the-inner-sea', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL_INNER_SEA);
-    const r = await deityCategoryBaseNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await deityCategoryBaseNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -63,20 +65,20 @@ describe('extract:deity-category-base — gods-of-the-inner-sea', () => {
 describe('extract:deity-category-members — gods-of-the-inner-sea', () => {
   it('produces members array with linked deities', async () => {
     const state = await primeState(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    await deityCategoryBaseNode.execute(state, stubContext);
-    const r = await deityCategoryMembersNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await deityCategoryBaseNode.execute(Batch.of(state), stubContext);
+    const result = await deityCategoryMembersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DeityCategoryOutput;
+    const out = ParsedOutput.as<DeityCategoryOutput>(state.output);
     assert.ok(Array.isArray(out.members), 'members missing');
     assert.ok(out.members.length > 0, 'members should be non-empty for Gods of the Inner Sea');
   });
 
   it('member entries have name, deity_id, href', async () => {
     const state = await primeState(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    await deityCategoryMembersNode.execute(state, stubContext);
+    await deityCategoryMembersNode.execute(Batch.of(state), stubContext);
 
-    const out = state.output as DeityCategoryOutput;
+    const out = ParsedOutput.as<DeityCategoryOutput>(state.output);
     const first = out.members[0];
     assert.ok(first !== undefined, 'no members found');
     assert.ok(typeof first.name === 'string' && first.name.length > 0, 'member.name missing');
@@ -87,8 +89,8 @@ describe('extract:deity-category-members — gods-of-the-inner-sea', () => {
 
   it('error path — returns error when aonprdCheerio missing', async () => {
     const state = makeState('', URL_INNER_SEA);
-    const r = await deityCategoryMembersNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await deityCategoryMembersNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -97,11 +99,11 @@ describe('extract:deity-category-members — gods-of-the-inner-sea', () => {
 describe('extract:deity-category-aspects — gods-of-the-inner-sea', () => {
   it('produces aspects field (string or null)', async () => {
     const state = await primeState(FIXTURE_INNER_SEA, URL_INNER_SEA);
-    await deityCategoryBaseNode.execute(state, stubContext);
-    const r = await deityCategoryAspectsNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    await deityCategoryBaseNode.execute(Batch.of(state), stubContext);
+    const result = await deityCategoryAspectsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
 
-    const out = state.output as DeityCategoryOutput;
+    const out = ParsedOutput.as<DeityCategoryOutput>(state.output);
     assert.ok('aspects' in out, 'aspects key missing');
     // Aspects is either a string or null — both are valid
     assert.ok(typeof out.aspects === 'string' || out.aspects === null, 'aspects must be string or null');
@@ -109,8 +111,8 @@ describe('extract:deity-category-aspects — gods-of-the-inner-sea', () => {
 
   it('error path — returns error when aonprdCommon missing', async () => {
     const state = makeState('', URL_INNER_SEA);
-    const r = await deityCategoryAspectsNode.execute(state, stubContext);
-    assert.equal(r.output, 'error');
+    const result = await deityCategoryAspectsNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('error'));
   });
 });
 
@@ -130,8 +132,8 @@ describe('finalize:deity-category — gods-of-the-inner-sea', () => {
 
   it('error path — soft-fails to success when prerequisites missing', async () => {
     const state = makeState('', URL_INNER_SEA);
-    const r = await finalizeDeityCategoryNode.execute(state, stubContext);
-    assert.equal(r.output, 'success');
+    const result = await finalizeDeityCategoryNode.execute(Batch.of(state), stubContext);
+    assert.ok(result.has('success'));
   });
 });
 

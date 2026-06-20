@@ -1,26 +1,17 @@
+import { NodeErrorBuilder } from '@studnicky/dagonizer';
+import type { NodeErrorType } from '@studnicky/dagonizer';
+
 import type { PipelinePageInterface } from '../types/PipelineState.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 
 /**
- * Wraps an `Error` or string into a `NodeErrorInterface` so it can be passed
+ * Wraps an `Error` or string into a `NodeErrorType` so it can be passed
  * to `state.collectError()` without leaving the dagonizer type contract.
  */
-export const toNodeError = (err: unknown, operation: string): {
-  code: string;
-  message: string;
-  operation: string;
-  recoverable: boolean;
-  timestamp: string;
-} => {
-  const e = err instanceof Error ? err : new Error(String(err));
-  const code = (e as { code?: string }).code ?? e.constructor.name;
-  return {
-    code,
-    message:     e.message,
-    operation,
-    recoverable: false,
-    timestamp:   new Date().toISOString(),
-  };
+export const toNodeError = (err: unknown, operation: string): NodeErrorType => {
+  const error = err instanceof Error ? err : new Error(String(err));
+  const code = (error as { code?: string }).code ?? error.constructor.name;
+  return NodeErrorBuilder.from(code, error.message, operation, false, new Date().toISOString());
 };
 
 /** Lower-cases the input and replaces non `[a-z0-9-]` runs with single hyphens. */

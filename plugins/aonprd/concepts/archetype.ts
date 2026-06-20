@@ -7,16 +7,15 @@
 //
 // dedication_feat_id) is individually accessible; the introduction slice
 // captures the rules_link cross-reference as a typed field.
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../src/services/RipperServices.js';
 import type { ConceptDecl } from '../taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
-import { parseGrantedFeatures } from '../capabilities/grantedFeatures.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,
@@ -137,19 +136,19 @@ export interface ArchetypeMetaSlice {
 // ─── Per-slice extraction helpers ─────────────────────────────────────────────
 
 /** Extract base identity + header scalars for an archetype page. */
-export function extractArchetypeBase(c: CommonExtraction): ArchetypeBaseSlice {
+export function extractArchetypeBase(common: CommonExtraction): ArchetypeBaseSlice {
   return {
-    url:             c.url,
-    archetype_id:    extractEntityId(c.url),
-    name:            c.title.name,
-    rarity:          c.traits.rarity,
-    pfs:             c.title.pfs,
-    legacy:          c.title.legacy,
-    alt_edition_url: c.title.alt_edition_url,
-    traits:          c.traits.traits,
-    trait_ids:       c.traits.trait_ids,
-    source:          { book: c.source.book, page: c.source.page, source_id: c.source.source_id },
-    sources:         c.sources,
+    url:             common.url,
+    archetype_id:    extractEntityId(common.url),
+    name:            common.title.name,
+    rarity:          common.traits.rarity,
+    pfs:             common.title.pfs,
+    legacy:          common.title.legacy,
+    alt_edition_url: common.title.alt_edition_url,
+    traits:          common.traits.traits,
+    trait_ids:       common.traits.trait_ids,
+    source:          { book: common.source.book, page: common.source.page, source_id: common.source.source_id },
+    sources:         common.sources,
   };
 }
 
@@ -159,9 +158,9 @@ export function extractArchetypeBase(c: CommonExtraction): ArchetypeBaseSlice {
  * shared `body_text` when no feat sections are present.
  */
 export function extractArchetypeIntroduction(
-  c:    CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  common: CommonExtraction,
+  root:   CheerioAPI,
+  span:   CheerioNode,
 ): ArchetypeIntroductionSlice {
   const html = span.html() ?? '';
   // Cut from the closing `</a>` of the `<b>Source</b> … <a>book pg</a>` line
@@ -186,7 +185,8 @@ export function extractArchetypeIntroduction(
     rules_link = { href, rule_id: Number.isFinite(rule_id) ? rule_id : null };
   }
 
-  void $;
+  void root;
+  void common;
   return {
     introduction:      htmlToText(cleaned),
     introduction_html: cleaned,
@@ -212,7 +212,7 @@ const ACTION_LABEL_TO_COST_MAP: ReadonlyMap<string, ActionCost> = new Map<string
  * — `Section.heading` is plain text and discards both.
  */
 function parseFeatSection(
-  $:       CheerioAPI,
+  root:    CheerioAPI,
   heading: CheerioNode,
   section: Section,
 ): ArchetypeFeat | null {
@@ -223,8 +223,8 @@ function parseFeatSection(
   const trailing = headingClone.find('span[style*="margin-left:auto"]').first();
   const trailingText = trailing.text().trim();
   if (trailingText !== '') {
-    const m = /Feat\s+(-?\d+)/i.exec(trailingText);
-    if (m !== null) level = parseInt(m[1]!, 10);
+    const match = /Feat\s+(-?\d+)/i.exec(trailingText);
+    if (match !== null) level = parseInt(match[1]!, 10);
   }
   trailing.remove();
 
@@ -251,8 +251,8 @@ function parseFeatSection(
     const href = featAnchor.attr('href') ?? '';
     const idMatch = /[?&]ID=(\d+)/i.exec(href);
     if (idMatch !== null) {
-      const id = parseInt(idMatch[1]!, 10);
-      if (Number.isFinite(id)) feat_id = id;
+      const featId = parseInt(idMatch[1]!, 10);
+      if (Number.isFinite(featId)) feat_id = featId;
     }
     const anchorText = featAnchor.text().replace(/\s+/g, ' ').trim();
     if (anchorText !== '') name = anchorText;
@@ -266,13 +266,13 @@ function parseFeatSection(
     : section.body_html;
   const traits: string[] = [];
   const traitRe = /<span\s+class="trait(?:uncommon|rare|unique)?"[^>]*>([\s\S]*?)<\/span>/gi;
-  let tm: RegExpExecArray | null;
-  while ((tm = traitRe.exec(traitsFragment)) !== null) {
-    const t = htmlToText(tm[1] ?? '');
-    if (t !== '' && !traits.includes(t)) traits.push(t);
+  let traitMatch: RegExpExecArray | null;
+  while ((traitMatch = traitRe.exec(traitsFragment)) !== null) {
+    const traitText = htmlToText(traitMatch[1] ?? '');
+    if (traitText !== '' && !traits.includes(traitText)) traits.push(traitText);
   }
 
-  void $;
+  void root;
   return {
     name,
     feat_id,
@@ -285,9 +285,9 @@ function parseFeatSection(
 }
 
 /** True for `<h2 class="title">` headings that aren't decorative variants. */
-function isFeatHeading(el: Element): boolean {
-  if (el.tagName.toLowerCase() !== 'h2') return false;
-  const cls = (el.attribs?.['class'] ?? '').toLowerCase();
+function isFeatHeading(element: Element): boolean {
+  if (element.tagName.toLowerCase() !== 'h2') return false;
+  const cls = (element.attribs?.['class'] ?? '').toLowerCase();
   if (!cls.includes('title')) return false;
   return !cls.includes('feel-title')
       && !cls.includes('hide-on-print')
@@ -301,31 +301,31 @@ function isFeatHeading(el: Element): boolean {
  * fragments.
  */
 export function extractArchetypeFeats(
-  c:    CommonExtraction,
-  $:    CheerioAPI,
-  span: CheerioNode,
+  common: CommonExtraction,
+  root:   CheerioAPI,
+  span:   CheerioNode,
 ): ArchetypeFeatsSlice {
   const feats:  ArchetypeFeat[] = [];
   let sectionIdx = 0;
-  const sectionList = c.sections.filter((s) => s.level === 2);
-  span.find('h2.title').each((_, el) => {
-    if (!isFeatHeading(el as Element)) return;
+  const sectionList = common.sections.filter((sec) => sec.level === 2);
+  span.find('h2.title').each((_index, element) => {
+    if (!isFeatHeading(element as Element)) return;
     const section = sectionList[sectionIdx];
     if (section === undefined) return;
     sectionIdx++;
-    const feat = parseFeatSection($, $(el), section);
+    const feat = parseFeatSection(root, root(element), section);
     if (feat === null) return;
     feats.push(feat);
   });
   const feat_ids = feats
-    .map((f) => f.feat_id)
-    .filter((id): id is number => id !== null);
+    .map((feat) => feat.feat_id)
+    .filter((featId): featId is number => featId !== null);
   const dedication_feat_id = feats[0]?.feat_id ?? null;
   return { feats, feat_ids, dedication_feat_id };
 }
 
 /** Extract meta slice marker — sections/links/body/meta attach in finalize. */
-export function extractArchetypeMeta(_c: CommonExtraction): ArchetypeMetaSlice {
+export function extractArchetypeMeta(_common: CommonExtraction): ArchetypeMetaSlice {
   return { __archetype_meta_marked: true };
 }
 
@@ -371,7 +371,7 @@ function isFlavorBoldLabel(name: string): boolean {
   const core = trimmed.replace(/\s*\([^)]*\)\s*$/, '').trim();
   if (core.length < 3) return false;
   // Multi-word Title-Case (allows lowercase connectors).
-  if (/^[A-Z][A-Za-z'.\-]*(?:[ '\-](?:[a-z]{1,4}|[A-Z][A-Za-z'.\-]*))+$/.test(core)) return true;
+  if (/^[A-Z][A-Za-z'.-]*(?:[ '-](?:[a-z]{1,4}|[A-Z][A-Za-z'.-]*))+$/.test(core)) return true;
   // Single-word Title-Case proper name (3+ chars).
   if (/^[A-Z][a-z]{2,}$/.test(core)) return true;
   // Lowercase emphasis word inside flavor prose.
@@ -384,35 +384,35 @@ function isFlavorBoldLabel(name: string): boolean {
 }
 
 export function finalizeArchetype(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     ArchetypeBaseSlice,
   intro:    ArchetypeIntroductionSlice,
   feats:    ArchetypeFeatsSlice,
   _meta:    ArchetypeMetaSlice,
-  $:        CheerioAPI,
+  root:     CheerioAPI,
   _target:  CheerioNode,
 ): ArchetypeOutput {
   void _meta;
   void _target;
-  const stripped  = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
-  const featNames = new Set(feats.feats.map((f) => f.name.toLowerCase()));
+  const stripped  = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
+  const featNames = new Set(feats.feats.map((feat) => feat.name.toLowerCase()));
   const raw_fields: Record<string, string> = {};
-  for (const [k, v] of Object.entries(stripped)) {
-    if (featNames.has(k.toLowerCase())) continue;
-    if (isFlavorBoldLabel(k)) continue;
-    raw_fields[k] = v;
+  for (const [key, value] of Object.entries(stripped)) {
+    if (featNames.has(key.toLowerCase())) continue;
+    if (isFlavorBoldLabel(key)) continue;
+    raw_fields[key] = value;
   }
   return {
     ...base,
     ...intro,
     ...feats,
-    sections:         c.sections,
+    sections:         common.sections,
     raw_fields,
-    links:            c.links,
-    body_text:        c.body_text,
-    body_html:        c.body_html,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    body_text:        common.body_text,
+    body_html:        common.body_html,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ArchetypeOutput;
 }
 
@@ -424,15 +424,15 @@ export function finalizeArchetype(
  * the decomposed archetype extraction nodes.
  */
 export function extractArchetype(
-  c:      CommonExtraction,
-  $:      CheerioAPI,
+  common: CommonExtraction,
+  root:   CheerioAPI,
   target: CheerioNode,
 ): ArchetypeOutput {
-  const base  = extractArchetypeBase(c);
-  const intro = extractArchetypeIntroduction(c, $, target);
-  const feats = extractArchetypeFeats(c, $, target);
-  const meta  = extractArchetypeMeta(c);
-  return finalizeArchetype(c, base, intro, feats, meta, $, target);
+  const base  = extractArchetypeBase(common);
+  const intro = extractArchetypeIntroduction(common, root, target);
+  const feats = extractArchetypeFeats(common, root, target);
+  const meta  = extractArchetypeMeta(common);
+  return finalizeArchetype(common, base, intro, feats, meta, root, target);
 }
 
 // Re-export output types so tests can import from here.
@@ -443,28 +443,30 @@ export function extractArchetype(
 
 export type ArchetypeBaseOutput = 'success' | 'error';
 
-export const archetypeBaseNode: NodeInterface<ScrapeState, ArchetypeBaseOutput, RipperServices> = {
-  name:    'extract:archetype-base',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArchetypeBaseNode extends ScalarNode<ScrapeState, ArchetypeBaseOutput> {
+  public readonly name    = 'extract:archetype-base';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArchetypeBaseOutput }> {
-    const c = state.getMetadata<CommonExtraction>('aonprdCommon');
-    if (c === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArchetypeBaseOutput>> {
+    const common = state.getMetadata<CommonExtraction>('aonprdCommon');
+    if (common === undefined) return NodeOutputBuilder.of('error');
 
-    const base = extractArchetypeBase(c);
+    const base = extractArchetypeBase(common);
 
     state.output = { ...state.output, ...base };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const archetypeBaseNode = new ArchetypeBaseNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -473,30 +475,32 @@ export const archetypeBaseNode: NodeInterface<ScrapeState, ArchetypeBaseOutput, 
 
 export type ArchetypeIntroductionOutput = 'success' | 'error';
 
-export const archetypeIntroductionNode: NodeInterface<ScrapeState, ArchetypeIntroductionOutput, RipperServices> = {
-  name:    'extract:archetype-introduction',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArchetypeIntroductionNode extends ScalarNode<ScrapeState, ArchetypeIntroductionOutput> {
+  public readonly name    = 'extract:archetype-introduction';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArchetypeIntroductionOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArchetypeIntroductionOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractArchetypeIntroduction(c, $, target);
+    const slice = extractArchetypeIntroduction(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const archetypeIntroductionNode = new ArchetypeIntroductionNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -505,30 +509,32 @@ export const archetypeIntroductionNode: NodeInterface<ScrapeState, ArchetypeIntr
 
 export type ArchetypeFeatsOutput = 'success' | 'error';
 
-export const archetypeFeatsNode: NodeInterface<ScrapeState, ArchetypeFeatsOutput, RipperServices> = {
-  name:    'extract:archetype-feats',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class ArchetypeFeatsNode extends ScalarNode<ScrapeState, ArchetypeFeatsOutput> {
+  public readonly name    = 'extract:archetype-feats';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: ArchetypeFeatsOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<ArchetypeFeatsOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const slice = extractArchetypeFeats(c, $, target);
+    const slice = extractArchetypeFeats(common, root, target);
 
     state.output = { ...state.output, ...slice };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const archetypeFeatsNode = new ArchetypeFeatsNode();
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -537,31 +543,33 @@ export const archetypeFeatsNode: NodeInterface<ScrapeState, ArchetypeFeatsOutput
 
 export type FinalizeArchetypeOutput = 'success';
 
-export const finalizeArchetypeNode: NodeInterface<ScrapeState, FinalizeArchetypeOutput, RipperServices> = {
-  name:    'finalize:archetype',
-  outputs: ['success'] as const,
-  contract: {
+class FinalizeArchetypeNode extends ScalarNode<ScrapeState, FinalizeArchetypeOutput> {
+  public readonly name    = 'finalize:archetype';
+  public readonly outputs = ['success'] as const;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: FinalizeArchetypeOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'success' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<FinalizeArchetypeOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('success');
 
     const meta  = { __archetype_meta_marked: true as const };
     const acc = (state.output ?? {}) as unknown as ArchetypeOutput;
-    const assembled = finalizeArchetype(c, acc, acc, acc, meta, $, target);
+    const assembled = finalizeArchetype(common, acc, acc, acc, meta, root, target);
     setConceptOutput(state, assembled);
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const finalizeArchetypeNode = new FinalizeArchetypeNode();
 
 // ─── ConceptDecl export ───────────────────────────────────────────────────────
 

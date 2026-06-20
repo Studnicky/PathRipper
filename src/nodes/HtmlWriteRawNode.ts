@@ -1,16 +1,18 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join }    from 'node:path';
 
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger }               from '../modules/logger/logger.js';
 import { pageSlug }             from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }     from '../services/RipperServices.js';
+import type { RipperServices }  from '../services/RipperServices.js';
 
 const logger = Logger.forComponent('HtmlWriteRawNode');
+
+type HtmlWriteRawOutput = 'success';
 
 /**
  * Writes `state.page.html` to `<outDir>/<targetId>/raw/<slug>.html`.
@@ -21,11 +23,14 @@ const logger = Logger.forComponent('HtmlWriteRawNode');
  * @category Nodes
  * @since 3.0.0
  */
-export const HtmlWriteRawNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-  name: 'html:write-raw',
-  outputs: ['success'],
+class HtmlWriteRawNodeImpl extends ScalarNode<ScrapeState, HtmlWriteRawOutput, RipperServices> {
+  public readonly name = 'html:write-raw';
+  public readonly outputs = ['success'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<HtmlWriteRawOutput>> {
     const { services } = context;
     const html = state.page.html;
     if (html === undefined || html.length === 0) {
@@ -38,14 +43,8 @@ export const HtmlWriteRawNode: NodeInterface<ScrapeState, 'success', RipperServi
     await mkdir(dirname(outFile), { recursive: true });
     await writeFile(outFile, html, 'utf8');
     logger.debug('html:write-raw', `Wrote raw HTML: ${outFile}`, { task: 'html:write-raw', outFile });
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for HtmlWriteRawNode: reads page.html, writes to disk (no state field). */
-export const htmlWriteRawContract: OperationContract = {
-  name:         'html:write-raw',
-  hardRequired: ['page.html'],
-  produces:     [],
-  outputs:      ['success'],
-};
+export const HtmlWriteRawNode = new HtmlWriteRawNodeImpl();

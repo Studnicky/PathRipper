@@ -6,11 +6,11 @@ import type { ArmorMetaSlice } from './types.js';
 import { dashToNull, buildDescription } from './helpers.js';
 
 /** Extract armor meta slice. */
-export function extractArmorMeta(c: CommonExtraction): ArmorMetaSlice {
-  const description = buildDescription(c.body_html);
+export function extractArmorMeta(common: CommonExtraction): ArmorMetaSlice {
+  const description = buildDescription(common.body_html);
   return {
-    hardness:         asInt(dashToNull(getField(c, 'Hardness'))),
-    hp_bt:            asInt(dashToNull(getField(c, 'HP (BT)', 'HP'))),
+    hardness:         asInt(dashToNull(getField(common, 'Hardness'))),
+    hp_bt:            asInt(dashToNull(getField(common, 'HP (BT)', 'HP'))),
     description_html: description.html,
     description_text: description.text,
   };

@@ -1,5 +1,5 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { LinkCrawlState }   from '../../state/LinkCrawlState.js';
 import type { LinkCrawlServices } from './Services.js';
@@ -28,18 +28,18 @@ import type { LinkCrawlServices } from './Services.js';
  * @category Nodes
  * @since 3.0.0
  */
-export const DedupeAndEnqueueNode: NodeInterface<
+class DedupeAndEnqueueNodeImpl extends ScalarNode<
   LinkCrawlState,
   'frontier-ready' | 'frontier-empty' | 'budget-exhausted',
   LinkCrawlServices
-> = {
-  name: 'crawl:dedupe-and-enqueue',
-  outputs: ['frontier-ready', 'frontier-empty', 'budget-exhausted'],
+> {
+  public readonly name = 'crawl:dedupe-and-enqueue';
+  public readonly outputs = ['frontier-ready', 'frontier-empty', 'budget-exhausted'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: LinkCrawlState,
-    context: NodeContextInterface<LinkCrawlServices>,
-  ): Promise<{ output: 'frontier-ready' | 'frontier-empty' | 'budget-exhausted' }> {
+    context: NodeContextType<LinkCrawlServices>,
+  ): Promise<NodeOutputType<'frontier-ready' | 'frontier-empty' | 'budget-exhausted'>> {
     const { services } = context;
 
     // 1. Promote discovered targets (dedup against running set)
@@ -60,14 +60,14 @@ export const DedupeAndEnqueueNode: NodeInterface<
       state.frontier   = [];
       state.nextFrontierRaw = [];
       services.log.debug('DedupeAndEnqueueNode', `Budget exhausted: ${state.discovered.length.toString()} pages collected`);
-      return { output: 'budget-exhausted' };
+      return NodeOutputBuilder.of('budget-exhausted');
     }
 
     if (maxDepth !== undefined && state.depth + 1 > maxDepth) {
       state.frontier        = [];
       state.nextFrontierRaw = [];
       services.log.debug('DedupeAndEnqueueNode', `Max depth reached at ${state.depth.toString()}`);
-      return { output: 'budget-exhausted' };
+      return NodeOutputBuilder.of('budget-exhausted');
     }
 
     // 3. Build next frontier
@@ -96,15 +96,9 @@ export const DedupeAndEnqueueNode: NodeInterface<
       `Level ${state.depth.toString()} frontier: ${nextFrontier.length.toString()} URLs`,
     );
 
-    if (nextFrontier.length === 0) return { output: 'frontier-empty' };
-    return { output: 'frontier-ready' };
-  },
-};
+    if (nextFrontier.length === 0) return NodeOutputBuilder.of('frontier-empty');
+    return NodeOutputBuilder.of('frontier-ready');
+  }
+}
 
-/** OperationContract for DedupeAndEnqueueNode: reads discoveredRaw, produces discovered + frontier. */
-export const dedupeAndEnqueueContract: OperationContract = {
-  name:         'crawl:dedupe-and-enqueue',
-  hardRequired: ['discoveredRaw'],
-  produces:     ['discovered', 'frontier'],
-  outputs:      ['frontier-ready', 'frontier-empty', 'budget-exhausted'],
-};
+export const DedupeAndEnqueueNode = new DedupeAndEnqueueNodeImpl();

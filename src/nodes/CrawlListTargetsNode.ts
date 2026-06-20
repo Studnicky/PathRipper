@@ -1,11 +1,11 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger }               from '../modules/logger/logger.js';
 import { toNodeError }          from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }     from '../services/RipperServices.js';
+import type { RipperServices }  from '../services/RipperServices.js';
 
 /** Crawler config block from `target.cfg.crawler`. */
 interface CrawlerBlockInterface {
@@ -20,6 +20,8 @@ interface CrawlerBlockInterface {
 
 const logger = Logger.forComponent('CrawlListTargetsNode');
 
+type CrawlListTargetsOutput = 'success' | 'error' | 'empty';
+
 /**
  * Walks `services.target.cfg.crawler` seeds via `LinkLister` and writes
  * discovered URLs into `state.urls`.
@@ -32,11 +34,14 @@ const logger = Logger.forComponent('CrawlListTargetsNode');
  * @category Nodes
  * @since 3.0.0
  */
-export const CrawlListTargetsNode: NodeInterface<ScrapeState, 'success' | 'error' | 'empty', RipperServices> = {
-  name: 'crawl:list-targets',
-  outputs: ['success', 'error', 'empty'],
+class CrawlListTargetsNodeImpl extends ScalarNode<ScrapeState, CrawlListTargetsOutput, RipperServices> {
+  public readonly name = 'crawl:list-targets';
+  public readonly outputs = ['success', 'error', 'empty'] as const;
 
-  async execute(state: ScrapeState, context: NodeContextInterface<RipperServices>): Promise<{ output: 'success' | 'error' | 'empty' }> {
+  protected override async executeOne(
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<CrawlListTargetsOutput>> {
     const { services } = context;
     const crawler = services.target.cfg['crawler'] as CrawlerBlockInterface | undefined;
     if (crawler === undefined) {
@@ -44,14 +49,14 @@ export const CrawlListTargetsNode: NodeInterface<ScrapeState, 'success' | 'error
         ExternalSchemaError.create('crawl:list-targets requires a `crawler` block in target config', { metadata: { target: services.target.id, task: 'crawl:list-targets' } }),
         'crawl:list-targets',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
     if (services.cache === null) {
       state.collectError(toNodeError(
         ExternalSchemaError.create('crawl:list-targets requires the orchestrator-supplied shared cache (configure target.cache)', { metadata: { target: services.target.id, task: 'crawl:list-targets' } }),
         'crawl:list-targets',
       ));
-      return { output: 'error' };
+      return NodeOutputBuilder.of('error');
     }
 
     const { LinkLister } = await import('../crawlers/LinkLister.js');
@@ -73,14 +78,8 @@ export const CrawlListTargetsNode: NodeInterface<ScrapeState, 'success' | 'error
       task: 'crawl:list-targets', count: urls.length,
     });
 
-    return urls.length > 0 ? { output: 'success' } : { output: 'empty' };
-  },
-};
+    return urls.length > 0 ? NodeOutputBuilder.of('success') : NodeOutputBuilder.of('empty');
+  }
+}
 
-/** OperationContract for CrawlListTargetsNode: produces urls from crawler config. */
-export const crawlListTargetsContract: OperationContract = {
-  name:         'crawl:list-targets',
-  hardRequired: [],
-  produces:     ['urls'],
-  outputs:      ['success', 'error', 'empty'],
-};
+export const CrawlListTargetsNode = new CrawlListTargetsNodeImpl();

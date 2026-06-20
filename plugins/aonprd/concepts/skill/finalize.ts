@@ -1,31 +1,34 @@
 // Skill concept — finalize and meta slice extraction.
 import type { CheerioAPI } from 'cheerio';
-import type { CommonExtraction, LinkRef } from '../../common.js';
+import type { CommonExtraction } from '../../common.js';
 import { htmlToText, harvestLinks, extractMetaDescription, extractMetaKeywords, stripStructuredKeys } from '../../common.js';
+import { extractSkillBase } from './base.js';
+import { extractSkillActions } from './actions.js';
+import { extractSkillProficiencyTiers } from './proficiency-tiers.js';
 import type { SkillOutput, SkillBaseSlice, SkillActionsSlice, SkillProficiencyTiersSlice, SkillMetaSlice } from './types.js';
 import { CLAIMED_FIELD_LABELS } from './types.js';
 
 /** Extract whole-page link / body / meta projection. */
-export function extractSkillMeta(c: CommonExtraction, $: CheerioAPI, span: any): SkillMetaSlice {
-  // Skill pages have no top-level `<hr/>` separator, so `c.body_html` is cut
+export function extractSkillMeta(common: CommonExtraction, root: CheerioAPI, span: unknown): SkillMetaSlice {
+  // Skill pages have no top-level `<hr/>` separator, so `common.body_html` is cut
   // at the first `<hr/>` inside the first action (typically Balance) and only
   // contains the tail of the page. Use the full content span instead so the
   // body / link harvest covers every action on the page.
-  const spanHtml = span.html() ?? '';
+  const spanHtml = (span as { html(): string | null }).html() ?? '';
 
   // Lift rare metadata blocks. Both labels are simple <b>Label</b> Value<br/>
   // pairs in the head section.
-  const addRaw = c.field_map['Additional Traits'];
+  const addRaw = common.field_map['Additional Traits'];
   const additional_traits: string[] = addRaw === undefined
     ? []
-    : addRaw.split(',').map((s) => s.trim()).filter((s) => s !== '');
+    : addRaw.split(',').map((str) => str.trim()).filter((str) => str !== '');
 
   let corresponding_skill: { name: string; skill_id: number | null } | null = null;
-  const corrRaw = c.field_map['Corresponding Skill'];
+  const corrRaw = common.field_map['Corresponding Skill'];
   if (corrRaw !== undefined) {
     const name = corrRaw.trim();
     if (name !== '') {
-      const link = c.links.find((l) => l.kind === 'Skills' && l.text === name);
+      const link = common.links.find((entry) => entry.kind === 'Skills' && entry.text === name);
       corresponding_skill = { name, skill_id: link?.id ?? null };
     }
   }
@@ -36,8 +39,8 @@ export function extractSkillMeta(c: CommonExtraction, $: CheerioAPI, span: any):
     body_text:        htmlToText(spanHtml),
     body_html:        spanHtml,
     links:            harvestLinks(spanHtml),
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   };
 }
 
@@ -45,18 +48,18 @@ export function extractSkillMeta(c: CommonExtraction, $: CheerioAPI, span: any):
  * Assemble the final SkillOutput from per-slice results.
  *
  * Computes `raw_fields` by stripping every AON label claimed by upstream slices
- * (CLAIMED_FIELD_LABELS). For most skills `c.field_map` is empty (the only
+ * (CLAIMED_FIELD_LABELS). For most skills `common.field_map` is empty (the only
  * head-section bold label is `<b>Source</b>`, which `harvestFields` drops), so
  * `raw_fields` ends up as `{}`.
  */
 export function finalizeSkill(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     SkillBaseSlice,
   actions:  SkillActionsSlice,
   tiers:    SkillProficiencyTiersSlice,
   meta:     SkillMetaSlice,
 ): SkillOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS);
 
   return {
     ...base,
@@ -80,14 +83,10 @@ export function finalizeSkill(
  * tests. The DAG pipeline calls the per-slice helpers individually through the
  * decomposed skill extraction nodes.
  */
-export function extractSkill(c: CommonExtraction, $: CheerioAPI, span: any): SkillOutput {
-  const extractSkillBase = require('./base.js').extractSkillBase;
-  const extractSkillActions = require('./actions.js').extractSkillActions;
-  const extractSkillProficiencyTiers = require('./proficiency-tiers.js').extractSkillProficiencyTiers;
-
-  const base    = extractSkillBase(c, $, span);
-  const actions = extractSkillActions(c, $, span);
-  const tiers   = extractSkillProficiencyTiers(c, $, span);
-  const meta    = extractSkillMeta(c, $, span);
-  return finalizeSkill(c, base, actions, tiers, meta);
+export function extractSkill(common: CommonExtraction, root: CheerioAPI, span: unknown): SkillOutput {
+  const base    = extractSkillBase(common, root, span);
+  const actions = extractSkillActions(common, root, span);
+  const tiers   = extractSkillProficiencyTiers(common, root, span);
+  const meta    = extractSkillMeta(common, root, span);
+  return finalizeSkill(common, base, actions, tiers, meta);
 }

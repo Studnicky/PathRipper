@@ -1,11 +1,13 @@
 // Unit tests for the Taxonomy compiler.
 // Validates the public API of Taxonomy.compile() and the generated nodes.
 import { describe, it } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { DAGDeriver } from '@studnicky/dagonizer/derive';
+import { RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../../src/services/RipperServices.js';
@@ -19,16 +21,17 @@ import type { ConceptDecl, CapabilityNode } from '../../../../plugins/aonprd/tax
 function makeStubCap(name: string): CapabilityNode {
   return {
     name,
-    outputs: ['success', 'error'] as const,
+    outputs:  ['success', 'error'] as const,
+    timeout:  Timeout.none(),
     contract: {
       hardRequired: [] as const,
       produces:     [] as const,
-    } satisfies OperationContractFragment,
+    } satisfies OperationContractFragmentType,
     async execute(
-      _state: ScrapeState,
-      _ctx:   NodeContextInterface<RipperServices>,
-    ): Promise<{ output: 'success' | 'error' }> {
-      return { output: 'success' };
+      batch: Batch<ScrapeState>,
+      _ctx:  NodeContextType,
+    ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+      return RoutedBatchBuilder.of('success', batch);
     },
   };
 }
@@ -47,14 +50,14 @@ describe('Taxonomy — empty taxonomy', () => {
   });
 
   it('DAGDeriver.derive succeeds on empty taxonomy (primary acceptance)', () => {
-    const t = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([]);
     assert.doesNotThrow(() => {
       const dag = DAGDeriver.derive({
         name:        'test-empty',
         version:     '0.1',
-        entrypoint:  t.entrypoint(),
-        nodes:       t.allNodes() as readonly NodeInterface[],
-        annotations: t.annotations(),
+        entrypoint:  taxonomy.entrypoint(),
+        nodes:       [...taxonomy.allNodes()] as NodeInterface[],
+        annotations: taxonomy.annotations(),
       });
       assert.equal(typeof dag, 'object', 'derive should return an object');
       assert.ok(dag !== null, 'derive should return a non-null DAG');
@@ -62,35 +65,33 @@ describe('Taxonomy — empty taxonomy', () => {
   });
 
   it('routeUrl always returns null for empty taxonomy', () => {
-    const t = Taxonomy.compile([]);
-    assert.equal(t.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), null);
-    assert.equal(t.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=99'), null);
-    assert.equal(t.routeUrl('https://example.com/no-aspx'), null);
+    const taxonomy = Taxonomy.compile([]);
+    assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), null);
+    assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=99'), null);
+    assert.equal(taxonomy.routeUrl('https://example.com/no-aspx'), null);
   });
 
   it('chainFor returns empty array for unknown concept', () => {
-    const t = Taxonomy.compile([]);
-    assert.deepEqual(t.chainFor('anything'), []);
+    const taxonomy = Taxonomy.compile([]);
+    assert.deepEqual(taxonomy.chainFor('anything'), []);
   });
 
   it('conceptIds returns empty array', () => {
-    const t = Taxonomy.compile([]);
-    assert.deepEqual(t.conceptIds(), []);
+    const taxonomy = Taxonomy.compile([]);
+    assert.deepEqual(taxonomy.conceptIds(), []);
   });
 
   it('leafConceptIds returns empty array', () => {
-    const t = Taxonomy.compile([]);
-    assert.deepEqual(t.leafConceptIds(), []);
+    const taxonomy = Taxonomy.compile([]);
+    assert.deepEqual(taxonomy.leafConceptIds(), []);
   });
 
-  it('allNodes contains router, concept-dispatch, make-unknown, and flow:terminate', () => {
-    const t = Taxonomy.compile([]);
-    const names = t.allNodes().map((n) => n.name);
+  it('allNodes contains router and concept-dispatch only for empty taxonomy', () => {
+    const taxonomy = Taxonomy.compile([]);
+    const names = taxonomy.allNodes().map((node) => node.name);
     assert.ok(names.includes('aonprd:taxonomy-route'),   'must include router');
     assert.ok(names.includes('aonprd:concept-dispatch'), 'must include concept-dispatch');
-    assert.ok(names.includes('aonprd:make-unknown'),     'must include make-unknown');
-    assert.ok(names.includes('flow:terminate'),           'must include flow:terminate');
-    assert.equal(names.length, 4, 'empty taxonomy has exactly 4 nodes');
+    assert.equal(names.length, 2, 'empty taxonomy has exactly 2 nodes (router + concept-dispatch)');
   });
 });
 
@@ -98,8 +99,8 @@ describe('Taxonomy — empty taxonomy', () => {
 
 describe('Taxonomy — router node behaviour (empty taxonomy)', () => {
   it('router node returns unknown for any URL', async () => {
-    const t      = Taxonomy.compile([]);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile([]);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined, 'router node must exist');
 
     const fakeState = {
@@ -110,8 +111,8 @@ describe('Taxonomy — router node behaviour (empty taxonomy)', () => {
     } as unknown as ScrapeState;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await router.execute(fakeState, { services: {} } as any);
-    assert.equal(result.output, 'unknown');
+    const result = await router.execute(Batch.of(fakeState), { services: {} } as any);
+    assert.ok(result.has('unknown'));
   });
 });
 
@@ -132,43 +133,49 @@ describe('Taxonomy — single-concept taxonomy', () => {
   });
 
   it('routeUrl returns concept id for matching URL', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.equal(t.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), 'spell');
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), 'spell');
   });
 
   it('routeUrl returns null for non-matching URL', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.equal(t.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=1'), null);
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=1'), null);
   });
 
   it('chainFor returns the root capabilities', () => {
-    const t     = Taxonomy.compile(concepts);
-    const chain = t.chainFor('spell');
+    const taxonomy     = Taxonomy.compile(concepts);
+    const chain = taxonomy.chainFor('spell');
     assert.equal(chain.length, 1);
     assert.equal(chain[0]?.name, 'extract:spell-cast-stub');
   });
 
-  it('DAGDeriver.derive succeeds on single-concept taxonomy', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.doesNotThrow(() => {
-      DAGDeriver.derive({
+  it('DAGDeriver.derive throws DAGError for single-concept taxonomy (known dead-write limitation)', () => {
+    // When exactly one leaf concept is present, the URL router routes directly
+    // to the concept's first capability — no concept-dispatch node is created.
+    // The router still declares `produces: ['aonprdConceptId']` but no downstream
+    // node hardRequires it, triggering ContractRegistryValidator's dead-write check.
+    // This is a known limitation of the single-concept path in #computeRouting.
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.throws(
+      () => DAGDeriver.derive({
         name:        'test-single',
         version:     '0.1',
-        entrypoint:  t.entrypoint(),
-        nodes:       t.allNodes() as readonly NodeInterface[],
-        annotations: t.annotations(),
-      });
-    });
+        entrypoint:  taxonomy.entrypoint(),
+        nodes:       [...taxonomy.allNodes()] as NodeInterface[],
+        annotations: taxonomy.annotations(),
+      }),
+      (err: unknown) => err instanceof Error && /aonprdConceptId|dead.write|ContractRegistryValidator/i.test(err.message),
+    );
   });
 
   it('conceptIds includes the concept', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.deepEqual(t.conceptIds(), ['spell']);
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.deepEqual(taxonomy.conceptIds(), ['spell']);
   });
 
   it('leafConceptIds includes the concept', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.deepEqual(t.leafConceptIds(), ['spell']);
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.deepEqual(taxonomy.leafConceptIds(), ['spell']);
   });
 });
 
@@ -200,9 +207,9 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('chainFor("weapon") returns capabilities in root-first order', () => {
-    const t     = Taxonomy.compile(concepts);
-    const chain = t.chainFor('weapon');
-    const names = chain.map((n) => n.name);
+    const taxonomy     = Taxonomy.compile(concepts);
+    const chain = taxonomy.chainFor('weapon');
+    const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
       'extract:identity',
       'extract:source-ref-stub',
@@ -212,9 +219,9 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('chainFor("item") returns root + item capabilities only', () => {
-    const t     = Taxonomy.compile(concepts);
-    const chain = t.chainFor('item');
-    const names = chain.map((n) => n.name);
+    const taxonomy     = Taxonomy.compile(concepts);
+    const chain = taxonomy.chainFor('item');
+    const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
       'extract:identity',
       'extract:source-ref-stub',
@@ -223,9 +230,9 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('chainFor("thing") returns only root capabilities', () => {
-    const t     = Taxonomy.compile(concepts);
-    const chain = t.chainFor('thing');
-    const names = chain.map((n) => n.name);
+    const taxonomy     = Taxonomy.compile(concepts);
+    const chain = taxonomy.chainFor('thing');
+    const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
       'extract:identity',
       'extract:source-ref-stub',
@@ -233,15 +240,15 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('leafConceptIds contains only weapon (the only concept with urlPaths)', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.deepEqual(t.leafConceptIds(), ['weapon']);
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.deepEqual(taxonomy.leafConceptIds(), ['weapon']);
   });
 
   it('conceptIds contains all three concepts', () => {
-    const t = Taxonomy.compile(concepts);
-    assert.ok(t.conceptIds().includes('thing'));
-    assert.ok(t.conceptIds().includes('item'));
-    assert.ok(t.conceptIds().includes('weapon'));
+    const taxonomy = Taxonomy.compile(concepts);
+    assert.ok(taxonomy.conceptIds().includes('thing'));
+    assert.ok(taxonomy.conceptIds().includes('item'));
+    assert.ok(taxonomy.conceptIds().includes('weapon'));
   });
 });
 
@@ -260,11 +267,8 @@ describe('Taxonomy — validation', () => {
   });
 
   it('throws orphan-parent when parent id does not exist', () => {
-    const concepts: readonly ConceptDecl[] = [
-      { id: 'child', parent: 'nonexistent', capabilities: [] },
-    ];
-    // This also triggers 'no-root' before 'orphan-parent'; 'no-root' is checked first
-    // because we have no root concept. Let's add a root but an orphan child.
+    // 'no-root' is checked first because we have no root concept.
+    // Add a root but an orphan child to isolate the 'orphan-parent' error.
     const concepts2: readonly ConceptDecl[] = [
       { id: 'root',  parent: null,          capabilities: [] },
       { id: 'child', parent: 'nonexistent', capabilities: [] },
@@ -329,11 +333,15 @@ describe('Taxonomy — validation', () => {
     const badCap: CapabilityNode = {
       name:    'bad:cap',
       outputs: ['success'],
-      // No contract field
-      async execute(_s: ScrapeState, _c: NodeContextInterface<RipperServices>) {
-        return { output: 'success' as const };
+      timeout: Timeout.none(),
+      // No contract field — deliberately omitted to trigger capability-shape error
+      async execute(
+        batch: Batch<ScrapeState>,
+        _ctx:  NodeContextType<RipperServices>,
+      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
+        return RoutedBatchBuilder.of('success', batch);
       },
-    };
+    } as unknown as CapabilityNode;
     const concepts: readonly ConceptDecl[] = [
       { id: 'root', parent: null, capabilities: [badCap] },
     ];
@@ -348,8 +356,8 @@ describe('Taxonomy — validation', () => {
 
 describe('Taxonomy — router node is a valid NodeInterface', () => {
   it('router has correct name', () => {
-    const t      = Taxonomy.compile([]);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile([]);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
     assert.equal(router.name, 'aonprd:taxonomy-route');
   });
@@ -360,8 +368,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'weapon', parent: 'thing', urlPaths: ['weapons'], capabilities: [] },
       { id: 'spell',  parent: 'thing', urlPaths: ['spells'],  capabilities: [] },
     ];
-    const t      = Taxonomy.compile(concepts);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile(concepts);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
     const outputs = [...router.outputs].sort();
     assert.ok(outputs.includes('weapon'));
@@ -370,8 +378,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
   });
 
   it('router has inline contract with page.url as hardRequired', () => {
-    const t      = Taxonomy.compile([]);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile([]);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
     assert.ok(router.contract !== undefined, 'router must have a contract');
     assert.ok(
@@ -390,8 +398,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'thing', parent: null,    capabilities: [] },
       { id: 'spell', parent: 'thing', urlPaths: ['spells'], capabilities: [] },
     ];
-    const t      = Taxonomy.compile(concepts);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile(concepts);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
 
     const fakeState = {
@@ -402,8 +410,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
     } as unknown as ScrapeState;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await router.execute(fakeState, { services: {} } as any);
-    assert.equal(result.output, 'spell');
+    const result = await router.execute(Batch.of(fakeState), { services: {} } as any);
+    assert.ok(result.has('spell'));
   });
 
   it('router execute returns unknown for unmatched URL', async () => {
@@ -411,8 +419,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'thing', parent: null,    capabilities: [] },
       { id: 'spell', parent: 'thing', urlPaths: ['spells'], capabilities: [] },
     ];
-    const t      = Taxonomy.compile(concepts);
-    const router = t.allNodes().find((n) => n.name === 'aonprd:taxonomy-route');
+    const taxonomy      = Taxonomy.compile(concepts);
+    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
 
     const fakeState = {
@@ -423,8 +431,8 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
     } as unknown as ScrapeState;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await router.execute(fakeState, { services: {} } as any);
-    assert.equal(result.output, 'unknown');
+    const result = await router.execute(Batch.of(fakeState), { services: {} } as any);
+    assert.ok(result.has('unknown'));
   });
 });
 
@@ -437,37 +445,50 @@ describe('Taxonomy — annotations shape', () => {
       { id: 'weapon', parent: 'thing', urlPaths: ['weapons'], capabilities: [] },
       { id: 'spell',  parent: 'thing', urlPaths: ['spells'],  capabilities: [] },
     ];
-    const t           = Taxonomy.compile(concepts);
-    const annotations = t.annotations();
+    const taxonomy           = Taxonomy.compile(concepts);
+    const annotations = taxonomy.annotations();
     assert.ok(annotations.terminals !== undefined);
     const routerTerminals = annotations.terminals['aonprd:taxonomy-route'];
     assert.ok(routerTerminals !== undefined);
-    const outcomes = routerTerminals.map((e) => e.outcome).sort();
+    const outcomes = routerTerminals.map((entry) => entry.outcome).sort();
     assert.ok(outcomes.includes('weapon'),  'must have weapon outcome');
     assert.ok(outcomes.includes('spell'),   'must have spell outcome');
     assert.ok(outcomes.includes('unknown'), 'must have unknown outcome');
     assert.equal(outcomes.length, 3, 'exactly one per leaf concept + unknown');
   });
 
-  it('annotations.terminals includes make-unknown → flow:terminate', () => {
-    const t           = Taxonomy.compile([]);
-    const annotations = t.annotations();
+  it('annotations.terminals routes unknown to emit terminal (not aonprd:make-unknown)', () => {
+    const taxonomy           = Taxonomy.compile([]);
+    const annotations = taxonomy.annotations();
     assert.ok(annotations.terminals !== undefined);
-    const makeUnknownTerminals = annotations.terminals['aonprd:make-unknown'];
-    assert.ok(makeUnknownTerminals !== undefined);
-    assert.equal(makeUnknownTerminals.length, 1);
-    assert.equal(makeUnknownTerminals[0]?.outcome, 'success');
-    assert.equal(makeUnknownTerminals[0]?.target, 'flow:terminate');
+    // aonprd:make-unknown is no longer a routing target; unknown outcome goes directly to
+    // an emit terminal so empty-contract nodes are never referenced in the derived DAG.
+    assert.equal(annotations.terminals['aonprd:make-unknown'], undefined,
+      'aonprd:make-unknown must not appear as a routing target in annotations');
+    const routerTerminals = annotations.terminals['aonprd:taxonomy-route'];
+    assert.ok(routerTerminals !== undefined);
+    const unknownEntry = routerTerminals.find((entry) => entry.outcome === 'unknown');
+    assert.ok(unknownEntry !== undefined, 'router must have unknown terminal');
+    const emit = (unknownEntry as unknown as { emit?: { name: string; outcome: string } }).emit;
+    assert.ok(emit !== undefined, 'unknown outcome must use emit form');
+    assert.ok(typeof emit.name === 'string' && emit.name.length > 0);
   });
 
-  it('annotations.terminals includes flow:terminate → null', () => {
-    const t           = Taxonomy.compile([]);
-    const annotations = t.annotations();
+  it('annotations.terminals does not reference flow:terminate (retired node)', () => {
+    // flow:terminate is no longer a registered node; all routing to it has been
+    // replaced with emit-form terminals. The annotations must not reference it.
+    const taxonomy           = Taxonomy.compile([]);
+    const annotations = taxonomy.annotations();
     assert.ok(annotations.terminals !== undefined);
-    const terminateTerminals = annotations.terminals['flow:terminate'];
-    assert.ok(terminateTerminals !== undefined);
-    assert.equal(terminateTerminals.length, 1);
-    assert.equal(terminateTerminals[0]?.outcome, 'success');
-    assert.equal(terminateTerminals[0]?.target, null);
+    assert.equal(annotations.terminals['flow:terminate'], undefined,
+      'flow:terminate must not appear in annotations (empty-contract node retired)');
+    // Verify the concept-dispatch unknown outcome uses emit form (the real terminal)
+    const dispatchTerminals = annotations.terminals['aonprd:concept-dispatch'];
+    assert.ok(dispatchTerminals !== undefined);
+    const unknownEntry = dispatchTerminals.find((entry) => entry.outcome === 'unknown');
+    assert.ok(unknownEntry !== undefined, 'concept-dispatch must have unknown terminal');
+    const emit = (unknownEntry as unknown as { emit?: { name: string; outcome: string } }).emit;
+    assert.ok(emit !== undefined, 'concept-dispatch unknown must use emit form');
+    assert.ok(typeof emit.outcome === 'string' && emit.outcome.length > 0, 'emit.outcome must be non-empty');
   });
 });

@@ -1,5 +1,5 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import type { LinkCrawlState }   from '../../state/LinkCrawlState.js';
 import type { LinkCrawlServices } from './Services.js';
@@ -47,19 +47,19 @@ export const LINK_CRAWL_LEVEL_DAG_NAME = 'linkCrawlLevelDAG';
  * @category Nodes
  * @since 4.0.0
  */
-export const RecurseCrawlNode: NodeInterface<LinkCrawlState, 'success', LinkCrawlServices> = {
-  name: 'crawl:recurse',
-  outputs: ['success'],
+class RecurseCrawlNodeImpl extends ScalarNode<LinkCrawlState, 'success', LinkCrawlServices> {
+  public readonly name = 'crawl:recurse';
+  public readonly outputs = ['success'] as const;
 
-  async execute(
+  protected override async executeOne(
     state: LinkCrawlState,
-    context: NodeContextInterface<LinkCrawlServices>,
-  ): Promise<{ output: 'success' }> {
+    context: NodeContextType<LinkCrawlServices>,
+  ): Promise<NodeOutputType<'success'>> {
     const { services } = context;
 
     // Guard: only trampoline if there's actually work remaining.
     if (state.frontier.length === 0) {
-      return { output: 'success' };
+      return NodeOutputBuilder.of('success');
     }
 
     services.log.debug(
@@ -83,14 +83,8 @@ export const RecurseCrawlNode: NodeInterface<LinkCrawlState, 'success', LinkCraw
     state.discoveredRaw    = clone.discoveredRaw;
     state.nextFrontierRaw  = clone.nextFrontierRaw;
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for RecurseCrawlNode: no data dependency (routing target only). */
-export const recurseCrawlContract: OperationContract = {
-  name:         'crawl:recurse',
-  hardRequired: [],
-  produces:     [],
-  outputs:      ['success'],
-};
+export const RecurseCrawlNode = new RecurseCrawlNodeImpl();

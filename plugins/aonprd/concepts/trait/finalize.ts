@@ -1,7 +1,7 @@
 import type { CheerioAPI } from 'cheerio';
 import type { CommonExtraction, Section } from '../../common.js';
 import { stripStructuredKeys, filterLegacySections } from '../../common.js';
-import { baseFrom, setConceptOutput } from '../_helpers.js';
+import { baseFrom } from '../_helpers.js';
 import type { TraitOutput, TraitBaseSlice } from './types.js';
 import { inferTraitCategory } from './helpers.js';
 
@@ -12,12 +12,12 @@ const TRAIT_CLAIMED_LABELS: ReadonlyArray<string> = [
 
 /** Assemble the final TraitOutput from per-slice results. */
 export function finalizeTrait(
-  c:    CommonExtraction,
-  base: TraitBaseSlice,
-  $:    CheerioAPI,
+  common: CommonExtraction,
+  base:   TraitBaseSlice,
+  root:   CheerioAPI,
 ): TraitOutput {
-  const category = inferTraitCategory(c);
-  const baseShape = baseFrom(c, $);
+  const category = inferTraitCategory(common);
+  const baseShape = baseFrom(common, root);
   return {
     ...baseShape,
     url:             base.url,
@@ -31,21 +31,21 @@ export function finalizeTrait(
     trait_ids:       base.trait_ids,
     source:          base.source,
     sources:         base.sources,
-    raw_fields:      stripStructuredKeys(c.field_map, TRAIT_CLAIMED_LABELS),
+    raw_fields:      stripStructuredKeys(common.field_map, TRAIT_CLAIMED_LABELS),
     category,
   } satisfies TraitOutput;
 }
 
 export function finalizeTraitWithSections(
-  c:        CommonExtraction,
+  common:   CommonExtraction,
   base:     TraitBaseSlice,
   sections: Section[],
-  $:        CheerioAPI,
+  root:     CheerioAPI,
 ): TraitOutput {
-  const output = finalizeTrait(c, base, $);
+  const output = finalizeTrait(common, base, root);
   return {
     ...output,
     sections:  filterLegacySections(sections),
-    raw_fields: stripStructuredKeys(c.field_map, TRAIT_CLAIMED_LABELS),
+    raw_fields: stripStructuredKeys(common.field_map, TRAIT_CLAIMED_LABELS),
   };
 }

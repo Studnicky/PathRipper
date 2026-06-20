@@ -25,11 +25,11 @@ export function harvestLinkedBoldLabels(html: string): Map<string, string> {
   // Match <b>…</b> (allowing nested tags inside the label) followed by value
   // text up to the next <b> or end. The label inner is htmlToText'd to flatten
   // anchor wrappers like <b><a>Divine Attribute</a></b>.
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     const value = htmlToText(valueHtml).replace(/^[\s;,:]+|[\s;,]+$/g, '');
@@ -46,11 +46,11 @@ export function harvestLinkedBoldLabels(html: string): Map<string, string> {
  */
 export function harvestLinkedBoldLabelsHtml(html: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
-    const labelHtml = m[1] ?? '';
-    const valueHtml = m[2] ?? '';
+  const regex = /<b>([\s\S]*?)<\/b>([\s\S]*?)(?=<b>|<h[1-6]\b|$)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null) {
+    const labelHtml = match[1] ?? '';
+    const valueHtml = match[2] ?? '';
     const label = htmlToText(labelHtml).replace(/[:?]$/, '').trim();
     if (label === '') continue;
     const key = label.toLowerCase();
@@ -65,9 +65,9 @@ export function harvestLinkedBoldLabelsHtml(html: string): Map<string, string> {
  * missing "Devotee Benefits" still produces null values rather than null
  * sections.
  */
-export function findSectionBody(c: CommonExtraction, heading: string): string {
+export function findSectionBody(common: CommonExtraction, heading: string): string {
   const target = heading.toLowerCase();
-  for (const section of c.sections) {
+  for (const section of common.sections) {
     if (section.heading.toLowerCase() === target) return section.body_html;
   }
   return '';
@@ -76,7 +76,7 @@ export function findSectionBody(c: CommonExtraction, heading: string): string {
 /** Parse a comma-separated linked-anchor list into trimmed names. */
 export function parseLinkedList(raw: string | null): string[] {
   if (raw === null || raw.trim() === '') return [];
-  return splitTopLevel(raw, ',').map((s) => s.trim()).filter((s) => s !== '');
+  return splitTopLevel(raw, ',').map((str) => str.trim()).filter((str) => str !== '');
 }
 
 /**
@@ -95,21 +95,21 @@ export function parseClericSpells(valueHtml: string | null): DeityClericSpellRan
 
   const rankMatches: Array<{ rank: number; start: number; end: number }> = [];
   RANK_RE.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = RANK_RE.exec(text)) !== null) {
-    const rank = parseInt(m[1]!, 10);
+  let match: RegExpExecArray | null;
+  while ((match = RANK_RE.exec(text)) !== null) {
+    const rank = parseInt(match[1]!, 10);
     if (Number.isFinite(rank)) {
-      rankMatches.push({ rank, start: m.index, end: m.index + m[0].length });
+      rankMatches.push({ rank, start: match.index, end: match.index + match[0].length });
     }
   }
   if (rankMatches.length === 0) return [];
 
   const out: DeityClericSpellRank[] = [];
-  for (let i = 0; i < rankMatches.length; i++) {
-    const cur = rankMatches[i]!;
-    const next = i + 1 < rankMatches.length ? rankMatches[i + 1]!.start : text.length;
+  for (let index = 0; index < rankMatches.length; index++) {
+    const cur = rankMatches[index]!;
+    const next = index + 1 < rankMatches.length ? rankMatches[index + 1]!.start : text.length;
     const segment = text.slice(cur.end, next).trim().replace(/[,;]\s*$/, '');
-    const spells = splitTopLevel(segment, ',').map((s) => s.trim()).filter((s) => s !== '');
+    const spells = splitTopLevel(segment, ',').map((str) => str.trim()).filter((str) => str !== '');
     out.push({ rank: cur.rank, spells });
   }
   return out;
@@ -130,8 +130,8 @@ const INTERCESSION_TIERS: ReadonlyArray<{ label: string; tier: DeityIntercession
   { label: 'major curse',     tier: 'major',    kind: 'curse' },
 ];
 
-export function parseIntercessions(c: CommonExtraction): DeityIntercession[] {
-  const body = findSectionBody(c, 'Divine Intercession');
+export function parseIntercessions(common: CommonExtraction): DeityIntercession[] {
+  const body = findSectionBody(common, 'Divine Intercession');
   if (body === '') return [];
   const map = harvestLinkedBoldLabels(body);
   const out: DeityIntercession[] = [];
@@ -145,16 +145,16 @@ export function parseIntercessions(c: CommonExtraction): DeityIntercession[] {
 
 /** Harvest deity-to-deity cross references from the page body. */
 export function parseDeityRelationships(
-  c: CommonExtraction,
+  common: CommonExtraction,
   extractEntityId: (url: string) => number | null,
 ): DeityRelationship[] {
   const out: DeityRelationship[] = [];
   const seen = new Set<string>();
-  for (const link of c.links) {
+  for (const link of common.links) {
     if (link.kind !== 'Deities') continue;
     if (link.text === '' || seen.has(link.href)) continue;
     // Skip self-references (the page often links to its own legacy version).
-    if (link.id !== null && link.id === extractEntityId(c.url)) continue;
+    if (link.id !== null && link.id === extractEntityId(common.url)) continue;
     seen.add(link.href);
     out.push({ name: link.text, deity_id: link.id, href: link.href });
   }

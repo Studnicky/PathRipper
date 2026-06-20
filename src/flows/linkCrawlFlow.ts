@@ -3,8 +3,7 @@
  *
  * ## Strategy: trampolined dispatch (dynamic recursion)
  *
- * The prior 16-level unrolled `DAGBuilder` approach is replaced with two flat
- * `DAGDeriver.derive(...)` flows sharing the same crawl node set:
+ * Two flat `DAGBuilder` flows sharing the same crawl node set:
  *
  *   - `linkCrawlDAG`      — outer DAG: init-frontier + one level + recurse/done.
  *   - `linkCrawlLevelDAG` — inner DAG: one level + recurse/done (no init).
@@ -28,30 +27,37 @@
  *
  * ## Static cycle check
  *
- * Both `linkCrawlDAG` and `linkCrawlLevelDAG` contain only `SingleNode`,
- * `ParallelNode`, and `FanOutNode` placements — no `DeepDAGNode`. Dagonizer's
+ * Both `linkCrawlDAG` and `linkCrawlLevelDAG` contain only `SingleNode` and
+ * `TerminalNode` placements — no `DeepDAGNode`. Dagonizer's
  * `collectDeepDAGReferences` walks only `DeepDAGNode` placements, so neither
  * DAG references the other statically. No cycle detected.
  *
  * ## Shape
  *
- *   linkCrawlDAG (5 placements):
+ *   linkCrawlDAG (6 placements — 4 nodes + 2 terminals):
  *     crawl:init-frontier     { ready → crawl:fetch-and-extract, empty → crawl:exhausted }
  *     crawl:fetch-and-extract { success/empty/error/permanent → crawl:dedupe-and-enqueue }
  *     crawl:dedupe-and-enqueue { frontier-ready → crawl:recurse, frontier-empty/budget-exhausted → crawl:exhausted }
- *     crawl:recurse           { success → null }  ← trampoline: re-dispatches linkCrawlLevelDAG
- *     crawl:exhausted         { success → null }
+ *     crawl:recurse           { success → crawl:completed }  ← trampoline: re-dispatches linkCrawlLevelDAG
+ *     crawl:exhausted         { success → crawl:completed }
+ *     crawl:completed         terminal (outcome: completed)
  *
- *   linkCrawlLevelDAG (4 placements — same as above minus init):
+ *   linkCrawlLevelDAG (5 placements — 3 nodes + 2 terminals, no init):
  *     crawl:fetch-and-extract  { success/empty/error/permanent → crawl:dedupe-and-enqueue }
  *     crawl:dedupe-and-enqueue { frontier-ready → crawl:recurse, frontier-empty/budget-exhausted → crawl:exhausted }
- *     crawl:recurse            { success → null }
- *     crawl:exhausted          { success → null }
+ *     crawl:recurse            { success → crawl:completed }
+ *     crawl:exhausted          { success → crawl:completed }
+ *     crawl:completed          terminal (outcome: completed)
  */
 
-import { DAGDeriver } from '@noocodex/dagonizer/derive';
-import type { DAG } from '@noocodex/dagonizer';
+import { DAGBuilder } from '@studnicky/dagonizer';
+import type { DAGType } from '@studnicky/dagonizer';
 
+import { InitFrontierNode }         from '../nodes/crawl/InitFrontierNode.js';
+import { FetchAndExtractLinksNode } from '../nodes/crawl/FetchAndExtractLinksNode.js';
+import { DedupeAndEnqueueNode }     from '../nodes/crawl/DedupeAndEnqueueNode.js';
+import { RecurseCrawlNode }         from '../nodes/crawl/RecurseCrawlNode.js';
+import { CrawlExhaustedNode }       from '../nodes/crawl/CrawlExhaustedNode.js';
 import { LINK_CRAWL_LEVEL_DAG_NAME } from '../nodes/crawl/RecurseCrawlNode.js';
 
 /** Canonical name of the link-crawl outer flow. */
@@ -73,108 +79,60 @@ export { LINK_CRAWL_LEVEL_DAG_NAME };
  * @category Flows
  * @since 4.0.0
  */
-export const buildLinkCrawlFlow = (): { linkCrawlDAG: DAG; linkCrawlLevelDAG: DAG } => {
-  // ── Shared terminal contract set ───────────────────────────────────────────
-  // crawl:recurse and crawl:exhausted are routing targets with no data dependency;
-  // they appear as depth-N siblings in both DAGs (same pattern as wikiResolveMembersFlow
-  // branch nodes). All three ports of dedupe-and-enqueue are overridden via terminals.
-  const levelAnnotations = {
-    terminals: {
-      'crawl:dedupe-and-enqueue': [
-        { outcome: 'frontier-ready',   target: 'crawl:recurse'   },
-        { outcome: 'frontier-empty',   target: 'crawl:exhausted' },
-        { outcome: 'budget-exhausted', target: 'crawl:exhausted' },
-      ],
-      'crawl:recurse':   [{ outcome: 'success', target: null }],
-      'crawl:exhausted': [{ outcome: 'success', target: null }],
-    },
-  };
-
+export const buildLinkCrawlFlow = (): { linkCrawlDAG: DAGType; linkCrawlLevelDAG: DAGType } => {
   // ── linkCrawlLevelDAG ──────────────────────────────────────────────────────
   // Inner trampoline target: fetch → dedupe → recurse | exhausted.
-  // All four fetch-and-extract outputs route uniformly to dedupe (auto-wired).
-  const linkCrawlLevelDAG: DAG = DAGDeriver.derive({
-    name:       LINK_CRAWL_LEVEL_DAG_NAME,
-    version:    '2.0',
-    entrypoint: 'crawl:fetch-and-extract',
-    contracts: [
-      {
-        name:         'crawl:fetch-and-extract',
-        hardRequired: ['frontier'],
-        produces:     ['discoveredRaw'],
-        outputs:      ['success', 'empty', 'error', 'permanent'],
-      },
-      {
-        name:         'crawl:dedupe-and-enqueue',
-        hardRequired: ['discoveredRaw'],
-        produces:     ['next-frontier'],
-        outputs:      ['frontier-ready', 'frontier-empty', 'budget-exhausted'],
-      },
-      {
-        name:         'crawl:recurse',
-        hardRequired: [],
-        produces:     [],
-        outputs:      ['success'],
-      },
-      {
-        name:         'crawl:exhausted',
-        hardRequired: [],
-        produces:     [],
-        outputs:      ['success'],
-      },
-    ],
-    annotations: levelAnnotations,
-  });
+  // All four fetch-and-extract output ports route uniformly to dedupe.
+  const linkCrawlLevelDAG: DAGType = new DAGBuilder(LINK_CRAWL_LEVEL_DAG_NAME, '2.0')
+    .node('crawl:fetch-and-extract', FetchAndExtractLinksNode, {
+      success:   'crawl:dedupe-and-enqueue',
+      empty:     'crawl:dedupe-and-enqueue',
+      error:     'crawl:dedupe-and-enqueue',
+      permanent: 'crawl:dedupe-and-enqueue',
+    })
+    .node('crawl:dedupe-and-enqueue', DedupeAndEnqueueNode, {
+      'frontier-ready':    'crawl:recurse',
+      'frontier-empty':    'crawl:exhausted',
+      'budget-exhausted':  'crawl:exhausted',
+    })
+    .node('crawl:recurse', RecurseCrawlNode, {
+      success: 'crawl:completed',
+    })
+    .node('crawl:exhausted', CrawlExhaustedNode, {
+      success: 'crawl:completed',
+    })
+    .terminal('crawl:completed', { outcome: 'completed' })
+    .build();
 
   // ── linkCrawlDAG ──────────────────────────────────────────────────────────
   // Outer DAG: init-frontier + the same level chain.
   // init-frontier routes:
-  //   ready → crawl:fetch-and-extract (via data graph: init produces 'frontier',
-  //           fetch requires 'frontier')
-  //   empty → crawl:exhausted (terminal)
-  const linkCrawlDAG: DAG = DAGDeriver.derive({
-    name:       LINK_CRAWL_FLOW_NAME,
-    version:    '2.0',
-    entrypoint: 'crawl:init-frontier',
-    contracts: [
-      {
-        name:         'crawl:init-frontier',
-        hardRequired: ['seedUrls'],
-        produces:     ['frontier'],
-        outputs:      ['ready', 'empty'],
-      },
-      {
-        name:         'crawl:fetch-and-extract',
-        hardRequired: ['frontier'],
-        produces:     ['discoveredRaw'],
-        outputs:      ['success', 'empty', 'error', 'permanent'],
-      },
-      {
-        name:         'crawl:dedupe-and-enqueue',
-        hardRequired: ['discoveredRaw'],
-        produces:     ['next-frontier'],
-        outputs:      ['frontier-ready', 'frontier-empty', 'budget-exhausted'],
-      },
-      {
-        name:         'crawl:recurse',
-        hardRequired: [],
-        produces:     [],
-        outputs:      ['success'],
-      },
-      {
-        name:         'crawl:exhausted',
-        hardRequired: [],
-        produces:     [],
-        outputs:      ['success'],
-      },
-    ],
-    annotations: {
-      terminals: {
-        'crawl:init-frontier':     [{ outcome: 'empty', target: 'crawl:exhausted' }],
-        ...levelAnnotations.terminals,
-      },
-    },
-  });
+  //   ready → crawl:fetch-and-extract
+  //   empty → crawl:exhausted (skip fetch entirely — nothing to crawl)
+  const linkCrawlDAG: DAGType = new DAGBuilder(LINK_CRAWL_FLOW_NAME, '2.0')
+    .node('crawl:init-frontier', InitFrontierNode, {
+      ready: 'crawl:fetch-and-extract',
+      empty: 'crawl:exhausted',
+    })
+    .node('crawl:fetch-and-extract', FetchAndExtractLinksNode, {
+      success:   'crawl:dedupe-and-enqueue',
+      empty:     'crawl:dedupe-and-enqueue',
+      error:     'crawl:dedupe-and-enqueue',
+      permanent: 'crawl:dedupe-and-enqueue',
+    })
+    .node('crawl:dedupe-and-enqueue', DedupeAndEnqueueNode, {
+      'frontier-ready':    'crawl:recurse',
+      'frontier-empty':    'crawl:exhausted',
+      'budget-exhausted':  'crawl:exhausted',
+    })
+    .node('crawl:recurse', RecurseCrawlNode, {
+      success: 'crawl:completed',
+    })
+    .node('crawl:exhausted', CrawlExhaustedNode, {
+      success: 'crawl:completed',
+    })
+    .terminal('crawl:completed', { outcome: 'completed' })
+    .build();
 
   return { linkCrawlDAG, linkCrawlLevelDAG };
 };

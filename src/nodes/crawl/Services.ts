@@ -1,4 +1,4 @@
-import type { DagonizerInterface } from '@noocodex/dagonizer';
+import type { DagonizerInterface } from '@studnicky/dagonizer';
 
 import type { Logger }       from '../../modules/logger/logger.js';
 import type { ScraperCache } from '../../modules/cache/ScraperCache.js';

@@ -10,10 +10,10 @@ import { ACTION_LABEL_TO_COST, KEY_ABILITY_RE, PROFICIENCY_RANKS, PROFICIENCY_RA
 
 /** Strip the `(Key Ability)` suffix from a skill name and return both pieces. */
 export function splitKeyAbility(rawName: string): { name: string; key_ability: string | null } {
-  const m = KEY_ABILITY_RE.exec(rawName);
-  if (m === null) return { name: rawName.trim(), key_ability: null };
-  const ability = (m[1] ?? '').trim().toLowerCase();
-  const name = rawName.slice(0, m.index).trim();
+  const match = KEY_ABILITY_RE.exec(rawName);
+  if (match === null) return { name: rawName.trim(), key_ability: null };
+  const ability = (match[1] ?? '').trim().toLowerCase();
+  const name = rawName.slice(0, match.index).trim();
   return { name, key_ability: ability === '' ? null : ability };
 }
 
@@ -21,8 +21,8 @@ export function splitKeyAbility(rawName: string): { name: string; key_ability: s
 
 /** Parse the action-cost glyph from a `<span class="action">[label]</span>` block. */
 export function parseActionGlyph(html: string): ActionCost | null {
-  const m = /<span\s+class=['"]action['"][^>]*>\s*\[([a-z-]+)\]/i.exec(html);
-  return m === null ? null : ACTION_LABEL_TO_COST.get(m[1]!.toLowerCase()) ?? null;
+  const match = /<span\s+class=['"]action['"][^>]*>\s*\[([a-z-]+)\]/i.exec(html);
+  return match === null ? null : ACTION_LABEL_TO_COST.get(match[1]!.toLowerCase()) ?? null;
 }
 
 // ─── Skill description prose ──────────────────────────────────────────────────
@@ -41,8 +41,8 @@ export function parseActionGlyph(html: string): ActionCost | null {
  * inside the first action's body). Walking the span directly gives us the
  * correct boundary.
  */
-export function extractDescription(span: any): { html: string; text: string } {
-  const spanHtml = span.html() ?? '';
+export function extractDescription(span: unknown): { html: string; text: string } {
+  const spanHtml = (span as { html(): string | null }).html() ?? '';
   // Cut tail: stop at first <details>, <h1 class="title">, <h2 class="title">,
   // or <h3 class="title"> following the Source line.
   const tailRe = /<details\b|<h1\b[^>]*class="[^"]*title[^"]*"|<h2\b[^>]*class="[^"]*title[^"]*"|<h3\b[^>]*class="[^"]*title[^"]*"/i;
@@ -79,8 +79,8 @@ export function classifyTierHeading(text: string): SkillProficiencyRank | 'untra
   const lower = text.toLowerCase();
   for (const rank of PROFICIENCY_RANKS) {
     // Match as a standalone word so "Trained" doesn't match "Untrained".
-    const re = new RegExp(`\\b${rank}\\b`, 'i');
-    if (re.test(lower)) return rank;
+    const regex = new RegExp(`\\b${rank}\\b`, 'i');
+    if (regex.test(lower)) return rank;
   }
   return null;
 }
@@ -93,13 +93,13 @@ export function classifyTierHeading(text: string): SkillProficiencyRank | 'untra
  */
 export function pullLabel(html: string, label: string): string | null {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const re = new RegExp(
+  const regex = new RegExp(
     `<b>\\s*${escaped}\\s*<\\/b>([\\s\\S]*?)(?=<b>|<hr|<h[1-6]|<br\\s*\\/?\\s*>\\s*<br|$)`,
     'i',
   );
-  const m = re.exec(html);
-  if (m === null) return null;
-  const text = htmlToText(m[1] ?? '').trim();
+  const match = regex.exec(html);
+  if (match === null) return null;
+  const text = htmlToText(match[1] ?? '').trim();
   return text === '' ? null : text;
 }
 
@@ -108,11 +108,11 @@ export function stripLabeledFields(html: string, labels: ReadonlyArray<string>):
   let out = html;
   for (const label of labels) {
     const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const re = new RegExp(
+    const regex = new RegExp(
       `<b>\\s*${escaped}\\s*<\\/b>([\\s\\S]*?)(?=<b>|<hr|<h[1-6]|<br\\s*\\/?\\s*>\\s*<br|$)`,
       'gi',
     );
-    out = out.replace(re, '');
+    out = out.replace(regex, '');
   }
   return out;
 }
@@ -127,25 +127,25 @@ export function stripLabeledFields(html: string, labels: ReadonlyArray<string>):
  *   - Header block (before `<hr/>`):  trait pills + bold-labeled metadata.
  *   - Body block (after `<hr/>`):     prose + outcome lines.
  */
-export function parseActions($: CheerioAPI, span: any): SkillAction[] {
+export function parseActions(root: CheerioAPI, span: unknown): SkillAction[] {
   const out: SkillAction[] = [];
   let currentTier: SkillProficiencyRank | 'untrained' | null = null;
 
   // Walk every h1.title (group/tier) and h2.title (action) in source order.
-  span.find('h1.title, h2.title').each((_: number, el: AnyNode) => {
-    const tag = (el as Element).tagName.toLowerCase();
-    const $h  = $(el);
+  (span as { find(sel: string): { each(fn: (i: number, el: AnyNode) => void): void } }).find('h1.title, h2.title').each((_index: number, element: AnyNode) => {
+    const tag = (element as Element).tagName.toLowerCase();
+    const $heading = root(element);
 
     if (tag === 'h1') {
-      currentTier = classifyTierHeading($h.text());
+      currentTier = classifyTierHeading($heading.text());
       return;
     }
 
     // h2.title — an action heading.
-    const heading = parseActionHeading($, el as Element);
+    const heading = parseActionHeading(root, element as Element);
     if (heading === null) return;
 
-    const actionHtml = collectFollowingHtmlUntilHeading($, el as Element);
+    const actionHtml = collectFollowingHtmlUntilHeading(root, element as Element);
     const action = buildSkillAction(heading, actionHtml, currentTier);
     out.push(action);
   });
@@ -157,13 +157,13 @@ export function parseActions($: CheerioAPI, span: any): SkillAction[] {
  * Parse an `<h2 class="title">` skill-action heading. Pulls the action name,
  * the optional `Actions.aspx?ID=N` link, and the action-cost glyph.
  */
-export function parseActionHeading($: CheerioAPI, h2: Element): ActionHeadingMatch | null {
-  const $h2 = $(h2);
-  const clone = $h2.clone();
+export function parseActionHeading(root: CheerioAPI, h2Elem: Element): ActionHeadingMatch | null {
+  const $h2Elem = root(h2Elem);
+  const clone = $h2Elem.clone();
 
   // Action cost glyph lives inside `<span class="action">[xxx]</span>`.
   const actionSpan = clone.find('span.action').first();
-  const actionHtml = actionSpan.length > 0 ? $.html(actionSpan as unknown as AnyNode) ?? '' : '';
+  const actionHtml = actionSpan.length > 0 ? root.html(actionSpan as unknown as AnyNode) ?? '' : '';
   const action_cost = actionHtml === '' ? null : parseActionGlyph(actionHtml);
   actionSpan.remove();
 
@@ -187,15 +187,15 @@ export function parseActionHeading($: CheerioAPI, h2: Element): ActionHeadingMat
  * `<h3 class="title">Sample X Tasks</h3>` inside the action block for tier
  * task descriptions.
  */
-export function collectFollowingHtmlUntilHeading($: CheerioAPI, h2: Element): string {
+export function collectFollowingHtmlUntilHeading(root: CheerioAPI, h2Elem: Element): string {
   const fragments: string[] = [];
-  let cur: AnyNode | null = h2.next as AnyNode | null;
+  let cur: AnyNode | null = h2Elem.next as AnyNode | null;
   while (cur !== null) {
     if (cur.type === 'tag') {
       const tagName = (cur as Element).tagName.toLowerCase();
       if (tagName === 'h1' || tagName === 'h2') break;
     }
-    fragments.push($.html(cur as AnyNode) ?? '');
+    fragments.push(root.html(cur as AnyNode) ?? '');
     cur = (cur as { next: AnyNode | null }).next;
   }
   return fragments.join('');
@@ -211,10 +211,10 @@ export function extractActionTraits(html: string): string[] {
   const cut = /<b>/i.exec(html);
   const lead = cut === null ? html : html.slice(0, cut.index);
   const out: string[] = [];
-  const re = /<span\s+class=['"]trait['"][^>]*>([\s\S]*?)<\/span>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(lead)) !== null) {
-    const text = htmlToText(m[1] ?? '').trim();
+  const regex = /<span\s+class=['"]trait['"][^>]*>([\s\S]*?)<\/span>/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(lead)) !== null) {
+    const text = htmlToText(match[1] ?? '').trim();
     if (text !== '' && !out.includes(text)) out.push(text);
   }
   return out;
@@ -226,9 +226,9 @@ export function extractActionTraits(html: string): string[] {
  * body and the header section is empty.
  */
 export function splitActionOnHr(html: string): { head: string; body: string } {
-  const m = /<hr\s*\/?>/i.exec(html);
-  if (m === null) return { head: '', body: html };
-  return { head: html.slice(0, m.index), body: html.slice(m.index + m[0].length) };
+  const match = /<hr\s*\/?>/i.exec(html);
+  if (match === null) return { head: '', body: html };
+  return { head: html.slice(0, match.index), body: html.slice(match.index + match[0].length) };
 }
 
 /** Build a {@link SkillAction} from a parsed heading + raw action HTML. */
@@ -286,11 +286,11 @@ export function buildSkillAction(
  * Each entry becomes one {@link SkillProficiencyTier} record annotated with the
  * heading's action name (when discernible).
  */
-export function parseProficiencyTiers($: CheerioAPI, span: any): SkillProficiencyTier[] {
+export function parseProficiencyTiers(root: CheerioAPI, span: unknown): SkillProficiencyTier[] {
   const out: SkillProficiencyTier[] = [];
 
-  span.find('h3.title').each((_: number, el: AnyNode) => {
-    const $h3 = $(el);
+  (span as { find(sel: string): { each(fn: (i: number, el: AnyNode) => void): void } }).find('h3.title').each((_index: number, element: AnyNode) => {
+    const $h3 = root(element);
     const heading = $h3.text().trim();
     if (!/sample\b.*\btasks?\s*$/i.test(heading)) return;
 
@@ -300,23 +300,23 @@ export function parseProficiencyTiers($: CheerioAPI, span: any): SkillProficienc
 
     // Walk siblings until the next heading and harvest <b>Rank</b> entries.
     const fragments: string[] = [];
-    let cur: AnyNode | null = (el as Element).next as AnyNode | null;
+    let cur: AnyNode | null = (element as Element).next as AnyNode | null;
     while (cur !== null) {
       if (cur.type === 'tag') {
         const tagName = (cur as Element).tagName.toLowerCase();
         if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') break;
       }
-      fragments.push($.html(cur as AnyNode) ?? '');
+      fragments.push(root.html(cur as AnyNode) ?? '');
       cur = (cur as { next: AnyNode | null }).next;
     }
     const blockHtml = fragments.join('');
 
-    const re = /<b>\s*([A-Za-z]+)\s*<\/b>\s*([\s\S]*?)(?=<b>|<br\s*\/?\s*>\s*<br|<h[1-6]|$)/gi;
-    let m: RegExpExecArray | null;
-    while ((m = re.exec(blockHtml)) !== null) {
-      const rankRaw = (m[1] ?? '').toLowerCase();
+    const regex = /<b>\s*([A-Za-z]+)\s*<\/b>\s*([\s\S]*?)(?=<b>|<br\s*\/?\s*>\s*<br|<h[1-6]|$)/gi;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(blockHtml)) !== null) {
+      const rankRaw = (match[1] ?? '').toLowerCase();
       if (!PROFICIENCY_RANK_SET.has(rankRaw)) continue;
-      const description = htmlToText(m[2] ?? '').trim();
+      const description = htmlToText(match[2] ?? '').trim();
       if (description === '') continue;
       out.push({
         rank: rankRaw as SkillProficiencyRank | 'untrained',

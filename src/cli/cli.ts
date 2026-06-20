@@ -4,7 +4,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { Dagonizer }        from '@noocodex/dagonizer';
+import { Dagonizer }        from '@studnicky/dagonizer';
 import { Logger }           from '../modules/logger/logger.js';
 import { LinkLister }       from '../crawlers/LinkLister.js';
 import { ScraperCache }     from '../modules/cache/ScraperCache.js';

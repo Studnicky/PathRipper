@@ -35,12 +35,12 @@ const CLAIMED_FIELD_LABELS: ReadonlyArray<string> = [
  * body / links / meta fields owned by the full page.
  */
 export function finalizeFamiliar(
-  c:             CommonExtraction,
+  common:        CommonExtraction,
   base:          FamiliarBaseSlice,
   prerequisites: FamiliarPrerequisitesSlice,
   abilities:     FamiliarAbilitiesSlice,
   _meta:         FamiliarMetaSlice,
-  $:             CheerioAPI,
+  root:          CheerioAPI,
 ): FamiliarOutput {
   void _meta;
   return {
@@ -53,12 +53,12 @@ export function finalizeFamiliar(
     trigger:                      prerequisites.trigger,
     effect:                       prerequisites.effect,
     abilities:                    abilities.abilities,
-    sections:                     c.sections,
-    raw_fields:                   stripStructuredKeys(c.field_map, CLAIMED_FIELD_LABELS),
-    links:                        c.links,
-    body_text:                    c.body_text,
-    body_html:                    c.body_html,
-    meta_description:             extractMetaDescription($),
-    meta_keywords:                extractMetaKeywords($),
+    sections:                     common.sections,
+    raw_fields:                   stripStructuredKeys(common.field_map, CLAIMED_FIELD_LABELS),
+    links:                        common.links,
+    body_text:                    common.body_text,
+    body_html:                    common.body_html,
+    meta_description:             extractMetaDescription(root),
+    meta_keywords:                extractMetaKeywords(root),
   } satisfies FamiliarOutput;
 }

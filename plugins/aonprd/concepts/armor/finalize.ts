@@ -19,28 +19,28 @@ const ARMOR_CLAIMED_LABELS: ReadonlyArray<string> = [
 
 /** Assemble an ArmorOutput from per-slice results, stripping claimed labels from raw_fields. */
 export function finalizeArmor(
-  c:         CommonExtraction,
+  common:    CommonExtraction,
   base:      ArmorBaseSlice,
   mechanics: ArmorMechanicsSlice,
   meta:      ArmorMetaSlice,
-  $:         CheerioAPI,
+  root:      CheerioAPI,
 ): ArmorOutput {
-  const raw_fields = stripStructuredKeys(c.field_map, ARMOR_CLAIMED_LABELS);
+  const raw_fields = stripStructuredKeys(common.field_map, ARMOR_CLAIMED_LABELS);
   return {
     ...base,
     ...mechanics,
     ...meta,
     raw_fields,
-    links:            c.links,
-    meta_description: extractMetaDescription($),
-    meta_keywords:    extractMetaKeywords($),
+    links:            common.links,
+    meta_description: extractMetaDescription(root),
+    meta_keywords:    extractMetaKeywords(root),
   } satisfies ArmorOutput;
 }
 
 /** Project a CommonExtraction of an Armor.aspx page into a typed ArmorOutput. */
-export function extractArmor(c: CommonExtraction, $: CheerioAPI): ArmorOutput {
-  const base      = extractArmorBase(c);
-  const mechanics = extractArmorMechanics(c);
-  const meta      = extractArmorMeta(c);
-  return finalizeArmor(c, base, mechanics, meta, $);
+export function extractArmor(common: CommonExtraction, root: CheerioAPI): ArmorOutput {
+  const base      = extractArmorBase(common);
+  const mechanics = extractArmorMechanics(common);
+  const meta      = extractArmorMeta(common);
+  return finalizeArmor(common, base, mechanics, meta, root);
 }

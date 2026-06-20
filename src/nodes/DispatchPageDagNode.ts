@@ -1,5 +1,5 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ScrapeState }     from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
@@ -24,6 +24,8 @@ class PageScrapeState extends ScrapeState {
 }
 
 // ── Dispatch wrapper node ──────────────────────────────────────────────────────
+
+type DispatchPageDagOutput = 'success' | 'error';
 
 /**
  * Dispatch wrapper node — the single node every per-item phase fan-out invokes.
@@ -66,62 +68,55 @@ export const makeDispatchPageDagNode = (opts: {
    * Receives the raw item value (URL string or title string).
    */
   pageSetup: (state: ScrapeState, itemValue: string) => void;
-}): NodeInterface<ScrapeState, 'success' | 'error', RipperServices> => ({
-  name:    opts.nodeName,
-  outputs: ['success', 'error'],
+}): InstanceType<typeof ScalarNode<ScrapeState, DispatchPageDagOutput, RipperServices>> => {
+  class DispatchPageDagNodeImpl extends ScalarNode<ScrapeState, DispatchPageDagOutput, RipperServices> {
+    public readonly name = opts.nodeName;
+    public readonly outputs = ['success', 'error'] as const;
 
-  async execute(
-    state:   ScrapeState,
-    context: NodeContextInterface<RipperServices>,
-  ): Promise<{ output: 'success' | 'error' }> {
-    const { services } = context;
+    protected override async executeOne(
+      state:   ScrapeState,
+      context: NodeContextType<RipperServices>,
+    ): Promise<NodeOutputType<DispatchPageDagOutput>> {
+      const { services } = context;
 
-    // Walk the configured key list; first defined value wins.
-    let itemValue = '';
-    for (const key of opts.itemMetadataKeys) {
-      const value = state.getMetadata<string>(key);
-      if (value !== undefined && value.length > 0) {
-        itemValue = value;
-        break;
+      // Walk the configured key list; first defined value wins.
+      let itemValue = '';
+      for (const key of opts.itemMetadataKeys) {
+        const value = state.getMetadata<string>(key);
+        if (value !== undefined && value.length > 0) {
+          itemValue = value;
+          break;
+        }
       }
+
+      // Build isolated per-page state — a fresh ScrapeState subclass so all
+      // child nodes have access to page, output, urls, failed, etc.
+      const pageState = new PageScrapeState(itemValue);
+      opts.pageSetup(pageState, itemValue);
+
+      try {
+        await services.dispatcher.execute(
+          opts.childDagName,
+          pageState,
+          { signal: context.signal },
+        );
+      } catch (err) {
+        // Dispatcher-level error (unknown DAG, unwired output, etc.) — log and fail.
+        services.log.error('DispatchPageDagNode', `Child DAG threw for item "${itemValue}": ${String(err)}`);
+        return NodeOutputBuilder.of('error');
+      }
+
+      // Determine outcome from the child page state.
+      // The child DAG is considered failed if:
+      //   • any page-level errors were collected in pageState
+      //   • the lifecycle terminated as failed (a node threw internally)
+      const hasFailed =
+        pageState.failed.length > 0 ||
+        pageState.lifecycle.variant === 'failed';
+
+      return NodeOutputBuilder.of(hasFailed ? 'error' : 'success');
     }
+  }
 
-    // Build isolated per-page state — a fresh ScrapeState subclass so all
-    // child nodes have access to page, output, urls, failed, etc.
-    const pageState = new PageScrapeState(itemValue);
-    opts.pageSetup(pageState, itemValue);
-
-    try {
-      await services.dispatcher.execute(
-        opts.childDagName,
-        pageState,
-        { signal: context.signal },
-      );
-    } catch (err) {
-      // Dispatcher-level error (unknown DAG, unwired output, etc.) — log and fail.
-      services.log.error('DispatchPageDagNode', `Child DAG threw for item "${itemValue}": ${String(err)}`);
-      return { output: 'error' };
-    }
-
-    // Determine outcome from the child page state.
-    // The child DAG is considered failed if:
-    //   • any page-level errors were collected in pageState
-    //   • the lifecycle terminated as failed (a node threw internally)
-    const hasFailed =
-      pageState.failed.length > 0 ||
-      pageState.lifecycle.kind === 'failed';
-
-    return { output: hasFailed ? 'error' : 'success' };
-  },
-});
-
-/**
- * OperationContract for dispatch-page-dag nodes (html:dispatch-page-dag / wiki:dispatch-page-dag).
- * These read from state.urls / state.titles via fan-out metadata; produces no direct state field.
- */
-export const makeDispatchPageDagContract = (name: string): OperationContract => ({
-  name,
-  hardRequired: [],
-  produces:     [],
-  outputs:      ['success', 'error'],
-});
+  return new DispatchPageDagNodeImpl();
+};

@@ -4,18 +4,17 @@
  * Exports: isAbilityName, isVariantOverlayJunk, parseBareBoldAbilities,
  * extractMonsterAbilities, monsterAbilitiesNode.
  */
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContractFragment } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { load, type CheerioAPI } from 'cheerio';
 import type { Element, AnyNode } from 'domhandler';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 import {
   htmlToText,
-  splitTopLevel,
   collectHangingIndentInners,
 } from '../../common.js';
 import type { MonsterAbilitiesSlice, MonsterAbility, SaveName } from './types.js';
@@ -92,18 +91,18 @@ function parseSingleAbility(innerHtml: string): MonsterAbility | null {
     const saveM = /\b(Fortitude|Reflex|Will)\b/i.exec(stRaw);
     let save: SaveName | null = null;
     if (saveM !== null) {
-      const s = saveM[1]!.toLowerCase();
-      save = s === 'fortitude' ? 'fort' : s === 'reflex' ? 'ref' : 'will';
+      const saveStr = saveM[1]!.toLowerCase();
+      save = saveStr === 'fortitude' ? 'fort' : saveStr === 'reflex' ? 'ref' : 'will';
     }
     if (dcM !== null) saving_throw = { dc: parseInt(dcM[1]!, 10), save, basic };
   }
 
   const stages: Array<{ stage: number; text: string }> = [];
   const stageRe = /<b>\s*Stage\s+(\d+)\s*<\/b>([\s\S]*?)(?=<b>\s*Stage\s+\d+|$)/gi;
-  let sm: RegExpExecArray | null;
-  while ((sm = stageRe.exec(rest)) !== null) {
-    const stageNum = parseInt(sm[1]!, 10);
-    const stageText = htmlToText(sm[2] ?? '').replace(/^[\s;,]+|[\s;,]+$/g, '');
+  let stageMatch: RegExpExecArray | null;
+  while ((stageMatch = stageRe.exec(rest)) !== null) {
+    const stageNum = parseInt(stageMatch[1]!, 10);
+    const stageText = htmlToText(stageMatch[2] ?? '').replace(/^[\s;,]+|[\s;,]+$/g, '');
     if (Number.isFinite(stageNum)) stages.push({ stage: stageNum, text: stageText });
   }
 
@@ -130,20 +129,20 @@ function parseAbilities(fragmentHtml: string): MonsterAbility[] {
 export function parseBareBoldAbilities(headHtml: string): MonsterAbility[] {
   const out: MonsterAbility[] = [];
   const flattened = headHtml.replace(/<b>\s*<b>([^<]+)<\/b>\s*<\/b>/gi, '<b>$1</b>');
-  const $h = load(`<div id="head-root">${flattened}</div>`);
+  const $head = load(`<div id="head-root">${flattened}</div>`);
 
-  $h('#head-root b').each((_, el) => {
-    const $b = $h(el);
-    if ($b.children().length > 0) return;
-    if ($b.parents('span.hanging-indent').length > 0) return;
-    if ($b.closest('h1, h2, h3').length > 0) return;
-    if ($b.parents('a.monster-pwl-link').length > 0) return;
-    if ($b.parents('h2.hide-on-print, h3.hide-on-print').length > 0) return;
+  $head('#head-root b').each((_index, element) => {
+    const $bold = $head(element);
+    if ($bold.children().length > 0) return;
+    if ($bold.parents('span.hanging-indent').length > 0) return;
+    if ($bold.closest('h1, h2, h3').length > 0) return;
+    if ($bold.parents('a.monster-pwl-link').length > 0) return;
+    if ($bold.parents('h2.hide-on-print, h3.hide-on-print').length > 0) return;
 
-    const name = $b.text().trim().replace(/:$/, '');
+    const name = $bold.text().trim().replace(/:$/, '');
     if (!isAbilityName(name)) return;
 
-    const parent = (el as Element).parent;
+    const parent = (element as Element).parent;
     const startsAfter: Element = (
       parent !== null
       && parent !== undefined
@@ -152,7 +151,7 @@ export function parseBareBoldAbilities(headHtml: string): MonsterAbility[] {
       && (parent as Element).children.length === 1
     )
       ? (parent as Element)
-      : (el as Element);
+      : (element as Element);
 
     const valueNodes: AnyNode[] = [];
     let cur = startsAfter.next as AnyNode | null;
@@ -164,7 +163,7 @@ export function parseBareBoldAbilities(headHtml: string): MonsterAbility[] {
       valueNodes.push(cur);
       cur = (cur as { next: AnyNode | null }).next;
     }
-    const valueHtml = valueNodes.map((n) => $h.html(n as AnyNode)).join('');
+    const valueHtml = valueNodes.map((node) => $head.html(node as AnyNode)).join('');
     const valueText = htmlToText(valueHtml).trim();
     if (valueText.length < BARE_BOLD_MIN_VALUE_LEN) return;
 
@@ -186,18 +185,18 @@ export function parseBareBoldAbilities(headHtml: string): MonsterAbility[] {
       const saveM = /\b(Fortitude|Reflex|Will)\b/i.exec(stRaw);
       let save: SaveName | null = null;
       if (saveM !== null) {
-        const s = saveM[1]!.toLowerCase();
-        save = s === 'fortitude' ? 'fort' : s === 'reflex' ? 'ref' : 'will';
+        const saveStr = saveM[1]!.toLowerCase();
+        save = saveStr === 'fortitude' ? 'fort' : saveStr === 'reflex' ? 'ref' : 'will';
       }
       if (dcM !== null) saving_throw = { dc: parseInt(dcM[1]!, 10), save, basic };
     }
 
     const stages: Array<{ stage: number; text: string }> = [];
     const stageRe = /<b>\s*Stage\s+(\d+)\s*<\/b>([\s\S]*?)(?=<b>\s*Stage\s+\d+|$)/gi;
-    let sm: RegExpExecArray | null;
-    while ((sm = stageRe.exec(restHtml)) !== null) {
-      const stageNum = parseInt(sm[1]!, 10);
-      const stageText = htmlToText(sm[2] ?? '').replace(/^[\s;,]+|[\s;,]+$/g, '');
+    let stageMatch: RegExpExecArray | null;
+    while ((stageMatch = stageRe.exec(restHtml)) !== null) {
+      const stageNum = parseInt(stageMatch[1]!, 10);
+      const stageText = htmlToText(stageMatch[2] ?? '').replace(/^[\s;,]+|[\s;,]+$/g, '');
       if (Number.isFinite(stageNum)) stages.push({ stage: stageNum, text: stageText });
     }
 
@@ -221,33 +220,33 @@ export function parseBareBoldAbilities(headHtml: string): MonsterAbility[] {
 
 /** Split body HTML on `<hr/>` into defenses + offense fragments. */
 function splitBodySections(bodyHtml: string): { defenses: string; offense: string } {
-  const m = /<hr\s*\/?>/i.exec(bodyHtml);
-  if (m === null) return { defenses: bodyHtml, offense: '' };
-  return { defenses: bodyHtml.slice(0, m.index), offense: bodyHtml.slice(m.index + m[0].length) };
+  const match = /<hr\s*\/?>/i.exec(bodyHtml);
+  if (match === null) return { defenses: bodyHtml, offense: '' };
+  return { defenses: bodyHtml.slice(0, match.index), offense: bodyHtml.slice(match.index + match[0].length) };
 }
 
 /**
  * Extract the head-of-statblock HTML fragment (everything before the first
  * `<hr/>` boundary) from the resolved monster span.
  */
-function getMonsterHeadHtml($: CheerioAPI, span: CheerioNode): string {
-  const pageSpan = $('span.monster-page').first();
+function getMonsterHeadHtml(root: CheerioAPI, span: CheerioNode): string {
+  const pageSpan = root('span.monster-page').first();
   const direct = pageSpan.length > 0 ? pageSpan : span;
   const spanHtml = direct.html() ?? '';
   return spanHtml.split(/<hr\s*\/?>/i)[0] ?? '';
 }
 
 /** Extract abilities slice (top + defensive + offensive abilities). */
-export function extractMonsterAbilities(c: CommonExtraction, $: CheerioAPI, span: CheerioNode): MonsterAbilitiesSlice {
-  const { defenses: defensesHtml, offense: offenseHtml } = splitBodySections(c.body_html);
-  const headHtml = getMonsterHeadHtml($, span);
+export function extractMonsterAbilities(common: CommonExtraction, root: CheerioAPI, span: CheerioNode): MonsterAbilitiesSlice {
+  const { defenses: defensesHtml, offense: offenseHtml } = splitBodySections(common.body_html);
+  const headHtml = getMonsterHeadHtml(root, span);
 
   const hangingTopAbilities = parseAbilities(headHtml);
   const bareTopAbilities = parseBareBoldAbilities(headHtml);
-  const seenNames = new Set(hangingTopAbilities.map((a) => a.name.toLowerCase()));
+  const seenNames = new Set(hangingTopAbilities.map((ability) => ability.name.toLowerCase()));
   const top_abilities = [
     ...hangingTopAbilities,
-    ...bareTopAbilities.filter((a) => !seenNames.has(a.name.toLowerCase())),
+    ...bareTopAbilities.filter((ability) => !seenNames.has(ability.name.toLowerCase())),
   ];
 
   return {
@@ -259,27 +258,29 @@ export function extractMonsterAbilities(c: CommonExtraction, $: CheerioAPI, span
 
 export type MonsterAbilitiesOutput = 'success' | 'error';
 
-export const monsterAbilitiesNode: NodeInterface<ScrapeState, MonsterAbilitiesOutput, RipperServices> = {
-  name:    'extract:monster-abilities',
-  outputs: CAPABILITY_OUTPUTS,
-  contract: {
+class MonsterAbilitiesNode extends ScalarNode<ScrapeState, MonsterAbilitiesOutput> {
+  public readonly name = 'extract:monster-abilities';
+  public readonly outputs = CAPABILITY_OUTPUTS;
+  public override readonly contract: OperationContractFragmentType = {
     hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
     produces:     [] as const,
-  } satisfies OperationContractFragment,
+  };
 
-  async execute(
+  protected override async executeOne(
     state: ScrapeState,
-    _ctx:  NodeContextInterface<RipperServices>,
-  ): Promise<{ output: MonsterAbilitiesOutput }> {
-    const c      = state.getMetadata<CommonExtraction>('aonprdCommon');
-    const $      = state.getMetadata<CheerioAPI>('aonprdCheerio');
-    const target = state.getMetadata<CheerioNode>('aonprdTarget');
-    if (c === undefined || $ === undefined || target === undefined) return { output: 'error' };
+    _ctx:  NodeContextType,
+  ): Promise<NodeOutputType<MonsterAbilitiesOutput>> {
+    const common  = state.getMetadata<CommonExtraction>('aonprdCommon');
+    const root    = state.getMetadata<CheerioAPI>('aonprdCheerio');
+    const target  = state.getMetadata<CheerioNode>('aonprdTarget');
+    if (common === undefined || root === undefined || target === undefined) return NodeOutputBuilder.of('error');
 
-    const abilities = extractMonsterAbilities(c, $, target);
+    const abilities = extractMonsterAbilities(common, root, target);
 
     state.output = { ...state.output, ...abilities };
 
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const monsterAbilitiesNode = new MonsterAbilitiesNode();

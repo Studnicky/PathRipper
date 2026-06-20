@@ -1,5 +1,5 @@
-import { NodeStateBase } from '@noocodex/dagonizer';
-import type { JsonObject } from '@noocodex/dagonizer/entities';
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 /**
  * State flowing through the link-crawl DAG.
@@ -82,32 +82,32 @@ export class LinkCrawlState extends NodeStateBase {
    * Clone state for isolated execution (sub-flows and fan-out).
    * Deep-copies all arrays and objects so child mutations do not leak.
    */
-  public override clone(): LinkCrawlState {
-    const c = new LinkCrawlState();
-    for (const [k, v] of Object.entries(this.metadata)) {
-      c.setMetadata(k, v);
+  public override clone(): this {
+    const clone = new LinkCrawlState();
+    for (const [metaKey, metaVal] of Object.entries(this.metadata)) {
+      clone.setMetadata(metaKey, metaVal);
     }
-    c.seedUrls         = [...this.seedUrls];
-    c.frontier         = [...this.frontier];
-    c.nextFrontierRaw  = [...this.nextFrontierRaw];
-    c.discoveredRaw    = [...this.discoveredRaw];
-    c.discovered       = [...this.discovered];
-    c.visited          = [...this.visited];
-    c.depth            = this.depth;
-    c.maxDepth         = this.maxDepth;
-    c.maxPages         = this.maxPages;
-    c.currentUrl       = this.currentUrl;
-    c.domainRe         = this.domainRe;
-    c.targetRe         = this.targetRe;
-    c.delimiterRe      = this.delimiterRe;
-    c.headers          = { ...this.headers };
-    return c;
+    clone.seedUrls         = [...this.seedUrls];
+    clone.frontier         = [...this.frontier];
+    clone.nextFrontierRaw  = [...this.nextFrontierRaw];
+    clone.discoveredRaw    = [...this.discoveredRaw];
+    clone.discovered       = [...this.discovered];
+    clone.visited          = [...this.visited];
+    clone.depth            = this.depth;
+    clone.maxDepth         = this.maxDepth;
+    clone.maxPages         = this.maxPages;
+    clone.currentUrl       = this.currentUrl;
+    clone.domainRe         = this.domainRe;
+    clone.targetRe         = this.targetRe;
+    clone.delimiterRe      = this.delimiterRe;
+    clone.headers          = { ...this.headers };
+    return clone as this;
   }
 
   /**
    * Snapshots domain-specific fields for checkpoint support.
    */
-  protected override snapshotData(): JsonObject {
+  protected override snapshotData(): JsonObjectType {
     return {
       seedUrls:        [...this.seedUrls],
       frontier:        [...this.frontier],
@@ -122,25 +122,25 @@ export class LinkCrawlState extends NodeStateBase {
       domainRe:        this.domainRe,
       targetRe:        this.targetRe,
       delimiterRe:     this.delimiterRe,
-      headers:         this.headers as unknown as JsonObject,
+      headers:         this.headers as unknown as JsonObjectType,
     };
   }
 
   /**
    * Restores domain-specific fields from a checkpoint snapshot.
    */
-  protected override restoreData(snap: JsonObject): void {
+  protected override restoreData(snap: JsonObjectType): void {
     const arr = (key: string): string[] => {
-      const v = snap[key];
-      return Array.isArray(v) ? (v as string[]) : [];
+      const val = snap[key];
+      return Array.isArray(val) ? (val as string[]) : [];
     };
     const str = (key: string): string => {
-      const v = snap[key];
-      return typeof v === 'string' ? v : '';
+      const val = snap[key];
+      return typeof val === 'string' ? val : '';
     };
     const num = (key: string): number | undefined => {
-      const v = snap[key];
-      return typeof v === 'number' ? v : undefined;
+      const val = snap[key];
+      return typeof val === 'number' ? val : undefined;
     };
 
     this.seedUrls         = arr('seedUrls');
@@ -156,9 +156,9 @@ export class LinkCrawlState extends NodeStateBase {
     this.domainRe         = str('domainRe');
     this.targetRe         = str('targetRe');
     this.delimiterRe      = str('delimiterRe');
-    const h = snap['headers'];
-    this.headers = (h !== null && typeof h === 'object' && !Array.isArray(h))
-      ? (h as Record<string, string>)
+    const headersSnap = snap['headers'];
+    this.headers = (headersSnap !== null && typeof headersSnap === 'object' && !Array.isArray(headersSnap))
+      ? (headersSnap as Record<string, string>)
       : {};
   }
 }

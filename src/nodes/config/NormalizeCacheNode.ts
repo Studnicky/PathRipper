@@ -1,5 +1,6 @@
-import type { NodeInterface, NodeContextInterface } from '@noocodex/dagonizer';
-import type { OperationContract } from '@noocodex/dagonizer/contracts';
+import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import { RipperConfigError } from '../../errors/RipperConfigError.js';
 import type { NormalizedRipperConfigInterface } from '../../types/Config.js';
@@ -52,6 +53,16 @@ function assertRawCacheCompatible(
   }
 }
 
+type NormalizeCacheOutput = 'success' | 'invariant-violated';
+
+/** OperationContractType for NormalizeCacheNode: reads validated, produces normalized. */
+export const normalizeCacheContract: OperationContractType = {
+  name:         'config:normalize-cache',
+  hardRequired: ['validated'],
+  produces:     ['normalized'],
+  outputs:      ['success', 'invariant-violated'],
+};
+
 /**
  * Applies cache defaults and enforces the raw-on + cache-off invariant for every
  * `targets` and `mediawiki` entry in `state.validated`.
@@ -66,23 +77,24 @@ function assertRawCacheCompatible(
  * @category Nodes
  * @since 3.0.0
  */
-export const NormalizeCacheNode: NodeInterface<ConfigLoadState, 'success' | 'invariant-violated'> = {
-  name: 'config:normalize-cache',
-  outputs: ['success', 'invariant-violated'],
+class NormalizeCacheNodeImpl extends ScalarNode<ConfigLoadState, NormalizeCacheOutput, undefined> {
+  public readonly name = 'config:normalize-cache';
+  public readonly outputs = ['success', 'invariant-violated'] as const;
+  public override readonly contract = normalizeCacheContract;
 
-  async execute(
+  protected override async executeOne(
     state: ConfigLoadState,
-    _context: NodeContextInterface<undefined>,
-  ): Promise<{ output: 'success' | 'invariant-violated' }> {
+    _context: NodeContextType<undefined>,
+  ): Promise<NodeOutputType<NormalizeCacheOutput>> {
     if (state.validated === null) {
-      state.collectError({
-        code:        'PRECONDITION_FAILED',
-        message:     'config:normalize-cache requires state.validated to be set',
-        operation:   'config:normalize-cache',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      return { output: 'invariant-violated' };
+      state.collectError(NodeErrorBuilder.from(
+        'PRECONDITION_FAILED',
+        'config:normalize-cache requires state.validated to be set',
+        'config:normalize-cache',
+        false,
+        new Date().toISOString(),
+      ));
+      return NodeOutputBuilder.of('invariant-violated');
     }
 
     const config = state.validated;
@@ -91,46 +103,40 @@ export const NormalizeCacheNode: NodeInterface<ConfigLoadState, 'success' | 'inv
     try {
       if (config.targets !== undefined) {
         const targets: Record<string, unknown> = {};
-        for (const [id, target] of Object.entries(config.targets)) {
-          const t = target as Record<string, unknown>;
-          const cache = resolvedCache(t['cache'] as MutableCacheConfig | undefined, id);
-          assertRawCacheCompatible(t['includeRawContent'] as boolean | undefined, cache, `targets.${id}`);
-          targets[id] = { ...t, cache };
+        for (const [targetId, target] of Object.entries(config.targets)) {
+          const cfg = target as Record<string, unknown>;
+          const cache = resolvedCache(cfg['cache'] as MutableCacheConfig | undefined, targetId);
+          assertRawCacheCompatible(cfg['includeRawContent'] as boolean | undefined, cache, `targets.${targetId}`);
+          targets[targetId] = { ...cfg, cache };
         }
         (normalized as unknown as Record<string, unknown>)['targets'] = targets;
       }
 
       if (config.mediawiki !== undefined) {
         const mediawiki: Record<string, unknown> = {};
-        for (const [id, target] of Object.entries(config.mediawiki)) {
-          const t = target as Record<string, unknown>;
-          const cache = resolvedCache(t['cache'] as MutableCacheConfig | undefined, id);
-          assertRawCacheCompatible(t['includeRawContent'] as boolean | undefined, cache, `mediawiki.${id}`);
-          mediawiki[id] = { ...t, cache };
+        for (const [targetId, target] of Object.entries(config.mediawiki)) {
+          const cfg = target as Record<string, unknown>;
+          const cache = resolvedCache(cfg['cache'] as MutableCacheConfig | undefined, targetId);
+          assertRawCacheCompatible(cfg['includeRawContent'] as boolean | undefined, cache, `mediawiki.${targetId}`);
+          mediawiki[targetId] = { ...cfg, cache };
         }
         (normalized as unknown as Record<string, unknown>)['mediawiki'] = mediawiki;
       }
     } catch (err: unknown) {
-      const e = err instanceof Error ? err : new Error(String(err));
-      state.collectError({
-        code:        (e as { code?: string }).code ?? 'RIPPER_CONFIG',
-        message:     e.message,
-        operation:   'config:normalize-cache',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      return { output: 'invariant-violated' };
+      const error = err instanceof Error ? err : new Error(String(err));
+      state.collectError(NodeErrorBuilder.from(
+        (error as { code?: string }).code ?? 'RIPPER_CONFIG',
+        error.message,
+        'config:normalize-cache',
+        false,
+        new Date().toISOString(),
+      ));
+      return NodeOutputBuilder.of('invariant-violated');
     }
 
     state.normalized = normalized;
-    return { output: 'success' };
-  },
-};
+    return NodeOutputBuilder.of('success');
+  }
+}
 
-/** OperationContract for NormalizeCacheNode: reads validated, produces normalized. */
-export const normalizeCacheContract: OperationContract = {
-  name:         'config:normalize-cache',
-  hardRequired: ['validated'],
-  produces:     ['normalized'],
-  outputs:      ['success', 'invariant-violated'],
-};
+export const NormalizeCacheNode = new NormalizeCacheNodeImpl();
