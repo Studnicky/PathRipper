@@ -2,7 +2,6 @@
 // SetRelics.aspx pages describe linked relic sets with tiered benefits.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -346,10 +345,6 @@ export type SetRelicBaseOutput = 'success' | 'error';
 class SetRelicBaseNode extends ScalarNode<ScrapeState, SetRelicBaseOutput> {
   public readonly name = 'extract:set-relic-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -375,10 +370,6 @@ export type SetRelicComponentsOutput = 'success' | 'error';
 class SetRelicComponentsNode extends ScalarNode<ScrapeState, SetRelicComponentsOutput> {
   public readonly name = 'extract:set-relic-components';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -404,10 +395,6 @@ export type FinalizeSetRelicOutput = 'success';
 class FinalizeSetRelicNode extends ScalarNode<ScrapeState, FinalizeSetRelicOutput> {
   public readonly name = 'finalize:set-relic';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

@@ -5,7 +5,6 @@
 // dropped in favour of the concept-specific `disease_id`.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -301,10 +300,6 @@ export type DiseaseBaseOutput = 'success' | 'error';
 class DiseaseBaseNode extends ScalarNode<ScrapeState, DiseaseBaseOutput> {
   public readonly name = 'extract:disease-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -330,10 +325,6 @@ export type DiseaseMechanicsOutput = 'success' | 'error';
 class DiseaseMechanicsNode extends ScalarNode<ScrapeState, DiseaseMechanicsOutput> {
   public readonly name = 'extract:disease-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -359,10 +350,6 @@ export type DiseaseStagesOutput = 'success' | 'error';
 class DiseaseStagesNode extends ScalarNode<ScrapeState, DiseaseStagesOutput> {
   public readonly name = 'extract:disease-stages';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -388,10 +375,6 @@ export type FinalizeDiseaseOutput = 'success';
 class FinalizeDiseaseNode extends ScalarNode<ScrapeState, FinalizeDiseaseOutput> {
   public readonly name = 'finalize:disease';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

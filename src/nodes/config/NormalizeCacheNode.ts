@@ -1,6 +1,5 @@
 import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import { RipperConfigError } from '../../errors/RipperConfigError.js';
 import type { NormalizedRipperConfigInterface } from '../../types/Config.js';
@@ -55,14 +54,6 @@ function assertRawCacheCompatible(
 
 type NormalizeCacheOutput = 'success' | 'invariant-violated';
 
-/** OperationContractType for NormalizeCacheNode: reads validated, produces normalized. */
-export const normalizeCacheContract: OperationContractType = {
-  name:         'config:normalize-cache',
-  hardRequired: ['validated'],
-  produces:     ['normalized'],
-  outputs:      ['success', 'invariant-violated'],
-};
-
 /**
  * Applies cache defaults and enforces the raw-on + cache-off invariant for every
  * `targets` and `mediawiki` entry in `state.validated`.
@@ -80,7 +71,6 @@ export const normalizeCacheContract: OperationContractType = {
 class NormalizeCacheNodeImpl extends ScalarNode<ConfigLoadState, NormalizeCacheOutput, undefined> {
   public readonly name = 'config:normalize-cache';
   public readonly outputs = ['success', 'invariant-violated'] as const;
-  public override readonly contract = normalizeCacheContract;
 
   protected override async executeOne(
     state: ConfigLoadState,

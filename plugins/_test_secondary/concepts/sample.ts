@@ -7,7 +7,6 @@
 // populated and emits a minimal output shape.
 import { ScalarNode, NodeOutputBuilder }      from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType }   from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../../aonprd/common.js';
@@ -26,10 +25,6 @@ export interface SampleOutput {
 class FinalizeSampleNodeImpl extends ScalarNode<ScrapeState, 'success'> {
   public readonly name    = 'finalize:sample';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

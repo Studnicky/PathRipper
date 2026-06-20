@@ -4,10 +4,8 @@ import { describe, it } from 'node:test';
 import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
-import { DAGDeriver } from '@studnicky/dagonizer/derive';
 import { RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
-import type { NodeInterface, NodeContextType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
+import type { NodeContextType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { RipperServices } from '../../../../src/services/RipperServices.js';
@@ -15,18 +13,14 @@ import { Taxonomy, TaxonomyError } from '../../../../plugins/aonprd/taxonomy.js'
 import type { ConceptDecl, CapabilityNode } from '../../../../plugins/aonprd/taxonomy.js';
 
 // ─── Stub capability nodes for tests ─────────────────────────────────────────
-// Each stub has a distinct name, outputs: ['success', 'error'], and an inline
-// contract — the minimum required for Taxonomy.compile to accept them.
+// Each stub has a distinct name and outputs: ['success', 'error'] — the minimum
+// required for Taxonomy.compile to accept them.
 
 function makeStubCap(name: string): CapabilityNode {
   return {
     name,
     outputs:  ['success', 'error'] as const,
     timeout:  Timeout.none(),
-    contract: {
-      hardRequired: [] as const,
-      produces:     [] as const,
-    } satisfies OperationContractFragmentType,
     async execute(
       batch: Batch<ScrapeState>,
       _ctx:  NodeContextType,
@@ -49,18 +43,13 @@ describe('Taxonomy — empty taxonomy', () => {
     assert.doesNotThrow(() => Taxonomy.compile([]));
   });
 
-  it('DAGDeriver.derive succeeds on empty taxonomy (primary acceptance)', () => {
+  it('buildDAG succeeds on empty taxonomy (primary acceptance)', () => {
     const taxonomy = Taxonomy.compile([]);
     assert.doesNotThrow(() => {
-      const dag = DAGDeriver.derive({
-        name:        'test-empty',
-        version:     '0.1',
-        entrypoint:  taxonomy.entrypoint(),
-        nodes:       [...taxonomy.allNodes()] as NodeInterface[],
-        annotations: taxonomy.annotations(),
-      });
-      assert.equal(typeof dag, 'object', 'derive should return an object');
-      assert.ok(dag !== null, 'derive should return a non-null DAG');
+      const dag = taxonomy.buildDAG('test-empty', '0.1');
+      assert.equal(typeof dag, 'object', 'buildDAG should return an object');
+      assert.ok(dag !== null, 'buildDAG should return a non-null DAG');
+      assert.equal(dag.name, 'test-empty');
     });
   });
 
@@ -149,23 +138,14 @@ describe('Taxonomy — single-concept taxonomy', () => {
     assert.equal(chain[0]?.name, 'extract:spell-cast-stub');
   });
 
-  it('DAGDeriver.derive throws DAGError for single-concept taxonomy (known dead-write limitation)', () => {
-    // When exactly one leaf concept is present, the URL router routes directly
-    // to the concept's first capability — no concept-dispatch node is created.
-    // The router still declares `produces: ['aonprdConceptId']` but no downstream
-    // node hardRequires it, triggering ContractRegistryValidator's dead-write check.
-    // This is a known limitation of the single-concept path in #computeRouting.
+  it('buildDAG succeeds for single-concept taxonomy', () => {
+    // Single-concept topology: router → spell capability → terminal.
+    // No concept-dispatch node is created (only one leaf).
     const taxonomy = Taxonomy.compile(concepts);
-    assert.throws(
-      () => DAGDeriver.derive({
-        name:        'test-single',
-        version:     '0.1',
-        entrypoint:  taxonomy.entrypoint(),
-        nodes:       [...taxonomy.allNodes()] as NodeInterface[],
-        annotations: taxonomy.annotations(),
-      }),
-      (err: unknown) => err instanceof Error && /aonprdConceptId|dead.write|ContractRegistryValidator/i.test(err.message),
-    );
+    assert.doesNotThrow(() => {
+      const dag = taxonomy.buildDAG('test-single', '0.1');
+      assert.equal(dag.name, 'test-single');
+    });
   });
 
   it('conceptIds includes the concept', () => {
@@ -328,28 +308,6 @@ describe('Taxonomy — validation', () => {
       (err) => err instanceof TaxonomyError && err.code === 'duplicate-url-path',
     );
   });
-
-  it('throws capability-shape when a capability is missing the contract field', () => {
-    const badCap: CapabilityNode = {
-      name:    'bad:cap',
-      outputs: ['success'],
-      timeout: Timeout.none(),
-      // No contract field — deliberately omitted to trigger capability-shape error
-      async execute(
-        batch: Batch<ScrapeState>,
-        _ctx:  NodeContextType<RipperServices>,
-      ): Promise<ReturnType<typeof RoutedBatchBuilder.of<'success', ScrapeState>>> {
-        return RoutedBatchBuilder.of('success', batch);
-      },
-    } as unknown as CapabilityNode;
-    const concepts: readonly ConceptDecl[] = [
-      { id: 'root', parent: null, capabilities: [badCap] },
-    ];
-    assert.throws(
-      () => Taxonomy.compile(concepts),
-      (err) => err instanceof TaxonomyError && err.code === 'capability-shape',
-    );
-  });
 });
 
 // ─── Test 11: Router node validity ───────────────────────────────────────────
@@ -375,22 +333,6 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
     assert.ok(outputs.includes('weapon'));
     assert.ok(outputs.includes('spell'));
     assert.ok(outputs.includes('unknown'));
-  });
-
-  it('router has inline contract with page.url as hardRequired', () => {
-    const taxonomy      = Taxonomy.compile([]);
-    const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
-    assert.ok(router !== undefined);
-    assert.ok(router.contract !== undefined, 'router must have a contract');
-    assert.ok(
-      (router.contract.hardRequired as readonly string[]).includes('page.url'),
-      'router contract must hardRequired page.url',
-    );
-    assert.deepEqual(
-      [...router.contract.produces],
-      ['aonprdConceptId'],
-      'router contract produces aonprdConceptId (stored for concept-dispatch)',
-    );
   });
 
   it('router execute returns concept id for matched URL', async () => {
@@ -436,59 +378,46 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
   });
 });
 
-// ─── Test 12: annotations shape ──────────────────────────────────────────────
+// ─── Test 12: buildDAG shape ──────────────────────────────────────────────────
 
-describe('Taxonomy — annotations shape', () => {
-  it('annotations.terminals includes router entry with one entry per leaf concept + unknown', () => {
+describe('Taxonomy — buildDAG shape', () => {
+  it('buildDAG includes router entry with one placement per leaf concept + terminals', () => {
     const concepts: readonly ConceptDecl[] = [
       { id: 'thing',  parent: null,    capabilities: [] },
       { id: 'weapon', parent: 'thing', urlPaths: ['weapons'], capabilities: [] },
       { id: 'spell',  parent: 'thing', urlPaths: ['spells'],  capabilities: [] },
     ];
-    const taxonomy           = Taxonomy.compile(concepts);
-    const annotations = taxonomy.annotations();
-    assert.ok(annotations.terminals !== undefined);
-    const routerTerminals = annotations.terminals['aonprd:taxonomy-route'];
-    assert.ok(routerTerminals !== undefined);
-    const outcomes = routerTerminals.map((entry) => entry.outcome).sort();
-    assert.ok(outcomes.includes('weapon'),  'must have weapon outcome');
-    assert.ok(outcomes.includes('spell'),   'must have spell outcome');
-    assert.ok(outcomes.includes('unknown'), 'must have unknown outcome');
-    assert.equal(outcomes.length, 3, 'exactly one per leaf concept + unknown');
+    const taxonomy = Taxonomy.compile(concepts);
+    const dag      = taxonomy.buildDAG('test-dag', '0.1');
+    assert.equal(dag.name, 'test-dag');
+    assert.ok(dag.nodes.length > 0, 'DAG must have at least one node placement');
+    // The router node must be in the DAG placements
+    const routerPlacement = dag.nodes.find(
+      (node: { name: string }) => node.name === 'aonprd:taxonomy-route',
+    );
+    assert.ok(routerPlacement !== undefined, 'router placement must exist in DAG');
   });
 
-  it('annotations.terminals routes unknown to emit terminal (not aonprd:make-unknown)', () => {
-    const taxonomy           = Taxonomy.compile([]);
-    const annotations = taxonomy.annotations();
-    assert.ok(annotations.terminals !== undefined);
-    // aonprd:make-unknown is no longer a routing target; unknown outcome goes directly to
-    // an emit terminal so empty-contract nodes are never referenced in the derived DAG.
-    assert.equal(annotations.terminals['aonprd:make-unknown'], undefined,
-      'aonprd:make-unknown must not appear as a routing target in annotations');
-    const routerTerminals = annotations.terminals['aonprd:taxonomy-route'];
-    assert.ok(routerTerminals !== undefined);
-    const unknownEntry = routerTerminals.find((entry) => entry.outcome === 'unknown');
-    assert.ok(unknownEntry !== undefined, 'router must have unknown terminal');
-    const emit = (unknownEntry as unknown as { emit?: { name: string; outcome: string } }).emit;
-    assert.ok(emit !== undefined, 'unknown outcome must use emit form');
-    assert.ok(typeof emit.name === 'string' && emit.name.length > 0);
+  it('buildDAG routes unknown to an emit terminal (not aonprd:make-unknown)', () => {
+    const taxonomy = Taxonomy.compile([]);
+    const dag      = taxonomy.buildDAG('test-empty-dag', '0.1');
+    assert.equal(dag.name, 'test-empty-dag');
+    // Verify aonprd:make-unknown is NOT a regular node placement in the DAG
+    const makeUnknownPlacement = dag.nodes.find(
+      (node: { name: string }) => node.name === 'aonprd:make-unknown',
+    );
+    assert.equal(makeUnknownPlacement, undefined,
+      'aonprd:make-unknown must not appear as a node placement; unknown routes to a terminal');
   });
 
-  it('annotations.terminals does not reference flow:terminate (retired node)', () => {
-    // flow:terminate is no longer a registered node; all routing to it has been
-    // replaced with emit-form terminals. The annotations must not reference it.
-    const taxonomy           = Taxonomy.compile([]);
-    const annotations = taxonomy.annotations();
-    assert.ok(annotations.terminals !== undefined);
-    assert.equal(annotations.terminals['flow:terminate'], undefined,
-      'flow:terminate must not appear in annotations (empty-contract node retired)');
-    // Verify the concept-dispatch unknown outcome uses emit form (the real terminal)
-    const dispatchTerminals = annotations.terminals['aonprd:concept-dispatch'];
-    assert.ok(dispatchTerminals !== undefined);
-    const unknownEntry = dispatchTerminals.find((entry) => entry.outcome === 'unknown');
-    assert.ok(unknownEntry !== undefined, 'concept-dispatch must have unknown terminal');
-    const emit = (unknownEntry as unknown as { emit?: { name: string; outcome: string } }).emit;
-    assert.ok(emit !== undefined, 'concept-dispatch unknown must use emit form');
-    assert.ok(typeof emit.outcome === 'string' && emit.outcome.length > 0, 'emit.outcome must be non-empty');
+  it('buildDAG does not reference flow:terminate (retired node)', () => {
+    const taxonomy = Taxonomy.compile([]);
+    const dag      = taxonomy.buildDAG('test-retire-dag', '0.1');
+    // flow:terminate is retired — no placement in the DAG by that name
+    const terminatePlacement = dag.nodes.find(
+      (node: { name: string }) => node.name === 'flow:terminate',
+    );
+    assert.equal(terminatePlacement, undefined,
+      'flow:terminate must not appear in DAG placements (empty-contract node retired)');
   });
 });

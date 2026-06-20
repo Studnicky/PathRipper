@@ -4,7 +4,6 @@
 // trigger/frequency/requirements fields.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -253,10 +252,6 @@ export type ActionBaseOutput = 'success' | 'error';
 class ActionBaseNodeImpl extends ScalarNode<ScrapeState, ActionBaseOutput> {
   public readonly name = 'extract:action-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -281,10 +276,6 @@ export type ActionEffectOutput = 'success' | 'error';
 class ActionEffectNodeImpl extends ScalarNode<ScrapeState, ActionEffectOutput> {
   public readonly name = 'extract:action-effect';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -309,10 +300,6 @@ export type FinalizeActionOutput = 'success';
 class FinalizeActionNodeImpl extends ScalarNode<ScrapeState, FinalizeActionOutput> {
   public readonly name = 'finalize:action';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

@@ -10,7 +10,6 @@
 // transparent via the `is_mythic` field rather than a separate type.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -462,10 +461,6 @@ export type FeatBaseOutput = 'success' | 'error';
 class FeatBaseNode extends ScalarNode<ScrapeState, FeatBaseOutput> {
   public readonly name    = 'extract:feat-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -496,10 +491,6 @@ export type FeatPrerequisitesOutput = 'success' | 'error';
 class FeatPrerequisitesNode extends ScalarNode<ScrapeState, FeatPrerequisitesOutput> {
   public readonly name    = 'extract:feat-prerequisites';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -530,10 +521,6 @@ export type FeatEffectOutput = 'success' | 'error';
 class FeatEffectNode extends ScalarNode<ScrapeState, FeatEffectOutput> {
   public readonly name    = 'extract:feat-effect';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -562,10 +549,6 @@ export type FeatMetaOutput = 'success' | 'error';
 class FeatMetaNode extends ScalarNode<ScrapeState, FeatMetaOutput> {
   public readonly name    = 'extract:feat-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -596,10 +579,6 @@ export type FinalizeFeatOutput = 'success';
 class FinalizeFeatNode extends ScalarNode<ScrapeState, FinalizeFeatOutput> {
   public readonly name    = 'finalize:feat';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

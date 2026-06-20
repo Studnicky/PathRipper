@@ -1,18 +1,9 @@
 import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 
 type ParseJsonOutput = 'success' | 'error';
-
-/** OperationContractType for ParseJsonNode: reads raw, produces parsed. */
-export const parseJsonContract: OperationContractType = {
-  name:         'config:parse-json',
-  hardRequired: ['raw'],
-  produces:     ['parsed'],
-  outputs:      ['success', 'error'],
-};
 
 /**
  * Parses `state.raw` as JSON and stores the result in `state.parsed`.
@@ -28,7 +19,6 @@ export const parseJsonContract: OperationContractType = {
 class ParseJsonNodeImpl extends ScalarNode<ConfigLoadState, ParseJsonOutput, undefined> {
   public readonly name = 'config:parse-json';
   public readonly outputs = ['success', 'error'] as const;
-  public override readonly contract = parseJsonContract;
 
   protected override async executeOne(
     state: ConfigLoadState,

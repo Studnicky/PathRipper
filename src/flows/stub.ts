@@ -3,7 +3,7 @@
  * dispatcher validation.
  *
  * Used in `registerAllFlows.ts` where virtual operation names used in
- * DAGDeriver-derived phase flows (fan-out sentinels, CLI nodes, config nodes,
+ * DAGBuilder-built phase flows (fan-out sentinels, CLI nodes, config nodes,
  * crawl nodes) must be registered on the dispatcher for structural validation
  * at docs-build time. The real nodes are registered on the dispatcher before
  * actual dispatch.
@@ -42,10 +42,6 @@ export function stub<TOutput extends string>(
   class StubNode extends ScalarNode<ScrapeState, TOutput, RipperServices> {
     public readonly name = name;
     public readonly outputs = outputs;
-    public override readonly contract = {
-      hardRequired: [] as string[],
-      produces:     [] as string[],
-    };
 
     protected override async executeOne(
       _state:   ScrapeState,

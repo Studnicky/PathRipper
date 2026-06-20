@@ -3,7 +3,6 @@
 // cover the content shape.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -231,10 +230,6 @@ export type WeaponGroupBaseOutput = 'success' | 'error';
 class WeaponGroupBaseNodeImpl extends ScalarNode<ScrapeState, WeaponGroupBaseOutput> {
   public readonly name = 'extract:weapon-group-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -259,10 +254,6 @@ export type WeaponGroupContentOutput = 'success' | 'error';
 class WeaponGroupContentNodeImpl extends ScalarNode<ScrapeState, WeaponGroupContentOutput> {
   public readonly name = 'extract:weapon-group-content';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -289,10 +280,6 @@ export type FinalizeWeaponGroupOutput = 'success';
 class FinalizeWeaponGroupNodeImpl extends ScalarNode<ScrapeState, FinalizeWeaponGroupOutput> {
   public readonly name = 'finalize:weapon-group';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

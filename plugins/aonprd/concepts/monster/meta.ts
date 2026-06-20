@@ -5,7 +5,6 @@
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -61,10 +60,6 @@ export type MonsterMetaOutput = 'success' | 'error';
 class MonsterMetaNode extends ScalarNode<ScrapeState, MonsterMetaOutput> {
   public readonly name = 'extract:monster-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

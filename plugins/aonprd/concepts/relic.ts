@@ -3,7 +3,6 @@
 // (?Aspect=N) under one concept.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -344,10 +343,6 @@ export type RelicBaseOutput = 'success' | 'error';
 class RelicBaseNode extends ScalarNode<ScrapeState, RelicBaseOutput> {
   public readonly name = 'extract:relic-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -373,10 +368,6 @@ export type RelicGiftOutput = 'success' | 'error';
 class RelicGiftNode extends ScalarNode<ScrapeState, RelicGiftOutput> {
   public readonly name = 'extract:relic-gift';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -406,10 +397,6 @@ export type FinalizeRelicOutput = 'success';
 class FinalizeRelicNode extends ScalarNode<ScrapeState, FinalizeRelicOutput> {
   public readonly name = 'finalize:relic';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

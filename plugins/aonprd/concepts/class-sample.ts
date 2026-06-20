@@ -6,7 +6,6 @@
 // captures any unclassified h2 sections so no data is silently dropped.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -391,10 +390,6 @@ export type ClassSampleBaseOutput = 'success' | 'error';
 class ClassSampleBaseNode extends ScalarNode<ScrapeState, ClassSampleBaseOutput> {
   public readonly name = 'extract:class-sample-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -423,10 +418,6 @@ export type ClassSampleIdentityOutput = 'success' | 'error';
 class ClassSampleIdentityNode extends ScalarNode<ScrapeState, ClassSampleIdentityOutput> {
   public readonly name = 'extract:class-sample-identity';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -455,10 +446,6 @@ export type ClassSampleBuildOutput = 'success' | 'error';
 class ClassSampleBuildNode extends ScalarNode<ScrapeState, ClassSampleBuildOutput> {
   public readonly name = 'extract:class-sample-build';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -487,10 +474,6 @@ export type FinalizeClassSampleOutput = 'success';
 class FinalizeClassSampleNode extends ScalarNode<ScrapeState, FinalizeClassSampleOutput> {
   public readonly name = 'finalize:class-sample';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

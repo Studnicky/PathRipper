@@ -8,7 +8,6 @@
 // partial extraction and incremental composition in the taxonomy pipeline.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -394,10 +393,6 @@ export type AncestryBaseOutput = 'success' | 'error';
 class AncestryBaseNode extends ScalarNode<ScrapeState, AncestryBaseOutput> {
   public readonly name = 'extract:ancestry-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -428,10 +423,6 @@ export type AncestryHeritagesOutput = 'success' | 'error';
 class AncestryHeritagesNode extends ScalarNode<ScrapeState, AncestryHeritagesOutput> {
   public readonly name = 'extract:ancestry-heritages';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -460,10 +451,6 @@ export type AncestryFeaturesOutput = 'success' | 'error';
 class AncestryFeaturesNode extends ScalarNode<ScrapeState, AncestryFeaturesOutput> {
   public readonly name = 'extract:ancestry-features';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -493,10 +480,6 @@ export type FinalizeAncestryOutput = 'success';
 class FinalizeAncestryNode extends ScalarNode<ScrapeState, FinalizeAncestryOutput> {
   public readonly name = 'finalize:ancestry';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

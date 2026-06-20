@@ -3,7 +3,6 @@
 // stat-block fields and operator action definitions.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -449,10 +448,6 @@ export type SiegeWeaponBaseOutput = 'success' | 'error';
 class SiegeWeaponBaseNode extends ScalarNode<ScrapeState, SiegeWeaponBaseOutput> {
   public readonly name = 'extract:siege-weapon-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -478,10 +473,6 @@ export type SiegeWeaponMechanicsOutput = 'success' | 'error';
 class SiegeWeaponMechanicsNode extends ScalarNode<ScrapeState, SiegeWeaponMechanicsOutput> {
   public readonly name = 'extract:siege-weapon-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -507,10 +498,6 @@ export type FinalizeSiegeWeaponOutput = 'success';
 class FinalizeSiegeWeaponNode extends ScalarNode<ScrapeState, FinalizeSiegeWeaponOutput> {
   public readonly name = 'finalize:siege-weapon';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

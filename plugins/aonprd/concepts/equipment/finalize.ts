@@ -8,7 +8,6 @@
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -173,10 +172,6 @@ export type EquipmentBaseOutput = 'success' | 'error';
 class EquipmentBaseNode extends ScalarNode<ScrapeState, EquipmentBaseOutput> {
   public readonly name    = 'extract:equipment-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -199,10 +194,6 @@ export type EquipmentMechanicsOutput = 'success' | 'error';
 class EquipmentMechanicsNode extends ScalarNode<ScrapeState, EquipmentMechanicsOutput> {
   public readonly name    = 'extract:equipment-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -225,10 +216,6 @@ export type FinalizeEquipmentOutput = 'success';
 class FinalizeEquipmentNode extends ScalarNode<ScrapeState, FinalizeEquipmentOutput> {
   public readonly name    = 'finalize:equipment';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

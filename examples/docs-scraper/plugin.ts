@@ -9,7 +9,6 @@ import { load } from 'cheerio';
 
 import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType }           from '@studnicky/dagonizer/contracts';
 
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
@@ -34,10 +33,6 @@ type DocsOutput = DocsSectionOutput | DocsPageOutput;
 class DocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
   public readonly name    = 'docs:parse-impl';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['page.html'],
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state:    ScrapeState,

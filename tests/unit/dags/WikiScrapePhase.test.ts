@@ -48,7 +48,7 @@ const alwaysFailChildDag = new DAGBuilder(FAILING_CHILD_DAG, '2.0')
 // A child DAG that fails when metadata['currentTitle'] ends with ':fail'.
 // Uses a ScalarNode to inspect state metadata and route to the correct terminal.
 
-import { ScalarNode, NodeOutputBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import { ScalarNode, NodeOutputBuilder, Timeout } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 class TitleRoutingNodeImpl extends ScalarNode<ScrapeState, 'pass' | 'fail', RipperServices> {

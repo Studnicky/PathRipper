@@ -4,7 +4,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { Dagonizer, DAGBuilder, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import { Dagonizer, DAGBuilder, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 import type { NodeInterface, NodeContextType, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { MemberResolutionState } from '../../../../src/state/MemberResolutionState.js';
@@ -33,7 +33,6 @@ const runChooseMode = async (state: MemberResolutionState): Promise<ModePort[]> 
     name:     `stub:cm:${port}` as string,
     outputs:  ['ok'] as const,
     timeout:  Timeout.none(),
-    contract: EMPTY_CONTRACT_FRAGMENT,
     async execute(
       batch:    Batch<MemberResolutionState>,
       _context: NodeContextType<RipperServices>,

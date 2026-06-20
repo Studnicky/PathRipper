@@ -1,7 +1,6 @@
 // Skill concept — DAG nodes and concept declaration.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -20,10 +19,6 @@ export type SkillBaseOutput = 'success' | 'error';
 class SkillBaseNode extends ScalarNode<ScrapeState, SkillBaseOutput> {
   public readonly name = 'extract:skill-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -51,10 +46,6 @@ export type SkillActionsOutput = 'success' | 'error';
 class SkillActionsNode extends ScalarNode<ScrapeState, SkillActionsOutput> {
   public readonly name = 'extract:skill-actions';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -82,10 +73,6 @@ export type SkillProficiencyTiersOutput = 'success' | 'error';
 class SkillProficiencyTiersNode extends ScalarNode<ScrapeState, SkillProficiencyTiersOutput> {
   public readonly name = 'extract:skill-proficiency-tiers';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -113,10 +100,6 @@ export type FinalizeSkillOutput = 'success';
 class FinalizeSkillNode extends ScalarNode<ScrapeState, FinalizeSkillOutput> {
   public readonly name = 'finalize:skill';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

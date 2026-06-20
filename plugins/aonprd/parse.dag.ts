@@ -1,9 +1,8 @@
 // Plugin DAG: aonprd:parse.
 //
-// Replaces the 435-line hand-written contract table with a taxonomy-derived
-// DAG. `DAGDeriver.derive` receives the node list and routing annotations
-// produced by the compiled AONPRD taxonomy.
-import { DAGDeriver } from '@studnicky/dagonizer/derive';
+// Builds the AONPRD parse DAG from the compiled taxonomy via DAGBuilder.
+// The taxonomy compiles the concept tree into routing annotations and
+// translates them into explicit DAGBuilder placements via `buildDAG()`.
 import type { DAGType } from '@studnicky/dagonizer';
 
 import { TAXONOMY } from './taxonomy/aonprd.js';
@@ -17,10 +16,4 @@ import { TAXONOMY } from './taxonomy/aonprd.js';
  * @category Plugin DAGs
  * @since 3.0.0
  */
-export const aonprdParseDAG: DAGType = DAGDeriver.derive({
-  name:        'aonprd:parse',
-  version:     '3.0',
-  entrypoint:  TAXONOMY.entrypoint(),
-  nodes:       [...TAXONOMY.allNodes()],
-  annotations: TAXONOMY.annotations(),
-});
+export const aonprdParseDAG: DAGType = TAXONOMY.buildDAG('aonprd:parse', '3.0');

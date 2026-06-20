@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Dependencies
 
-- **Dagonizer is `@studnicky/dagonizer@0.23.0`** from GitHub Packages (`.npmrc` routes the
+- **Dagonizer is `@studnicky/dagonizer@0.24.0`** from GitHub Packages (`.npmrc` routes the
   `@studnicky` scope; auth token lives in `~/.npmrc`). The former vendored `@noocodex/dagonizer@0.9.2`
   tarball and `vendor/` directory are gone.
 
@@ -21,10 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   output, state, placementPath)`); the obsolete `onContractWarning`/`contractWarnings` surface is
   removed (dead-write contracts are hard `DAGError`s at `registerDAG`/`derive`). `HttpRetryPolicy`
   constructs via `RetryPolicy.from` with `BackoffStrategyNames`.
-- **Flows are built with native `DAGBuilder`** (`.node`/`.scatter`/`.embeddedDAG`/`.terminal`).
-  `configLoadFlow` and the aonprd `parse.dag` remain on `DAGDeriver.derive`. Routing is read natively
-  off `RoutedBatchType` (`result.has(port)`); capability chains are plain arrays (chainability via
-  dagonizer's native `ChainableType`).
+- **All flows use native `DAGBuilder`** (`.node`/`.scatter`/`.embeddedDAG`/`.terminal`).
+  `configLoadFlow` is authored with explicit `.node()`/`.terminal()` placements and exhaustive
+  route maps. The aonprd parse DAG is produced by `Taxonomy.buildDAG()`, which translates the
+  internal annotation graph to `DAGBuilder` placements — the `/derive` subpath and `DAGDeriver`
+  class are gone. Routing is read natively off `RoutedBatchType` (`result.has(port)`); capability
+  chains are plain arrays (chainability via dagonizer's native `ChainableType`).
+- **`OperationContractType` and contract fields removed.** The `contract` field is gone from
+  every node class and from `NodeInterface`. `OperationContractType`, `OperationContractFragmentType`,
+  and `EMPTY_CONTRACT_FRAGMENT` are removed from the dagonizer API. All node files in `src/nodes/`,
+  `plugins/`, and `examples/` drop their contract declarations.
 - **Link crawl is a single native cyclic DAG.** `crawl:dedupe-and-enqueue` routes `frontier-ready`
   back to `crawl:fetch-and-extract` — a back-edge the engine re-executes in place until the depth/budget
   guard routes to `crawl:exhausted`. This replaces the trampoline (`RecurseCrawlNode` dispatching a

@@ -2,6 +2,7 @@ import { DAGBuilder } from '@studnicky/dagonizer';
 import type { DAGType } from '@studnicky/dagonizer';
 
 import { CrawlListTargetsNode } from '../nodes/CrawlListTargetsNode.js';
+import type { ScrapeState }     from '../state/ScrapeState.js';
 
 /** Canonical name for the HTML initial-scrape phase DAG. */
 export const HTML_SCRAPE_PHASE = 'htmlScrapePhase';
@@ -94,10 +95,12 @@ export function buildHtmlCrawlPhaseDag(): DAGType {
  */
 export function buildHtmlScrapeDag(): DAGType {
   return new DAGBuilder(HTML_SCRAPE_DAG, '2.0')
-    .embeddedDAG('scrape', HTML_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('scrape', HTML_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+      inputs:  { urls: 'urls' },
       outputs: { succeeded: 'succeeded', failed: 'failed' },
     })
-    .embeddedDAG('retry', HTML_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('retry', HTML_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+      inputs:  { failed: 'failed' },
       outputs: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' },
     })
     .terminal('scrape-done', { outcome: 'completed' })
@@ -113,13 +116,15 @@ export function buildHtmlScrapeDag(): DAGType {
  */
 export function buildHtmlScrapeDagCrawl(): DAGType {
   return new DAGBuilder(HTML_SCRAPE_DAG_CRAWL, '2.0')
-    .embeddedDAG('crawl', HTML_CRAWL_PHASE, { success: 'scrape', error: 'scrape-done' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('crawl', HTML_CRAWL_PHASE, { success: 'scrape', error: 'scrape-done' }, {
       outputs: { urls: 'urls' },
     })
-    .embeddedDAG('scrape', HTML_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('scrape', HTML_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+      inputs:  { urls: 'urls' },
       outputs: { succeeded: 'succeeded', failed: 'failed' },
     })
-    .embeddedDAG('retry', HTML_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('retry', HTML_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+      inputs:  { failed: 'failed' },
       outputs: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' },
     })
     .terminal('scrape-done', { outcome: 'completed' })

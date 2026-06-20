@@ -7,7 +7,6 @@
 // pipeline.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -283,10 +282,6 @@ export type ClassKitBaseOutput = 'success' | 'error';
 class ClassKitBaseNodeImpl extends ScalarNode<ScrapeState, ClassKitBaseOutput> {
   public readonly name = 'extract:class-kit-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -314,10 +309,6 @@ export type ClassKitContentsOutput = 'success' | 'error';
 class ClassKitContentsNodeImpl extends ScalarNode<ScrapeState, ClassKitContentsOutput> {
   public readonly name = 'extract:class-kit-contents';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -345,10 +336,6 @@ export type FinalizeClassKitOutput = 'success';
 class FinalizeClassKitNodeImpl extends ScalarNode<ScrapeState, FinalizeClassKitOutput> {
   public readonly name = 'finalize:class-kit';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

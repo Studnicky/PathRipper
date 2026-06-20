@@ -1,7 +1,6 @@
 // Animal-companion capability nodes.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -23,10 +22,6 @@ export type AnimalCompanionBaseOutput = 'success' | 'error';
 class AnimalCompanionBaseNode extends ScalarNode<ScrapeState, AnimalCompanionBaseOutput> {
   public readonly name = 'extract:animal-companion-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -53,10 +48,6 @@ export type AnimalCompanionStatsOutput = 'success' | 'error';
 class AnimalCompanionStatsNode extends ScalarNode<ScrapeState, AnimalCompanionStatsOutput> {
   public readonly name = 'extract:animal-companion-stats';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -82,10 +73,6 @@ export type AnimalCompanionCombatOutput = 'success' | 'error';
 class AnimalCompanionCombatNode extends ScalarNode<ScrapeState, AnimalCompanionCombatOutput> {
   public readonly name = 'extract:animal-companion-combat';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -111,10 +98,6 @@ export type AnimalCompanionAdvancementOutput = 'success' | 'error';
 class AnimalCompanionAdvancementNode extends ScalarNode<ScrapeState, AnimalCompanionAdvancementOutput> {
   public readonly name = 'extract:animal-companion-advancement';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -140,10 +123,6 @@ export type FinalizeAnimalCompanionOutput = 'success';
 class FinalizeAnimalCompanionNode extends ScalarNode<ScrapeState, FinalizeAnimalCompanionOutput> {
   public readonly name = 'finalize:animal-companion';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

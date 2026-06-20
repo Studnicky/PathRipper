@@ -3,7 +3,6 @@
 // fields, piloting checks, and operator action definitions.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -440,10 +439,6 @@ export type VehicleBaseOutput = 'success' | 'error';
 class VehicleBaseNodeImpl extends ScalarNode<ScrapeState, VehicleBaseOutput> {
   public readonly name = 'extract:vehicle-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -468,10 +463,6 @@ export type VehicleMechanicsOutput = 'success' | 'error';
 class VehicleMechanicsNodeImpl extends ScalarNode<ScrapeState, VehicleMechanicsOutput> {
   public readonly name = 'extract:vehicle-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -496,10 +487,6 @@ export type FinalizeVehicleOutput = 'success';
 class FinalizeVehicleNodeImpl extends ScalarNode<ScrapeState, FinalizeVehicleOutput> {
   public readonly name = 'finalize:vehicle';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

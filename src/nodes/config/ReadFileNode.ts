@@ -2,20 +2,11 @@ import { readFile } from 'node:fs/promises';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 import { toNodeError } from '../fileUtils.js';
 
 type ReadFileOutput = 'success' | 'not-found' | 'error';
-
-/** OperationContractType for ReadFileNode: reads path, produces raw. */
-export const readFileContract: OperationContractType = {
-  name:         'config:read-file',
-  hardRequired: ['path'],
-  produces:     ['raw'],
-  outputs:      ['success', 'not-found', 'error'],
-};
 
 /**
  * Reads the config file at `state.path` and stores the raw content in `state.raw`.
@@ -31,7 +22,6 @@ export const readFileContract: OperationContractType = {
 class ReadFileNodeImpl extends ScalarNode<ConfigLoadState, ReadFileOutput, undefined> {
   public readonly name = 'config:read-file';
   public readonly outputs = ['success', 'not-found', 'error'] as const;
-  public override readonly contract = readFileContract;
 
   protected override async executeOne(
     state: ConfigLoadState,

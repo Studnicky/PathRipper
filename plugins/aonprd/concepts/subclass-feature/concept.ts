@@ -1,7 +1,6 @@
 // Subclass-feature concept — DAG nodes and concept declaration.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -17,10 +16,6 @@ export type SubclassFeatureBaseOutput = 'success' | 'error';
 class SubclassFeatureBaseNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureBaseOutput> {
   public readonly name    = 'extract:subclass-feature-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -45,10 +40,6 @@ export type SubclassFeatureFieldsOutput = 'success' | 'error';
 class SubclassFeatureFieldsNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureFieldsOutput> {
   public readonly name    = 'extract:subclass-feature-fields';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -73,10 +64,6 @@ export type SubclassFeatureSpellsOutput = 'success' | 'error';
 class SubclassFeatureSpellsNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureSpellsOutput> {
   public readonly name    = 'extract:subclass-feature-spells';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -101,10 +88,6 @@ export type SubclassFeatureFeaturesOutput = 'success' | 'error';
 class SubclassFeatureFeaturesNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureFeaturesOutput> {
   public readonly name    = 'extract:subclass-feature-features';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -129,10 +112,6 @@ export type FinalizeSubclassFeatureOutput = 'success';
 class FinalizeSubclassFeatureNodeImpl extends ScalarNode<ScrapeState, FinalizeSubclassFeatureOutput> {
   public readonly name    = 'finalize:subclass-feature';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

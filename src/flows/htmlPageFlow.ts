@@ -98,8 +98,13 @@ export const buildHtmlPageFlow = (
 
     if (pluginDagNames.has(name)) {
       // Plugin DAG step: embedded sub-DAG, no node instance needed.
-      // Map child `output` back to parent `output` so json:write sees the parsed result.
-      builder.embeddedDAG(name, name, { success: next, error: FAILED }, { outputs: { output: 'output' } });
+      // Seed the child with the fetched `page` (carries html/url the plugin reads)
+      // and map child `output` back to parent `output` so json:write sees the parsed result.
+      // Transient `aonprd*` metadata the plugin sets already crosses the clone boundary.
+      builder.embeddedDAG<ScrapeState, ScrapeState>(name, name, { success: next, error: FAILED }, {
+        inputs:  { page: 'page' },
+        outputs: { output: 'output' },
+      });
       continue;
     }
 
@@ -109,8 +114,11 @@ export const buildHtmlPageFlow = (
       // Unknown step: treat as a plugin embedded DAG (success continues, error terminates).
       // This covers steps registered on the dispatcher outside of BUILTIN_NODES that are
       // not explicitly declared in pluginDagNames (e.g. plugin DAGs with defaulted callers).
-      // Map child `output` back to parent `output` so json:write sees the parsed result.
-      builder.embeddedDAG(name, name, { success: next, error: FAILED }, { outputs: { output: 'output' } });
+      // Seed the child with `page` and map child `output` back to parent `output`.
+      builder.embeddedDAG<ScrapeState, ScrapeState>(name, name, { success: next, error: FAILED }, {
+        inputs:  { page: 'page' },
+        outputs: { output: 'output' },
+      });
       continue;
     }
 

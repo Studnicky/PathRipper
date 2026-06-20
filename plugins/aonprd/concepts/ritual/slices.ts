@@ -6,7 +6,6 @@
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -57,10 +56,6 @@ export type RitualCastOutput = 'success' | 'error';
 class RitualCastNode extends ScalarNode<ScrapeState, RitualCastOutput> {
   public readonly name = 'extract:ritual-cast';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -96,10 +91,6 @@ export type RitualOutcomesOutput = 'success' | 'error';
 class RitualOutcomesNode extends ScalarNode<ScrapeState, RitualOutcomesOutput> {
   public readonly name = 'extract:ritual-outcomes';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -137,10 +128,6 @@ export type RitualAfflictionOutput = 'success' | 'error';
 class RitualAfflictionNode extends ScalarNode<ScrapeState, RitualAfflictionOutput> {
   public readonly name = 'extract:ritual-affliction';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -169,10 +156,6 @@ export type RitualHeightenedOutput = 'success' | 'error';
 class RitualHeightenedNode extends ScalarNode<ScrapeState, RitualHeightenedOutput> {
   public readonly name = 'extract:ritual-heightened';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -229,10 +212,6 @@ export type RitualMetaOutput = 'success' | 'error';
 class RitualMetaNode extends ScalarNode<ScrapeState, RitualMetaOutput> {
   public readonly name = 'extract:ritual-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

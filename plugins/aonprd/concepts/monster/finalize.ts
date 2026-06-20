@@ -6,7 +6,6 @@
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -103,10 +102,6 @@ export type FinalizeMonsterOutput = 'success';
 class FinalizeMonsterNodeImpl extends ScalarNode<ScrapeState, FinalizeMonsterOutput> {
   public readonly name = 'finalize:monster';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

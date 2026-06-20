@@ -1,7 +1,6 @@
 // Familiar capability nodes.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -23,10 +22,6 @@ export type FamiliarBaseOutput = 'success' | 'error';
 class FamiliarBaseNode extends ScalarNode<ScrapeState, FamiliarBaseOutput> {
   public readonly name = 'extract:familiar-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -52,10 +47,6 @@ export type FamiliarPrerequisitesOutput = 'success' | 'error';
 class FamiliarPrerequisitesNode extends ScalarNode<ScrapeState, FamiliarPrerequisitesOutput> {
   public readonly name = 'extract:familiar-prerequisites';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -81,10 +72,6 @@ export type FinalizeFamiliarOutput = 'success';
 class FinalizeFamiliarNode extends ScalarNode<ScrapeState, FinalizeFamiliarOutput> {
   public readonly name = 'finalize:familiar';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

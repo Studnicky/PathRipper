@@ -1,20 +1,11 @@
 import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { RipperConfigInterface } from '../../types/Config.js';
 import { RipperConfigSchema } from '../../schemas/internal/RipperConfigSchema.js';
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 
 type ValidateConfigSchemaOutput = 'valid' | 'invalid';
-
-/** OperationContractType for ValidateConfigSchemaNode: reads parsed, produces validated. */
-export const validateConfigSchemaContract: OperationContractType = {
-  name:         'config:validate-schema',
-  hardRequired: ['parsed'],
-  produces:     ['validated'],
-  outputs:      ['valid', 'invalid'],
-};
 
 /**
  * Validates `state.parsed` against the `RipperConfigSchema` (AJV-backed).
@@ -34,7 +25,6 @@ export const validateConfigSchemaContract: OperationContractType = {
 class ValidateConfigSchemaNodeImpl extends ScalarNode<ConfigLoadState, ValidateConfigSchemaOutput, undefined> {
   public readonly name = 'config:validate-schema';
   public readonly outputs = ['valid', 'invalid'] as const;
-  public override readonly contract = validateConfigSchemaContract;
 
   protected override async executeOne(
     state: ConfigLoadState,

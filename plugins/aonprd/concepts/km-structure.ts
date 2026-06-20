@@ -6,7 +6,6 @@
 // bespoke node-folder under nodes/km-structure/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -346,10 +345,6 @@ export type KmStructureBaseOutput = 'success' | 'error';
 class KmStructureBaseNodeImpl extends ScalarNode<ScrapeState, KmStructureBaseOutput> {
   public readonly name = 'extract:km-structure-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -374,10 +369,6 @@ export type KmStructureMechanicsOutput = 'success' | 'error';
 class KmStructureMechanicsNodeImpl extends ScalarNode<ScrapeState, KmStructureMechanicsOutput> {
   public readonly name = 'extract:km-structure-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -402,10 +393,6 @@ export type FinalizeKmStructureOutput = 'success';
 class FinalizeKmStructureNodeImpl extends ScalarNode<ScrapeState, FinalizeKmStructureOutput> {
   public readonly name = 'finalize:km-structure';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

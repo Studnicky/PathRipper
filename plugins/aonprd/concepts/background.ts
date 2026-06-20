@@ -6,7 +6,6 @@
 // a single taxonomy node rather than an inline switch arm.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -235,10 +234,6 @@ export type BackgroundBaseOutput = 'success' | 'error';
 class BackgroundBaseNode extends ScalarNode<ScrapeState, BackgroundBaseOutput> {
   public readonly name = 'extract:background-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -269,10 +264,6 @@ export type BackgroundBenefitsOutput = 'success' | 'error';
 class BackgroundBenefitsNode extends ScalarNode<ScrapeState, BackgroundBenefitsOutput> {
   public readonly name = 'extract:background-benefits';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -301,10 +292,6 @@ export type FinalizeBackgroundOutput = 'success';
 class FinalizeBackgroundNode extends ScalarNode<ScrapeState, FinalizeBackgroundOutput> {
   public readonly name = 'finalize:background';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

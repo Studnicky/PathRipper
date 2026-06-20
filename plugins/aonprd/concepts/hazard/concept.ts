@@ -1,6 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -23,10 +22,6 @@ export type HazardBaseOutput = 'success' | 'error';
 class HazardBaseNode extends ScalarNode<ScrapeState, HazardBaseOutput> {
   public readonly name = 'extract:hazard-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -50,10 +45,6 @@ export type HazardDefensesOutput = 'success' | 'error';
 class HazardDefensesNode extends ScalarNode<ScrapeState, HazardDefensesOutput> {
   public readonly name = 'extract:hazard-defenses';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -77,10 +68,6 @@ export type FinalizeHazardOutput = 'success';
 class FinalizeHazardNode extends ScalarNode<ScrapeState, FinalizeHazardOutput> {
   public readonly name = 'finalize:hazard';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

@@ -20,7 +20,6 @@
 // No `raw_fields` strip: rule pages have no `<b>Label</b>` field map.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -315,16 +314,6 @@ export type RuleBaseOutput = 'success' | 'error';
 class RuleBaseNode extends ScalarNode<ScrapeState, RuleBaseOutput> {
   public readonly name    = 'extract:rule-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio'] as const,
-    // `aonprdRuleContext` is memoized on `state.metadata` for the
-    // companion rule nodes to pick up via `getOrBuildRuleContext`, but their
-    // declared `hardRequired` is `['aonprdCheerio']` — they re-derive the
-    // context if the memo is absent. Omit from declared produces so the
-    // `ContractRegistryValidator` registration check stays at "zero
-    // warnings"; the runtime memo still happens.
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -354,10 +343,6 @@ export type RuleSubsectionsOutput = 'success' | 'error';
 class RuleSubsectionsNode extends ScalarNode<ScrapeState, RuleSubsectionsOutput> {
   public readonly name    = 'extract:rule-subsections';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -389,10 +374,6 @@ export type FinalizeRuleOutput = 'success';
 class FinalizeRuleConceptNode extends ScalarNode<ScrapeState, FinalizeRuleOutput> {
   public readonly name    = 'finalize:rule';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

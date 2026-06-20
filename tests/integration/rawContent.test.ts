@@ -49,16 +49,15 @@ describe('rawContent integration (folder-split layout)', () => {
     );
     await writeFile(join(pluginDir, 'parse.task.js'), `
 import { DAGBuilder } from ${JSON.stringify(`file://${dagBuilderAbsPath}`)};
-import { RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from ${JSON.stringify(`file://${dagonzerIndexPath}`)};
+import { RoutedBatchBuilder, Timeout } from ${JSON.stringify(`file://${dagonzerIndexPath}`)};
 
 const stubParseNode = {
   name:     'stub:parse',
   outputs:  ['success'],
   timeout:  Timeout.none(),
-  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(batch) {
     for (const { state } of batch) {
-      state.output = { _type: 'stub', name: 'fixture-page' };
+      state.output = { name: 'fixture-page' };
     }
     return RoutedBatchBuilder.of('success', batch);
   },
@@ -116,7 +115,7 @@ export function register(dispatcher) {
 
     const parsed = JSON.parse(
       await readFile(join(pDir, files[0]!), 'utf8'),
-    ) as { _type: string; name: string; _raw?: unknown };
+    ) as { name: string; _raw?: unknown };
 
     assert.equal(parsed.name, 'fixture-page');
     assert.equal(parsed._raw, undefined, '_raw must NOT be embedded in plugin JSON');
@@ -177,7 +176,7 @@ export function register(dispatcher) {
 
     const parsed = JSON.parse(
       await readFile(join(pDir, names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: unknown };
+    ) as { _raw?: unknown };
 
     assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false');
   });
@@ -243,7 +242,7 @@ export function register(dispatcher) {
 
     const parsed = JSON.parse(
       await readFile(join(pDir, jsonFiles[0]!), 'utf8'),
-    ) as { _type: string; _raw?: unknown };
+    ) as { _raw?: unknown };
     assert.equal(parsed._raw, undefined, '_raw must NOT appear in plugin JSON');
   });
 });

@@ -7,7 +7,6 @@
 // finalize function.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -268,10 +267,6 @@ export type NpcThemeTemplateBaseOutput = 'success' | 'error';
 class NpcThemeTemplateBaseNodeImpl extends ScalarNode<ScrapeState, NpcThemeTemplateBaseOutput> {
   public readonly name    = 'extract:npc-theme-template-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -299,10 +294,6 @@ export type NpcThemeTemplateTraitsModsOutput = 'success' | 'error';
 class NpcThemeTemplateTraitsModsNodeImpl extends ScalarNode<ScrapeState, NpcThemeTemplateTraitsModsOutput> {
   public readonly name    = 'extract:npc-theme-template-traits-mods';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -330,10 +321,6 @@ export type FinalizeNpcThemeTemplateOutput = 'success';
 class FinalizeNpcThemeTemplateNodeImpl extends ScalarNode<ScrapeState, FinalizeNpcThemeTemplateOutput> {
   public readonly name    = 'finalize:npc-theme-template';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

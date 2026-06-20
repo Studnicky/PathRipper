@@ -10,7 +10,6 @@
 //   finalize:deity-category         — assemble + strip raw_fields, attach meta
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -261,10 +260,6 @@ export type DeityCategoryBaseOutput = 'success' | 'error';
 class DeityCategoryBaseNodeImpl extends ScalarNode<ScrapeState, DeityCategoryBaseOutput> {
   public readonly name = 'extract:deity-category-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -293,10 +288,6 @@ export type DeityCategoryMembersOutput = 'success' | 'error';
 class DeityCategoryMembersNodeImpl extends ScalarNode<ScrapeState, DeityCategoryMembersOutput> {
   public readonly name = 'extract:deity-category-members';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -326,10 +317,6 @@ export type DeityCategoryAspectsOutput = 'success' | 'error';
 class DeityCategoryAspectsNodeImpl extends ScalarNode<ScrapeState, DeityCategoryAspectsOutput> {
   public readonly name = 'extract:deity-category-aspects';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -358,10 +345,6 @@ export type FinalizeDeityCategoryOutput = 'success';
 class FinalizeDeityCategoryNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityCategoryOutput> {
   public readonly name = 'finalize:deity-category';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

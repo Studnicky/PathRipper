@@ -9,7 +9,6 @@
 // captures the rules_link cross-reference as a typed field.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 
@@ -446,10 +445,6 @@ export type ArchetypeBaseOutput = 'success' | 'error';
 class ArchetypeBaseNode extends ScalarNode<ScrapeState, ArchetypeBaseOutput> {
   public readonly name    = 'extract:archetype-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -478,10 +473,6 @@ export type ArchetypeIntroductionOutput = 'success' | 'error';
 class ArchetypeIntroductionNode extends ScalarNode<ScrapeState, ArchetypeIntroductionOutput> {
   public readonly name    = 'extract:archetype-introduction';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -512,10 +503,6 @@ export type ArchetypeFeatsOutput = 'success' | 'error';
 class ArchetypeFeatsNode extends ScalarNode<ScrapeState, ArchetypeFeatsOutput> {
   public readonly name    = 'extract:archetype-feats';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -546,10 +533,6 @@ export type FinalizeArchetypeOutput = 'success';
 class FinalizeArchetypeNode extends ScalarNode<ScrapeState, FinalizeArchetypeOutput> {
   public readonly name    = 'finalize:archetype';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

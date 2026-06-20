@@ -1,6 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -20,10 +19,6 @@ export type TraitBaseOutput = 'success' | 'error';
 class TraitBaseNode extends ScalarNode<ScrapeState, TraitBaseOutput> {
   public readonly name    = 'extract:trait-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -47,10 +42,6 @@ export type FinalizeTraitOutput = 'success';
 class FinalizeTraitNode extends ScalarNode<ScrapeState, FinalizeTraitOutput> {
   public readonly name    = 'finalize:trait';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

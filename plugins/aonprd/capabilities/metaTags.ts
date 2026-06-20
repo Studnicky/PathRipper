@@ -11,7 +11,6 @@
 // `aonprdCheerio` is absent (e.g. rule pages whose load short-circuits).
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -28,15 +27,6 @@ export type MetaTagsOutput = 'success';
 class MetaTagsNode extends ScalarNode<ScrapeState, MetaTagsOutput> {
   public readonly name = 'extract:meta-tags';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio'] as const,
-    // `aonprdMetaTags` is consumed via direct `state.getMetadata` reads in
-    // concept finalize nodes (open-world side-write convention used by other
-    // projection caps like `labelPairBlockNode`). Listing it in `produces`
-    // would trip the `ContractRegistryValidator` "dead produces" check
-    // because no node declares `hardRequired: ['aonprdMetaTags']`.
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

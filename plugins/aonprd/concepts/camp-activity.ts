@@ -6,7 +6,6 @@
 // bespoke node-folder under nodes/camp-activity/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -188,10 +187,6 @@ export type CampActivityBaseOutput = 'success' | 'error';
 class CampActivityBaseNode extends ScalarNode<ScrapeState, CampActivityBaseOutput> {
   public readonly name = 'extract:camp-activity-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -217,10 +212,6 @@ export type CampActivityMechanicsOutput = 'success' | 'error';
 class CampActivityMechanicsNode extends ScalarNode<ScrapeState, CampActivityMechanicsOutput> {
   public readonly name = 'extract:camp-activity-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -246,10 +237,6 @@ export type FinalizeCampActivityOutput = 'success';
 class FinalizeCampActivityNode extends ScalarNode<ScrapeState, FinalizeCampActivityOutput> {
   public readonly name = 'finalize:camp-activity';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

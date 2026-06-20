@@ -2,7 +2,6 @@
 // the `legacy: true` flag already carries that signal from title extraction.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -254,10 +253,6 @@ export type WeatherHazardBaseOutput = 'success' | 'error';
 class WeatherHazardBaseNode extends ScalarNode<ScrapeState, WeatherHazardBaseOutput> {
   public readonly name = 'extract:weather-hazard-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -286,10 +281,6 @@ export type FinalizeWeatherHazardOutput = 'success';
 class FinalizeWeatherHazardNode extends ScalarNode<ScrapeState, FinalizeWeatherHazardOutput> {
   public readonly name = 'finalize:weather-hazard';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

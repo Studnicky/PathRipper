@@ -14,7 +14,6 @@
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -40,10 +39,6 @@ export type DeityBaseOutput = 'success' | 'error';
 class DeityBaseNodeImpl extends ScalarNode<ScrapeState, DeityBaseOutput> {
   public readonly name = 'extract:deity-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -72,10 +67,6 @@ export type DeityDevoteeBenefitsOutput = 'success' | 'error';
 class DeityDevoteeBenefitsNodeImpl extends ScalarNode<ScrapeState, DeityDevoteeBenefitsOutput> {
   public readonly name = 'extract:deity-devotee-benefits';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -104,10 +95,6 @@ export type DeityEdictsAnathemaOutput = 'success' | 'error';
 class DeityEdictsAnathemaNodeImpl extends ScalarNode<ScrapeState, DeityEdictsAnathemaOutput> {
   public readonly name = 'extract:deity-edicts-anathema';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -135,10 +122,6 @@ export type DeityClericSpellsOutput = 'success' | 'error';
 class DeityClericSpellsNodeImpl extends ScalarNode<ScrapeState, DeityClericSpellsOutput> {
   public readonly name = 'extract:deity-cleric-spells';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -166,10 +149,6 @@ export type DeityRelationshipsOutput = 'success' | 'error';
 class DeityRelationshipsNodeImpl extends ScalarNode<ScrapeState, DeityRelationshipsOutput> {
   public readonly name = 'extract:deity-relationships';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -198,10 +177,6 @@ export type FinalizeDeityOutput = 'success';
 class FinalizeDeityNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityOutput> {
   public readonly name = 'finalize:deity';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

@@ -9,7 +9,6 @@
 // the same Layer-1 capabilities downstream.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }  from '../../../src/state/ScrapeState.js';
 import {
@@ -42,16 +41,11 @@ export type LoadAndCommonOutput = 'success' | 'error';
 export function makeLoadAndCommonNode(
   strategy: CommonStrategy,
 ): ScalarNode<ScrapeState, LoadAndCommonOutput> & {
-  readonly contract: OperationContractFragmentType;
 } {
   class LoadAndCommonNodeImpl extends ScalarNode<ScrapeState, LoadAndCommonOutput> {
     public readonly name    = 'aonprd:load-and-common';
     public readonly outputs = CAPABILITY_OUTPUTS;
-    public override readonly contract: OperationContractFragmentType = {
-      hardRequired: [] as const,
-      produces:     ['aonprdCheerio', 'aonprdCommon', 'aonprdTarget'] as const,
-    };
-
+  
     protected override async executeOne(
       state:    ScrapeState,
       _context: NodeContextType,

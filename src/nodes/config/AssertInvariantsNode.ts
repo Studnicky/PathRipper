@@ -1,18 +1,9 @@
 import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractType } from '@studnicky/dagonizer/contracts';
 
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 
 type AssertInvariantsOutput = 'success' | 'invariant-violated';
-
-/** OperationContractType for AssertInvariantsNode: reads normalized, produces nothing new. */
-export const assertInvariantsContract: OperationContractType = {
-  name:         'config:assert-invariants',
-  hardRequired: ['normalized'],
-  produces:     [],
-  outputs:      ['success', 'invariant-violated'],
-};
 
 /**
  * Post-normalize invariant assertions on the fully-resolved config.
@@ -31,7 +22,6 @@ export const assertInvariantsContract: OperationContractType = {
 class AssertInvariantsNodeImpl extends ScalarNode<ConfigLoadState, AssertInvariantsOutput, undefined> {
   public readonly name = 'config:assert-invariants';
   public readonly outputs = ['success', 'invariant-violated'] as const;
-  public override readonly contract = assertInvariantsContract;
 
   protected override async executeOne(
     state: ConfigLoadState,

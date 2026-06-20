@@ -6,7 +6,6 @@
 // capability prefix.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { CapabilityNode } from '../taxonomy.js';
@@ -32,15 +31,11 @@ export function makeTaxonomyRouter(
     ? [...leafConceptIds, fallbackConceptId, 'unknown']
     : [...leafConceptIds, 'unknown'];
 
-  const nodeContract: OperationContractFragmentType = {
-    hardRequired: ['page.url'],
-    produces:     ['aonprdConceptId'],
-  };
 
   class TaxonomyRouterNode extends ScalarNode<ScrapeState, string> {
     public readonly name    = 'aonprd:taxonomy-route';
     public readonly outputs = outputs;
-    public override readonly contract: OperationContractFragmentType = nodeContract;
+
 
     protected override async executeOne(
       state: ScrapeState,
@@ -73,15 +68,11 @@ export function makeConceptDispatch(
   const outputs: readonly string[] = [...leafConceptIds, 'unknown'];
 
   const nodeName = name;
-  const nodeContract: OperationContractFragmentType = {
-    hardRequired: ['aonprdConceptId'],
-    produces:     [],
-  };
 
   class ConceptDispatchNode extends ScalarNode<ScrapeState, string> {
     public readonly name    = nodeName;
     public readonly outputs = outputs;
-    public override readonly contract: OperationContractFragmentType = nodeContract;
+
 
     protected override async executeOne(
       state: ScrapeState,

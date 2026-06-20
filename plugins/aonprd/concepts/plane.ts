@@ -5,7 +5,6 @@
 // carries that signal from the title extraction.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -375,10 +374,6 @@ export type PlaneBaseOutput = 'success' | 'error';
 class PlaneBaseNodeImpl extends ScalarNode<ScrapeState, PlaneBaseOutput> {
   public readonly name = 'extract:plane-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -406,10 +401,6 @@ export type PlaneCharacteristicsOutput = 'success' | 'error';
 class PlaneCharacteristicsNodeImpl extends ScalarNode<ScrapeState, PlaneCharacteristicsOutput> {
   public readonly name = 'extract:plane-characteristics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -435,10 +426,6 @@ export type FinalizePlaneOutput = 'success';
 class FinalizePlaneNodeImpl extends ScalarNode<ScrapeState, FinalizePlaneOutput> {
   public readonly name = 'finalize:plane';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

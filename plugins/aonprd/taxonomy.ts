@@ -1,15 +1,27 @@
 // Taxonomy compiler.
 //
 // Compiles a declarative concept tree (ConceptDecl[]) into a DAG-ready node
-// set plus a DAGDeriverAnnotationsType bundle for DAGDeriver.derive.
+// set and a DAGType built via DAGBuilder.
 //
 // The pipeline switch in parse.dag.ts / parse.task.ts is NOT touched here;
 // this module is an orphan library until the taxonomy router wires it in.
-import type { NodeInterface } from '@studnicky/dagonizer';
-import type { DAGDeriverAnnotationsType } from '@studnicky/dagonizer/derive';
+import { DAGBuilder } from '@studnicky/dagonizer';
+import type { NodeInterface, DAGType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../src/state/ScrapeState.js';
 import { makeTaxonomyRouter, makeConceptDispatch }  from './nodes/taxonomyRouter.js';
+
+// ─── Internal annotation type ─────────────────────────────────────────────────
+// Internal routing table consumed by buildDAG() to drive DAGBuilder placement
+// calls. Built by #buildAnnotations from the compiled concept trie.
+
+type TerminalEntry =
+  | { outcome: string; target: string }
+  | { outcome: string; emit: { name: string; outcome: string } };
+
+type AnnotationsType = {
+  terminals: Record<string, readonly TerminalEntry[]>;
+};
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -111,7 +123,7 @@ export type ConceptOutputUnion<TArray extends readonly ConceptDecl<unknown>[]> =
 // ─── TaxonomyError ────────────────────────────────────────────────────────────
 
 export class TaxonomyError extends Error {
-  readonly code: 'duplicate-id' | 'orphan-parent' | 'cycle' | 'duplicate-url-path' | 'multiple-roots' | 'no-root' | 'urlpath-on-interior' | 'capability-shape';
+  readonly code: 'duplicate-id' | 'orphan-parent' | 'cycle' | 'duplicate-url-path' | 'multiple-roots' | 'no-root' | 'urlpath-on-interior';
 
   constructor(code: TaxonomyError['code'], message: string) {
     super(message);
@@ -131,18 +143,8 @@ function extractAonPath(url: string): string | null {
 // ─── Validation helpers ───────────────────────────────────────────────────────
 
 function validateConcepts(concepts: readonly ConceptDecl<unknown>[]): void {
-  // Validate capability shapes first (fast, no tree walk needed)
-  for (const concept of concepts) {
-    for (const cap of concept.capabilities) {
-      if (cap.contract === undefined) {
-        throw new TaxonomyError(
-          'capability-shape',
-          `Concept '${concept.id}': capability '${cap.name}' is missing the 'contract' field. ` +
-          'All capabilities must carry an inline OperationContractFragmentType.',
-        );
-      }
-    }
-  }
+  // (Contract-shape validation removed in dagonizer 0.24: NodeInterface no longer
+  // carries a `contract` field — DAGBuilder's exhaustive routing replaces it.)
 
   // Count roots
   const roots = concepts.filter((concept) => concept.parent === null);
@@ -243,7 +245,7 @@ export class Taxonomy {
   readonly #chainMap:           ReadonlyMap<string, readonly CapabilityNode[]>;
   readonly #urlMap:             ReadonlyMap<string, string>;
   readonly #allNodesList:       readonly CapabilityNode[];
-  readonly #annotations:        DAGDeriverAnnotationsType;
+  readonly #annotations:        AnnotationsType;
   readonly #fallbackConceptId:  string | null;
 
   private constructor(
@@ -253,7 +255,7 @@ export class Taxonomy {
     chainMap:           ReadonlyMap<string, readonly CapabilityNode[]>,
     urlMap:             ReadonlyMap<string, string>,
     allNodesList:       readonly CapabilityNode[],
-    annotations:        DAGDeriverAnnotationsType,
+    annotations:        AnnotationsType,
     fallbackConceptId:  string | null,
   ) {
     this.#router             = router;
@@ -412,7 +414,7 @@ export class Taxonomy {
 
     const AONPRD_UNKNOWN_TERMINAL = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
 
-    const annotations: DAGDeriverAnnotationsType = {
+    const annotations: AnnotationsType = {
       terminals: {
         'aonprd:taxonomy-route':   [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
         'aonprd:concept-dispatch': [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
@@ -511,7 +513,7 @@ export class Taxonomy {
   }
 
   /**
-   * Build DAGDeriverAnnotationsType from the routing trie.
+   * Build the AnnotationsType routing table from the concept trie.
    *
    * Topology (open-world):
    * 1. `aonprd:taxonomy-route` (URL router) is the DAG entrypoint. Per leaf
@@ -537,14 +539,14 @@ export class Taxonomy {
     branchDispatchNames: ReadonlyMap<string, string>,
     capSuccessNext:     ReadonlyMap<string, string>,
     fallbackConceptId:  string | null,
-  ): DAGDeriverAnnotationsType {
+  ): AnnotationsType {
     const AONPRD_UNKNOWN_TERMINAL   = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
     const AONPRD_COMPLETED_TERMINAL = { name: 'aonprd:completed',   outcome: 'completed' } as const;
 
     // ── URL router terminals ──────────────────────────────────────────────────
     // Per concept, route to the FIRST cap in that concept's chain (or
     // the unknown emit terminal for an empty chain).
-    const routerTerminals: Array<{ outcome: string; target: string } | { outcome: string; emit: typeof AONPRD_UNKNOWN_TERMINAL | typeof AONPRD_COMPLETED_TERMINAL }> = leafIds.map((leafId) => {
+    const routerTerminals: TerminalEntry[] = leafIds.map((leafId) => {
       const chain = chainMap.get(leafId) ?? [];
       const first = chain[0]?.name ?? null;
       if (first !== null) {
@@ -567,10 +569,6 @@ export class Taxonomy {
     routerTerminals.push({ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL });
 
     // ── Capability terminals ──────────────────────────────────────────────────
-    type TerminalEntry =
-      | { outcome: string; target: string }
-      | { outcome: string; emit: typeof AONPRD_UNKNOWN_TERMINAL | typeof AONPRD_COMPLETED_TERMINAL };
-
     const capabilityTerminals: Record<string, readonly TerminalEntry[]> = {};
 
     for (const [name, cap] of allCapsByName) {
@@ -665,9 +663,57 @@ export class Taxonomy {
     return this.#allNodesList;
   }
 
-  /** DAGDeriverAnnotationsType for DAGDeriver.derive. */
-  annotations(): DAGDeriverAnnotationsType {
-    return this.#annotations;
+  /**
+   * Build a `DAGType` from the compiled taxonomy using `DAGBuilder`.
+   *
+   * Translates the routing annotations into explicit `.node()` and `.terminal()`
+   * placements. The entrypoint is set to the taxonomy router node name.
+   *
+   * @param dagName - DAG registration name (e.g. `'aonprd:parse'`).
+   * @param version - DAG version string (e.g. `'3.0'`).
+   */
+  buildDAG(dagName: string, version: string): DAGType {
+    const nodeByName = new Map<string, CapabilityNode>(
+      this.#allNodesList.map((node) => [node.name, node]),
+    );
+
+    // Collect terminal emit declarations: deduplication by terminal name.
+    const declaredTerminals = new Map<string, 'completed' | 'failed'>();
+
+    for (const entries of Object.values(this.#annotations.terminals)) {
+      for (const entry of entries) {
+        if ('emit' in entry) {
+          const emitOutcome = entry.emit.outcome === 'failed' ? 'failed' : 'completed';
+          declaredTerminals.set(entry.emit.name, emitOutcome);
+        }
+      }
+    }
+
+    const builder = new DAGBuilder(dagName, version)
+      .entrypoint(this.#router.name);
+
+    // Add each node with its routes.
+    for (const [nodeName, entries] of Object.entries(this.#annotations.terminals)) {
+      const node = nodeByName.get(nodeName);
+      if (node === undefined) continue; // dispatch node or router — handled below
+
+      const routes: Record<string, string> = {};
+      for (const entry of entries) {
+        if ('target' in entry) {
+          routes[entry.outcome] = entry.target;
+        } else {
+          routes[entry.outcome] = entry.emit.name;
+        }
+      }
+      builder.node(nodeName, node, routes);
+    }
+
+    // Add all terminals.
+    for (const [terminalName, terminalOutcome] of declaredTerminals) {
+      builder.terminal(terminalName, { outcome: terminalOutcome });
+    }
+
+    return builder.build();
   }
 
   /** All concept IDs registered with the compiled taxonomy. */

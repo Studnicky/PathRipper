@@ -3,7 +3,6 @@
 // beyond legacy-section filtering.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -266,10 +265,6 @@ export type ContributorBaseOutput = 'success' | 'error';
 class ContributorBaseNode extends ScalarNode<ScrapeState, ContributorBaseOutput> {
   public readonly name = 'extract:contributor-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -295,10 +290,6 @@ export type ContributorProfileOutput = 'success' | 'error';
 class ContributorProfileNode extends ScalarNode<ScrapeState, ContributorProfileOutput> {
   public readonly name = 'extract:contributor-profile';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -326,10 +317,6 @@ export type FinalizeContributorOutput = 'success';
 class FinalizeContributorNode extends ScalarNode<ScrapeState, FinalizeContributorOutput> {
   public readonly name = 'finalize:contributor';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

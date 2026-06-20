@@ -9,7 +9,6 @@
 //   - `sections[]` filters out legacy-content-warning headings.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -301,10 +300,6 @@ export type LanguageBaseOutput = 'success' | 'error';
 class LanguageBaseNode extends ScalarNode<ScrapeState, LanguageBaseOutput> {
   public readonly name = 'extract:language-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -351,10 +346,6 @@ export type LanguageSpeakersOutput = 'success' | 'error';
 class LanguageSpeakersNode extends ScalarNode<ScrapeState, LanguageSpeakersOutput> {
   public readonly name = 'extract:language-speakers';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -409,10 +400,6 @@ export type LanguagePfsNoteOutput = 'success' | 'error';
 class LanguagePfsNoteNode extends ScalarNode<ScrapeState, LanguagePfsNoteOutput> {
   public readonly name = 'extract:language-pfs-note';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -446,10 +433,6 @@ export type LanguageDescriptionOutput = 'success' | 'error';
 class LanguageDescriptionNode extends ScalarNode<ScrapeState, LanguageDescriptionOutput> {
   public readonly name = 'extract:language-description';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'sections'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -493,10 +476,6 @@ export type FinalizeLanguageOutput = 'success';
 class FinalizeLanguageNode extends ScalarNode<ScrapeState, FinalizeLanguageOutput> {
   public readonly name = 'finalize:language';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

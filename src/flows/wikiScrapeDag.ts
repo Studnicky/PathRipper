@@ -1,6 +1,8 @@
 import { DAGBuilder } from '@studnicky/dagonizer';
 import type { DAGType } from '@studnicky/dagonizer';
 
+import type { ScrapeState } from '../state/ScrapeState.js';
+
 /** Canonical name for the wiki initial-scrape phase DAG. */
 export const WIKI_SCRAPE_PHASE = 'wikiScrapePhase';
 /** Canonical name for the wiki failure-retry phase DAG. */
@@ -71,10 +73,12 @@ export function buildWikiRetryPhaseDag(perPageDagName: string): DAGType {
  */
 export function buildWikiScrapeDag(): DAGType {
   return new DAGBuilder(WIKI_SCRAPE_DAG, '2.0')
-    .embeddedDAG('scrape', WIKI_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('scrape', WIKI_SCRAPE_PHASE, { success: 'retry', error: 'retry' }, {
+      inputs:  { titles: 'titles' },
       outputs: { succeeded: 'succeeded', failed: 'failed' },
     })
-    .embeddedDAG('retry', WIKI_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+    .embeddedDAG<ScrapeState, ScrapeState>('retry', WIKI_RETRY_PHASE, { success: 'scrape-done', error: 'scrape-done' }, {
+      inputs:  { failed: 'failed' },
       outputs: { recovered: 'recovered', failedAfterRetry: 'failedAfterRetry' },
     })
     .terminal('scrape-done', { outcome: 'completed' })

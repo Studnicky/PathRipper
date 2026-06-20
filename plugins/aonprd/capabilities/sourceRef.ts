@@ -7,7 +7,6 @@
 // the source reference list; this capability is a pure projection.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }      from '../../../src/state/ScrapeState.js';
@@ -18,15 +17,6 @@ export type SourceRefOutput = 'success' | 'error';
 class SourceRefNode extends ScalarNode<ScrapeState, SourceRefOutput> {
   public readonly name = 'extract:source-ref';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    // `source`/`sources` are projections of `aonprdCommon` for
-    // any future Layer-1 consumer — concept-specific nodes today read
-    // `aonprdCommon.source`/`.sources` directly. Omit from declared produces
-    // so the `ContractRegistryValidator` registration check stays at "zero
-    // warnings"; the runtime side-write still happens.
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

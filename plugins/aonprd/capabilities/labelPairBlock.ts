@@ -7,7 +7,6 @@
 // the harvested header data; this capability is a pure projection.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }     from '../../../src/state/ScrapeState.js';
@@ -18,16 +17,6 @@ export type LabelPairBlockOutput = 'success' | 'error';
 class LabelPairBlockNode extends ScalarNode<ScrapeState, LabelPairBlockOutput> {
   public readonly name = 'extract:label-pair-block';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    // `field_map`/`fields` are projections of `aonprdCommon` for
-    // the (currently unregistered) Layer-1 `finalize:strip-claimed-keys` cap
-    // — downstream concept-specific nodes read `aonprdCommon.field_map`
-    // directly. To keep the `ContractRegistryValidator` registration check
-    // at "zero warnings" we omit them from the declared produces; the
-    // runtime side-write still happens for any future consumer to pick up.
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

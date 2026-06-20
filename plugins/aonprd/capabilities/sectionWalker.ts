@@ -7,7 +7,6 @@
 // the harvested section list; this capability is a pure projection.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }      from '../../../src/state/ScrapeState.js';
@@ -18,10 +17,6 @@ export type SectionWalkerOutput = 'success' | 'error';
 class SectionWalkerNodeImpl extends ScalarNode<ScrapeState, SectionWalkerOutput> {
   public readonly name = 'extract:section-walker';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     ['sections'],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

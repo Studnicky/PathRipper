@@ -9,10 +9,6 @@ import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer'
 class DocsParseNodeImpl extends ScalarNode {
     name = 'docs:parse-impl';
     outputs = ['success'];
-    contract = {
-        hardRequired: ['page.html'],
-        produces: [],
-    };
     async executeOne(state, _context) {
         const html = state.page.html ?? '';
         const url = state.page.url;

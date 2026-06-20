@@ -11,10 +11,6 @@ const TEMPLATE_MARKER = '{{RipperoniComponent';
 class WikiDocsParseNodeImpl extends ScalarNode {
     name = 'wiki-docs:parse-impl';
     outputs = ['success'];
-    contract = {
-        hardRequired: ['page.wikitext'],
-        produces: [],
-    };
     async executeOne(state, _context) {
         const wikitext = state.page.wikitext ?? '';
         const title = state.page.title;

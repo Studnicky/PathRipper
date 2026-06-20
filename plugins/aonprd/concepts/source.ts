@@ -5,7 +5,6 @@
 // headings. Helpers are inlined with inline contracts.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -308,10 +307,6 @@ export type SourceBaseOutput = 'success' | 'error';
 class SourceBaseNodeImpl extends ScalarNode<ScrapeState, SourceBaseOutput> {
   public readonly name    = 'extract:source-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -336,10 +331,6 @@ export type SourceMetadataOutput = 'success' | 'error';
 class SourceMetadataNodeImpl extends ScalarNode<ScrapeState, SourceMetadataOutput> {
   public readonly name    = 'extract:source-metadata';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -364,10 +355,6 @@ export type SourceRelatedOutput = 'success' | 'error';
 class SourceRelatedNodeImpl extends ScalarNode<ScrapeState, SourceRelatedOutput> {
   public readonly name    = 'extract:source-related';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -393,10 +380,6 @@ export type FinalizeSourceOutput = 'success';
 class FinalizeSourceNodeImpl extends ScalarNode<ScrapeState, FinalizeSourceOutput> {
   public readonly name    = 'finalize:source';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'],
-    produces:     [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

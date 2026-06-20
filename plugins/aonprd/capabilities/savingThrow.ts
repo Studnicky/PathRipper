@@ -12,7 +12,6 @@
 // Lifted into a shared capability to eliminate duplicate parsers across concept files.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState } from '../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../common.js';
@@ -63,14 +62,6 @@ export type SavingThrowOutput = 'success';
 class SavingThrowNodeImpl extends ScalarNode<ScrapeState, SavingThrowOutput> {
   public readonly name    = 'extract:saving-throw';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'],
-    // `aonprdSavingThrow` is consumed via direct `state.getMetadata` reads in
-    // concept mechanics nodes (open-world side-write convention). Listing it
-    // in `produces` would trip the contract validator because no node declares
-    // hardRequired: ['aonprdSavingThrow'].
-    produces: [],
-  };
 
   protected override async executeOne(
     state: ScrapeState,

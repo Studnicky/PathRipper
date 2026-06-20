@@ -4,7 +4,6 @@
 // best-effort numeric delta parsing.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -344,10 +343,6 @@ export type MonsterTemplateBaseOutput = 'success' | 'error';
 class MonsterTemplateBaseNode extends ScalarNode<ScrapeState, MonsterTemplateBaseOutput> {
   public readonly name = 'extract:monster-template-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -373,10 +368,6 @@ export type MonsterTemplateModificationsOutput = 'success' | 'error';
 class MonsterTemplateModificationsNode extends ScalarNode<ScrapeState, MonsterTemplateModificationsOutput> {
   public readonly name = 'extract:monster-template-modifications';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -402,10 +393,6 @@ export type FinalizeMonsterTemplateOutput = 'success';
 class FinalizeMonsterTemplateNode extends ScalarNode<ScrapeState, FinalizeMonsterTemplateOutput> {
   public readonly name = 'finalize:monster-template';
   public readonly outputs = ['success'] as const;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon', 'aonprdCheerio', 'aonprdTarget'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,

@@ -15,7 +15,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { Dagonizer, RoutedBatchBuilder, EMPTY_CONTRACT_FRAGMENT, Timeout } from '@studnicky/dagonizer';
+import { Dagonizer, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 import type { NodeInterface, NodeContextType, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { CliState }        from '../../src/state/CliState.js';
@@ -60,7 +60,6 @@ const FakeDispatchHtmlScrapeNode: NodeInterface<CliState, 'success' | 'partial' 
   name:     'cli:dispatch-html-scrape',
   outputs:  ['success', 'partial', 'error'],
   timeout:  Timeout.none(),
-  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
     batch:   Batch<CliState>,
     context: NodeContextType<CliServices>,
@@ -89,7 +88,6 @@ const FakeDispatchWikiScrapeNode: NodeInterface<CliState, 'success' | 'partial' 
   name:     'cli:dispatch-wiki-scrape',
   outputs:  ['success', 'partial', 'error'],
   timeout:  Timeout.none(),
-  contract: EMPTY_CONTRACT_FRAGMENT,
   async execute(
     batch:    Batch<CliState>,
     _context: NodeContextType<CliServices>,
@@ -254,7 +252,6 @@ describe('cliScrapeDAG integration', () => {
       name:     'cli:dispatch-html-scrape',
       outputs:  ['success', 'partial', 'error'],
       timeout:  Timeout.none(),
-      contract: EMPTY_CONTRACT_FRAGMENT,
       async execute(batch: Batch<CliState>): Promise<RoutedBatchType<'success' | 'partial' | 'error', CliState>> {
         const state = batch.row(0).state;
         capturedOutDir = state.outDir;

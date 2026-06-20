@@ -8,7 +8,6 @@
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
-import type { OperationContractFragmentType } from '@studnicky/dagonizer/contracts';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -26,10 +25,6 @@ export type WeaponBaseOutput = 'success' | 'error';
 class WeaponBaseNode extends ScalarNode<ScrapeState, WeaponBaseOutput> {
   public readonly name = 'extract:weapon-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
@@ -55,10 +50,6 @@ export type WeaponMechanicsOutput = 'success' | 'error';
 class WeaponMechanicsNode extends ScalarNode<ScrapeState, WeaponMechanicsOutput> {
   public readonly name = 'extract:weapon-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
-  public override readonly contract: OperationContractFragmentType = {
-    hardRequired: ['aonprdCommon'] as const,
-    produces:     [] as const,
-  };
 
   protected override async executeOne(
     state: ScrapeState,
