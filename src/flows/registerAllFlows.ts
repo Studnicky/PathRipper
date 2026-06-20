@@ -121,7 +121,6 @@ export const DAG_FILENAME_MAP: ReadonlyMap<string, string> = new Map([
 
   // Link crawler
   ['linkCrawlDAG',      'linkCrawlDAG.mmd'],
-  ['linkCrawlLevelDAG', 'linkCrawlLevelDAG.mmd'],
 
   // Wiki member resolution
   ['wikiResolveMembersDAG', 'wikiResolveMembersDAG.mmd'],
@@ -148,9 +147,9 @@ export const DAG_FILENAME_MAP: ReadonlyMap<string, string> = new Map([
  * that plugin imports stay outside the `src/` rootDir constraint.
  *
  * Phase DAGs (`htmlScrapePhaseFlow` etc.) are imported directly from the
- * DAGBuilder-backed flow files. The scatter body nodes (`html:dispatch-page-dag`,
- * `wiki:dispatch-page-dag`) are registered as stubs below so the dispatcher's
- * node-reference validation passes at docs-build time.
+ * DAGBuilder-backed flow files. Both wiki and html scatter phases use a `{ dag }`
+ * body referencing the registered per-page DAG directly — no dispatch wrapper
+ * node stubs are required.
  *
  * @param dispatcher - A `Dagonizer<ScrapeState, RipperServices>` instance. The
  *   caller owns construction; this function only calls `registerNode` and
@@ -169,12 +168,6 @@ export const registerAllFlows = (
   dispatcher.registerNode(ValidateSchemaNode);
   dispatcher.registerNode(CrawlListTargetsNode);
   dispatcher.registerNode(TerminalNode);
-
-  // ── Dynamic dispatch wrapper stubs ────────────────────────────────────────
-  // Created at run-time by makeDispatchPageDagNode; stubs satisfy the
-  // dispatcher's node-reference validation at docs-build time.
-  dispatcher.registerNode(stub('html:dispatch-page-dag', ['success', 'error']));
-  dispatcher.registerNode(stub('wiki:dispatch-page-dag', ['success', 'error']));
 
   // ── CLI node stubs ─────────────────────────────────────────────────────────
   // Registered at run-time by cli.ts.
@@ -207,7 +200,17 @@ export const registerAllFlows = (
   dispatcher.registerNode(stub('crawl:fetch-and-extract',   ['success', 'empty', 'error', 'permanent']));
   dispatcher.registerNode(stub('crawl:dedupe-and-enqueue',  ['frontier-ready', 'frontier-empty', 'budget-exhausted']));
   dispatcher.registerNode(stub('crawl:exhausted',           ['success']));
-  dispatcher.registerNode(stub('crawl:recurse',             ['success']));
+
+  // ── Per-page child DAGs (representative canonical pipelines) ──────────────
+  // Must precede the phase DAGs: the wiki scrape/retry phases reference the
+  // canonical wiki per-page DAG via a `{ dag }` scatter body, and `registerDAG`
+  // validates that body reference against the registry at registration time.
+  dispatcher.registerDAG(
+    buildHtmlPageFlow(HTML_CANONICAL_PIPELINE, HTML_CANONICAL_TARGET),
+  );
+  dispatcher.registerDAG(
+    buildWikiPageFlow(WIKI_CANONICAL_PIPELINE, WIKI_CANONICAL_TARGET),
+  );
 
   // ── Phase DAGs (imported from DAGBuilder flow files) ─────────────────────
   // Defined once in the flow files; no inline DAGBuilder duplication here.
@@ -217,14 +220,6 @@ export const registerAllFlows = (
   dispatcher.registerDAG(htmlRetryPhaseFlow);
   dispatcher.registerDAG(wikiScrapePhaseFlow);
   dispatcher.registerDAG(wikiRetryPhaseFlow);
-
-  // ── Per-page child DAGs (representative canonical pipelines) ──────────────
-  dispatcher.registerDAG(
-    buildHtmlPageFlow(HTML_CANONICAL_PIPELINE, HTML_CANONICAL_TARGET),
-  );
-  dispatcher.registerDAG(
-    buildWikiPageFlow(WIKI_CANONICAL_PIPELINE, WIKI_CANONICAL_TARGET),
-  );
 
   // ── Outer scrape DAGs ─────────────────────────────────────────────────────
   dispatcher.registerDAG(htmlScrapeFlow);
@@ -236,9 +231,6 @@ export const registerAllFlows = (
 
   // ── Utility DAGs ──────────────────────────────────────────────────────────
   dispatcher.registerDAG(configLoadFlow);
-  // Level DAG first: outer linkCrawlDAG references it as a DeepDAGNode.
-  const { linkCrawlDAG, linkCrawlLevelDAG } = buildLinkCrawlFlow();
-  dispatcher.registerDAG(linkCrawlLevelDAG);
-  dispatcher.registerDAG(linkCrawlDAG);
+  dispatcher.registerDAG(buildLinkCrawlFlow());
   dispatcher.registerDAG(wikiResolveMembersFlow);
 };

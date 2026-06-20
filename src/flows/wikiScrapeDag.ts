@@ -1,8 +1,5 @@
 import { DAGBuilder } from '@studnicky/dagonizer';
-import type { DAGType, NodeInterface } from '@studnicky/dagonizer';
-
-import type { ScrapeState }    from '../state/ScrapeState.js';
-import type { RipperServices } from '../services/RipperServices.js';
+import type { DAGType } from '@studnicky/dagonizer';
 
 /** Canonical name for the wiki initial-scrape phase DAG. */
 export const WIKI_SCRAPE_PHASE = 'wikiScrapePhase';
@@ -10,9 +7,6 @@ export const WIKI_SCRAPE_PHASE = 'wikiScrapePhase';
 export const WIKI_RETRY_PHASE = 'wikiRetryPhase';
 /** Canonical name for the outer wiki composition DAG. */
 export const WIKI_SCRAPE_DAG = 'wikiScrapeDAG';
-
-/** The per-page dispatch node a scrape phase scatters over. */
-export type WikiDispatchNode = NodeInterface<ScrapeState, string, RipperServices>;
 
 const SCATTER_CONCURRENCY = 8;
 
@@ -27,15 +21,17 @@ const PHASE_OUTCOMES: Record<string, string> = {
 
 /**
  * Wiki initial-scrape phase: scatter over `state.titles`, dispatching the
- * per-page node once per title, partitioning each item's `success`/`error`
- * output into `state.succeeded` / `state.failed`.
+ * registered per-page DAG named by `perPageDagName` once per title, partitioning
+ * each item's terminal outcome into `state.succeeded` / `state.failed`.
+ *
+ * @param perPageDagName - The registered DAG name the scatter body dispatches.
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildWikiScrapePhaseDag(dispatchNode: WikiDispatchNode): DAGType {
+export function buildWikiScrapePhaseDag(perPageDagName: string): DAGType {
   return new DAGBuilder(WIKI_SCRAPE_PHASE, '2.0')
-    .scatter('scrape-titles', 'titles', dispatchNode, PHASE_OUTCOMES, {
+    .scatter('scrape-titles', 'titles', { dag: perPageDagName }, PHASE_OUTCOMES, {
       itemKey:     'currentTitle',
       concurrency: SCATTER_CONCURRENCY,
       gather:      { strategy: 'partition', partitions: { success: 'succeeded', error: 'failed' } },
@@ -45,17 +41,20 @@ export function buildWikiScrapePhaseDag(dispatchNode: WikiDispatchNode): DAGType
 }
 
 /**
- * Wiki failure-retry phase: scatter over `state.failed`, partitioning each
- * item's `success`/`error` output into `state.recovered` /
+ * Wiki failure-retry phase: scatter over `state.failed`, dispatching the
+ * registered per-page DAG named by `perPageDagName` once per failed title,
+ * partitioning each item's terminal outcome into `state.recovered` /
  * `state.failedAfterRetry`.
+ *
+ * @param perPageDagName - The registered DAG name the scatter body dispatches.
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildWikiRetryPhaseDag(dispatchNode: WikiDispatchNode): DAGType {
+export function buildWikiRetryPhaseDag(perPageDagName: string): DAGType {
   return new DAGBuilder(WIKI_RETRY_PHASE, '2.0')
-    .scatter('retry-titles', 'failed', dispatchNode, PHASE_OUTCOMES, {
-      itemKey:     'currentRetryTitle',
+    .scatter('retry-titles', 'failed', { dag: perPageDagName }, PHASE_OUTCOMES, {
+      itemKey:     'currentTitle',
       concurrency: SCATTER_CONCURRENCY,
       gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
     })

@@ -15,13 +15,15 @@ const isWikiScraper = (val: unknown): val is { fetchPage(title: string): Promise
 type WikiFetchOutput = 'success' | 'error';
 
 /**
- * Fetches `state.page.title` via `services.wikiScraper` and stores wikitext
- * on `state.page`. No-op when wikitext is already populated.
+ * Initialises `state.page` from per-clone metadata, then fetches wikitext via
+ * `services.wikiScraper` when not already cached. Reads the page title from
+ * `metadata['currentTitle']` so the node operates correctly inside a
+ * `{ dag }` scatter body without requiring an external `pageSetup` callback.
  *
  * Output ports:
  * - `success` — wikitext populated on `state.page.wikitext`.
- * - `cached`  — page was served from cache (no live HTTP); same fields set.
- * - `error`   — fetch failed; item recorded in `state.failed`.
+ * - `error`   — title missing, scraper invalid, or fetch failed; item
+ *               recorded in `state.failed`.
  *
  * @category Nodes
  * @since 3.0.0
@@ -34,12 +36,31 @@ class WikiFetchNodeImpl extends ScalarNode<ScrapeState, WikiFetchOutput, RipperS
     state:   ScrapeState,
     context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<WikiFetchOutput>> {
-    // No-op when wikitext already set.
+    const { services } = context;
+
+    // Initialise page from scatter-injected metadata before any other logic.
+    const title = state.getMetadata<string>('currentTitle') ?? '';
+    if (title.length === 0) {
+      state.collectError(toNodeError(
+        ExternalSchemaError.create('wiki:fetch requires metadata[currentTitle] to be set', { metadata: { task: 'wiki:fetch', targetId: services.target.id } }),
+        'wiki:fetch',
+      ));
+      return NodeOutputBuilder.of('error');
+    }
+
+    const wikitext = state.getMetadata<string>(`wikitext:${title}`) ?? '';
+    state.page = {
+      targetId: services.target.id,
+      title,
+      url:      '',
+      wikitext: wikitext.length > 0 ? wikitext : undefined,
+    };
+
+    // No-op when wikitext already populated from batch pre-fetch cache.
     if (state.page.wikitext !== undefined && state.page.wikitext.length > 0) {
       return NodeOutputBuilder.of('success');
     }
 
-    const { services } = context;
     const scraper = services.wikiScraper;
 
     if (!isWikiScraper(scraper)) {
@@ -50,22 +71,12 @@ class WikiFetchNodeImpl extends ScalarNode<ScrapeState, WikiFetchOutput, RipperS
       return NodeOutputBuilder.of('error');
     }
 
-    const title = state.page.title;
-    if (title.length === 0) {
-      state.collectError(toNodeError(
-        ExternalSchemaError.create('wiki:fetch requires state.page.title to be set', { metadata: { task: 'wiki:fetch', targetId: services.target.id } }),
-        'wiki:fetch',
-      ));
-      return NodeOutputBuilder.of('error');
-    }
-
     let result: WikiPageInterface;
     try {
       result = await scraper.fetchPage(title);
     } catch (err) {
       state.collectError(toNodeError(err, 'wiki:fetch'));
-      const currentTitle = state.getMetadata<string>('currentTitle') ?? title;
-      state.failed.push(currentTitle);
+      state.failed.push(title);
       return NodeOutputBuilder.of('error');
     }
 

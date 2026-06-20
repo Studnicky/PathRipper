@@ -16,8 +16,9 @@ const isHtmlScraper = (val: unknown): val is { fetchPage(url: string): Promise<S
 type HtmlFetchOutput = 'success' | 'error' | 'cached';
 
 /**
- * Fetches `state.page.url` via `services.htmlScraper` and stores the response
- * HTML + resolved URL back on `state.page`.
+ * Reads `metadata['currentUrl']`, initialises `state.page` from it, then
+ * fetches the page via `services.htmlScraper` and stores the response HTML +
+ * resolved URL back on `state.page`.
  *
  * Output ports:
  * - `success` — page fetched; `state.page.html` is populated.
@@ -38,18 +39,20 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
     const { services } = context;
     const scraper = services.htmlScraper;
 
-    if (!isHtmlScraper(scraper)) {
+    const url = state.getMetadata<string>('currentUrl') ?? '';
+    if (url.length === 0) {
       state.collectError(toNodeError(
-        ExternalSchemaError.create('html:fetch requires services.htmlScraper to be an HtmlScraper', { metadata: { task: 'html:fetch' } }),
+        ExternalSchemaError.create('html:fetch requires metadata[currentUrl] to be set', { metadata: { task: 'html:fetch', targetId: services.target.id } }),
         'html:fetch',
       ));
       return NodeOutputBuilder.of('error');
     }
 
-    const url = state.page.url;
-    if (url.length === 0) {
+    state.page = { targetId: services.target.id, title: '', url };
+
+    if (!isHtmlScraper(scraper)) {
       state.collectError(toNodeError(
-        ExternalSchemaError.create('html:fetch requires state.page.url to be set', { metadata: { task: 'html:fetch', targetId: services.target.id } }),
+        ExternalSchemaError.create('html:fetch requires services.htmlScraper to be an HtmlScraper', { metadata: { task: 'html:fetch' } }),
         'html:fetch',
       ));
       return NodeOutputBuilder.of('error');
@@ -61,8 +64,7 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
       result = await scraper.fetchPage(url);
     } catch (err) {
       state.collectError(toNodeError(err, 'html:fetch'));
-      const currentUrl = state.getMetadata<string>('currentUrl') ?? url;
-      state.failed.push(currentUrl);
+      state.failed.push(url);
       return NodeOutputBuilder.of('error');
     }
 

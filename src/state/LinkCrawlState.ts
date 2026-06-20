@@ -79,32 +79,6 @@ export class LinkCrawlState extends NodeStateBase {
   headers: Record<string, string> = {};
 
   /**
-   * Clone state for isolated execution (sub-flows and fan-out).
-   * Deep-copies all arrays and objects so child mutations do not leak.
-   */
-  public override clone(): this {
-    const clone = new LinkCrawlState();
-    for (const [metaKey, metaVal] of Object.entries(this.metadata)) {
-      clone.setMetadata(metaKey, metaVal);
-    }
-    clone.seedUrls         = [...this.seedUrls];
-    clone.frontier         = [...this.frontier];
-    clone.nextFrontierRaw  = [...this.nextFrontierRaw];
-    clone.discoveredRaw    = [...this.discoveredRaw];
-    clone.discovered       = [...this.discovered];
-    clone.visited          = [...this.visited];
-    clone.depth            = this.depth;
-    clone.maxDepth         = this.maxDepth;
-    clone.maxPages         = this.maxPages;
-    clone.currentUrl       = this.currentUrl;
-    clone.domainRe         = this.domainRe;
-    clone.targetRe         = this.targetRe;
-    clone.delimiterRe      = this.delimiterRe;
-    clone.headers          = { ...this.headers };
-    return clone as this;
-  }
-
-  /**
    * Snapshots domain-specific fields for checkpoint support.
    */
   protected override snapshotData(): JsonObjectType {

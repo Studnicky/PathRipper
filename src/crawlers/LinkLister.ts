@@ -11,7 +11,6 @@ import { InitFrontierNode }         from '../nodes/crawl/InitFrontierNode.js';
 import { FetchAndExtractLinksNode } from '../nodes/crawl/FetchAndExtractLinksNode.js';
 import { DedupeAndEnqueueNode }     from '../nodes/crawl/DedupeAndEnqueueNode.js';
 import { CrawlExhaustedNode }       from '../nodes/crawl/CrawlExhaustedNode.js';
-import { RecurseCrawlNode }         from '../nodes/crawl/RecurseCrawlNode.js';
 import type { LinkCrawlServices }   from '../nodes/crawl/Services.js';
 import { buildLinkCrawlFlow, LINK_CRAWL_FLOW_NAME } from '../flows/linkCrawlFlow.js';
 
@@ -118,13 +117,9 @@ export class LinkLister {
     dispatcher.registerNode(FetchAndExtractLinksNode);
     dispatcher.registerNode(DedupeAndEnqueueNode);
     dispatcher.registerNode(CrawlExhaustedNode);
-    dispatcher.registerNode(RecurseCrawlNode);
 
     // ── Register DAGs ───────────────────────────────────────────────────────────
-    // Level DAG first: outer DAG references it as a DeepDAGNode.
-    const { linkCrawlDAG, linkCrawlLevelDAG } = buildLinkCrawlFlow();
-    dispatcher.registerDAG(linkCrawlLevelDAG);
-    dispatcher.registerDAG(linkCrawlDAG);
+    dispatcher.registerDAG(buildLinkCrawlFlow());
 
     // ── Build initial state ─────────────────────────────────────────────────────
     const state = new LinkCrawlState();

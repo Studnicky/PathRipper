@@ -47,8 +47,7 @@ const BUILTIN_NODES: ReadonlyMap<string, WikiNode> = new Map<string, WikiNode>([
 
 /**
  * Deterministic DAG name for a target's per-title child flow.
- * Matches the old `wikiPageDagName` so dispatcher registrations and
- * `DispatchPageDagNode.childDagName` references remain unchanged.
+ * Used as the scatter body `{ dag }` reference in the wiki phase DAGs.
  *
  * @category Flows
  * @since 4.0.0

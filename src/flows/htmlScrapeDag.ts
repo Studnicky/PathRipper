@@ -1,9 +1,7 @@
 import { DAGBuilder } from '@studnicky/dagonizer';
-import type { DAGType, NodeInterface } from '@studnicky/dagonizer';
+import type { DAGType } from '@studnicky/dagonizer';
 
 import { CrawlListTargetsNode } from '../nodes/CrawlListTargetsNode.js';
-import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }  from '../services/RipperServices.js';
 
 /** Canonical name for the HTML initial-scrape phase DAG. */
 export const HTML_SCRAPE_PHASE = 'htmlScrapePhase';
@@ -15,9 +13,6 @@ export const HTML_CRAWL_PHASE  = 'htmlCrawlPhase';
 export const HTML_SCRAPE_DAG      = 'htmlScrapeDAG';
 /** Canonical name for the outer HTML composition DAG (crawl path). */
 export const HTML_SCRAPE_DAG_CRAWL = 'htmlScrapeDAGCrawl';
-
-/** The per-page dispatch node a scrape phase scatters over. */
-export type HtmlDispatchNode = NodeInterface<ScrapeState, string, RipperServices>;
 
 const SCATTER_CONCURRENCY = 4;
 
@@ -32,15 +27,17 @@ const PHASE_OUTCOMES: Record<string, string> = {
 
 /**
  * HTML initial-scrape phase: scatter over `state.urls`, dispatching the
- * per-page node once per URL, partitioning each item's `success`/`error`
- * output into `state.succeeded` / `state.failed`.
+ * registered per-page DAG named by `perPageDagName` once per URL, partitioning
+ * each item's terminal outcome into `state.succeeded` / `state.failed`.
+ *
+ * @param perPageDagName - The registered DAG name the scatter body dispatches.
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildHtmlScrapePhaseDag(dispatchNode: HtmlDispatchNode): DAGType {
+export function buildHtmlScrapePhaseDag(perPageDagName: string): DAGType {
   return new DAGBuilder(HTML_SCRAPE_PHASE, '2.0')
-    .scatter('scrape-urls', 'urls', dispatchNode, PHASE_OUTCOMES, {
+    .scatter('scrape-urls', 'urls', { dag: perPageDagName }, PHASE_OUTCOMES, {
       itemKey:     'currentUrl',
       concurrency: SCATTER_CONCURRENCY,
       gather:      { strategy: 'partition', partitions: { success: 'succeeded', error: 'failed' } },
@@ -50,17 +47,19 @@ export function buildHtmlScrapePhaseDag(dispatchNode: HtmlDispatchNode): DAGType
 }
 
 /**
- * HTML failure-retry phase: scatter over `state.failed`, partitioning each
- * item's `success`/`error` output into `state.recovered` /
- * `state.failedAfterRetry`.
+ * HTML failure-retry phase: scatter over `state.failed`, dispatching the
+ * registered per-page DAG named by `perPageDagName` once per URL, partitioning
+ * each item's terminal outcome into `state.recovered` / `state.failedAfterRetry`.
+ *
+ * @param perPageDagName - The registered DAG name the scatter body dispatches.
  *
  * @category Flows
  * @since 4.0.0
  */
-export function buildHtmlRetryPhaseDag(dispatchNode: HtmlDispatchNode): DAGType {
+export function buildHtmlRetryPhaseDag(perPageDagName: string): DAGType {
   return new DAGBuilder(HTML_RETRY_PHASE, '2.0')
-    .scatter('retry-urls', 'failed', dispatchNode, PHASE_OUTCOMES, {
-      itemKey:     'currentRetryUrl',
+    .scatter('retry-urls', 'failed', { dag: perPageDagName }, PHASE_OUTCOMES, {
+      itemKey:     'currentUrl',
       concurrency: SCATTER_CONCURRENCY,
       gather:      { strategy: 'partition', partitions: { success: 'recovered', error: 'failedAfterRetry' } },
     })

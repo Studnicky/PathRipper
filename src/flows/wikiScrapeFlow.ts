@@ -2,10 +2,9 @@
  * wikiScrapeFlow — DAGBuilder-backed exports for every built-in wiki DAG.
  *
  * Phase DAGs and the outer composition DAG delegate directly to the
- * `DAGBuilder` factories in `wikiScrapeDag.ts`. A minimal docs-path dispatch
- * node (returning `success` immediately, inheriting `EMPTY_CONTRACT_FRAGMENT`)
- * is passed to the scatter factories so the DAGs can be registered for
- * visualisation without a real runtime dispatcher.
+ * `DAGBuilder` factories in `wikiScrapeDag.ts`. The docs-path phase DAGs
+ * are built with the canonical docs per-page DAG name so they can be
+ * registered for visualisation without a real runtime dispatcher.
  *
  * `wikiResolveMembersFlow` is constructed here via `DAGBuilder` using the real
  * wiki-node singletons so it remains independently dispatchable at runtime
@@ -18,8 +17,8 @@
  * @since 4.0.0
  */
 
-import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { DAGType, NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import { DAGBuilder } from '@studnicky/dagonizer';
+import type { DAGType } from '@studnicky/dagonizer';
 
 import {
   buildWikiScrapePhaseDag,
@@ -29,14 +28,12 @@ import {
   WIKI_RETRY_PHASE,
 } from './wikiScrapeDag.js';
 
-import { ChooseModeNode }             from '../nodes/wiki/ChooseModeNode.js';
-import { ResumeFailuresNode }         from '../nodes/wiki/ResumeFailuresNode.js';
-import { FetchSingleCategoryNode }    from '../nodes/wiki/FetchSingleCategoryNode.js';
-import { FetchMultipleCategoriesNode } from '../nodes/wiki/FetchMultipleCategoriesNode.js';
-import { FetchAllPagesNode }          from '../nodes/wiki/FetchAllPagesNode.js';
-
-import type { ScrapeState }    from '../state/ScrapeState.js';
-import type { RipperServices } from '../services/RipperServices.js';
+import { wikiPageFlowName }               from './wikiPageFlow.js';
+import { ChooseModeNode }                 from '../nodes/wiki/ChooseModeNode.js';
+import { ResumeFailuresNode }             from '../nodes/wiki/ResumeFailuresNode.js';
+import { FetchSingleCategoryNode }        from '../nodes/wiki/FetchSingleCategoryNode.js';
+import { FetchMultipleCategoriesNode }    from '../nodes/wiki/FetchMultipleCategoriesNode.js';
+import { FetchAllPagesNode }              from '../nodes/wiki/FetchAllPagesNode.js';
 
 // ── Name constants ─────────────────────────────────────────────────────────────
 
@@ -49,39 +46,26 @@ export const WIKI_RETRY_PHASE_FLOW: string = WIKI_RETRY_PHASE;
 /** Canonical name for the wiki member-resolution flow. */
 export const WIKI_RESOLVE_MEMBERS_FLOW = 'wikiResolveMembersDAG';
 
-// ── Docs-path dispatch node ────────────────────────────────────────────────────
-// A minimal ScalarNode that satisfies the DAGBuilder scatter factories for
-// docs-build and visualisation. EMPTY_CONTRACT_FRAGMENT is inherited (no
-// contract override). executeOne is never reached at docs-build time.
+// ── Docs-path per-page DAG name ────────────────────────────────────────────────
+// Phase DAGs built for docs/visualisation reference the canonical docs per-page
+// DAG name. At docs-build time registerAllFlows also registers a
+// buildWikiPageFlow instance under this same name.
 
-class WikiDocsDispatchNode extends ScalarNode<ScrapeState, string, RipperServices> {
-  public readonly name    = 'wiki:dispatch-page-dag';
-  public readonly outputs = ['success', 'error'] as const;
-
-  protected override async executeOne(
-    _state:   ScrapeState,
-    _context: NodeContextType<RipperServices>,
-  ): Promise<NodeOutputType<string>> {
-    return NodeOutputBuilder.of('success');
-  }
-}
-
-const wikiDocsDispatchNode = new WikiDocsDispatchNode();
+const DOCS_PER_PAGE_DAG_NAME = wikiPageFlowName('canonical');
 
 // ── Phase DAGs ─────────────────────────────────────────────────────────────────
 
 /**
  * Wiki initial-scrape phase DAG (docs-path instance).
  *
- * Delegates to `buildWikiScrapePhaseDag` with a minimal docs-path dispatch
- * node. At docs-build time the node is registered via the stub already present
- * in `registerAllFlows`; at runtime `runWiki` builds its own instance with the
- * real `makeDispatchPageDagNode`.
+ * Built with the canonical docs per-page DAG name. At docs-build time the
+ * per-page DAG is registered via `registerAllFlows`; at runtime `runWiki`
+ * builds its own phase DAGs with the target-specific per-page DAG name.
  *
  * @category Flows
  * @since 4.0.0
  */
-export const wikiScrapePhaseFlow: DAGType = buildWikiScrapePhaseDag(wikiDocsDispatchNode);
+export const wikiScrapePhaseFlow: DAGType = buildWikiScrapePhaseDag(DOCS_PER_PAGE_DAG_NAME);
 
 /**
  * Wiki failure-retry phase DAG (docs-path instance).
@@ -89,7 +73,7 @@ export const wikiScrapePhaseFlow: DAGType = buildWikiScrapePhaseDag(wikiDocsDisp
  * @category Flows
  * @since 4.0.0
  */
-export const wikiRetryPhaseFlow: DAGType = buildWikiRetryPhaseDag(wikiDocsDispatchNode);
+export const wikiRetryPhaseFlow: DAGType = buildWikiRetryPhaseDag(DOCS_PER_PAGE_DAG_NAME);
 
 // ── Member-resolution flow ─────────────────────────────────────────────────────
 

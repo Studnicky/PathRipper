@@ -7,13 +7,12 @@
  * dispatches the outer scrape DAG for each batch and returns.
  *
  * Phase DAG construction:
- *   Phase DAGs (wikiScrapePhase, wikiRetryPhase) are derived inline via
- *   `DAGDeriver.derive` with `strategy: 'partition'` fanout annotations
- *   pointing at the real `wiki:dispatch-page-dag` node.
+ *   Phase DAGs (wikiScrapePhase, wikiRetryPhase) are built via `DAGBuilder`
+ *   factory functions in `src/flows/wikiScrapeDag.ts`, each receiving the
+ *   per-target DAG name as a `{ dag }` scatter body reference.
  *
- *   The outer composition DAG (wikiScrapeDAG) wraps phase DAGs as `DeepDAGNode`
- *   placements via `DAGDeriver.derive` with `annotations.subDAGs` (adopted in
- *   0.7.0).
+ *   The outer composition DAG (wikiScrapeDAG) embeds phase DAGs as
+ *   `embeddedDAG` placements.
  *
  *   The wikiResolveMembersFlow from src/flows/ is used directly (it references
  *   actual registered nodes).
@@ -56,7 +55,6 @@ import {
   CrawlListTargetsNode,
   TerminalNode,
 } from '../nodes/index.js';
-import { makeDispatchPageDagNode }    from '../nodes/DispatchPageDagNode.js';
 import {
   ChooseModeNode,
   ResumeFailuresNode,
@@ -340,32 +338,14 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
 
     const wikiPluginDagNames = await loadAndRegisterPlugins(batchDispatcher, pipelineNames, opts.configDir);
 
-    const batchDispatchNode = makeDispatchPageDagNode({
-      nodeName:         'wiki:dispatch-page-dag',
-      childDagName:     wikiPageFlowName(opts.target),
-      itemMetadataKeys: ['currentTitle', 'currentRetryTitle'],
-      targetId:         opts.target,
-      pageSetup(state, title) {
-        const wikitext = state.getMetadata<string>(`wikitext:${title}`) ?? '';
-        state.page = {
-          targetId: opts.target,
-          title,
-          url:      '',
-          wikitext: wikitext.length > 0 ? wikitext : undefined,
-        };
-      },
-    });
-    batchDispatcher.registerNode(batchDispatchNode);
-
     // ── Phase + composition DAGs (DAGBuilder) ────────────────────────────────
-    const wikiScrapePhaseDAG = buildWikiScrapePhaseDag(batchDispatchNode);
-    const wikiRetryPhaseDAG  = buildWikiRetryPhaseDag(batchDispatchNode);
-    const wikiScrapeDAG      = buildWikiScrapeDag();
-
+    // Per-page DAG must be registered before the phase DAGs that reference it
+    // by name via the { dag } scatter body.
+    const perPageDagName = wikiPageFlowName(opts.target);
     batchDispatcher.registerDAG(buildWikiPageFlow(pipelineNames, opts.target, wikiPluginDagNames));
-    batchDispatcher.registerDAG(wikiScrapePhaseDAG);
-    batchDispatcher.registerDAG(wikiRetryPhaseDAG);
-    batchDispatcher.registerDAG(wikiScrapeDAG);
+    batchDispatcher.registerDAG(buildWikiScrapePhaseDag(perPageDagName));
+    batchDispatcher.registerDAG(buildWikiRetryPhaseDag(perPageDagName));
+    batchDispatcher.registerDAG(buildWikiScrapeDag());
 
     await batchDispatcher.execute('wikiScrapeDAG', batchState);
     written   += batchState.succeeded.length;

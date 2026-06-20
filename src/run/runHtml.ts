@@ -48,7 +48,6 @@ import {
   CrawlListTargetsNode,
   TerminalNode,
 } from '../nodes/index.js';
-import { makeDispatchPageDagNode }    from '../nodes/DispatchPageDagNode.js';
 
 import { buildHtmlPageFlow, htmlPageFlowName } from '../flows/htmlPageFlow.js';
 
@@ -229,21 +228,11 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
 
   const htmlPluginDagNames = await loadAndRegisterPlugins(dispatcher, pipelineNames, opts.configDir);
 
-  const htmlDispatchNode = makeDispatchPageDagNode({
-    nodeName:         'html:dispatch-page-dag',
-    childDagName:     htmlPageFlowName(opts.target),
-    itemMetadataKeys: ['currentUrl', 'currentRetryUrl'],
-    targetId:         opts.target,
-    pageSetup(state, url) {
-      state.page = { targetId: opts.target, title: '', url };
-    },
-  });
-  dispatcher.registerNode(htmlDispatchNode);
-
   // ── Phase and composition DAG registration (DAGBuilder) ───────────────────
+  const perPageDagName = htmlPageFlowName(opts.target);
   dispatcher.registerDAG(buildHtmlPageFlow(pipelineNames, opts.target, htmlPluginDagNames));
-  dispatcher.registerDAG(buildHtmlScrapePhaseDag(htmlDispatchNode));
-  dispatcher.registerDAG(buildHtmlRetryPhaseDag(htmlDispatchNode));
+  dispatcher.registerDAG(buildHtmlScrapePhaseDag(perPageDagName));
+  dispatcher.registerDAG(buildHtmlRetryPhaseDag(perPageDagName));
 
   // Bounded scrape: when explicit --paths are supplied, skip the crawl
   // phase even if the pipeline declares it. The crawler is the default

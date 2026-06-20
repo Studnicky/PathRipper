@@ -50,9 +50,9 @@ export interface RipperServices {
    */
   readonly splitByTaskName?: boolean | undefined;
   /**
-   * Dispatcher reference for nodes that need to run child DAGs (e.g.
-   * `DispatchPageDagNode`). Set to the same dispatcher this services bag
-   * is registered on so nodes can call `services.dispatcher.execute(...)`.
+   * Dispatcher reference for nodes that need to run child DAGs. Set to the
+   * same dispatcher this services bag is registered on so nodes can call
+   * `services.dispatcher.execute(...)`.
    */
   readonly dispatcher: DagonizerInterface<ScrapeState, RipperServices>;
 }

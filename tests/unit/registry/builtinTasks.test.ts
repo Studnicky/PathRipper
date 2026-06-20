@@ -96,6 +96,7 @@ describe('builtinNodes', () => {
         $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
       });
       const state = buildState();
+      state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
         htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
         outDir,
@@ -112,6 +113,7 @@ describe('builtinNodes', () => {
 
     it('returns error when htmlScraper is absent', async () => {
       const state  = buildState();
+      state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx    = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
       const result = await HtmlFetchNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('error'));
@@ -125,6 +127,7 @@ describe('builtinNodes', () => {
         $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
       });
       const state = buildState();
+      state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
         htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
         target: { id: TARGET, cfg: {} },
@@ -144,6 +147,7 @@ describe('builtinNodes', () => {
         $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
       });
       const state = buildState();
+      state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
         htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
         target: { id: TARGET, cfg: { includeRawContent: false } },

@@ -81,32 +81,6 @@ export class ScrapeState extends NodeStateBase {
   failedAfterRetry: string[] = [];
 
   /**
-   * Clone state for isolated execution (sub-flows and fan-out).
-   *
-   * Overrides `NodeStateBase.clone()` (which returns a bare `NodeStateBase`)
-   * so domain fields are preserved across sub-DAG dispatch — `executeDeepDAG`
-   * runs the child phase against this clone, and `mapOutputState` copies the
-   * mutated buckets back to the parent.
-   */
-  public override clone(): this {
-    const cloned = new ScrapeState();
-    // Preserve metadata (the base class does this; mirror the contract).
-    for (const [key, value] of Object.entries(this.metadata)) {
-      cloned.setMetadata(key, value);
-    }
-    // Deep-copy domain fields so child mutations don't leak back via shared refs.
-    cloned.page             = { ...this.page };
-    cloned.output           = this.output === null ? null : { ...this.output };
-    cloned.urls             = [...this.urls];
-    cloned.titles           = [...this.titles];
-    cloned.succeeded        = [...this.succeeded];
-    cloned.failed           = [...this.failed];
-    cloned.recovered        = [...this.recovered];
-    cloned.failedAfterRetry = [...this.failedAfterRetry];
-    return cloned as this;
-  }
-
-  /**
    * Clear transient plugin metadata at end-of-parse so per-page state doesn't
    * leak across parses in fan-out dispatchers, and so large objects (CheerioAPI
    * handles holding multi-MB parsed DOM trees) get released eagerly.

@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Dependencies
+
+- **Dagonizer is `@studnicky/dagonizer@0.23.0`** from GitHub Packages (`.npmrc` routes the
+  `@studnicky` scope; auth token lives in `~/.npmrc`). The former vendored `@noocodex/dagonizer@0.9.2`
+  tarball and `vendor/` directory are gone.
+
+### Changed
+
+- **Node model is the 0.23 batch contract.** Every node is a `ScalarNode` subclass implementing
+  `executeOne` and returning `NodeOutputBuilder.of(port)`; nodes carry no `RipperServices` generic
+  (they read state, not `ctx.services`). `RipperDagonizer` adapts the 0.23 hooks (`onNodeEnd(name,
+  output, state, placementPath)`); the obsolete `onContractWarning`/`contractWarnings` surface is
+  removed (dead-write contracts are hard `DAGError`s at `registerDAG`/`derive`). `HttpRetryPolicy`
+  constructs via `RetryPolicy.from` with `BackoffStrategyNames`.
+- **Flows are built with native `DAGBuilder`** (`.node`/`.scatter`/`.embeddedDAG`/`.terminal`).
+  `configLoadFlow` and the aonprd `parse.dag` remain on `DAGDeriver.derive`. Routing is read natively
+  off `RoutedBatchType` (`result.has(port)`); capability chains are plain arrays (chainability via
+  dagonizer's native `ChainableType`).
+- **Link crawl is a single native cyclic DAG.** `crawl:dedupe-and-enqueue` routes `frontier-ready`
+  back to `crawl:fetch-and-extract` — a back-edge the engine re-executes in place until the depth/budget
+  guard routes to `crawl:exhausted`. This replaces the trampoline (`RecurseCrawlNode` dispatching a
+  separate `linkCrawlLevelDAG` per depth level): `RecurseCrawlNode`, the level DAG, and the load-bearing
+  `LinkCrawlState.clone()` override are gone. Behaviour is unchanged — same discovered/visited sets and
+  depth/budget termination.
+- **Per-page scrape uses a native `{ dag }`-body scatter.** The wiki and html scrape/retry phases
+  scatter over `{ dag: perPageDagName }` — the framework clones the parent state per item (metadata
+  only), sets `metadata.currentTitle`/`currentUrl`, dispatches the registered per-page DAG, and maps
+  its terminal outcome (`completed`/`failed`) to the `success`/`error` partition. The per-page entry
+  nodes (`WikiFetchNode`, `HtmlFetchNode`) initialise `state.page` from that metadata, absorbing the
+  former `pageSetup` callback. `ScrapeState` drops its `clone()` override (the base metadata-only clone
+  is correct now), so per-item clones no longer copy the accumulator arrays. The `DispatchPageDagNode`
+  wrapper, the per-vertical docs dispatch nodes, and the `*:dispatch-page-dag` stubs are gone.
+- **The whole test tree is type-checked** (`tsconfig.typecheck.json` covers `tests/**`). Single-character
+  identifiers are banned via the `id-length` eslint rule.
+
 ### Breaking
 
 - **`_type` discriminator removed from every AON output.** Concept identity is no longer

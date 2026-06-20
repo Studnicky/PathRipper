@@ -49,8 +49,7 @@ const BUILTIN_NODES: ReadonlyMap<string, HtmlNode> = new Map<string, HtmlNode>([
 
 /**
  * Deterministic DAG name for a target's per-URL child flow.
- * Matches the old `htmlPageDagName` so dispatcher registrations and
- * `DispatchPageDagNode.childDagName` references remain unchanged.
+ * Used as the scatter body `{ dag }` reference in the HTML phase DAGs.
  *
  * @category Flows
  * @since 4.0.0
