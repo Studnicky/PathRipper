@@ -47,6 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   wrapper, the per-vertical docs dispatch nodes, and the `*:dispatch-page-dag` stubs are gone.
 - **The whole test tree is type-checked** (`tsconfig.typecheck.json` covers `tests/**`). Single-character
   identifiers are banned via the `id-length` eslint rule.
+- **Three noocodec contract eslint rules at `error`** (`eslint-rules/noocodec.mjs`):
+  `interface-must-be-contract` (a method-less data `interface` must be a `type`), `logger-binding-name`
+  (a `Logger.forComponent(...)` binding is named `log`), and `group-types-in-namespace` (exempts
+  `src/types/`, ripper's canonical type-grouping barrel). Driven to zero violations: every data-shape
+  `interface` is now a `type` alias and the `*Interface` suffix is renamed to `*Type` (the services
+  bags `RipperServices`/`CliServices`/`LinkCrawlServices` keep their names as `type`); module-scoped
+  logger bindings are renamed to `log`.
 
 ### Breaking
 

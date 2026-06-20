@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 import { CliState }  from '../../../../src/state/CliState.js';
 import { Logger }    from '../../../../src/modules/logger/logger.js';
-import type { NormalizedRipperConfigInterface } from '../../../../src/types/Config.js';
+import type { NormalizedRipperConfigType } from '../../../../src/types/Config.js';
 
 const makeContext = () => ({
   signal:   new AbortController().signal,
@@ -13,7 +13,7 @@ const makeContext = () => ({
   services: { log: Logger.forComponent('DispatchHtmlScrapeNode.test') },
 });
 
-const MOCK_CONFIG: NormalizedRipperConfigInterface = {
+const MOCK_CONFIG: NormalizedRipperConfigType = {
   output: { basePath: './output', format: 'json', pretty: true },
   targets: {
     mysite: {

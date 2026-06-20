@@ -1,7 +1,7 @@
 import { NodeStateBase } from '@studnicky/dagonizer';
 import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
-import type { NormalizedRipperConfigInterface } from '../types/Config.js';
+import type { NormalizedRipperConfigType } from '../types/Config.js';
 
 /**
  * Valid CLI command names — matches the commander commands registered in cli.ts.
@@ -46,7 +46,7 @@ export class CliState extends NodeStateBase {
   configPath: string = '';
 
   /** Loaded + normalized config. `null` until `LoadConfigNode` succeeds. */
-  config: NormalizedRipperConfigInterface | null = null;
+  config: NormalizedRipperConfigType | null = null;
 
   /** The `--target` flag value. */
   targetId: string = '';
@@ -138,7 +138,7 @@ export class CliState extends NodeStateBase {
 
     const config = snap['config'];
     if (config !== null && typeof config === 'object' && !Array.isArray(config)) {
-      this.config = config as unknown as NormalizedRipperConfigInterface;
+      this.config = config as unknown as NormalizedRipperConfigType;
     } else {
       this.config = null;
     }

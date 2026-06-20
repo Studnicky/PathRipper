@@ -9,5 +9,5 @@
 
 export { runHtml }   from './runHtml.js';
 export { runWiki }   from './runWiki.js';
-export type { ScrapeHtmlOptionsInterface } from './runHtml.js';
-export type { ScrapeWikiOptionsInterface } from './runWiki.js';
+export type { ScrapeHtmlOptionsType } from './runHtml.js';
+export type { ScrapeWikiOptionsType } from './runWiki.js';

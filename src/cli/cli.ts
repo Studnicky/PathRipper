@@ -31,7 +31,7 @@ const DECIMAL_RADIX         = 10;
 
 // ── Module-level dispatcher (registered once at startup) ──────────────────────
 
-const _cliLog = Logger.forComponent('cli');
+const log = Logger.forComponent('cli');
 
 const _holder: { current: CliServices | null } = { current: null };
 const _dispatcher = new Dagonizer<CliState, CliServices>({
@@ -55,7 +55,7 @@ _dispatcher.registerDAG(cliScrapeFlow);
 
 /** Initialises the services bag and returns the ready dispatcher. */
 const initServices = (): Dagonizer<CliState, CliServices> => {
-  _holder.current = { log: _cliLog };
+  _holder.current = { log };
   return _dispatcher;
 };
 
@@ -158,7 +158,6 @@ program
   .option('--jitter <ms>', `Random jitter (0..N ms) added to each request`, DEFAULT_JITTER_MS)
   .option('--max <n>',     'Maximum target URLs to collect (cap)')
   .action(async (opts: { starts: string[]; domain: string; target: string; delimiter: string; rate: string; jitter: string; max?: string }): Promise<void> => {
-    const log   = Logger.forComponent('cli');
     const max   = opts.max !== undefined ? parseInt(opts.max, DECIMAL_RADIX) : undefined;
     // Ad-hoc CLI crawl: ephemeral cache in tmp; not shared with any scraper run.
     const cacheDir = mkdtempSync(join(tmpdir(), 'ripperoni-crawl-'));

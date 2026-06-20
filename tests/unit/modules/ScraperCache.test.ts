@@ -5,9 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { ScraperCache } from '../../../src/modules/cache/ScraperCache.js';
-import type { CacheMetaInterface } from '../../../src/types/ScraperCache.js';
+import type { CacheMetaType } from '../../../src/types/ScraperCache.js';
 
-type InputMetaType = Omit<CacheMetaInterface, 'bodyPath' | 'size'>;
+type InputMetaType = Omit<CacheMetaType, 'bodyPath' | 'size'>;
 
 const makeMeta = (overrides: Partial<InputMetaType> = {}): InputMetaType => ({
   url:       'https://example.com/page',

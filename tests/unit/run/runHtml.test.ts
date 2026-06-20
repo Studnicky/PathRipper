@@ -11,12 +11,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { runHtml } from '../../../src/run/runHtml.js';
-import type { ScrapeHtmlOptionsInterface } from '../../../src/types/RipperRun.js';
-import type { NormalizedRipperConfigInterface } from '../../../src/types/Config.js';
+import type { ScrapeHtmlOptionsType } from '../../../src/types/RipperRun.js';
+import type { NormalizedRipperConfigType } from '../../../src/types/Config.js';
 
 // ── Minimal config fixture ────────────────────────────────────────────────────
 
-const makeHtmlConfig = (outDir: string): NormalizedRipperConfigInterface => ({
+const makeHtmlConfig = (outDir: string): NormalizedRipperConfigType => ({
   output:    { basePath: outDir, format: 'json', pretty: true },
   targets:   {
     testsite: {
@@ -25,9 +25,9 @@ const makeHtmlConfig = (outDir: string): NormalizedRipperConfigInterface => ({
       cache:    { dir: join(outDir, '.cache', 'testsite'), mode: 'read-write' },
     },
   },
-} as unknown as NormalizedRipperConfigInterface);
+} as unknown as NormalizedRipperConfigType);
 
-const makeOpts = (tmpDir: string): ScrapeHtmlOptionsInterface => ({
+const makeOpts = (tmpDir: string): ScrapeHtmlOptionsType => ({
   target:    'testsite',
   paths:     [],
   outDir:    tmpDir,

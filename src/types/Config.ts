@@ -9,12 +9,12 @@ import type { RipperConfigSchema } from '../schemas/internal/RipperConfigSchema.
  * this type automatically. Load and validate an instance with {@link RipperConfig.load}.
  *
  * Note: After loading, `cache` blocks on targets and mediawiki entries may be absent
- * (the schema treats them as optional). Use {@link NormalizedRipperConfigInterface} for
+ * (the schema treats them as optional). Use {@link NormalizedRipperConfigType} for
  * the fully-resolved shape where `cache` is guaranteed to be present.
  *
  * @example
  * ```ts
- * const config: RipperConfigInterface = await RipperConfig.load('./ripperoni.config.json');
+ * const config: RipperConfigType = await RipperConfig.load('./ripperoni.config.json');
  * console.log(config.output.basePath);
  * ```
  *
@@ -23,7 +23,7 @@ import type { RipperConfigSchema } from '../schemas/internal/RipperConfigSchema.
  * @see {@link RipperConfig}
  * @group Types
  */
-export type RipperConfigInterface = FromSchema<typeof RipperConfigSchema.SCHEMA>;
+export type RipperConfigType = FromSchema<typeof RipperConfigSchema.SCHEMA>;
 
 /**
  * Resolved cache config block guaranteed to be fully populated.
@@ -32,11 +32,11 @@ export type RipperConfigInterface = FromSchema<typeof RipperConfigSchema.SCHEMA>
  * @since 2.6.0
  * @group Types
  */
-export interface ResolvedCacheConfigInterface {
+export type ResolvedCacheConfigType = {
   readonly dir:    string;
   readonly mode:   'read-write' | 'read-only' | 'write-only' | 'off';
   readonly ttlMs?: number | undefined;
-}
+};
 
 /**
  * A single target entry after normalization — `cache` is always present.
@@ -45,10 +45,10 @@ export interface ResolvedCacheConfigInterface {
  * @since 2.6.0
  * @group Types
  */
-export type NormalizedTargetConfigInterface = Omit<
-  NonNullable<NonNullable<RipperConfigInterface['targets']>[string]>,
+export type NormalizedTargetConfigType = Omit<
+  NonNullable<NonNullable<RipperConfigType['targets']>[string]>,
   'cache'
-> & { readonly cache: ResolvedCacheConfigInterface };
+> & { readonly cache: ResolvedCacheConfigType };
 
 /**
  * A single mediawiki entry after normalization — `cache` is always present.
@@ -57,10 +57,10 @@ export type NormalizedTargetConfigInterface = Omit<
  * @since 2.6.0
  * @group Types
  */
-export type NormalizedWikiConfigInterface = Omit<
-  NonNullable<NonNullable<RipperConfigInterface['mediawiki']>[string]>,
+export type NormalizedWikiConfigType = Omit<
+  NonNullable<NonNullable<RipperConfigType['mediawiki']>[string]>,
   'cache'
-> & { readonly cache: ResolvedCacheConfigInterface };
+> & { readonly cache: ResolvedCacheConfigType };
 
 /**
  * Post-normalization ripperoni configuration.
@@ -75,9 +75,9 @@ export type NormalizedWikiConfigInterface = Omit<
  * @see {@link RipperConfig}
  * @group Types
  */
-export interface NormalizedRipperConfigInterface {
-  readonly output:     RipperConfigInterface['output'];
-  readonly targets?:   Record<string, NormalizedTargetConfigInterface> | undefined;
-  readonly mediawiki?: Record<string, NormalizedWikiConfigInterface> | undefined;
-  readonly crawlers?:  RipperConfigInterface['crawlers'];
-}
+export type NormalizedRipperConfigType = {
+  readonly output:     RipperConfigType['output'];
+  readonly targets?:   Record<string, NormalizedTargetConfigType> | undefined;
+  readonly mediawiki?: Record<string, NormalizedWikiConfigType> | undefined;
+  readonly crawlers?:  RipperConfigType['crawlers'];
+};

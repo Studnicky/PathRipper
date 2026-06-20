@@ -8,7 +8,7 @@ import type { ScrapeState }     from '../state/ScrapeState.js';
 import type { RipperServices }  from '../services/RipperServices.js';
 
 /** Crawler config block from `target.cfg.crawler`. */
-interface CrawlerBlockInterface {
+type CrawlerBlockType = {
   readonly startUrls:    ReadonlyArray<string>;
   readonly domain:       string;
   readonly target:       string;
@@ -16,9 +16,9 @@ interface CrawlerBlockInterface {
   readonly rateLimitMs?: number;
   readonly jitterMs?:    number;
   readonly maxPages?:    number;
-}
+};
 
-const logger = Logger.forComponent('CrawlListTargetsNode');
+const log = Logger.forComponent('CrawlListTargetsNode');
 
 type CrawlListTargetsOutput = 'success' | 'error' | 'empty';
 
@@ -43,7 +43,7 @@ class CrawlListTargetsNodeImpl extends ScalarNode<ScrapeState, CrawlListTargetsO
     context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<CrawlListTargetsOutput>> {
     const { services } = context;
-    const crawler = services.target.cfg['crawler'] as CrawlerBlockInterface | undefined;
+    const crawler = services.target.cfg['crawler'] as CrawlerBlockType | undefined;
     if (crawler === undefined) {
       state.collectError(toNodeError(
         ExternalSchemaError.create('crawl:list-targets requires a `crawler` block in target config', { metadata: { target: services.target.id, task: 'crawl:list-targets' } }),
@@ -74,7 +74,7 @@ class CrawlListTargetsNodeImpl extends ScalarNode<ScrapeState, CrawlListTargetsO
 
     const urls = await lister.buildList(crawler.startUrls);
     state.urls = urls;
-    logger.info('crawl:list-targets', `Discovered ${urls.length.toString()} URLs`, {
+    log.info('crawl:list-targets', `Discovered ${urls.length.toString()} URLs`, {
       task: 'crawl:list-targets', count: urls.length,
     });
 

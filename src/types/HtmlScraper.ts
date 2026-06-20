@@ -1,6 +1,6 @@
 import type { CheerioAPI } from 'cheerio';
 
-import type { HttpRetryConfigInterface } from '../modules/http/httpRetryPolicy.js';
+import type { HttpRetryConfigType } from '../modules/http/httpRetryPolicy.js';
 import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 
 /**
@@ -12,7 +12,7 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @example
  * ```ts
- * const config: HtmlScraperConfigInterface = {
+ * const config: HtmlScraperConfigType = {
  *   baseUrl: 'https://example.com',
  *   rateLimitMs: 1000,
  *   jitterMs: 200,
@@ -22,10 +22,10 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @category Scrapers
  * @since 2.0.0
- * @see {@link ScrapedPageInterface}
+ * @see {@link ScrapedPageType}
  * @group Types
  */
-export interface HtmlScraperConfigInterface {
+export type HtmlScraperConfigType = {
   /** Base URL prepended to relative paths. */
   readonly baseUrl: string;
   /** Minimum milliseconds between requests. */
@@ -33,7 +33,7 @@ export interface HtmlScraperConfigInterface {
   /** Maximum random jitter added to each delay, in milliseconds. */
   readonly jitterMs?:    number | undefined;
   /** Retry configuration for failed requests. */
-  readonly retry?: HttpRetryConfigInterface | undefined;
+  readonly retry?: HttpRetryConfigType | undefined;
   /** Maximum number of retry attempts for failed requests (default 3). */
   readonly maxRetries?: number | undefined;
   /** Base delay in milliseconds for retry backoff (default 500). */
@@ -44,7 +44,7 @@ export interface HtmlScraperConfigInterface {
   readonly headers?: Readonly<Record<string, string>> | undefined;
   /** Optional shared content store; when set, fetchPage consults the cache before consuming the rate limiter. */
   readonly cache?: ScraperCache | undefined;
-}
+};
 
 /**
  * Result of a single HTML page fetch performed by `HtmlScraper`.
@@ -55,20 +55,20 @@ export interface HtmlScraperConfigInterface {
  *
  * @example
  * ```ts
- * const page: ScrapedPageInterface = await scraper.fetchPage('/wiki/Foo');
+ * const page: ScrapedPageType = await scraper.fetchPage('/wiki/Foo');
  * const title = page.$('h1').text();
  * ```
  *
  * @category Scrapers
  * @since 2.0.0
- * @see {@link HtmlScraperConfigInterface}
+ * @see {@link HtmlScraperConfigType}
  * @group Types
  */
-export interface ScrapedPageInterface {
+export type ScrapedPageType = {
   /** Resolved URL of the fetched page. */
   readonly url: string;
   /** Cheerio document loaded from the page HTML. */
   readonly $: CheerioAPI;
   /** Raw HTML string of the page. */
   readonly html: string;
-}
+};

@@ -20,29 +20,29 @@ import {
   FetchMultipleCategoriesNode,
   FetchAllPagesNode,
 } from '../../../src/nodes/wiki/index.js';
-import type { CategoryMemberInterface } from '../../../src/types/MediaWikiScraper.js';
+import type { CategoryMemberType } from '../../../src/types/MediaWikiScraper.js';
 import type { RipperServices }             from '../../../src/services/RipperServices.js';
 import { Logger }                       from '../../../src/modules/logger/logger.js';
 
 // ── Stub scraper ───────────────────────────────────────────────────────────────
 
 class StubWikiScraper {
-  private readonly categories: Map<string, CategoryMemberInterface[]>;
-  private readonly allPagesData: CategoryMemberInterface[];
+  private readonly categories: Map<string, CategoryMemberType[]>;
+  private readonly allPagesData: CategoryMemberType[];
 
   public constructor(
-    categories: Map<string, CategoryMemberInterface[]>,
-    allPages:   CategoryMemberInterface[],
+    categories: Map<string, CategoryMemberType[]>,
+    allPages:   CategoryMemberType[],
   ) {
     this.categories    = categories;
     this.allPagesData  = allPages;
   }
 
-  public async fetchCategory(name: string): Promise<CategoryMemberInterface[]> {
+  public async fetchCategory(name: string): Promise<CategoryMemberType[]> {
     return this.categories.get(name) ?? [];
   }
 
-  public async fetchAllPages(_batchSize?: number): Promise<CategoryMemberInterface[]> {
+  public async fetchAllPages(_batchSize?: number): Promise<CategoryMemberType[]> {
     return this.allPagesData;
   }
 }

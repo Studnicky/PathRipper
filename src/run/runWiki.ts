@@ -40,8 +40,8 @@ import { ScraperCache }               from '../modules/cache/ScraperCache.js';
 import { MediaWikiScraper }           from '../scrapers/MediaWikiScraper.js';
 import { ScrapeState }                from '../state/ScrapeState.js';
 import { MemberResolutionState }      from '../state/MemberResolutionState.js';
-import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
-import type { ScrapeWikiOptionsInterface, FailuresManifestInterface } from '../types/RipperRun.js';
+import type { CategoryMemberType } from '../types/MediaWikiScraper.js';
+import type { ScrapeWikiOptionsType, FailuresManifestType } from '../types/RipperRun.js';
 import type { ScrapeWikiResult }       from '../types/Results.js';
 
 import {
@@ -162,7 +162,7 @@ const toSlug = (title: string): string =>
 
 // ── runWiki ────────────────────────────────────────────────────────────────────
 
-export type { ScrapeWikiOptionsInterface };
+export type { ScrapeWikiOptionsType };
 
 /**
  * Executes one MediaWiki scrape run.
@@ -183,7 +183,7 @@ export type { ScrapeWikiOptionsInterface };
  * @category Orchestrators
  * @since 4.0.0
  */
-export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResult {
+export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
   const wikiTarget = opts.config.mediawiki?.[opts.target];
   if (wikiTarget === undefined) {
     log.error('runWiki', `Unknown mediawiki target: ${opts.target}`);
@@ -262,7 +262,7 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
 
   await memberDispatcher.execute(WIKI_RESOLVE_MEMBERS_FLOW, memberState);
 
-  const members: CategoryMemberInterface[] = memberState.members;
+  const members: CategoryMemberType[] = memberState.members;
   const batchSize = (targetCfg['batchSize'] as number | undefined) ?? 50;
 
   // ── Resume: skip pages whose slug already exists ───────────────────────────
@@ -363,7 +363,7 @@ export async function runWiki(opts: ScrapeWikiOptionsInterface): ScrapeWikiResul
   // ── Failures manifest ──────────────────────────────────────────────────────
   const failuresPath = resolve(targetDir, 'failures.json');
   if (allFailedAfterRetry.length > 0) {
-    const manifest: FailuresManifestInterface = {
+    const manifest: FailuresManifestType = {
       timestamp: new Date().toISOString(),
       count:     allFailedAfterRetry.length,
       titles:    allFailedAfterRetry,

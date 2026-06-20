@@ -1,7 +1,7 @@
 import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { RipperConfigInterface } from '../../types/Config.js';
+import type { RipperConfigType } from '../../types/Config.js';
 import { RipperConfigSchema } from '../../schemas/internal/RipperConfigSchema.js';
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 
@@ -42,7 +42,7 @@ class ValidateConfigSchemaNodeImpl extends ScalarNode<ConfigLoadState, ValidateC
       return NodeOutputBuilder.of('invalid');
     }
 
-    state.validated = state.parsed as RipperConfigInterface;
+    state.validated = state.parsed as RipperConfigType;
     return NodeOutputBuilder.of('valid');
   }
 }

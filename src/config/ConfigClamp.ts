@@ -22,14 +22,14 @@ const log = Logger.forComponent('ConfigClamp');
  * @see {@link ConfigClamp}
  * @group Config
  */
-export interface ClampRulesInterface {
+export type ClampRulesType = {
   /** Minimum allowed value (inclusive). Must be ≥ 0. */
   readonly min: number;
   /** Maximum allowed value (inclusive). */
   readonly max: number;
   /** Human-readable reason shown in the warning log. */
   readonly reason: string;
-}
+};
 
 /**
  * Named clamp rules for every numeric config field.
@@ -40,7 +40,7 @@ export interface ClampRulesInterface {
  * @see {@link ConfigClamp}
  * @group Config
  */
-export const CLAMP_RULES: Readonly<Record<string, ClampRulesInterface>> = Object.freeze({
+export const CLAMP_RULES: Readonly<Record<string, ClampRulesType>> = Object.freeze({
   'rateLimitMs':      { min: 0,   max: 60_000,  reason: 'minimum gap between requests (0 = unlimited; ≥100 recommended for public wikis)' },
   'jitterMs':         { min: 0,   max: 10_000,  reason: 'random jitter added per request' },
   'batchSize':        { min: 1,   max: 50,      reason: 'MediaWiki revisions API hard limit is 50 titles per request' },

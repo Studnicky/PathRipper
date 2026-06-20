@@ -3,13 +3,13 @@
 import type { ErrorCategoryType } from '../../types/Http.js';
 import { ErrorCategory } from '../../types/ErrorClassifier.js';
 import type {
-  ClassificationResultInterface,
-  ExtendedErrorInterface,
-  ClassificationRuleInterface,
+  ClassificationResultType,
+  ExtendedErrorType,
+  ClassificationRuleType,
   ClassificationRuleOptionsType,
 } from '../../types/ErrorClassifier.js';
 
-export type { ClassificationResultInterface, ExtendedErrorInterface, ClassificationRuleInterface };
+export type { ClassificationResultType, ExtendedErrorType, ClassificationRuleType };
 
 const HTTP_STATUS_THROTTLED          = 429;
 const HTTP_STATUS_SERVER_MIN         = 500;
@@ -39,7 +39,7 @@ const RETRY_AFTER_SECONDS_MULTIPLIER = 1_000;
  * @see ErrorCategory
  */
 export class ErrorClassifier {
-  readonly #rules: ClassificationRuleInterface[] = [];
+  readonly #rules: ClassificationRuleType[] = [];
 
   /**
    * Registers a single classification rule.
@@ -50,7 +50,7 @@ export class ErrorClassifier {
    * @returns `this` for fluent chaining.
    */
   addRule(
-    predicate: (error: ExtendedErrorInterface) => boolean,
+    predicate: (error: ExtendedErrorType) => boolean,
     category: ErrorCategoryType,
     options: ClassificationRuleOptionsType = {},
   ): ErrorClassifier {
@@ -58,7 +58,7 @@ export class ErrorClassifier {
     return this;
   }
 
-  private addRules(rules: ClassificationRuleInterface[]): this {
+  private addRules(rules: ClassificationRuleType[]): this {
     for (const rule of rules) this.#rules.push(rule);
     return this;
   }
@@ -69,7 +69,7 @@ export class ErrorClassifier {
    * @param error - Error to classify.
    * @returns Classification result with category and optional backoff hint.
    */
-  classify(error: ExtendedErrorInterface): ClassificationResultInterface {
+  classify(error: ExtendedErrorType): ClassificationResultType {
     for (const rule of this.#rules) {
       if (rule.predicate(error)) {
         const hint = typeof rule.backoffHint === 'function'
@@ -91,7 +91,7 @@ export class ErrorClassifier {
         || category === ErrorCategory.TRANSIENT;
   }
 
-  private static retryAfterMs(error: ExtendedErrorInterface): number {
+  private static retryAfterMs(error: ExtendedErrorType): number {
     const retryAfter = error.headers?.['retry-after'];
     if (typeof retryAfter === 'string') {
       const parsed = parseInt(retryAfter, 10);
@@ -101,27 +101,27 @@ export class ErrorClassifier {
     return RETRY_AFTER_DEFAULT_MS;
   }
 
-  private static networkRules(): ClassificationRuleInterface[] {
+  private static networkRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         err.code === 'ECONNREFUSED' || err.code === 'ECONNRESET' || err.code === 'ENOTFOUND',
       category: ErrorCategory.NETWORK,
       retryable: true,
     }];
   }
 
-  private static timeoutRules(): ClassificationRuleInterface[] {
+  private static timeoutRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         err.code === 'ETIMEDOUT' || err.code === 'ESOCKETTIMEDOUT',
       category: ErrorCategory.TIMEOUT,
       retryable: true,
     }];
   }
 
-  private static throttledRules(): ClassificationRuleInterface[] {
+  private static throttledRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         err.status === HTTP_STATUS_THROTTLED || err.statusCode === HTTP_STATUS_THROTTLED,
       category: ErrorCategory.THROTTLED,
       retryable: true,
@@ -129,9 +129,9 @@ export class ErrorClassifier {
     }];
   }
 
-  private static transientRules(): ClassificationRuleInterface[] {
+  private static transientRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         (err.status !== undefined && err.status >= HTTP_STATUS_SERVER_MIN)
         || (err.statusCode !== undefined && err.statusCode >= HTTP_STATUS_SERVER_MIN),
       category: ErrorCategory.TRANSIENT,
@@ -139,9 +139,9 @@ export class ErrorClassifier {
     }];
   }
 
-  private static permanentRules(): ClassificationRuleInterface[] {
+  private static permanentRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         (err.status !== undefined && err.status >= HTTP_STATUS_CLIENT_MIN && err.status < HTTP_STATUS_CLIENT_MAX)
         || (err.statusCode !== undefined && err.statusCode >= HTTP_STATUS_CLIENT_MIN && err.statusCode < HTTP_STATUS_CLIENT_MAX),
       category: ErrorCategory.PERMANENT,
@@ -149,18 +149,18 @@ export class ErrorClassifier {
     }];
   }
 
-  private static validationRules(): ClassificationRuleInterface[] {
+  private static validationRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         err.name === 'ValidationError' || err.name === 'TypeError' || err.name === 'SyntaxError',
       category: ErrorCategory.VALIDATION,
       retryable: false,
     }];
   }
 
-  private static resourceRules(): ClassificationRuleInterface[] {
+  private static resourceRules(): ClassificationRuleType[] {
     return [{
-      predicate: (err: ExtendedErrorInterface): boolean =>
+      predicate: (err: ExtendedErrorType): boolean =>
         err.code === 'ENOMEM' || err.code === 'ENOSPC',
       category: ErrorCategory.RESOURCE,
       retryable: false,
@@ -175,7 +175,7 @@ export class ErrorClassifier {
    * @param extraRules - Optional additional classification rules applied after the defaults.
    * @returns A fully configured ErrorClassifier instance.
    */
-  static default(extraRules: ClassificationRuleInterface[] = []): ErrorClassifier {
+  static default(extraRules: ClassificationRuleType[] = []): ErrorClassifier {
     const classifier = new ErrorClassifier()
       .addRules(ErrorClassifier.networkRules())
       .addRules(ErrorClassifier.timeoutRules())

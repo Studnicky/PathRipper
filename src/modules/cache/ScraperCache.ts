@@ -4,17 +4,17 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import { Logger } from '../logger/logger.js';
 import type {
-  CacheEntryInterface,
-  CacheKeyRequestInterface,
-  CacheMetaInterface,
-  ScraperCacheConfigInterface,
+  CacheEntryType,
+  CacheKeyRequestType,
+  CacheMetaType,
+  ScraperCacheConfigType,
 } from '../../types/ScraperCache.js';
 
 export type {
-  CacheEntryInterface,
-  CacheKeyRequestInterface,
-  CacheMetaInterface,
-  ScraperCacheConfigInterface,
+  CacheEntryType,
+  CacheKeyRequestType,
+  CacheMetaType,
+  ScraperCacheConfigType,
 };
 
 /**
@@ -55,18 +55,18 @@ const META_SUFFIX = '.meta.json';
  *
  * @category Cache
  * @since 2.0.0
- * @see {@link ScraperCacheConfigInterface}
+ * @see {@link ScraperCacheConfigType}
  * @group Core
  */
 export class ScraperCache {
-  readonly #config:  ScraperCacheConfigInterface;
+  readonly #config:  ScraperCacheConfigType;
   readonly #log:     Logger;
   readonly #bodyDir: string;
 
   /**
    * @param config - Cache configuration including dir, mode, optional ttlMs, optional maxEntries, optional bodyDir.
    */
-  private constructor(config: ScraperCacheConfigInterface) {
+  private constructor(config: ScraperCacheConfigType) {
     this.#config  = config;
     this.#log     = Logger.forComponent('ScraperCache');
     this.#bodyDir = config.bodyDir !== undefined ? resolve(config.bodyDir) : resolve(config.dir, 'bodies');
@@ -78,7 +78,7 @@ export class ScraperCache {
    * @param config - Cache configuration.
    * @returns A new ScraperCache.
    */
-  public static create(config: ScraperCacheConfigInterface): ScraperCache {
+  public static create(config: ScraperCacheConfigType): ScraperCache {
     return new ScraperCache(config);
   }
 
@@ -88,7 +88,7 @@ export class ScraperCache {
    * @param req - Request shape; headers are sorted alphabetically before hashing.
    * @returns 40-character lowercase hex sha1 digest.
    */
-  public static keyFor(req: CacheKeyRequestInterface): string {
+  public static keyFor(req: CacheKeyRequestType): string {
     const sortedHeaders = ScraperCache.sortHeaders(req.headers);
     const input = `${req.method}\n${req.url}\n${JSON.stringify(sortedHeaders)}`;
     return createHash('sha1').update(input).digest('hex');
@@ -100,7 +100,7 @@ export class ScraperCache {
   }
 
   /** Returns the cache mode supplied at creation. */
-  public getMode(): ScraperCacheConfigInterface['mode'] {
+  public getMode(): ScraperCacheConfigType['mode'] {
     return this.#config.mode;
   }
 
@@ -131,7 +131,7 @@ export class ScraperCache {
    * @param key - Cache key from `keyFor`.
    * @returns The cached body and meta, or null on miss/stale/mode-blocked.
    */
-  public async read(key: string): Promise<CacheEntryInterface | null> {
+  public async read(key: string): Promise<CacheEntryType | null> {
     if (!this.readsAllowed()) return null;
     const meta = await this.readMeta(key);
     if (meta === null)        return null;
@@ -170,7 +170,7 @@ export class ScraperCache {
   public async write(
     key: string,
     body: string,
-    meta: Omit<CacheMetaInterface, 'bodyPath' | 'size'> & { bodyPath?: string; size?: number },
+    meta: Omit<CacheMetaType, 'bodyPath' | 'size'> & { bodyPath?: string; size?: number },
   ): Promise<void> {
     if (!this.writesAllowed()) return;
 
@@ -182,7 +182,7 @@ export class ScraperCache {
       await writeFile(bodyPath, body, 'utf8');
     }
 
-    const finalMeta: CacheMetaInterface = {
+    const finalMeta: CacheMetaType = {
       url:       meta.url,
       method:    meta.method,
       fetchedAt: meta.fetchedAt,
@@ -224,17 +224,17 @@ export class ScraperCache {
     return mode === 'read-write' || mode === 'write-only';
   }
 
-  private isStale(meta: CacheMetaInterface): boolean {
+  private isStale(meta: CacheMetaType): boolean {
     const ttl = this.#config.ttlMs;
     if (ttl === undefined) return false;
     const age = Date.now() - new Date(meta.fetchedAt).valueOf();
     return age > ttl;
   }
 
-  private async readMeta(key: string): Promise<CacheMetaInterface | null> {
+  private async readMeta(key: string): Promise<CacheMetaType | null> {
     try {
       const raw = await readFile(this.metaPath(key), 'utf8');
-      return JSON.parse(raw) as CacheMetaInterface;
+      return JSON.parse(raw) as CacheMetaType;
     } catch (error) {
       if (isEnoent(error)) return null;
       throw error;
@@ -276,8 +276,8 @@ export class ScraperCache {
   }
 
   /** Reads every meta JSON in the cache dir; ignores malformed files. */
-  private async collectMetaEntries(): Promise<Array<{ key: string; metaPath: string; meta: CacheMetaInterface }>> {
-    const out: Array<{ key: string; metaPath: string; meta: CacheMetaInterface }> = [];
+  private async collectMetaEntries(): Promise<Array<{ key: string; metaPath: string; meta: CacheMetaType }>> {
+    const out: Array<{ key: string; metaPath: string; meta: CacheMetaType }> = [];
     let shards: string[];
     try {
       shards = await readdir(this.#config.dir);
@@ -301,7 +301,7 @@ export class ScraperCache {
         const metaPath = join(shardDir, file);
         try {
           const raw  = await readFile(metaPath, 'utf8');
-          const meta = JSON.parse(raw) as CacheMetaInterface;
+          const meta = JSON.parse(raw) as CacheMetaType;
           const key  = `${shard}${file.slice(0, -META_SUFFIX.length)}`;
           out.push({ key, metaPath, meta });
         } catch {

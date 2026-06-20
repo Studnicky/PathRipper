@@ -16,7 +16,7 @@
  * @module Results
  */
 
-import type { WikiPageInterface, CategoryMemberInterface } from './MediaWikiScraper.js';
+import type { WikiPageType, CategoryMemberType } from './MediaWikiScraper.js';
 
 // ─── Crawlers ─────────────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ export type BuildListResult = Promise<string[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchPageResult = Promise<WikiPageInterface>;
+export type FetchPageResult = Promise<WikiPageType>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchPagesBatch} — up to 50 pages
@@ -59,7 +59,7 @@ export type FetchPageResult = Promise<WikiPageInterface>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchPagesBatchResult = Promise<WikiPageInterface[]>;
+export type FetchPagesBatchResult = Promise<WikiPageType[]>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchCategory} — all page members
@@ -72,7 +72,7 @@ export type FetchPagesBatchResult = Promise<WikiPageInterface[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchCategoryResult = Promise<CategoryMemberInterface[]>;
+export type FetchCategoryResult = Promise<CategoryMemberType[]>;
 
 /**
  * Return type of {@link MediaWikiScraper.fetchAllPages} — every article in the
@@ -86,7 +86,7 @@ export type FetchCategoryResult = Promise<CategoryMemberInterface[]>;
  * @see {@link MediaWikiScraper}
  * @group Scrapers
  */
-export type FetchAllPagesResult = Promise<CategoryMemberInterface[]>;
+export type FetchAllPagesResult = Promise<CategoryMemberType[]>;
 
 /**
  * Return type of {@link HtmlScraper.fetchText} — the raw HTML string of the

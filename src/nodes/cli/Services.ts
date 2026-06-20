@@ -12,7 +12,7 @@ import type { Logger } from '../../modules/logger/logger.js';
  * @category Services
  * @since 3.1.0
  */
-export interface CliServices {
+export type CliServices = {
   /** Logger instance for CLI-level diagnostics. */
   readonly log: Logger;
-}
+};

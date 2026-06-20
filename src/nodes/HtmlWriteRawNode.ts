@@ -10,7 +10,7 @@ import { pageSlug }             from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
 import type { RipperServices }  from '../services/RipperServices.js';
 
-const logger = Logger.forComponent('HtmlWriteRawNode');
+const log = Logger.forComponent('HtmlWriteRawNode');
 
 type HtmlWriteRawOutput = 'success';
 
@@ -42,7 +42,7 @@ class HtmlWriteRawNodeImpl extends ScalarNode<ScrapeState, HtmlWriteRawOutput, R
     const outFile = join(services.outDir, services.target.id, 'raw', `${slug}.html`);
     await mkdir(dirname(outFile), { recursive: true });
     await writeFile(outFile, html, 'utf8');
-    logger.debug('html:write-raw', `Wrote raw HTML: ${outFile}`, { task: 'html:write-raw', outFile });
+    log.debug('html:write-raw', `Wrote raw HTML: ${outFile}`, { task: 'html:write-raw', outFile });
     return NodeOutputBuilder.of('success');
   }
 }

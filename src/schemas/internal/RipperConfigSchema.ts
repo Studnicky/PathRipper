@@ -577,7 +577,7 @@ addFormats(ajv);
  * @category Schema
  * @since 2.0.0
  * @group Schema
- * @see RipperConfigInterface
+ * @see RipperConfigType
  */
 export class RipperConfigSchema {
   private constructor() { /* static-only */ }

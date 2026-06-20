@@ -1,7 +1,7 @@
-import type { BaseErrorOptionsInterface } from './BaseError.js';
+import type { BaseErrorOptionsType } from './BaseError.js';
 
 /**
- * Construction options for `HttpError`, extending `BaseErrorOptionsInterface` with HTTP context.
+ * Construction options for `HttpError`, extending `BaseErrorOptionsType` with HTTP context.
  *
  * @remarks
  * `status` should be the HTTP response status code (e.g. `404`, `503`).
@@ -10,7 +10,7 @@ import type { BaseErrorOptionsInterface } from './BaseError.js';
  *
  * @example
  * ```ts
- * const opts: HttpErrorOptionsInterface = {
+ * const opts: HttpErrorOptionsType = {
  *   status: 404,
  *   url: 'https://example.com/missing',
  *   retryable: false,
@@ -20,12 +20,12 @@ import type { BaseErrorOptionsInterface } from './BaseError.js';
  *
  * @category Errors
  * @since 2.0.0
- * @see {@link BaseErrorOptionsInterface}
+ * @see {@link BaseErrorOptionsType}
  * @group Types
  */
-export interface HttpErrorOptionsInterface extends BaseErrorOptionsInterface {
+export type HttpErrorOptionsType = BaseErrorOptionsType & {
   /** HTTP response status code. */
   readonly status?: number | undefined;
   /** Request URL that produced the error. */
   readonly url?:    string | undefined;
-}
+};

@@ -1,6 +1,6 @@
 import wtf from 'wtf_wikipedia';
 import { TaskRegistry } from '../../dist/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../dist/registry/PipelineState.js';
+import type { PipelineStateType } from '../../dist/registry/PipelineState.js';
 import type { TaskFnInterface } from '../../dist/pipeline/Pipeline.js';
 
 // ─── i18n: BCP-47 key mapping ─────────────────────────────────────────────────
@@ -1026,7 +1026,7 @@ function parseLearnsetGeneration(title: string): string | null {
 
 // ─── Task ─────────────────────────────────────────────────────────────────────
 
-const task: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
+const task: TaskFnInterface<PipelineStateType> = async (next, state) => {
   const { title, wikitext } = state.page;
   if (!wikitext) { await next(); return; }
 

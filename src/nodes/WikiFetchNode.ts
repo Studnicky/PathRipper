@@ -2,13 +2,13 @@ import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
-import type { WikiPageInterface } from '../types/MediaWikiScraper.js';
+import type { WikiPageType } from '../types/MediaWikiScraper.js';
 import { toNodeError }            from './fileUtils.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
 import type { RipperServices }    from '../services/RipperServices.js';
 
 /** Returns true when the value looks like a MediaWikiScraper. */
-const isWikiScraper = (val: unknown): val is { fetchPage(title: string): Promise<WikiPageInterface> } => {
+const isWikiScraper = (val: unknown): val is { fetchPage(title: string): Promise<WikiPageType> } => {
   return typeof val === 'object' && val !== null && typeof (val as { fetchPage?: unknown }).fetchPage === 'function';
 };
 
@@ -71,7 +71,7 @@ class WikiFetchNodeImpl extends ScalarNode<ScrapeState, WikiFetchOutput, RipperS
       return NodeOutputBuilder.of('error');
     }
 
-    let result: WikiPageInterface;
+    let result: WikiPageType;
     try {
       result = await scraper.fetchPage(title);
     } catch (err) {

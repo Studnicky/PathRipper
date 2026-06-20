@@ -2,7 +2,7 @@ import { ScalarNode, NodeOutputBuilder, NodeErrorBuilder } from '@studnicky/dago
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { RipperConfigError } from '../../errors/RipperConfigError.js';
-import type { NormalizedRipperConfigInterface } from '../../types/Config.js';
+import type { NormalizedRipperConfigType } from '../../types/Config.js';
 import type { ConfigLoadState } from '../../state/ConfigLoadState.js';
 
 /**
@@ -88,7 +88,7 @@ class NormalizeCacheNodeImpl extends ScalarNode<ConfigLoadState, NormalizeCacheO
     }
 
     const config = state.validated;
-    const normalized = { ...config } as NormalizedRipperConfigInterface;
+    const normalized = { ...config } as NormalizedRipperConfigType;
 
     try {
       if (config.targets !== undefined) {

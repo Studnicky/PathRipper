@@ -34,7 +34,7 @@ import { Logger }                     from '../modules/logger/logger.js';
 import { ScraperCache }               from '../modules/cache/ScraperCache.js';
 import { HtmlScraper }                from '../scrapers/HtmlScraper.js';
 import { ScrapeState }                from '../state/ScrapeState.js';
-import type { ScrapeHtmlOptionsInterface, FailuresManifestInterface } from '../types/RipperRun.js';
+import type { ScrapeHtmlOptionsType, FailuresManifestType } from '../types/RipperRun.js';
 import type { ScrapeHtmlResult }       from '../types/Results.js';
 
 import {
@@ -141,7 +141,7 @@ const registerBuiltinNodes = (dispatcher: RipperDagonizer<ScrapeState>): void =>
 
 // ── runHtml ────────────────────────────────────────────────────────────────────
 
-export type { ScrapeHtmlOptionsInterface };
+export type { ScrapeHtmlOptionsType };
 
 /**
  * Executes one HTML scrape run.
@@ -161,7 +161,7 @@ export type { ScrapeHtmlOptionsInterface };
  * @category Orchestrators
  * @since 4.0.0
  */
-export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResult {
+export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
   const htmlTarget = opts.config.targets?.[opts.target];
   if (htmlTarget === undefined) {
     log.error('runHtml', `Unknown html target: ${opts.target}`);
@@ -272,7 +272,7 @@ export async function runHtml(opts: ScrapeHtmlOptionsInterface): ScrapeHtmlResul
     + `${state.failedAfterRetry.length.toString()} failed after retry`);
 
   if (state.failedAfterRetry.length > 0) {
-    const manifest: FailuresManifestInterface = {
+    const manifest: FailuresManifestType = {
       timestamp: new Date().toISOString(),
       count:     state.failedAfterRetry.length,
       titles:    state.failedAfterRetry,

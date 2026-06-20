@@ -8,7 +8,7 @@
  *
  * @example
  * ```ts
- * const config: RateLimiterConfigInterface = {
+ * const config: RateLimiterConfigType = {
  *   minTimeMs: 500,
  *   jitterMs: 100,
  *   maxConcurrent: 2,
@@ -20,10 +20,10 @@
  *
  * @category Http
  * @since 2.0.0
- * @see {@link RateLimiterConfigInterface}
+ * @see {@link RateLimiterConfigType}
  * @group Types
  */
-export interface RateLimiterConfigInterface {
+export type RateLimiterConfigType = {
   /** Minimum milliseconds between scheduled calls. */
   readonly minTimeMs: number;
   /** Maximum random jitter added to each delay, in milliseconds. */
@@ -36,4 +36,4 @@ export interface RateLimiterConfigInterface {
   readonly reservoirRefreshAmount?: number | undefined;
   /** Interval in milliseconds between reservoir refreshes. */
   readonly reservoirRefreshIntervalMs?: number | undefined;
-}
+};

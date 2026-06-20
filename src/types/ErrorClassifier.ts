@@ -43,14 +43,14 @@ export const ErrorCategory = Object.freeze({
  * @group Http
  * @see ErrorClassifier
  */
-export interface ClassificationResultInterface {
+export type ClassificationResultType = {
   /** The category assigned to this error. */
   readonly category: ErrorCategoryType;
   /** Whether the failed operation may be retried (derived from the matched rule). */
   readonly retryable: boolean;
   /** Suggested delay in milliseconds before the next retry, if available. */
   readonly backoffHint?: number | undefined;
-}
+};
 
 /**
  * Extension of `Error` that may carry HTTP status codes and headers.
@@ -58,14 +58,14 @@ export interface ClassificationResultInterface {
  * @remarks Augments the standard `Error` with HTTP-specific fields used by the classifier.
  * @example
  * ```ts
- * const e: ExtendedErrorInterface = Object.assign(new Error('fail'), { status: 429 });
+ * const e: ExtendedErrorType = Object.assign(new Error('fail'), { status: 429 });
  * ```
  * @category Http
  * @since 2.0.0
  * @group Http
  * @see ErrorClassifier
  */
-export interface ExtendedErrorInterface extends Error {
+export type ExtendedErrorType = Error & {
   /** Node.js error code (e.g. `ECONNREFUSED`). */
   readonly code?: string | undefined;
   /** HTTP response status code. */
@@ -74,7 +74,7 @@ export interface ExtendedErrorInterface extends Error {
   readonly statusCode?: number | undefined;
   /** Response headers, used to read `Retry-After`. */
   readonly headers?: Readonly<Record<string, string | number | undefined>> | undefined;
-}
+};
 
 /**
  * Rule entry used internally by `ErrorClassifier` to match and classify errors.
@@ -82,7 +82,7 @@ export interface ExtendedErrorInterface extends Error {
  * @remarks Register rules via `ErrorClassifier.addRule` or pass an array to `ErrorClassifier.default`.
  * @example
  * ```ts
- * const rule: ClassificationRuleInterface = {
+ * const rule: ClassificationRuleType = {
  *   predicate: (e) => e.code === 'ECONNREFUSED',
  *   category: ErrorCategory.NETWORK,
  *   retryable: true,
@@ -93,17 +93,17 @@ export interface ExtendedErrorInterface extends Error {
  * @group Http
  * @see ErrorClassifier
  */
-export interface ClassificationRuleInterface {
-  readonly predicate: (error: ExtendedErrorInterface) => boolean;
+export type ClassificationRuleType = {
+  readonly predicate: (error: ExtendedErrorType) => boolean;
   readonly category: ErrorCategoryType;
   readonly retryable?: boolean | undefined;
-  readonly backoffHint?: number | ((error: ExtendedErrorInterface) => number) | undefined;
-}
+  readonly backoffHint?: number | ((error: ExtendedErrorType) => number) | undefined;
+};
 
 /**
  * Optional overrides accepted by `ErrorClassifier.addRule`.
  *
- * @remarks Subset of `ClassificationRuleInterface` properties that may be customised per rule.
+ * @remarks Subset of `ClassificationRuleType` properties that may be customised per rule.
  * @example
  * ```ts
  * const opts: ClassificationRuleOptionsType = { backoffHint: 2000 };
@@ -112,6 +112,6 @@ export interface ClassificationRuleInterface {
  * @category Http
  * @since 2.0.0
  * @group Http
- * @see ClassificationRuleInterface
+ * @see ClassificationRuleType
  */
-export type ClassificationRuleOptionsType = Partial<Pick<ClassificationRuleInterface, 'backoffHint' | 'retryable'>>;
+export type ClassificationRuleOptionsType = Partial<Pick<ClassificationRuleType, 'backoffHint' | 'retryable'>>;

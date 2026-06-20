@@ -3,12 +3,12 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
 /**
  * Internal shape of a single category member from the MediaWiki `categorymembers` list.
  *
- * @remarks Used only within `CategoryMembersResponseInterface`; not exposed publicly.
+ * @remarks Used only within `CategoryMembersResponseType`; not exposed publicly.
  */
-interface CategoryMemberShapeInterface {
+type CategoryMemberShapeType = {
   readonly title: string;
   readonly pageid: number;
-}
+};
 
 /**
  * Response shape for the MediaWiki `allpages` list query.
@@ -16,7 +16,7 @@ interface CategoryMemberShapeInterface {
  * @remarks Mirrors the structure returned by the MediaWiki action API `list=allpages`.
  * @example
  * ```ts
- * const data: AllPagesResponseInterface = await api.get(params);
+ * const data: AllPagesResponseType = await api.get(params);
  * for (const page of data.query?.allpages ?? []) { ... }
  * ```
  * @category Scrapers
@@ -24,12 +24,12 @@ interface CategoryMemberShapeInterface {
  * @group Scrapers
  * @see MediaWikiScraper
  */
-export interface AllPagesResponseInterface {
+export type AllPagesResponseType = {
   readonly query?: {
     readonly allpages?: ReadonlyArray<{ readonly title: string; readonly pageid: number }>;
   };
   readonly continue?: Record<string, string>;
-}
+};
 
 /**
  * Response shape for the MediaWiki `categorymembers` list query.
@@ -37,7 +37,7 @@ export interface AllPagesResponseInterface {
  * @remarks Mirrors the structure returned by the MediaWiki action API `list=categorymembers`.
  * @example
  * ```ts
- * const data: CategoryMembersResponseInterface = await api.get(params);
+ * const data: CategoryMembersResponseType = await api.get(params);
  * for (const m of data.query?.categorymembers ?? []) { ... }
  * ```
  * @category Scrapers
@@ -45,12 +45,12 @@ export interface AllPagesResponseInterface {
  * @group Scrapers
  * @see MediaWikiScraper
  */
-export interface CategoryMembersResponseInterface {
+export type CategoryMembersResponseType = {
   readonly query?: {
-    readonly categorymembers?: ReadonlyArray<CategoryMemberShapeInterface>;
+    readonly categorymembers?: ReadonlyArray<CategoryMemberShapeType>;
   };
   readonly continue?: Record<string, string>;
-}
+};
 
 /**
  * A single page entry within a MediaWiki `revisions` query response.
@@ -58,15 +58,15 @@ export interface CategoryMembersResponseInterface {
  * @remarks Supports both `formatversion=1` (`'*'` key) and `formatversion=2` (`content` key).
  * @example
  * ```ts
- * const page: RevisionsPageInterface = Object.values(data.query?.pages ?? {})[0];
+ * const page: RevisionsPageType = Object.values(data.query?.pages ?? {})[0];
  * const wikitext = page.revisions?.[0]['*'] ?? '';
  * ```
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
- * @see RevisionsResponseInterface
+ * @see RevisionsResponseType
  */
-export interface RevisionsPageInterface {
+export type RevisionsPageType = {
   readonly title:     string;
   readonly pageid?:   number;
   readonly missing?:  true;
@@ -74,27 +74,27 @@ export interface RevisionsPageInterface {
     readonly '*'?:     string;  // formatversion 1 — content here
     readonly content?: string;  // formatversion 2 fallback
   }>;
-}
+};
 
 /**
  * Top-level response shape for a MediaWiki `revisions` query.
  *
- * @remarks Wraps a map of page ID strings to `RevisionsPageInterface` entries.
+ * @remarks Wraps a map of page ID strings to `RevisionsPageType` entries.
  * @example
  * ```ts
- * const data: RevisionsResponseInterface = await api.get(params);
+ * const data: RevisionsResponseType = await api.get(params);
  * const pages = Object.values(data.query?.pages ?? {});
  * ```
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
- * @see RevisionsPageInterface
+ * @see RevisionsPageType
  */
-export interface RevisionsResponseInterface {
+export type RevisionsResponseType = {
   readonly query?: {
-    readonly pages?: Record<string, RevisionsPageInterface>;
+    readonly pages?: Record<string, RevisionsPageType>;
   };
-}
+};
 
 /**
  * Configuration for MediaWikiScraper instances.
@@ -102,14 +102,14 @@ export interface RevisionsResponseInterface {
  * @remarks Specifies the API endpoint URL and optional rate-limiting parameters.
  * @example
  * ```ts
- * const config: MediaWikiConfigInterface = { apiUrl: 'https://wiki.example.com/api.php', rateLimitMs: 1000 };
+ * const config: MediaWikiConfigType = { apiUrl: 'https://wiki.example.com/api.php', rateLimitMs: 1000 };
  * ```
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
  * @see MediaWikiScraper
  */
-export interface MediaWikiConfigInterface {
+export type MediaWikiConfigType = {
   /** Full URL to the MediaWiki action API (e.g. `https://wiki.example.com/api.php`). */
   readonly apiUrl: string;
   /** Minimum milliseconds between API requests. */
@@ -128,7 +128,7 @@ export interface MediaWikiConfigInterface {
   readonly retryMaxDelayMs?: number | undefined;
   /** Optional shared content store; when set, fetchPage / fetchPagesBatch consult the cache before consuming the rate limiter. */
   readonly cache?: ScraperCache | undefined;
-}
+};
 
 /**
  * A single MediaWiki article with its wikitext content.
@@ -136,7 +136,7 @@ export interface MediaWikiConfigInterface {
  * @remarks Returned by `MediaWikiScraper.fetchPage` and `MediaWikiScraper.fetchPagesBatch`.
  * @example
  * ```ts
- * const page: WikiPageInterface = await scraper.fetchPage('Main Page');
+ * const page: WikiPageType = await scraper.fetchPage('Main Page');
  * console.log(page.wikitext);
  * ```
  * @category Scrapers
@@ -144,12 +144,12 @@ export interface MediaWikiConfigInterface {
  * @group Scrapers
  * @see MediaWikiScraper
  */
-export interface WikiPageInterface {
+export type WikiPageType = {
   /** Article title. */
   readonly title: string;
   /** Raw wikitext source of the article. */
   readonly wikitext: string;
-}
+};
 
 /**
  * A member entry returned from a MediaWiki category listing.
@@ -157,16 +157,16 @@ export interface WikiPageInterface {
  * @remarks Returned by `MediaWikiScraper.fetchCategory` and `MediaWikiScraper.fetchAllPages`.
  * @example
  * ```ts
- * const members: CategoryMemberInterface[] = await scraper.fetchCategory('Ships');
+ * const members: CategoryMemberType[] = await scraper.fetchCategory('Ships');
  * ```
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
  * @see MediaWikiScraper
  */
-export interface CategoryMemberInterface {
+export type CategoryMemberType = {
   /** Article title. */
   readonly title: string;
   /** Numeric MediaWiki page ID. */
   readonly pageid: number;
-}
+};

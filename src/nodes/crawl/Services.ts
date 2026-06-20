@@ -18,7 +18,7 @@ import type { LinkCrawlState } from '../../state/LinkCrawlState.js';
  * @category Services
  * @since 3.0.0
  */
-export interface LinkCrawlServices {
+export type LinkCrawlServices = {
   /** Logger for node-level diagnostics. */
   readonly log: Logger;
   /** Optional shared HTTP response cache; `null` when caching is disabled. */
@@ -29,4 +29,4 @@ export interface LinkCrawlServices {
   readonly policy: HttpRetryPolicy;
   /** The Dagonizer dispatcher for this crawl run. */
   readonly dispatcher: DagonizerInterface<LinkCrawlState, LinkCrawlServices>;
-}
+};

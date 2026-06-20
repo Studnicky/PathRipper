@@ -2,14 +2,14 @@ import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
-import type { ScrapedPageInterface } from '../scrapers/HtmlScraper.js';
-import type { RawContentInterface } from '../types/PipelineState.js';
+import type { ScrapedPageType } from '../scrapers/HtmlScraper.js';
+import type { RawContentType } from '../types/PipelineState.js';
 import { toNodeError }              from './fileUtils.js';
 import type { ScrapeState }         from '../state/ScrapeState.js';
 import type { RipperServices }      from '../services/RipperServices.js';
 
 /** Returns true when the value looks like an HtmlScraper. */
-const isHtmlScraper = (val: unknown): val is { fetchPage(url: string): Promise<ScrapedPageInterface> } => {
+const isHtmlScraper = (val: unknown): val is { fetchPage(url: string): Promise<ScrapedPageType> } => {
   return typeof val === 'object' && val !== null && typeof (val as { fetchPage?: unknown }).fetchPage === 'function';
 };
 
@@ -58,7 +58,7 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
       return NodeOutputBuilder.of('error');
     }
 
-    let result: ScrapedPageInterface;
+    let result: ScrapedPageType;
     const fromCache = services.cache !== null && services.cache.has(url);
     try {
       result = await scraper.fetchPage(url);
@@ -69,7 +69,7 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
     }
 
     const includeRaw = services.target.cfg['includeRawContent'] !== false;
-    const raw: RawContentInterface | undefined = includeRaw
+    const raw: RawContentType | undefined = includeRaw
       ? { contentType: 'text/html', content: result.html, fetchedAt: new Date().toISOString() }
       : undefined;
 

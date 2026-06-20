@@ -13,7 +13,7 @@
  *
  * @category Logging
  * @since 2.0.0
- * @see {@link WriteOptsInterface}
+ * @see {@link WriteOptsType}
  * @group Types
  */
 export type LevelType = 'debug' | 'info' | 'warn' | 'error';
@@ -27,7 +27,7 @@ export type LevelType = 'debug' | 'info' | 'warn' | 'error';
  *
  * @example
  * ```ts
- * const opts: WriteOptsInterface = {
+ * const opts: WriteOptsType = {
  *   level: 'info',
  *   component: 'HtmlScraper',
  *   operation: 'fetchPage',
@@ -41,7 +41,7 @@ export type LevelType = 'debug' | 'info' | 'warn' | 'error';
  * @see {@link LevelType}
  * @group Types
  */
-export interface WriteOptsInterface {
+export type WriteOptsType = {
   /** Severity level of the log entry. */
   readonly level:     LevelType;
   /** Name of the module or class emitting the log. */
@@ -52,4 +52,4 @@ export interface WriteOptsInterface {
   readonly message:   string;
   /** Optional structured context data. */
   readonly context?:  Readonly<Record<string, unknown>> | undefined;
-}
+};

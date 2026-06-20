@@ -1,7 +1,7 @@
 import { NodeStateBase } from '@studnicky/dagonizer';
 import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
-import type { PipelinePageInterface } from '../types/PipelineState.js';
+import type { PipelinePageType } from '../types/PipelineState.js';
 
 /**
  * Shared state flowing through every node in a scrape DAG.
@@ -39,7 +39,7 @@ import type { PipelinePageInterface } from '../types/PipelineState.js';
  */
 export class ScrapeState extends NodeStateBase {
   /** Currently-active page document (set per fan-out item by fetch nodes). */
-  page: PipelinePageInterface = { targetId: '', title: '', url: '' };
+  page: PipelinePageType = { targetId: '', title: '', url: '' };
 
   /** Plugin-populated output; `null` until a parse node writes to it. */
   output: Record<string, unknown> | null = null;
@@ -140,7 +140,7 @@ export class ScrapeState extends NodeStateBase {
   protected override restoreData(snap: JsonObjectType): void {
     const page = snap['page'];
     if (page !== null && typeof page === 'object' && !Array.isArray(page)) {
-      this.page = page as unknown as PipelinePageInterface;
+      this.page = page as unknown as PipelinePageType;
     }
     const out = snap['output'];
     this.output = (out !== null && typeof out === 'object' && !Array.isArray(out))

@@ -9,7 +9,7 @@ import { ValidateConfigSchemaNode } from '../nodes/config/ValidateConfigSchemaNo
 import { NormalizeCacheNode }       from '../nodes/config/NormalizeCacheNode.js';
 import { AssertInvariantsNode }     from '../nodes/config/AssertInvariantsNode.js';
 import { ConfigLoadState }          from '../state/ConfigLoadState.js';
-import type { RipperConfigInterface, NormalizedRipperConfigInterface } from '../types/Config.js';
+import type { RipperConfigType, NormalizedRipperConfigType } from '../types/Config.js';
 import { RipperConfigError } from '../errors/RipperConfigError.js';
 
 // Re-export RAW_CACHE_OFF_ERROR so external callers and tests can import it
@@ -59,8 +59,8 @@ _dispatcher.registerDAG(configLoadFlow);
  *
  * @category Configuration
  * @since 2.0.0
- * @see {@link RipperConfigInterface}
- * @see {@link NormalizedRipperConfigInterface}
+ * @see {@link RipperConfigType}
+ * @see {@link NormalizedRipperConfigType}
  * @group Core
  */
 export class RipperConfig {
@@ -68,11 +68,11 @@ export class RipperConfig {
    * Reads and AJV-validates a JSON config file, then normalizes it.
    *
    * @param configPath - Path to the config JSON file (resolved to absolute).
-   * @returns Normalized `NormalizedRipperConfigInterface` object.
+   * @returns Normalized `NormalizedRipperConfigType` object.
    * @throws {RipperConfigError} When the file is missing, unparseable, fails schema
    *   validation, or violates the raw-on + cache-off invariant.
    */
-  static async load(configPath: string): Promise<NormalizedRipperConfigInterface> {
+  static async load(configPath: string): Promise<NormalizedRipperConfigType> {
     const state = new ConfigLoadState();
     state.path  = resolve(configPath);
 
@@ -94,9 +94,9 @@ export class RipperConfig {
   /**
    * Returns a minimal valid config with sensible output defaults.
    *
-   * @returns A `RipperConfigInterface` with `output.basePath` set to `./output`.
+   * @returns A `RipperConfigType` with `output.basePath` set to `./output`.
    */
-  static defaults(): RipperConfigInterface {
+  static defaults(): RipperConfigType {
     return {
       output: { basePath: './output', format: 'json', pretty: true },
     };

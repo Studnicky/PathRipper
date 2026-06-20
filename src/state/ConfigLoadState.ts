@@ -1,7 +1,7 @@
 import { NodeStateBase } from '@studnicky/dagonizer';
 import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
-import type { RipperConfigInterface, NormalizedRipperConfigInterface } from '../types/Config.js';
+import type { RipperConfigType, NormalizedRipperConfigType } from '../types/Config.js';
 
 /**
  * State flowing through every node in the config-load DAG.
@@ -35,13 +35,13 @@ export class ConfigLoadState extends NodeStateBase {
    * AJV-validated config object (populated by `ValidateConfigSchemaNode`).
    * `null` until validation succeeds.
    */
-  validated: RipperConfigInterface | null = null;
+  validated: RipperConfigType | null = null;
 
   /**
    * Fully normalized config (populated by `NormalizeCacheNode`).
    * `null` until normalization succeeds. This is the final output.
    */
-  normalized: NormalizedRipperConfigInterface | null = null;
+  normalized: NormalizedRipperConfigType | null = null;
 
   /**
    * Clone state for isolated execution (sub-flows and fan-out).
@@ -88,14 +88,14 @@ export class ConfigLoadState extends NodeStateBase {
 
     const validated = snap['validated'];
     if (validated !== null && typeof validated === 'object' && !Array.isArray(validated)) {
-      this.validated = validated as unknown as RipperConfigInterface;
+      this.validated = validated as unknown as RipperConfigType;
     } else {
       this.validated = null;
     }
 
     const normalized = snap['normalized'];
     if (normalized !== null && typeof normalized === 'object' && !Array.isArray(normalized)) {
-      this.normalized = normalized as unknown as NormalizedRipperConfigInterface;
+      this.normalized = normalized as unknown as NormalizedRipperConfigType;
     } else {
       this.normalized = null;
     }

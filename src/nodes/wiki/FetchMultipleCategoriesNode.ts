@@ -1,7 +1,7 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { CategoryMemberInterface } from '../../types/MediaWikiScraper.js';
+import type { CategoryMemberType } from '../../types/MediaWikiScraper.js';
 import type { MediaWikiScraper }        from '../../scrapers/MediaWikiScraper.js';
 import { toNodeError }                  from '../fileUtils.js';
 import type { MemberResolutionState }   from '../../state/MemberResolutionState.js';
@@ -49,7 +49,7 @@ class FetchMultipleCategoriesNodeImpl extends ScalarNode<MemberResolutionState, 
       : [];
 
     const seen    = new Set<string>();
-    const members: CategoryMemberInterface[] = [];
+    const members: CategoryMemberType[] = [];
 
     try {
       for (const cat of categories) {

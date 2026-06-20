@@ -10,7 +10,7 @@ import { pageSlug }             from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
 import type { RipperServices }  from '../services/RipperServices.js';
 
-const logger = Logger.forComponent('WikiWriteRawNode');
+const log = Logger.forComponent('WikiWriteRawNode');
 
 type WikiWriteRawOutput = 'success';
 
@@ -42,7 +42,7 @@ class WikiWriteRawNodeImpl extends ScalarNode<ScrapeState, WikiWriteRawOutput, R
     const outFile = join(services.outDir, services.target.id, 'raw', `${slug}.txt`);
     await mkdir(dirname(outFile), { recursive: true });
     await writeFile(outFile, wikitext, 'utf8');
-    logger.debug('wiki:write-raw', `Wrote raw wikitext: ${outFile}`, { task: 'wiki:write-raw', outFile });
+    log.debug('wiki:write-raw', `Wrote raw wikitext: ${outFile}`, { task: 'wiki:write-raw', outFile });
     return NodeOutputBuilder.of('success');
   }
 }

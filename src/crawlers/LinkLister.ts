@@ -4,7 +4,7 @@ import type { BuildListResult }         from '../types/Results.js';
 import { Logger }                       from '../modules/logger/logger.js';
 import { RateLimiter }                  from '../modules/http/rateLimiter.js';
 import { HttpRetryPolicy }              from '../modules/http/httpRetryPolicy.js';
-import type { LinkListerConfigInterface } from '../types/LinkListerConfig.js';
+import type { LinkListerConfigType } from '../types/LinkListerConfig.js';
 
 import { LinkCrawlState }           from '../state/LinkCrawlState.js';
 import { InitFrontierNode }         from '../nodes/crawl/InitFrontierNode.js';
@@ -14,7 +14,7 @@ import { CrawlExhaustedNode }       from '../nodes/crawl/CrawlExhaustedNode.js';
 import type { LinkCrawlServices }   from '../nodes/crawl/Services.js';
 import { buildLinkCrawlFlow, LINK_CRAWL_FLOW_NAME } from '../flows/linkCrawlFlow.js';
 
-export type { LinkListerConfigInterface };
+export type { LinkListerConfigType };
 
 const DEFAULT_RATE_LIMIT_MS = 100;
 
@@ -42,17 +42,17 @@ const DEFAULT_RATE_LIMIT_MS = 100;
  *
  * @category Crawlers
  * @since 3.0.0
- * @see {@link LinkListerConfigInterface}
+ * @see {@link LinkListerConfigType}
  * @group Core
  */
 export class LinkLister {
-  readonly #config: LinkListerConfigInterface;
+  readonly #config: LinkListerConfigType;
   readonly #log: Logger;
 
   /**
    * @param config - Crawl configuration including domain, target, rate-limit settings, and a shared cache.
    */
-  private constructor(config: LinkListerConfigInterface) {
+  private constructor(config: LinkListerConfigType) {
     this.#config = config;
     this.#log    = Logger.forComponent('LinkLister');
   }
@@ -63,7 +63,7 @@ export class LinkLister {
    * @param config - Crawl configuration.
    * @returns A new LinkLister.
    */
-  public static create(config: LinkListerConfigInterface): LinkLister {
+  public static create(config: LinkListerConfigType): LinkLister {
     return new LinkLister(config);
   }
 
@@ -129,7 +129,7 @@ export class LinkLister {
     state.delimiterRe = cfg.delimiter.source;
     state.maxPages    = cfg.maxPages;
     state.headers     = { ...(cfg.headers ?? {}) };
-    // maxDepth is not exposed in LinkListerConfigInterface; leave as undefined
+    // maxDepth is not exposed in LinkListerConfigType; leave as undefined
     // so the DAG runs until frontier-empty or budget-exhausted.
 
     // ── Dispatch ────────────────────────────────────────────────────────────────

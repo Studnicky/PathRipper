@@ -9,7 +9,7 @@ import { pageSlug }         from './fileUtils.js';
 import type { ScrapeState } from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
 
-const logger = Logger.forComponent('JsonWriteNode');
+const log = Logger.forComponent('JsonWriteNode');
 
 type JsonWriteOutput = 'success' | 'skipped';
 
@@ -37,7 +37,7 @@ class JsonWriteNodeImpl extends ScalarNode<ScrapeState, JsonWriteOutput, RipperS
   ): Promise<NodeOutputType<JsonWriteOutput>> {
     const { services } = context;
     if (state.output === null) {
-      logger.debug('json:write', 'Skipping write — state.output is null', { task: 'json:write' });
+      log.debug('json:write', 'Skipping write — state.output is null', { task: 'json:write' });
       return NodeOutputBuilder.of('skipped');
     }
     const slug            = pageSlug(state.page);
@@ -52,7 +52,7 @@ class JsonWriteNodeImpl extends ScalarNode<ScrapeState, JsonWriteOutput, RipperS
     // _raw is NOT embedded — it lives in the sibling raw/ folder.
     const payload: Record<string, unknown> = { ...state.output };
     await writeFile(outFile, JSON.stringify(payload, null, 2), 'utf8');
-    logger.debug('json:write', `Wrote JSON: ${outFile}`, { task: 'json:write', outFile });
+    log.debug('json:write', `Wrote JSON: ${outFile}`, { task: 'json:write', outFile });
     return NodeOutputBuilder.of('success');
   }
 }

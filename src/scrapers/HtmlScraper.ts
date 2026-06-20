@@ -9,9 +9,9 @@ import { ScraperCache } from '../modules/cache/ScraperCache.js';
 import type { FetchTextResult } from '../types/Results.js';
 import { HttpError } from '../errors/HttpError.js';
 import { CacheMissError } from '../errors/CacheMissError.js';
-import type { HtmlScraperConfigInterface, ScrapedPageInterface } from '../types/HtmlScraper.js';
+import type { HtmlScraperConfigType, ScrapedPageType } from '../types/HtmlScraper.js';
 
-export type { HtmlScraperConfigInterface, ScrapedPageInterface };
+export type { HtmlScraperConfigType, ScrapedPageType };
 
 const DEFAULT_RATE_LIMIT_MS = 250;
 
@@ -45,7 +45,7 @@ export class HtmlScraper {
   /**
    * @param config - Scraper configuration including base URL, rate limit, and headers.
    */
-  private constructor(config: HtmlScraperConfigInterface) {
+  private constructor(config: HtmlScraperConfigType) {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
     this.#limiter = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
@@ -64,7 +64,7 @@ export class HtmlScraper {
    * @param config - Scraper configuration.
    * @returns A new HtmlScraper.
    */
-  public static create(config: HtmlScraperConfigInterface): HtmlScraper {
+  public static create(config: HtmlScraperConfigType): HtmlScraper {
     return new HtmlScraper(config);
   }
 
@@ -75,7 +75,7 @@ export class HtmlScraper {
    * @returns Scraped page with resolved URL, Cheerio document, and raw HTML.
    * @throws {HttpError} When the server returns a non-OK response.
    */
-  async fetchPage(path: string): Promise<ScrapedPageInterface> {
+  async fetchPage(path: string): Promise<ScrapedPageType> {
     let url: string;
     if (path.startsWith('http')) {
       url = path;

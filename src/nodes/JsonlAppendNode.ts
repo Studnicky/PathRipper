@@ -8,7 +8,7 @@ import { Logger }           from '../modules/logger/logger.js';
 import type { ScrapeState } from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
 
-const logger = Logger.forComponent('JsonlAppendNode');
+const log = Logger.forComponent('JsonlAppendNode');
 
 type JsonlAppendOutput = 'success' | 'skipped';
 
@@ -36,7 +36,7 @@ class JsonlAppendNodeImpl extends ScalarNode<ScrapeState, JsonlAppendOutput, Rip
   ): Promise<NodeOutputType<JsonlAppendOutput>> {
     const { services } = context;
     if (state.output === null) {
-      logger.debug('jsonl:append', 'Skipping append — state.output is null', { task: 'jsonl:append' });
+      log.debug('jsonl:append', 'Skipping append — state.output is null', { task: 'jsonl:append' });
       return NodeOutputBuilder.of('skipped');
     }
     const splitByTaskName = services.splitByTaskName !== false;
@@ -50,7 +50,7 @@ class JsonlAppendNodeImpl extends ScalarNode<ScrapeState, JsonlAppendOutput, Rip
     // _raw is NOT embedded — it lives in the sibling raw/ folder.
     const payload: Record<string, unknown> = { ...state.output };
     await appendFile(outFile, `${JSON.stringify(payload)}\n`, 'utf8');
-    logger.debug('jsonl:append', `Appended JSONL row: ${outFile}`, { task: 'jsonl:append', outFile });
+    log.debug('jsonl:append', `Appended JSONL row: ${outFile}`, { task: 'jsonl:append', outFile });
     return NodeOutputBuilder.of('success');
   }
 }

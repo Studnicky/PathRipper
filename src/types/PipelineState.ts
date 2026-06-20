@@ -8,12 +8,12 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  * @remarks
  * Built-in tasks (e.g. `html:fetch`, `json:write`) read from this object; user
  * plugins are unaffected and continue using `state.page` / `state.output`.
- * Field is optional on {@link PipelineStateInterface} so existing callers
+ * Field is optional on {@link PipelineStateType} so existing callers
  * keep working — context-aware tasks check for it explicitly.
  *
  * @example
  * ```ts
- * const ctx: PipelineContextInterface = {
+ * const ctx: PipelineContextType = {
  *   target: 'pathfinder-monsters',
  *   outDir: '/tmp/scrape',
  *   scraper,
@@ -23,10 +23,10 @@ import type { ScraperCache } from '../modules/cache/ScraperCache.js';
  *
  * @category Pipeline
  * @since 2.0.0
- * @see {@link PipelineStateInterface}
+ * @see {@link PipelineStateType}
  * @group Types
  */
-export interface PipelineContextInterface {
+export type PipelineContextType = {
   /** Scrape target identifier from the config. */
   readonly target:          string;
   /** Output base directory; tasks write under `<outDir>/<target>/...`. */
@@ -51,30 +51,30 @@ export interface PipelineContextInterface {
   readonly splitByTaskName?: boolean | undefined;
   /** Discovered target URLs (populated by `crawl:list-targets`); orchestrator iterates this when set. */
   targets?: ReadonlyArray<string>;
-}
+};
 
 /**
  * Raw fetched content captured when `includeRawContent` is enabled on the target config.
  *
  * @remarks
  * Populated by the fetch task (`html:fetch` or `wiki:fetch`) unless `config.includeRawContent` is
- * explicitly `false`. Carried on `PipelinePageInterface._raw` through the pipeline and injected
+ * explicitly `false`. Carried on `PipelinePageType._raw` through the pipeline and injected
  * into the serialized output by the write tasks (`json:write`, `jsonl:append`) just before disk
  * write. Plugins must not read or write this field; it is managed entirely by built-in tasks.
  *
  * @category Pipeline
  * @since 2.5.0
- * @see {@link PipelinePageInterface}
+ * @see {@link PipelinePageType}
  * @group Types
  */
-export interface RawContentInterface {
+export type RawContentType = {
   /** MIME content type of the fetched response (e.g. `"text/html"`, `"application/json"`). */
   readonly contentType: string;
   /** Raw response body string, byte-for-byte as received (HTML or JSON). */
   readonly content:     string;
   /** ISO-8601 timestamp at which the content was fetched. */
   readonly fetchedAt:   string;
-}
+};
 
 /**
  * Normalized page data carried through the pipeline for both HTML and wiki sources.
@@ -86,7 +86,7 @@ export interface RawContentInterface {
  *
  * @example
  * ```ts
- * const page: PipelinePageInterface = {
+ * const page: PipelinePageType = {
  *   targetId: 'pathfinder-monsters',
  *   title: 'Goblin',
  *   url: 'https://example.com/wiki/Goblin',
@@ -96,10 +96,10 @@ export interface RawContentInterface {
  *
  * @category Pipeline
  * @since 2.0.0
- * @see {@link PipelineStateInterface}
+ * @see {@link PipelineStateType}
  * @group Types
  */
-export interface PipelinePageInterface {
+export type PipelinePageType = {
   /** Scrape target identifier from the config. */
   readonly targetId:  string;
   /** Page title or URL used as a display/slug source. */
@@ -114,8 +114,8 @@ export interface PipelinePageInterface {
    * Raw fetched content; present by default. Absent only when `includeRawContent: false` is set on the target config.
    * Set by the fetch task; consumed by write tasks. Plugins must not touch this field.
    */
-  readonly _raw?:     RawContentInterface | undefined;
-}
+  readonly _raw?:     RawContentType | undefined;
+};
 
 /**
  * Shared mutable state passed through every task in a single pipeline run.
@@ -127,7 +127,7 @@ export interface PipelinePageInterface {
  *
  * @example
  * ```ts
- * const state: PipelineStateInterface = {
+ * const state: PipelineStateType = {
  *   targetId: 'pathfinder-monsters',
  *   page: { targetId: 'pathfinder-monsters', title: 'Goblin', url: '...' },
  *   output: null,
@@ -136,16 +136,16 @@ export interface PipelinePageInterface {
  *
  * @category Pipeline
  * @since 2.0.0
- * @see {@link PipelinePageInterface}
+ * @see {@link PipelinePageType}
  * @group Types
  */
-export interface PipelineStateInterface extends Record<string, unknown> {
+export type PipelineStateType = Record<string, unknown> & {
   /** Scrape target identifier from the config. */
   readonly targetId: string;
   /** Normalized page data for this pipeline execution. */
-  readonly page:     PipelinePageInterface;
+  readonly page:     PipelinePageType;
   /** Parsed output written by tasks; `null` until a task populates it. */
   output: Record<string, unknown> | null;
   /** Optional per-run context populated by the orchestrator for built-in tasks. */
-  context?: PipelineContextInterface;
-}
+  context?: PipelineContextType;
+};

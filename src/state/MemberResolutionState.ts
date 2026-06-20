@@ -1,7 +1,7 @@
 import { NodeStateBase } from '@studnicky/dagonizer';
 import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
-import type { CategoryMemberInterface } from '../types/MediaWikiScraper.js';
+import type { CategoryMemberType } from '../types/MediaWikiScraper.js';
 
 /**
  * State flowing through the `wikiResolveMembersDAG` member-resolution phase.
@@ -38,7 +38,7 @@ export class MemberResolutionState extends NodeStateBase {
    * Output: populated by whichever branch node executes.
    * Empty array until a branch node writes to it.
    */
-  members: CategoryMemberInterface[] = [];
+  members: CategoryMemberType[] = [];
 
   public override clone(): this {
     const cloned = new MemberResolutionState();
@@ -72,6 +72,6 @@ export class MemberResolutionState extends NodeStateBase {
     if (typeof snap['resumeFailures'] === 'boolean') this.resumeFailures = snap['resumeFailures'];
     this.category = typeof snap['category'] === 'string' ? snap['category'] : undefined;
     const mem = snap['members'];
-    if (Array.isArray(mem)) this.members = mem as unknown as CategoryMemberInterface[];
+    if (Array.isArray(mem)) this.members = mem as unknown as CategoryMemberType[];
   }
 }

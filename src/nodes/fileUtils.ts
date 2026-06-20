@@ -1,7 +1,7 @@
 import { NodeErrorBuilder } from '@studnicky/dagonizer';
 import type { NodeErrorType } from '@studnicky/dagonizer';
 
-import type { PipelinePageInterface } from '../types/PipelineState.js';
+import type { PipelinePageType } from '../types/PipelineState.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 
 /**
@@ -43,7 +43,7 @@ export const urlToFilename = (url: string): string => {
 };
 
 /** Returns the slug for a page, preferring URL-based derivation for absolute URLs and falling back to title. */
-export const pageSlug = (page: PipelinePageInterface): string => {
+export const pageSlug = (page: PipelinePageType): string => {
   if (page.url.length > 0) {
     try {
       new URL(page.url);

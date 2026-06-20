@@ -2,7 +2,7 @@ import { RetryPolicy } from '@studnicky/dagonizer/runtime';
 import { BackoffStrategyNames } from '@studnicky/dagonizer/entities';
 import type { RetryPolicyOptionsType } from '@studnicky/dagonizer/runtime';
 import { ErrorClassifier } from './errorClassifier.js';
-import type { ExtendedErrorInterface } from './errorClassifier.js';
+import type { ExtendedErrorType } from './errorClassifier.js';
 
 export type { RetryPolicyOptionsType };
 
@@ -22,14 +22,14 @@ const DEFAULT_MAX_DELAY_MS  = 30_000;
  * @since 3.0.0
  * @group Types
  */
-export interface HttpRetryConfigInterface {
+export type HttpRetryConfigType = {
   /** Maximum number of attempts before giving up (default 3). */
   readonly maxAttempts?:    number | undefined;
   /** Initial delay in milliseconds before the first retry (default 500). */
   readonly baseDelayMs?:    number | undefined;
   /** Maximum delay cap in milliseconds (default 30 000). */
   readonly maxDelayMs?:     number | undefined;
-}
+};
 
 /**
  * `RetryPolicy` subclass that uses `ErrorClassifier` for retry decisions.
@@ -63,7 +63,7 @@ export class HttpRetryPolicy extends RetryPolicy {
   /**
    * @param config - Retry configuration; merged over Ripperoni defaults.
    */
-  private constructor(config: HttpRetryConfigInterface = {}) {
+  private constructor(config: HttpRetryConfigType = {}) {
     super({
       maxAttempts: config.maxAttempts ?? DEFAULT_MAX_ATTEMPTS,
       strategy:    BackoffStrategyNames.DECORRELATED_JITTER,
@@ -81,7 +81,7 @@ export class HttpRetryPolicy extends RetryPolicy {
    * @param config - Optional retry configuration.
    * @returns A new `HttpRetryPolicy`.
    */
-  public static create(config: HttpRetryConfigInterface = {}): HttpRetryPolicy {
+  public static create(config: HttpRetryConfigType = {}): HttpRetryPolicy {
     return new HttpRetryPolicy(config);
   }
 
@@ -94,7 +94,7 @@ export class HttpRetryPolicy extends RetryPolicy {
    */
   public override shouldRetry(error: Error, attempt: number): boolean {
     if (attempt >= this.maxAttempts) return false;
-    const result = this.#classifier.classify(error as ExtendedErrorInterface);
+    const result = this.#classifier.classify(error as ExtendedErrorType);
     return result.retryable;
   }
 
@@ -109,7 +109,7 @@ export class HttpRetryPolicy extends RetryPolicy {
   public override getDelay(attempt: number, options?: { readonly error: Error | null }): number {
     const error = options?.error ?? null;
     if (error !== null) {
-      const result = this.#classifier.classify(error as ExtendedErrorInterface);
+      const result = this.#classifier.classify(error as ExtendedErrorType);
       if (result.backoffHint !== undefined) return Math.min(result.backoffHint, this.maxDelay);
     }
     return super.getDelay(attempt, { error });

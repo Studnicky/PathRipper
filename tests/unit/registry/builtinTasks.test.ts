@@ -17,8 +17,8 @@ import { JsonWriteNode }       from '../../../src/nodes/JsonWriteNode.js';
 import { JsonlAppendNode }     from '../../../src/nodes/JsonlAppendNode.js';
 import { ValidateSchemaNode }  from '../../../src/nodes/ValidateSchemaNode.js';
 import { ExternalSchemaError } from '../../../src/errors/ExternalSchemaError.js';
-import type { RawContentInterface } from '../../../src/types/PipelineState.js';
-import type { ScrapedPageInterface }from '../../../src/types/HtmlScraper.js';
+import type { RawContentType } from '../../../src/types/PipelineState.js';
+import type { ScrapedPageType }from '../../../src/types/HtmlScraper.js';
 import { Logger }              from '../../../src/modules/logger/logger.js';
 
 const TARGET = 'unit-target';
@@ -50,8 +50,8 @@ const makeContext = (services: Partial<RipperServices>): NodeContextType<RipperS
 
 class FakeHtmlScraper {
   public calls: string[] = [];
-  public constructor(private readonly response: ScrapedPageInterface) { /* fixture */ }
-  public async fetchPage(path: string): Promise<ScrapedPageInterface> {
+  public constructor(private readonly response: ScrapedPageType) { /* fixture */ }
+  public async fetchPage(path: string): Promise<ScrapedPageType> {
     this.calls.push(path);
     return Promise.resolve(this.response);
   }
@@ -93,7 +93,7 @@ describe('builtinNodes', () => {
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
         html: '<html><body>hello</body></html>',
-        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+        $: ((): unknown => ({}))() as unknown as ScrapedPageType['$'],
       });
       const state = buildState();
       state.setMetadata('currentUrl', 'https://example.test/page');
@@ -124,7 +124,7 @@ describe('builtinNodes', () => {
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
         html: HTML,
-        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+        $: ((): unknown => ({}))() as unknown as ScrapedPageType['$'],
       });
       const state = buildState();
       state.setMetadata('currentUrl', 'https://example.test/page');
@@ -135,7 +135,7 @@ describe('builtinNodes', () => {
       });
       await HtmlFetchNode.execute(Batch.of(state), ctx);
       assert.ok(state.page._raw !== undefined, '_raw should be set by default');
-      const raw = state.page._raw as RawContentInterface;
+      const raw = state.page._raw as RawContentType;
       assert.equal(raw.contentType, 'text/html');
       assert.equal(raw.content, HTML);
     });
@@ -144,7 +144,7 @@ describe('builtinNodes', () => {
       const scraper = new FakeHtmlScraper({
         url:  'https://example.test/page-resolved',
         html: '<html/>',
-        $: ((): unknown => ({}))() as unknown as ScrapedPageInterface['$'],
+        $: ((): unknown => ({}))() as unknown as ScrapedPageType['$'],
       });
       const state = buildState();
       state.setMetadata('currentUrl', 'https://example.test/page');
@@ -205,7 +205,7 @@ describe('builtinNodes', () => {
     });
 
     it('does NOT include _raw in written JSON', async () => {
-      const raw: RawContentInterface = { contentType: 'text/html', content: '<p/>', fetchedAt: '2026-01-01T00:00:00.000Z' };
+      const raw: RawContentType = { contentType: 'text/html', content: '<p/>', fetchedAt: '2026-01-01T00:00:00.000Z' };
       const state = buildState({ page: { url: 'https://example.test/raw-page', _raw: raw }, output: { name: 'X' } });
       const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'stub:parse' });
       await JsonWriteNode.execute(Batch.of(state), ctx);
@@ -251,7 +251,7 @@ describe('builtinNodes', () => {
     });
 
     it('does NOT include _raw in appended JSONL rows', async () => {
-      const raw: RawContentInterface = { contentType: 'text/html', content: '<b/>', fetchedAt: '2026-06-01T00:00:00.000Z' };
+      const raw: RawContentType = { contentType: 'text/html', content: '<b/>', fetchedAt: '2026-06-01T00:00:00.000Z' };
       const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'stub:parse' });
       const state = buildState({ page: { _raw: raw }, output: { n: 1 } });
       await JsonlAppendNode.execute(Batch.of(state), ctx);

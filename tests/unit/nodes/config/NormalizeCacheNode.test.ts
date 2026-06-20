@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 import { NormalizeCacheNode, RAW_CACHE_OFF_ERROR } from '../../../../src/nodes/config/NormalizeCacheNode.js';
 import { ConfigLoadState } from '../../../../src/state/ConfigLoadState.js';
-import type { RipperConfigInterface } from '../../../../src/types/Config.js';
+import type { RipperConfigType } from '../../../../src/types/Config.js';
 
 const makeContext = () => ({
   signal:   new AbortController().signal,
@@ -13,11 +13,11 @@ const makeContext = () => ({
   services: undefined,
 });
 
-function makeValidated(partial: Partial<RipperConfigInterface>): RipperConfigInterface {
+function makeValidated(partial: Partial<RipperConfigType>): RipperConfigType {
   return {
     output: { basePath: './out' },
     ...partial,
-  } as RipperConfigInterface;
+  } as RipperConfigType;
 }
 
 describe('NormalizeCacheNode', () => {
@@ -49,7 +49,7 @@ describe('NormalizeCacheNode', () => {
         mywiki: {
           baseUrl:  'https://example.com',
           pipeline: ['html:fetch', 'json:write'],
-        } as RipperConfigInterface['targets'] extends Record<string, infer T> ? T : never,
+        } as RipperConfigType['targets'] extends Record<string, infer T> ? T : never,
       },
     });
 
@@ -68,7 +68,7 @@ describe('NormalizeCacheNode', () => {
           baseUrl:  'https://example.com',
           pipeline: ['html:fetch', 'json:write'],
           cache:    { dir: 'custom/dir', mode: 'read-only' },
-        } as RipperConfigInterface['targets'] extends Record<string, infer T> ? T : never,
+        } as RipperConfigType['targets'] extends Record<string, infer T> ? T : never,
       },
     });
 
@@ -88,7 +88,7 @@ describe('NormalizeCacheNode', () => {
           pipeline: ['html:fetch', 'json:write'],
           cache:    { dir: '.cache', mode: 'off' },
           // includeRawContent absent → defaults to true
-        } as RipperConfigInterface['targets'] extends Record<string, infer T> ? T : never,
+        } as RipperConfigType['targets'] extends Record<string, infer T> ? T : never,
       },
     });
 
@@ -110,7 +110,7 @@ describe('NormalizeCacheNode', () => {
           pipeline:          ['html:fetch', 'json:write'],
           cache:             { dir: '.cache', mode: 'off' },
           includeRawContent: false,
-        } as RipperConfigInterface['targets'] extends Record<string, infer T> ? T : never,
+        } as RipperConfigType['targets'] extends Record<string, infer T> ? T : never,
       },
     });
 
@@ -127,7 +127,7 @@ describe('NormalizeCacheNode', () => {
         bulbapedia: {
           apiUrl:   'https://bulbapedia.bulbagarden.net/w/api.php',
           pipeline: ['wiki:fetch', 'json:write'],
-        } as RipperConfigInterface['mediawiki'] extends Record<string, infer T> | undefined ? T : never,
+        } as RipperConfigType['mediawiki'] extends Record<string, infer T> | undefined ? T : never,
       },
     });
 

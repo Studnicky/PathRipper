@@ -18,7 +18,7 @@ const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).de
 const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInterface }).default
                   ?? (addFormatsModule as unknown as AddFormatsFnInterface);
 
-const logger = Logger.forComponent('ValidateSchemaNode');
+const log = Logger.forComponent('ValidateSchemaNode');
 
 /** Compiled AJV cache keyed by absolute schema path so repeated runs don't recompile. */
 const COMPILED_VALIDATORS = new Map<string, ValidateFunction<unknown>>();
@@ -94,7 +94,7 @@ class ValidateSchemaNodeImpl extends ScalarNode<ScrapeState, ValidateSchemaOutpu
         metadata: { task: 'validate:schema', schemaPath, errors: validator.errors },
       });
       state.collectError(toNodeError(err, 'validate:schema'));
-      logger.warn('validate:schema', `Schema violation: ${errors}`, { schemaPath });
+      log.warn('validate:schema', `Schema violation: ${errors}`, { schemaPath });
       return NodeOutputBuilder.of('invalid');
     }
 

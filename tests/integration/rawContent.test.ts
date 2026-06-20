@@ -14,7 +14,7 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { runHtml } from '../../src/run/runHtml.js';
-import type { NormalizedRipperConfigInterface }   from '../../src/types/Config.js';
+import type { NormalizedRipperConfigType }   from '../../src/types/Config.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -88,7 +88,7 @@ export function register(dispatcher) {
     await rm(outDir, { recursive: true, force: true });
   });
 
-  const makeConfig = (targetName: string, pipeline: string[], extra: Record<string, unknown> = {}): NormalizedRipperConfigInterface => ({
+  const makeConfig = (targetName: string, pipeline: string[], extra: Record<string, unknown> = {}): NormalizedRipperConfigType => ({
     output: { basePath: outDir },
     targets: {
       [targetName]: {
@@ -97,7 +97,7 @@ export function register(dispatcher) {
         ...extra,
       },
     },
-  } as unknown as NormalizedRipperConfigInterface);
+  } as unknown as NormalizedRipperConfigType);
 
   it('plugin pipeline writes JSON to <target>/<pluginTaskName>/ and does NOT embed _raw', async () => {
     const config = makeConfig('raw-default', ['html:fetch', 'stub:parse', 'json:write']);

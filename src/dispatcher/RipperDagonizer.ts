@@ -6,9 +6,9 @@ import type { RipperServices } from '../services/RipperServices.js';
 
 const log = Logger.forComponent('Dispatcher');
 
-export interface RipperDagonizerOptionsInterface {
+export type RipperDagonizerOptionsType = {
   readonly services: RipperServices;
-}
+};;
 
 /**
  * `Dagonizer` subclass that logs the lifecycle hooks directly via a
@@ -23,7 +23,7 @@ export interface RipperDagonizerOptionsInterface {
 export class RipperDagonizer<TState extends NodeStateInterface>
   extends Dagonizer<TState, RipperServices> {
 
-  constructor(options: RipperDagonizerOptionsInterface) {
+  constructor(options: RipperDagonizerOptionsType) {
     super({ services: options.services });
   }
 

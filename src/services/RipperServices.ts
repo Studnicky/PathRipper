@@ -29,7 +29,7 @@ import type { ScrapeState }       from '../state/ScrapeState.js';
  * @category Services
  * @since 3.0.0
  */
-export interface RipperServices {
+export type RipperServices = {
   /** Logger instance for scrape-layer diagnostics. */
   readonly log:            Logger;
   /** Shared page cache; `null` when caching is disabled for this target. */
@@ -55,4 +55,4 @@ export interface RipperServices {
    * `services.dispatcher.execute(...)`.
    */
   readonly dispatcher: DagonizerInterface<ScrapeState, RipperServices>;
-}
+};

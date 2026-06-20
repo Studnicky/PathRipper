@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 import { AssertInvariantsNode } from '../../../../src/nodes/config/AssertInvariantsNode.js';
 import { ConfigLoadState } from '../../../../src/state/ConfigLoadState.js';
-import type { NormalizedRipperConfigInterface } from '../../../../src/types/Config.js';
+import type { NormalizedRipperConfigType } from '../../../../src/types/Config.js';
 
 const makeContext = () => ({
   signal:   new AbortController().signal,
@@ -13,11 +13,11 @@ const makeContext = () => ({
   services: undefined,
 });
 
-function makeNormalized(partial: Partial<NormalizedRipperConfigInterface>): NormalizedRipperConfigInterface {
+function makeNormalized(partial: Partial<NormalizedRipperConfigType>): NormalizedRipperConfigType {
   return {
     output: { basePath: './out' },
     ...partial,
-  } as NormalizedRipperConfigInterface;
+  } as NormalizedRipperConfigType;
 }
 
 describe('AssertInvariantsNode', () => {
@@ -49,7 +49,7 @@ describe('AssertInvariantsNode', () => {
           baseUrl:  'https://example.com',
           pipeline: ['api:fetch', 'json:write'],
           cache:    { dir: '.cache', mode: 'read-write' },
-        } as unknown as NormalizedRipperConfigInterface['targets'] extends Record<string, infer T> | undefined ? T : never,
+        } as unknown as NormalizedRipperConfigType['targets'] extends Record<string, infer T> | undefined ? T : never,
       },
     });
 
@@ -70,7 +70,7 @@ describe('AssertInvariantsNode', () => {
           apiUrl:   'https://example.com/w/api.php',
           pipeline: ['api:fetch'],
           cache:    { dir: '.cache', mode: 'read-write' },
-        } as unknown as NormalizedRipperConfigInterface['mediawiki'] extends Record<string, infer T> | undefined ? T : never,
+        } as unknown as NormalizedRipperConfigType['mediawiki'] extends Record<string, infer T> | undefined ? T : never,
       },
     });
 
@@ -90,7 +90,7 @@ describe('AssertInvariantsNode', () => {
           baseUrl:  'https://example.com',
           pipeline: ['html:fetch', 'json:write'],
           cache:    { dir: '.cache', mode: 'read-write' },
-        } as unknown as NormalizedRipperConfigInterface['targets'] extends Record<string, infer T> | undefined ? T : never,
+        } as unknown as NormalizedRipperConfigType['targets'] extends Record<string, infer T> | undefined ? T : never,
       },
     });
 
