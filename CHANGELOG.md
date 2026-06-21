@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-06-21
+
 ### Added
 
 - **`@studnicky/dagonizer` 0.25 adoption** — upgraded `@studnicky/dagonizer` and `@studnicky/dagonizer-executor-node` 0.24 → 0.25. Every `ScalarNode`/`MonadicNode` now declares the mandatory per-port `outputSchema` contract (a JSON Schema fragment describing the state delta each output port writes); manual `NodeContextType` literals move to `NodeContextBuilder.of(...)`; `DagContainerInterface` is no longer generic.
