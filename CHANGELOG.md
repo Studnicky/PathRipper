@@ -30,7 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Docs rewritten to the native DAG+state model.** All usage guides, walk-throughs, and architecture diagrams describe the `run`/`scaffold` commands, `state.json` configuration, and the DAG-document plugin contract.
-- **Diagram generation** (`docs/.vitepress/scripts/render-dags.mjs`) — now renders only the three currently active plugin/example DAGs (`aonprd:parse`, `docs:parse`, `wiki-docs:parse`). Stale diagrams for deleted flow builders removed from `docs/_generated/`.
+- **Diagram generation + interactive explorer** (`docs/.vitepress/scripts/render-dags.mjs`, `docs/.vitepress/theme/mermaidExplorer.client.ts`) — renders the live native DAGs (the `aonprd:crawl` orchestration, `crawl:discover`, `aonprd:page`, plus the `aonprd:parse`/`docs:parse`/`wiki-docs:parse` plugin DAGs) and ships a client enhancer that adds a pan/zoom/centre/fit D-pad and a fullscreen explore modal (per-diagram fit by default). Stale diagrams for deleted flow builders are removed from `docs/_generated/`; a new **DAG Diagrams** page + sidebar entry collects them.
+
+### Fixed
+
+- **`*.dag.jsonld` assets are now copied into `dist`** — a new `build:assets` step (`scripts/copy-dag-assets.mjs`) mirrors authored DAG documents under `src/` into `dist/`. The runtime loads the builtin `crawl-discover` DAG by a path relative to the compiled module, so without the copy a built `ripperoni run` crashed with `ENOENT`. Verified by a full live AONPRD rip: 13,892 pages crawled, parsed, and written with zero failures.
+- **Mermaid diagram rendering** — concrete theme colours (CSS `var()` crashed khroma and blanked every diagram), keyword-safe node IDs (a colon `:class` collided with mermaid's reserved word), stripped invalid terminal-label annotations, and raised the edge/text-size caps so the 191-node parse DAG renders.
+- **Dead package exports removed** — `./LinkLister` and `./RipperConfig` pointed at modules deleted in the migration.
 
 ### Dependencies
 
