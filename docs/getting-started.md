@@ -1,6 +1,6 @@
 # Getting Started
 
-Ripperoni scrapes websites and produces typed JSON. Point it at a site; it crawls pages, runs them through a pipeline of tasks, and writes structured output. Every scrape is a DAG (directed acyclic graph) executed by [@studnicky/dagonizer](https://github.com/Studnicky/Dagonizer) — the graph engine that drives all task ordering and concurrency.
+Ripperoni scrapes websites and produces typed JSON. Every scrape is a directed acyclic graph (DAG) executed by [@studnicky/dagonizer](https://github.com/Studnicky/Dagonizer). Three artifacts drive a run: an orchestration DAG document, a state file, and one or more plugins.
 
 ## Install
 
@@ -11,130 +11,243 @@ npm install
 npm run build
 ```
 
-## Configure a target — stuff the casing
+## Scaffold a run
 
-Copy `ripperoni.config.example.json` to `ripperoni.config.json` and edit.
-The unprefixed file is gitignored — it holds your real targets.
+`ripperoni scaffold` writes a starter orchestration document and state file:
+
+```bash
+ripperoni scaffold mysite
+```
+
+This produces two files:
+
+- `mysite.dag.jsonld` — the orchestration DAG (JSON-LD document).
+- `mysite.state.json` — run parameters validated at startup.
+
+## Edit the state file
+
+`mysite.state.json` drives every runtime decision — what to fetch, how fast, where to write. All fields are validated by `RunStateSchema` before any network activity begins.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `baseUrl` | string | Base URL; all relative paths resolve against this. |
+| `apiUrl` | string | MediaWiki API endpoint (set when using `wiki:fetch`). |
+| `rateLimitMs` | integer | Minimum milliseconds between requests. |
+| `jitterMs` | integer | Random jitter added on top of `rateLimitMs` per request. |
+| `maxRetries` | integer | Retry attempts on transient errors (0–10). |
+| `retryBaseDelayMs` | integer | Base delay for retry backoff. |
+| `retryMaxDelayMs` | integer | Backoff ceiling. |
+| `headers` | object | Additional HTTP request headers. |
+| `output.basePath` | string | Base directory for all written output files. |
+| `output.format` | string | Output format: `"json"` (default) or `"jsonl"`. |
+| `output.pretty` | boolean | Pretty-print JSON. Default `false`. |
+| `output.splitByTaskName` | boolean | Partition output into per-task subdirectories. |
+| `cache.dir` | string | Cache directory path. |
+| `cache.mode` | string | `read-write`, `read-only`, `write-only`, or `off`. |
+| `cache.ttlMs` | integer | Cache entry TTL in milliseconds. |
+| `crawler.startUrls` | string[] | Seed URLs for the `crawl:discover` DAG. |
+| `crawler.domain` | string | Regex; links must match to enter the crawl. |
+| `crawler.target` | string | Regex; links matching `domain` + `delimiter` + `target` are collected. |
+| `crawler.delimiter` | string | Regex; links matching `domain` + `delimiter` are followed as frontier pages. |
+| `crawler.rateLimitMs` | integer | Crawler-specific rate limit (independent of scraper rate limit). |
+| `crawler.jitterMs` | integer | Crawler-specific jitter. |
+| `crawler.maxPages` | integer | Hard ceiling on collected target URLs. |
+| `urls` | string[] | Explicit URL list; when present, the `crawl:discover` DAG is not needed. |
+| `parallelWorkers` | boolean | Route scatter items to a `WorkerThreadContainer` pool. |
+| `includeRawContent` | boolean | Include `_raw` field in output records. Default `true`. |
+| `outputSchema` | string | Path to a JSON Schema file for record validation. |
+| `onSchemaError` | string | `"halt"`, `"skip"`, or `"warn"` when schema validation fails. |
+
+A concrete example using the full crawler flow:
 
 ```json
 {
-  "output": { "basePath": "./output", "format": "json", "pretty": true },
-  "mediawiki": {
-    "your-wiki-target": {
-      "apiUrl":      "https://wiki.example/w/api.php",
-      "rateLimitMs": 2000,
-      "jitterMs":    500,
-      "batchSize":   50,
-      "categories":  ["Example Category A", "Example Category B"],
-      "pipeline":    ["wiki:fetch", "your-wiki-target:parse", "json:write"],
-      "cache":       { "dir": "./output/.cache/your-wiki-target", "mode": "read-write" }
-    }
+  "baseUrl": "https://example.com",
+  "rateLimitMs": 500,
+  "jitterMs": 100,
+  "maxRetries": 3,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs": 30000,
+  "headers": {
+    "User-Agent": "mysite-scraper/1.0 (+https://github.com/me/mysite)"
   },
-  "targets": {
-    "your-html-target": {
-      "baseUrl":     "https://example.com",
-      "rateLimitMs": 500,
-      "pipeline":    ["html:fetch", "your-html-target:parse", "json:write"],
-      "cache":       { "dir": "./output/.cache/your-html-target", "mode": "read-write" },
-      "crawler": {
-        "startUrls": ["https://example.com/index"],
-        "domain":    "example\\.com",
-        "target":    "\\?id=",
-        "delimiter": "category",
-        "rateLimitMs": 100,
-        "jitterMs":    25
-      }
-    }
+  "output": {
+    "basePath": "./output",
+    "format": "json",
+    "pretty": true
+  },
+  "cache": {
+    "dir": "./output/.cache/mysite",
+    "mode": "read-write"
+  },
+  "crawler": {
+    "startUrls": ["https://example.com/index"],
+    "domain": "example\\.com",
+    "target": "\\?id=",
+    "delimiter": "category",
+    "rateLimitMs": 100,
+    "jitterMs": 25,
+    "maxPages": 500
   }
 }
 ```
 
-The `pipeline` array lists task identifiers (strings resolved from the node registry) that run in order for each page. Built-in tasks: `html:fetch`, `wiki:fetch`, and `json:write`. A plugin (a loadable module that adds custom parse logic) registers `<targetId>:parse` (or whatever name it uses).
+To scrape a fixed list of URLs without crawling, use `urls` instead of the `crawler` block:
 
-A target is a named scrape configuration — one entry per site or wiki. The `crawler` block lives inside a target and drives URL discovery before the pipeline runs.
-
-## Run your first scrape
-
-`scrape` detects HTML or MediaWiki mode from the config section the target name appears under.
-
-```bash
-ripperoni scrape \
-  --target your-html-target \
-  --config ripperoni.config.json
+```json
+{
+  "baseUrl": "https://example.com",
+  "rateLimitMs": 250,
+  "output": { "basePath": "./output" },
+  "cache": { "dir": "./output/.cache/mysite", "mode": "read-write" },
+  "urls": [
+    "https://example.com/items/42",
+    "https://example.com/items/99"
+  ]
+}
 ```
 
-Pass `--paths` to pin specific paths — the crawl phase is skipped:
+## Author the orchestration DAG
 
-```bash
-ripperoni scrape \
-  --target your-html-target \
-  --paths "/page/1" "/page/2" \
-  --config ripperoni.config.json
+`mysite.dag.jsonld` is a JSON-LD document describing one dagonizer DAG. It wires the run at the orchestration level — embedding the `crawl:discover` DAG, scattering over collected URLs, and delegating per-page work to a plugin DAG.
+
+A crawler-first orchestration looks like this:
+
+```json
+{
+  "@context": { ... },
+  "@type": "DAG",
+  "name": "mysite:crawl",
+  "version": "1.0",
+  "entrypoint": "discover",
+  "nodes": [
+    {
+      "@type": "EmbeddedDAGNode",
+      "name": "discover",
+      "dag": "crawl:discover",
+      "stateMapping": {
+        "output": { "urls": "crawl.discovered" }
+      },
+      "outputs": {
+        "success": "scrape",
+        "error": "crawl-failed"
+      }
+    },
+    {
+      "@type": "ScatterNode",
+      "name": "scrape",
+      "source": "urls",
+      "body": { "dag": "mysite:page" },
+      "container": "worker",
+      "itemKey": "currentUrl",
+      "gather": {
+        "strategy": "partition",
+        "partitions": { "success": "succeeded", "error": "failed" }
+      },
+      "reducer": "aggregate",
+      "outputs": {
+        "all-success": "done",
+        "partial": "done",
+        "all-error": "done",
+        "empty": "done"
+      }
+    },
+    {
+      "@type": "TerminalNode",
+      "name": "done",
+      "outcome": "completed"
+    },
+    {
+      "@type": "TerminalNode",
+      "name": "crawl-failed",
+      "outcome": "failed"
+    }
+  ]
+}
 ```
 
-For a MediaWiki target, pass `--category` to scrape a single category:
+The `EmbeddedDAGNode` with `dag: "crawl:discover"` runs the built-in link-crawler. Its `stateMapping` seeds `state.urls` from `crawl.discovered` after the crawl completes. The `ScatterNode` fans over `state.urls` and dispatches the plugin's `mysite:page` DAG once per URL. `container: "worker"` routes items to the parallel worker pool when `parallelWorkers: true` is set in state.
 
-```bash
-ripperoni scrape \
-  --target your-wiki-target \
-  --category "Example Category Name" \
-  --config ripperoni.config.json
+When no crawling is needed (a fixed `urls` list is in state), the orchestration starts at the scatter directly:
+
+```json
+{
+  "@type": "DAG",
+  "name": "mysite:scrape",
+  "entrypoint": "scrape",
+  "nodes": [
+    {
+      "@type": "ScatterNode",
+      "name": "scrape",
+      "source": "urls",
+      "body": { "dag": "mysite:page" },
+      "container": "worker",
+      "itemKey": "currentUrl",
+      "gather": { "strategy": "partition", "partitions": { "success": "succeeded", "error": "failed" } },
+      "outputs": { "all-success": "done", "partial": "done", "all-error": "done", "empty": "done" }
+    },
+    { "@type": "TerminalNode", "name": "done", "outcome": "completed" }
+  ]
+}
 ```
 
-Omit `--category` to fall through to the `categories` array from config, or to enumerate every article via the allpages API.
+## Write a plugin
 
-Use `--resume-failures` to re-scrape pages listed in `failures.json` from the last run. Use `--out <dir>` to override the output directory.
+Plugins live under `plugins/<namespace>/`. Each plugin exports `register(dispatcher)` and provides one or more `*.dag.jsonld` files for its DAGs.
 
-### Explicit mode commands
+### The per-page DAG
 
-`scrape-html` and `scrape-wiki` target a specific mode directly:
-
-```bash
-ripperoni scrape-html --target your-html-target --paths "/page/1" "/page/2"
-ripperoni scrape-wiki --target your-wiki-target --category "Feats"
-```
-
-## Discover URLs with the crawler
-
-`crawl` discovers and prints target URLs — the crawler is the link-following component that finds pages before the pipeline processes them. Run it before committing a scrape config to verify coverage.
-
-```bash
-ripperoni crawl \
-  --starts "https://example.com/index" \
-  --domain "example\.com" \
-  --target "\?id=" \
-  --delimiter "category" \
-  --rate 100 \
-  --jitter 25 \
-  --max 500
-```
-
-`--starts` accepts multiple URLs. `--rate` and `--jitter` are milliseconds. `--max` caps total URLs collected.
-
-## Write a parse plugin — bring your own blade
-
-Plugins live under `plugins/<targetId>/`. Each plugin module exports a `register(dispatcher)` function that registers its nodes and any embedded DAGs (task sub-graphs wired inside the plugin). The runner imports `./plugins/<targetId>/parse.task.js` when the pipeline config lists `<targetId>:parse`.
-
-Nodes are `ScalarNode` subclasses. `executeOne` returns `NodeOutputBuilder.of('<port>')`.
+The per-page DAG declares the node chain each URL passes through. Author it with `DAGBuilder` and serialize it with `DAGDocument.serialize()`:
 
 ```ts
-// plugins/my-target/parse.task.ts
+// plugins/mysite/page.dag.ts
+import { DAGBuilder, DAGDocument } from '@studnicky/dagonizer';
+import { HtmlFetchNode, JsonWriteNode } from '../../src/nodes/index.js';
+
+const dag = new DAGBuilder('mysite:page', '1.0')
+  .node('html:fetch', HtmlFetchNode, {
+    success: 'mysite:parse',
+    cached:  'mysite:parse',
+    error:   'mysite-page:failed',
+  })
+  .embeddedDAG('mysite:parse', 'mysite:parse', {
+    success: 'json:write',
+    error:   'mysite-page:failed',
+  })
+  .node('json:write', JsonWriteNode, {
+    success: 'mysite-page:completed',
+    skipped: 'mysite-page:completed',
+  })
+  .terminal('mysite-page:completed', { outcome: 'completed' })
+  .terminal('mysite-page:failed',    { outcome: 'failed' })
+  .build();
+
+// Run once to generate the committed file:
+// DAGDocument.serialize(dag) → write to plugins/mysite/page.dag.jsonld
+```
+
+Commit the serialized `page.dag.jsonld` alongside the plugin source. The runner loads `*.dag.jsonld` files automatically at startup.
+
+### The parse node
+
+Parse nodes are `ScalarNode` subclasses. `executeOne` reads from `state.page` and writes to `state.output`:
+
+```ts
+// plugins/mysite/parse.task.ts
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { RipperServices }  from '../../src/services/RipperServices.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
 
-type MyOutput = 'success' | 'error';
-
-class MyParseNodeImpl extends ScalarNode<ScrapeState, MyOutput, RipperServices> {
-  public readonly name    = 'my-target:parse';
+class MyParseNodeImpl extends ScalarNode<ScrapeState, 'success' | 'error', RipperServices> {
+  public readonly name    = 'mysite:parse-impl';
   public readonly outputs = ['success', 'error'] as const;
 
   protected override async executeOne(
     state:   ScrapeState,
     _ctx:    NodeContextType<RipperServices>,
-  ): Promise<NodeOutputType<MyOutput>> {
+  ): Promise<NodeOutputType<'success' | 'error'>> {
     const html = state.page.html ?? '';
     if (html.length === 0) return NodeOutputBuilder.of('error');
 
@@ -147,14 +260,40 @@ class MyParseNodeImpl extends ScalarNode<ScrapeState, MyOutput, RipperServices> 
   }
 }
 
-const MyParseNode = new MyParseNodeImpl();
+export const MyParseNode = new MyParseNodeImpl();
+```
+
+### The register function
+
+`index.ts` exports `register(dispatcher)`. It registers node instances only — DAGs come from `*.dag.jsonld` files:
+
+```ts
+// plugins/mysite/index.ts
+import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
+import type { ScrapeState }     from '../../src/state/ScrapeState.js';
+import { MyParseNode } from './parse.task.js';
 
 export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
   dispatcher.registerNode(MyParseNode);
 }
 ```
 
+The runner discovers the plugin by walking the orchestration DAG's `EmbeddedDAGNode.dag` and `ScatterNode.body.dag` references, derives the namespace from the prefix before `:`, and loads `plugins/<namespace>/index.js` plus all `*.dag.jsonld` files in that directory.
+
+## Run it
+
+```bash
+ripperoni run mysite.dag.jsonld --state mysite.state.json
+```
+
+Pass `--out <dir>` to override `output.basePath` from the state file for a single run.
+
+Output lands in `output.basePath/<targetId>/` (or per-task subdirectories when `splitByTaskName` is true). Failed pages land in `failures.json` in the same directory. Re-run against a failures list by setting `urls` in a fresh state file pointing at the failed URLs.
+
 ## Further reading
 
-- [Architecture](./architecture): pipeline, HTTP machinery, scrapers, source map
-- [Roadmap](./roadmap): what shipped, what's planned
+- [Architecture](./architecture): DAG topology, HTTP machinery, scrapers, source map
+- [Authoring a DAG](./usage/pipeline): placement types, `DAGBuilder` API, built-in nodes
+- [Configuration](./usage/configuration): full `state.json` field reference
+- [Plugins](./usage/plugins): node contract, services bag, testing
+- [Roadmap](./roadmap): what shipped, what is planned

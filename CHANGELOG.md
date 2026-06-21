@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`ripperoni run <dag.jsonld> --state <state.json>`** — the single command for executing a scrape run against a native dagonizer DAG document. Loads the orchestration via `DAGDocument.load`, validates state against `RunStateSchema`, builds services, discovers and registers plugins, and dispatches.
+- **`ripperoni scaffold <name>`** — writes a starter `<name>.dag.jsonld` + `<name>.state.json` pair from the committed example templates.
+- **Native DAG-document plugin contract** — plugins ship `*.dag.jsonld` documents in `plugins/<namespace>/` that the runner loads at startup via `PluginLoader.registerPluginsFromEntry`. The `register(dispatcher)` export registers node instances only; DAGs come from files.
+- **`crawl:discover` builtin DAG** — `src/crawlers/crawl-discover.dag.jsonld`: a cyclic BFS embedded DAG for link discovery. Embedded in an orchestration via `EmbeddedDAGNode { dag: "crawl:discover" }` with `stateMapping` that seeds `urls` from `crawl.discovered`. Configured via the `crawler` block in `state.json`.
+- **Parallel parse via dagonizer `WorkerThreadContainer`** — `parallelWorkers: true` in `state.json` binds a worker thread pool to the "worker" role. `ScatterNode` placements with `container: "worker"` route to the pool. Build with `npm run build:workers`.
+- **`RunStateSchema`** (`src/schemas/internal/RunStateSchema.ts`) — AJV schema validating `state.json`: `baseUrl`, `apiUrl`, `cache`, `output`, `headers`, `crawler`, `urls`, `parallelWorkers`, `includeRawContent`, `outputSchema`, `onSchemaError`.
+- **`PluginLoader`** (`src/run/PluginLoader.ts`) — static utility: `registerBuiltinNodes`, `registerPluginsFromEntry`, `derivePluginTaskName`, `pluginDagsInRegistrationOrder`.
+
+### Removed
+
+- **`ripperoni scrape`, `scrape-html`, `scrape-wiki`, `crawl`** CLI commands — the native `run` command replaces all four.
+- **`ripperoni.config.json` / `RipperConfigSchema` / `RipperConfig`** — run params live in `<name>.state.json` validated by `RunStateSchema`.
+- **`src/flows/`** — all runtime DAG builders (`htmlScrapeFlow`, `wikiScrapeFlow`, `htmlPageFlow`, `wikiPageFlow`, `cliScrapeFlow`, `configLoadFlow`, `linkCrawlFlow`, `registerAllFlows`) are removed. DAGs are now authored as committed `.dag.jsonld` documents.
+- **`runHtml` / `runWiki`** — replaced by `runDag` / `runDagFromFiles`.
+- **`ConfigClamp` / `ConfigLoadState` / `CliState`** — config loading and CLI dispatch DAGs removed with the old model.
+- **`LinkLister`** (`src/crawlers/LinkLister.ts`) — replaced by the builtin `crawl:discover` DAG.
+- **Multi-DAG bundle files** (`.dag.jsonld` arrays) — the runner expects a single orchestration DAG document; arrays are rejected with a clear error.
+
+### Changed
+
+- **Docs rewritten to the native DAG+state model.** All usage guides, walk-throughs, and architecture diagrams describe the `run`/`scaffold` commands, `state.json` configuration, and the DAG-document plugin contract.
+- **Diagram generation** (`docs/.vitepress/scripts/render-dags.mjs`) — now renders only the three currently active plugin/example DAGs (`aonprd:parse`, `docs:parse`, `wiki-docs:parse`). Stale diagrams for deleted flow builders removed from `docs/_generated/`.
+
 ### Dependencies
 
 - **Dagonizer is `@studnicky/dagonizer@0.24.0`** from GitHub Packages (`.npmrc` routes the

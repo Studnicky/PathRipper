@@ -1,11 +1,11 @@
 ---
 title: AONPRD Scraper DAG
-description: A visual, top-down walkthrough of how the Archives of Nethys (Pathfinder 2e) scrape is wired — from CLI dispatch down to the taxonomy-routed parse DAG.
+description: A visual, top-down walkthrough of how the Archives of Nethys (Pathfinder 2e) scrape is wired — from the orchestration document down to the taxonomy-routed parse DAG.
 ---
 
 # AONPRD Scraper DAG
 
-Here's one real scraper on the block, top to bottom — from the butcher's run down to the cut that lands on disk.
+Here is one real scraper on the block, top to bottom — from the orchestration document down to the cut that lands on disk.
 
 This page walks the Archives of Nethys (Pathfinder 2e) scrape end to end. Every
 diagram below is generated at build time from the **real DAG definitions** by
@@ -14,130 +14,139 @@ diagram below is generated at build time from the **real DAG definitions** by
 
 A **DAG** (directed acyclic graph) is a set of steps (**nodes**) connected by
 one-way edges — execution flows forward through the graph with no cycles. A
-**scatter** fans one node out over a list so every item runs the same subgraph in
+**scatter** fans one node out over a list so every item runs the same sub-DAG in
 parallel. An **embedded DAG** is a full DAG dropped into a single node slot of an
 outer DAG, so the outer graph stays readable while the inner graph handles its own
-complexity. All of the diagrams here are rendered by dagonizer's own visualizer and
-show the exact runtime graph the scraper executes.
+complexity.
 
-A run is several DAGs nested inside each other. Reading top to bottom: the **CLI**
-dispatches an **outer flow**, the outer flow embeds three **phase** DAGs (discovery →
-scrape → retry), each scrape/retry phase scatters over its URL set and runs a
-**per-page** DAG, and the per-page DAG embeds the **`aonprd:parse`** plugin DAG to
-turn HTML into a typed record.
+A run is several DAGs nested inside each other. Reading top to bottom: the
+**orchestration** document embeds the built-in **`crawl:discover`** DAG (which
+discovers all target URLs via cyclic BFS), then **scatters** over those URLs
+running the **`aonprd:page`** plugin DAG, which in turn embeds the
+**`aonprd:parse`** taxonomy-routed parse DAG to turn HTML into a typed record.
 
-## The target
+## The orchestration document
 
-The aonprd scrape lives entirely in config:
+The run is driven by two files:
+
+- **Orchestration**: `tests/e2e/fixtures/aonprd-crawl.dag.jsonld`
+- **State**: `tests/e2e/fixtures/aonprd-crawler.state.json`
+
+Run command:
+
+```bash
+ripperoni run tests/e2e/fixtures/aonprd-crawl.dag.jsonld \
+  --state tests/e2e/fixtures/aonprd-crawler.state.json
+```
+
+The orchestration declares one DAG (`aonprd:crawl`) with three nodes: an
+`EmbeddedDAGNode` that runs `crawl:discover`, a `ScatterNode` that fans over
+discovered URLs running `aonprd:page`, and a terminal. The state supplies all
+runtime parameters — `baseUrl`, `headers`, rate limits, the `crawler` block, and
+output config.
+
+## 1 · The embedded `crawl:discover` DAG
+
+The orchestration's first node is:
 
 ```json
 {
-  "targets": {
-    "aonprd": {
-      "baseUrl": "https://2e.aonprd.com",
-      "pipeline": ["crawl:list-targets", "html:fetch", "aonprd:parse", "json:write"],
-      "crawler": {
-        "startUrls": ["https://2e.aonprd.com/Spells.aspx", "..."],
-        "domain": "2e\\.aonprd\\.com",
-        "target": "\\?ID=",
-        "delimiter": "\\.aspx"
-      }
-    }
+  "@type": "EmbeddedDAGNode",
+  "name":  "discover",
+  "dag":   "crawl:discover",
+  "stateMapping": {
+    "output": { "urls": "crawl.discovered" }
+  },
+  "outputs": { "success": "scrape", "error": "crawl-failed" }
+}
+```
+
+`crawl:discover` is a built-in cyclic DAG loaded by `PluginLoader.registerBuiltinNodes`
+at run time from `src/crawlers/crawl-discover.dag.jsonld`. It runs a level-by-level
+BFS: fetch each frontier page, extract links matching the crawler's `delimiter`
+(traversable) and `target` (collectable `?ID=` pages), deduplicate, and promote the
+next frontier via a back-edge until the frontier empties or the `maxPages` bound is
+hit. The `crawler` block in `state.json` configures the seed URLs, regex patterns,
+rate limits, and cap.
+
+The crawl shape:
+
+```
+crawl:init-frontier
+  ready → crawl:fetch-and-extract
+  empty → crawl:exhausted
+
+crawl:fetch-and-extract
+  success / empty / error / permanent → crawl:dedupe-and-enqueue
+
+crawl:dedupe-and-enqueue
+  frontier-ready   → crawl:fetch-and-extract   ← back-edge (the loop)
+  frontier-empty   → crawl:exhausted
+  budget-exhausted → crawl:exhausted
+
+crawl:exhausted → crawl:completed (terminal)
+```
+
+The back-edge from `crawl:dedupe-and-enqueue` to `crawl:fetch-and-extract` is a
+native cyclic edge. The engine re-executes on in-place state until
+`crawl:dedupe-and-enqueue` routes to `crawl:exhausted`.
+
+After completion, the `stateMapping` writes `crawl.discovered` into `state.urls`,
+which the scatter node reads.
+
+## 2 · The scatter — `ScatterNode { body: { dag: "aonprd:page" } }`
+
+The second node fans over `state.urls`:
+
+```json
+{
+  "@type":     "ScatterNode",
+  "name":      "scrape",
+  "source":    "urls",
+  "body":      { "dag": "aonprd:page" },
+  "container": "worker",
+  "itemKey":   "currentUrl",
+  "gather": {
+    "strategy":   "partition",
+    "partitions": { "success": "succeeded", "error": "failed" }
+  },
+  "reducer": "aggregate",
+  "outputs": {
+    "all-success": "done",
+    "partial":     "done",
+    "all-error":   "done",
+    "empty":       "done"
   }
 }
 ```
 
-Because the `pipeline` begins with `crawl:list-targets`, the orchestrator selects
-the **crawl** outer flow: it first discovers every `?ID=` detail URL reachable from
-`startUrls`, then scrapes each one through `html:fetch → aonprd:parse → json:write`.
+`container: "worker"` routes each item to the `WorkerThreadContainer` pool when
+`parallelWorkers: true` is set in state and `npm run build:workers` has been run.
+Items partition into `state.succeeded` / `state.failed` via the `partition` gather
+strategy.
 
-## 1 · CLI dispatch
+## 3 · The `aonprd:page` plugin DAG
 
-The CLI is itself a DAG. The `scrape` action builds a `CliState`, registers the CLI
-nodes and `cliScrapeDAG`, and dispatches. `resolve-target` finds `aonprd` in
-`targets` and routes to the HTML scrape; every outcome flows to `write-manifest`,
-then `exit` sets the process exit code.
+`plugins/aonprd/page.dag.jsonld` declares the per-page pipeline. Each URL passes
+through three steps:
 
-```mermaid
-<!--@include: ./_generated/cliScrapeDAG.mmd -->
-```
+| Step | What it does |
+|------|-------------|
+| `html:fetch` | Rate-limited fetch with retry + backoff. Respects `Retry-After`. Reads from cache on hits (`success` and `cached` both proceed). |
+| `aonprd:parse` (embedded) | The embedded parse DAG. Input `page` maps to the page state; output `output` maps back to the parent for `json:write`. |
+| `json:write` | Writes `state.output` to `output/aonprd/<slug>.json`. `skipped` when `state.output` is null. |
 
-## 2 · Outer flow — `htmlScrapeDAGCrawl`
+Any `error` port routes to the `aonprd-page:failed` terminal, which the scatter's
+`partition` gather picks up as a failed item.
 
-The crawl outer flow embeds three phase DAGs as native `embeddedDAG` placements,
-each with explicit `inputs`/`outputs` state mappings: **crawl** discovers URLs into
-`state.urls`, **scrape** processes them, **retry** handles first-attempt failures.
-The phases are gated — `crawl:list-targets` runs to completion before the scrape
-phase fans out.
+## 4 · The `aonprd:parse` plugin DAG — the meaty bit
 
-```mermaid
-<!--@include: ./_generated/htmlScrapeDAGCrawl.mmd -->
-```
-
-## 3 · Phases
-
-### 3a · Discovery — `htmlCrawlPhase`
-
-A single `crawl:list-targets` node populates `state.urls`. It drives the link
-crawler (below), then terminates so the scrape phase can begin.
-
-```mermaid
-<!--@include: ./_generated/htmlCrawlPhase.mmd -->
-```
-
-`crawl:list-targets` runs the **link crawler DAG** — a level-by-level BFS that
-fetches each frontier page, extracts links matching the crawler's `delimiter`
-(traversable) and `target` (collectable `?ID=` pages), dedupes, and promotes the
-next frontier via a back-edge until the frontier empties or a `maxPages`/`maxDepth`
-bound is hit. With no bound configured it traverses the full reachable `.aspx` graph.
-
-```mermaid
-<!--@include: ./_generated/linkCrawlDAG.mmd -->
-```
-
-### 3b · Scrape — `htmlScrapePhase`
-
-The scrape phase scatters over `state.urls` using a native `{ dag }` scatter body —
-each item runs the per-page DAG directly as an embedded DAG. The fetch node reads its
-URL from the scatter's `currentUrl` item key. Outcomes partition into
-`state.succeeded` / `state.failed`. Scatter concurrency matches the parse
-worker-pool width, so every worker stays fed.
-
-```mermaid
-<!--@include: ./_generated/htmlScrapePhase.mmd -->
-```
-
-### 3c · Retry — `htmlRetryPhase`
-
-Items that fail their first attempt scatter once more, partitioning into
-`state.recovered` and `state.failedAfterRetry`. The same per-page DAG runs; only the
-scatter source (`state.failed`) differs. `failures.json` is written from
-`state.failedAfterRetry`.
-
-```mermaid
-<!--@include: ./_generated/htmlRetryPhase.mmd -->
-```
-
-## 4 · Per-page DAG
-
-Each phase item runs the per-page DAG compiled from the target's `pipeline`. For
-aonprd that is `html:fetch → aonprd:parse → json:write`: the cache-aware fetch
-(`success`/`cached` both proceed), the embedded `aonprd:parse` DAG (`[[double
-border]]`), and the JSON writer. Any `error` routes to the page's `failed` terminal,
-which the retry phase picks up.
-
-```mermaid
-<!--@include: ./_generated/aonprdPageDAG.mmd -->
-```
-
-## 5 · `aonprd:parse` plugin DAG — the meaty bit
-
-`aonprd:parse` is a registered plugin DAG, embedded in the per-page
-pipeline. It is **taxonomy-routed**: the entrypoint `aonprd:taxonomy-route`
-classifies each page from its URL and dispatches to that concept's inherited
-capability chain (spell, monster, feat, weapon, …). Pages that match no known
-concept route to `aonprd:make-unknown`. The DAG is compiled from the concept
-taxonomy by `TAXONOMY.buildDAG()` — adding a concept extends the taxonomy, not this
+`plugins/aonprd/parse.dag.jsonld` is the taxonomy-routed parse DAG. It is
+**taxonomy-routed**: the entrypoint `aonprd:taxonomy-route` classifies each page
+from its URL and dispatches to that concept's inherited capability chain (spell,
+monster, feat, weapon, …). Pages that match no known concept route to
+`aonprd:make-unknown`. The DAG is compiled from the concept taxonomy by
+`TAXONOMY.buildDAG()` — adding a concept extends the taxonomy rather than this
 diagram by hand.
 
 ```mermaid
@@ -151,5 +160,5 @@ JSON record per page.
 ## See also
 
 - [Architecture](/architecture) — the full DAG model, HTTP machinery, and scrapers.
-- [Pipeline](/usage/pipeline) — how a `pipeline: [...]` list becomes a per-page DAG.
+- [Authoring a DAG](/usage/pipeline) — placement types, `DAGBuilder` API, built-in nodes.
 - [Crawler](/usage/crawler) — configuring `startUrls`, `target`, `delimiter`, and bounds.

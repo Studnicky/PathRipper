@@ -7,32 +7,22 @@
  * Invoked by `npm run docs:build` via `node --import tsx` so TypeScript
  * imports from src/, plugins/, and examples/ resolve correctly.
  *
- * Two rendering paths:
- *   - Core/src DAGs are registered into a `Dagonizer` via `registerAllFlows`
- *     and enumerated with `dispatcher.listDAGs()`. Registration validates every
- *     placement against the node registry, so these diagrams are guaranteed to
- *     match runnable DAGs.
- *   - Plugin and example DAGs are rendered directly from their exported
- *     `DAGType` objects. `MermaidRenderer.render(dag)` needs only the DAG shape,
- *     not the node implementations, so plugin node modules do not need to be
- *     imported or registered here.
+ * Only plugin and example DAGs are rendered here — they are rendered directly
+ * from their exported `DAGType` objects. `MermaidRenderer.render(dag)` needs
+ * only the DAG shape, not the node implementations.
  *
- * architecture.md embeds each .mmd file inside a mermaid fenced block via
- * VitePress @include directives. The filename for each DAG comes from
- * `DAG_FILENAME_MAP`; names absent from the map fall back to
- * `${name.replace(/:/g, '-').replace(/\//g, '-')}.mmd`.
+ * architecture.md and aonprd-scraper-dag.md embed generated .mmd files via
+ * VitePress @include directives. The generated files produced here are:
+ *   - aonprdParseDAG.mmd  (plugins/aonprd/parse.dag.ts)
+ *   - docsScraperDAG.mmd  (examples/docs-scraper/plugin.ts)
+ *   - wikiDocsDAG.mmd     (examples/wiki-docs/plugin.ts)
  */
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname }  from 'node:path';
 import { fileURLToPath }     from 'node:url';
 
-import { Dagonizer }         from '@studnicky/dagonizer';
 import { MermaidRenderer }   from '@studnicky/dagonizer/viz';
-
-// Core registrations (src/-level only — stays within TypeScript rootDir).
-import { registerAllFlows, DAG_FILENAME_MAP } from '../../../src/flows/registerAllFlows.js';
-import { buildHtmlPageFlow }                  from '../../../src/flows/htmlPageFlow.js';
 
 // Plugin + example DAGs — rendered directly from their DAGType (no node registry).
 import { aonprdParseDAG }                  from '../../../plugins/aonprd/parse.dag.js';
@@ -44,32 +34,25 @@ const OUT_DIR   = resolve(__dirname, '../../_generated');
 
 await mkdir(OUT_DIR, { recursive: true });
 
-const filenameFor = (name) =>
-  DAG_FILENAME_MAP.get(name) ?? `${name.replace(/:/g, '-').replace(/\//g, '-')}.mmd`;
+/** Filename map for DAGs whose generated filename differs from the default. */
+const FILENAME_MAP = new Map([
+  ['docs:parse',       'docsScraperDAG.mmd'],
+  ['wiki-docs:parse',  'wikiDocsDAG.mmd'],
+  ['aonprd:parse',     'aonprdParseDAG.mmd'],
+]);
+
+const filenameFor = (dag) =>
+  FILENAME_MAP.get(dag.name) ?? `${dag.name.replace(/:/g, '-').replace(/\//g, '-')}.mmd`;
 
 const writeDag = async (dag) => {
-  const filename = filenameFor(dag.name);
+  const filename = filenameFor(dag);
   await writeFile(resolve(OUT_DIR, filename), MermaidRenderer.render(dag), 'utf8');
   process.stdout.write(`  wrote ${filename}\n`);
 };
 
-// ── Core/src DAGs via the dispatcher registry ────────────────────────────────
-const dispatcher = new Dagonizer({});
-registerAllFlows(dispatcher);
-const coreDags = dispatcher.listDAGs();
-for (const dag of coreDags) await writeDag(dag);
-
-// ── Plugin + example DAGs rendered directly from their DAGType ────────────────
-const pluginDags = [aonprdParseDAG, docsParseDAG, wikiDocsParseDAG];
-for (const dag of pluginDags) await writeDag(dag);
-
-// ── AONPRD-specific per-page DAG (the real aonprd pipeline) ───────────────────
-// The canonical htmlPageDAG uses a representative pipeline; this one renders the
-// exact steps the aonprd target runs so the scraper walkthrough is concrete.
-const aonprdPageDAG = buildHtmlPageFlow(['html:fetch', 'aonprd:parse', 'json:write'], 'aonprd');
-await writeFile(resolve(OUT_DIR, 'aonprdPageDAG.mmd'), MermaidRenderer.render(aonprdPageDAG), 'utf8');
-process.stdout.write('  wrote aonprdPageDAG.mmd\n');
+const dags = [aonprdParseDAG, docsParseDAG, wikiDocsParseDAG];
+for (const dag of dags) await writeDag(dag);
 
 process.stdout.write(
-  `Rendered ${(coreDags.length + pluginDags.length + 1).toString()} DAG diagrams to docs/_generated/\n`,
+  `Rendered ${dags.length.toString()} DAG diagrams to docs/_generated/\n`,
 );

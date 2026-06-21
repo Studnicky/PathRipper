@@ -1,9 +1,0 @@
-flowchart LR
-  %% htmlScrapePhase (v2.0)
-  scrape-urls
-  scrape-urls[/scrape-urls/]
-  scrape-urls -->|all-success| phase-done
-  scrape-urls -->|partial| phase-done
-  scrape-urls -->|all-error| phase-done
-  scrape-urls -->|empty| phase-done
-  phase-done(((phase-done\n(completed))))

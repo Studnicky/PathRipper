@@ -74,7 +74,7 @@ const sidebar = [
     'text':  'Usage',
     'items': [
       { 'link': '/usage/configuration', 'text': 'Configuration' },
-      { 'link': '/usage/pipeline',      'text': 'Pipeline'      },
+      { 'link': '/usage/pipeline',      'text': 'Authoring a DAG' },
       { 'link': '/usage/scrapers',      'text': 'Scrapers'      },
       { 'link': '/usage/mediawiki',     'text': 'MediaWiki'     },
       { 'link': '/usage/crawler',       'text': 'Crawler'       },

@@ -13,30 +13,25 @@ Sharding keeps the cache fast at scale. Without it, a directory with 10,000 entr
 
 ## Default-on
 
-Cache is on by default. Every `targets` and `mediawiki` entry that omits a `cache` block receives:
+Cache is on by default. A run that omits the `cache` block from `state.json` receives:
 
 ```json
-{ "dir": "output/.cache/<targetId>", "mode": "read-write" }
+{ "dir": "output/.cache/<taskName>", "mode": "read-write" }
 ```
 
-where `<targetId>` is the key of the entry in the config (e.g. `"aonprd"` → `output/.cache/aonprd`). No explicit cache config is required for the default behavior.
+where `<taskName>` is the plugin task name derived from the orchestration. No explicit cache config is required for the default behavior.
 
 ### Raw + cache-off invariant
 
-Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load with `RipperConfigError`. Raw content output without a write-capable cache exhausts disk on large scrapes — the loader catches this misconfiguration before a single byte is fetched.
+Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at startup by `RunStateSchema`. Raw content output without a write-capable cache exhausts disk on large scrapes — the validator catches this misconfiguration before a single byte is fetched.
 
 To disable caching, set `includeRawContent: false` first (opt out of raw output), then set `cache.mode: "off"`:
 
 ```json
 {
-  "targets": {
-    "aonprd": {
-      "baseUrl":           "https://2e.aonprd.com",
-      "pipeline":          ["html:fetch", "aonprd:parse", "json:write"],
-      "includeRawContent": false,
-      "cache":             { "dir": ".cache", "mode": "off" }
-    }
-  }
+  "baseUrl":           "https://2e.aonprd.com",
+  "includeRawContent": false,
+  "cache":             { "dir": ".cache", "mode": "off" }
 }
 ```
 
@@ -149,5 +144,5 @@ Or switch `mode` to `write-only` for one run to refresh from the network. Every 
 
 ## Related
 
-- [Scrapers](./scrapers); how HtmlScraper uses the cache
-- [Configuration](./configuration); cache config schema
+- [Scrapers](/usage/scrapers): how `HtmlScraper` uses the cache
+- [Configuration](/usage/configuration): `cache` fields in `state.json`

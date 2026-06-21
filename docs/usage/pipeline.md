@@ -1,73 +1,118 @@
 ---
 layout: doc
-title: Orchestration
+title: Authoring a DAG
 ---
 
-# Orchestration
+# Authoring a DAG
 
-Ripperoni is a butcher for the web. The pipeline is its cutting line: raw HTML in one end, clean JSON out the other — every step doing exactly one job on the way through.
-
-A **pipeline** is the ordered list of step names you declare in config. Ripperoni compiles that list into a [dagonizer](https://github.com/Studnicky/Dagonizer) DAG — a directed acyclic graph (DAG) in which each step becomes a **node** wired to the next in sequence. The DAG is what actually runs. Steps that name a registered plugin DAG (like `aonprd:parse`) become **embedded DAG** placements — a full child DAG dropped in-place as a single logical node. Fan-out over many URLs is handled by a native dagonizer **scatter** node that runs the per-page DAG once per URL in parallel.
+A DAG document is the program. You author it with `DAGBuilder`, serialize it with `DAGDocument.serialize()`, and commit the resulting `*.dag.jsonld` file. The runner loads it at startup and dispatches it via the dagonizer engine. No pipeline array, no config compilation — the document is the execution graph.
 
 Ripperoni drives all scrape orchestration through [`@studnicky/dagonizer`](https://github.com/Studnicky/Dagonizer). Each run is a DAG dispatched by `RipperDagonizer`, built via `DAGBuilder`.
 
-## How a pipeline becomes a DAG
+## Placement types
 
-1. `runHtml(opts)` / `runWiki(opts)` (in `src/run/`) reads `pipeline: string[]` from the target config.
-2. Built-in nodes (`html:fetch`, `json:write`, etc.) register automatically. Non-built-in entries resolve to plugin modules (`./plugins/<name>/`); each plugin's `export function register(dispatcher)` runs on load. Pipeline entries that name a registered DAG (e.g. `aonprd:parse`) become `embeddedDAG` placements.
-3. A **per-page child DAG** (`htmlPageDAG:<targetId>`) builds from the ordered pipeline list via `DAGBuilder`. Each step wires as a node placement or an `embeddedDAG` placement; non-success ports route to a `htmlPage:failed` terminal, success ports chain to the next step.
-4. A **scatter phase DAG** (`htmlScrapePhase`) fans over `state.urls`, running the per-page child DAG once per URL via a native `{ dag }` scatter body with a `partition` gather that writes results into `state.succeeded` / `state.failed`. Across pages, the whole per-page line runs at once — as many links in the chain as the worker crew is wide.
-5. A **retry phase DAG** (`htmlRetryPhase`) repeats the same scatter over `state.failed`, writing into `state.recovered` / `state.failedAfterRetry`.
-6. The outer composition DAG sequences the phase DAGs as embedded DAG placements, then terminates. When `crawl:list-targets` is in the pipeline and no `--paths` override is supplied, the engine selects the crawl-path outer DAG (`htmlScrapeDAGCrawl`); otherwise it uses the no-crawl outer DAG (`htmlScrapeDAG`).
-7. After dispatch, `failures.json` is written if any items remain in `state.failedAfterRetry`.
+A DAG document is a set of named placements wired by output routes.
 
-## Config surface
+| Placement type | `@type` | Description |
+|---------------|---------|-------------|
+| `SingleNode` | `"SingleNode"` | Runs a registered node instance. `node` field names the registered node. |
+| `ScatterNode` | `"ScatterNode"` | Fans over a list (`source` field) running the body sub-DAG once per item. |
+| `EmbeddedDAGNode` | `"EmbeddedDAGNode"` | Drops a full registered DAG in-place as a single logical step. |
+| `TerminalNode` | `"TerminalNode"` | Ends processing for a path. `outcome` is `"completed"` or `"failed"`. |
 
-```json
-{
-  "targets": {
-    "mysite": {
-      "baseUrl": "https://example.com",
-      "pipeline": ["html:fetch", "html:write-raw", "mysite:parse", "json:write"]
-    }
-  }
-}
+## DAGBuilder API
+
+```ts
+import { DAGBuilder, DAGDocument } from '@studnicky/dagonizer';
+
+const dag = new DAGBuilder('ns:name', '1.0')
+  .entrypoint('first-node')                              // set the entry placement name
+  .node('html:fetch', HtmlFetchNode, {                   // SingleNode placement
+    success: 'next-step',
+    error:   'my-dag:failed',
+  })
+  .embeddedDAG('my-parse', 'myplugin:parse', {          // EmbeddedDAGNode placement
+    success: 'json:write',
+    error:   'my-dag:failed',
+  }, {
+    inputs:  { page: 'page' },
+    outputs: { output: 'output' },
+  })
+  .scatter('fan-out', {                                  // ScatterNode placement
+    source:    'urls',
+    body:      { dag: 'myplugin:page' },
+    container: 'worker',
+    itemKey:   'currentUrl',
+    gather:    { strategy: 'partition', partitions: { success: 'succeeded', error: 'failed' } },
+    reducer:   'aggregate',
+    outputs:   { 'all-success': 'done', partial: 'done', 'all-error': 'done', empty: 'done' },
+  })
+  .terminal('my-dag:completed', { outcome: 'completed' })
+  .terminal('my-dag:failed',    { outcome: 'failed' })
+  .build();
+
+// Serialize to a committed *.dag.jsonld file:
+const jsonld = DAGDocument.serialize(dag);
 ```
 
-The `pipeline` array is the only config surface — a short, ordered list that defines the whole run. Step order is preserved. Each name must resolve to a registered `NodeInterface` or a registered DAG. Plugin DAG steps (e.g. `mysite:parse`) place via `.embeddedDAG()` in the per-page child DAG; their `output` field maps back to the parent state so downstream write nodes see the parsed result.
+`DAGBuilder` methods chain. Call `.build()` once when the graph is complete. Pass the result to `DAGDocument.serialize()` to produce the JSON-LD string; write it to a `*.dag.jsonld` file and commit it. The runner loads the file at startup via `PluginLoader`.
 
 ## Built-in nodes
 
+These nodes are always registered by `PluginLoader.registerBuiltinNodes` — reference them by name in any DAG document:
+
 | Node name | Ports | Description |
 |-----------|-------|-------------|
-| `html:fetch` | `success \| error \| cached` | Fetches `state.page.url` via `HtmlScraper` |
-| `wiki:fetch` | `success \| error` | Fetches `state.page.title` via `MediaWikiScraper` |
-| `html:write-raw` | `success` | Writes raw HTML to `<outDir>/<target>/raw/<slug>.html` |
-| `wiki:write-raw` | `success` | Writes raw wikitext to `<outDir>/<target>/raw/<slug>.txt` |
-| `json:write` | `success \| skipped` | Writes `state.output` as JSON; skips when `null` |
-| `jsonl:append` | `success \| skipped` | Appends `state.output` to a JSONL file |
-| `validate:schema` | `valid \| invalid` | Validates `state.output` against a JSON schema |
-| `crawl:list-targets` | `success \| error \| empty` | Crawls seed URLs via `LinkLister`; populates `state.urls` |
+| `html:fetch` | `success \| cached \| error` | Fetches `state.page.url` via `HtmlScraper`. `cached` port fires on a cache hit. |
+| `wiki:fetch` | `success \| error` | Fetches `state.page.title` via `MediaWikiScraper`. |
+| `html:write-raw` | `success` | Writes raw HTML to `<outDir>/<taskName>/raw/<slug>.html`. |
+| `wiki:write-raw` | `success` | Writes raw wikitext to `<outDir>/<taskName>/raw/<slug>.txt`. |
+| `json:write` | `success \| skipped` | Writes `state.output` as JSON. `skipped` when `state.output` is null. |
+| `jsonl:append` | `success \| skipped` | Appends `state.output` to a JSONL file. `skipped` when `state.output` is null. |
+| `validate:schema` | `valid \| invalid` | Validates `state.output` against a JSON schema. |
+| `crawl:init-frontier` | `ready \| empty` | Initializes the crawl frontier from the `crawler.startUrls` in state. |
+| `crawl:fetch-and-extract` | `success \| empty \| error \| permanent` | Fetches a frontier page and extracts links. |
+| `crawl:dedupe-and-enqueue` | `frontier-ready \| frontier-empty \| budget-exhausted` | Deduplicates extracted links, promotes the next frontier, checks `maxPages`. |
+| `crawl:exhausted` | `success` | Terminal for the crawl loop — crawl:discover's exit point. |
 
-## Error routing and failure terminal
+Built-in node names follow the convention `namespace:verb`. `BUILTIN_PREFIXES` are `html:`, `wiki:`, `json:`, `jsonl:`, `validate:`, and `crawl:`.
 
-In the per-page child DAG, any port outside the continuation set (`success`, `cached`, `skipped`, `valid`) routes to the `htmlPage:failed` terminal and ends processing for that item. Write nodes run only on fully-processed pages. The scatter's `partition` gather collects `failed` terminal outcomes into `state.failed` for the retry phase.
+## Built-in `crawl:discover` DAG
 
-## Fan-out and scatter
+`crawl:discover` is a built-in cyclic DAG (loaded from `src/crawlers/crawl-discover.dag.jsonld`) registered by `PluginLoader.registerBuiltinNodes`. It implements level-by-level BFS with a native back-edge loop.
 
-Per-item fan-out is a native dagonizer scatter: the phase DAG places a `scatter` step whose body is `{ dag: '<perPageDagName>' }`. The scatter runs the per-page child DAG once per URL, up to `concurrency` items simultaneously, then applies the `partition` gather strategy. When a step names a registered DAG (like `aonprd:parse`), the runner drops it in as an `embeddedDAG` placement and feeds its output to the next step.
+Embed it in any orchestration via `EmbeddedDAGNode`:
 
-## Concurrency
+```json
+{
+  "@type": "EmbeddedDAGNode",
+  "name":  "discover",
+  "dag":   "crawl:discover",
+  "stateMapping": {
+    "output": { "urls": "crawl.discovered" }
+  },
+  "outputs": { "success": "next-step", "error": "crawl-failed" }
+}
+```
 
-Scatter concurrency defaults:
-- HTML runs: 4 concurrent URLs (in-process path).
-- HTML runs with worker pool: pool size (system-sized from `NodeSystemInfo.recommendedWorkerCount`).
-- Wiki runs: 8 concurrent titles (batched in 50-title API calls).
+The `stateMapping.output` block seeds `state.urls` from `crawl.discovered` after the crawl completes. Configure the crawl behaviour via the `crawler` block in `state.json`. See [Crawler](/usage/crawler).
 
-Override via `target.concurrency` in config.
+## Parallel parse
+
+Route scatter items to a worker-thread pool with two changes:
+
+1. Set `container: "worker"` on the `ScatterNode`.
+2. Set `parallelWorkers: true` in `state.json`.
+3. Build the worker registry: `npm run build:workers`.
+
+The `WorkerThreadContainer` pool is sized by `NodeSystemInfo.recommendedWorkerCount`. When the worker registry is absent, the scatter falls back to in-process execution automatically.
+
+## Plugin DAG registration order
+
+Leaves (plugin DAGs with no external dependencies) register before dependents. `PluginLoader.pluginDagsInRegistrationOrder` topologically sorts the DAG documents found in `plugins/<namespace>/` so that an embedded DAG reference is always registered before the DAG that embeds it. The orchestration DAG is registered last.
 
 ## Related
 
-- [Plugins](/usage/plugins) — write a custom `NodeInterface`
-- [Scrapers](/usage/scrapers) — how `HtmlScraper` and `MediaWikiScraper` work
-- [Architecture](/architecture) — DAG topology diagrams
+- [Configuration](/usage/configuration): `state.json` field reference
+- [Plugins](/usage/plugins): writing nodes and the `register` contract
+- [Architecture](/architecture): DAG topology diagrams

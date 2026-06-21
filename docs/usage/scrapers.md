@@ -9,6 +9,18 @@ Scrapers are how Ripperoni fetches raw source material — HTML pages or MediaWi
 
 Two scraper classes, one parser: `HtmlScraper` works the HTML side, handing you a Cheerio document to carve with; `MediaWikiScraper` works the API side, speaking structured wikitext directly. `WikitextParser` turns that wikitext into structured infobox, section, and category data.
 
+## Choosing which to use
+
+Use `HtmlScraper` (set `baseUrl` in `state.json`) when:
+- The site serves HTML pages you want to scrape with CSS selectors.
+- You need redirect handling, custom headers, or cookie-based auth.
+- The content is in the HTML body, not behind a structured API.
+
+Use `MediaWikiScraper` (set `apiUrl` in `state.json`) when:
+- The target is a MediaWiki site (Wikipedia, Fandom wikis, internal wikis).
+- You want structured wikitext parsing with infobox extraction.
+- You need to enumerate a full wiki or specific categories.
+
 ## HtmlScraper
 
 `import { HtmlScraper } from 'ripperoni/HtmlScraper'`
@@ -90,7 +102,7 @@ Errors are classified into seven categories. Only four are retryable:
 
 On `THROTTLED`: if the server sends a `Retry-After` header, that value overrides the configured backoff delay. If the header is malformed, the exponential backoff curve is used as a fallback.
 
-Retry config per target:
+Retry config in `state.json`:
 
 ```json
 "maxRetries":       3,
@@ -98,7 +110,7 @@ Retry config per target:
 "retryMaxDelayMs":  30000
 ```
 
-Worst-case latency: With `maxRetries: 3, baseDelayMs: 500, multiplier: 2, maxDelayMs: 30000`, a single URL can take: initial attempt + 500ms + attempt + 1000ms + attempt + 2000ms + attempt = ~3.5 seconds in the best case (all retries fail). If the server throttles with a high `Retry-After`, the wait is longer. Concurrency (from the target config) runs multiple URLs in parallel, so total time for N URLs is roughly `(N / concurrency) * maxLatency`.
+Worst-case latency: With `maxRetries: 3, baseDelayMs: 500, multiplier: 2, maxDelayMs: 30000`, a single URL can take: initial attempt + 500ms + attempt + 1000ms + attempt + 2000ms + attempt = ~3.5 seconds in the best case (all retries fail). If the server throttles with a high `Retry-After`, the wait is longer. Parallel scatter runs multiple URLs concurrently, so total time for N URLs is roughly `(N / concurrency) * maxLatency`.
 
 ---
 
@@ -214,24 +226,10 @@ const name = WikitextParser.infoboxField(parsed, 'name');   // string | null
 
 ---
 
-## Choosing which to use
-
-Use `HtmlScraper` (`targets` block in config) when:
-- The site serves HTML pages you want to scrape with CSS selectors.
-- You need redirect handling, custom headers, or cookie-based auth.
-- The content is in the HTML body, not behind a structured API.
-
-Use `MediaWikiScraper` (`mediawiki` block in config) when:
-- The target is a MediaWiki site (Wikipedia, Fandom wikis, internal wikis).
-- You want structured wikitext parsing with infobox extraction.
-- You need to enumerate a full wiki or specific categories.
-
----
-
 ## Related
 
-- [Configuration](./configuration) — how to declare targets and mediawiki blocks
-- [MediaWiki](./mediawiki) — enumeration modes, infobox helpers
-- [Cache](./cache) — how caching integrates with both scrapers
-- [Pipeline](./pipeline) — how pipeline steps become per-page DAG nodes
-- [Plugins](./plugins) — the node/state shape inside a parse node
+- [Configuration](/usage/configuration): `baseUrl` and `apiUrl` in `state.json`
+- [MediaWiki](/usage/mediawiki): enumeration modes, infobox helpers
+- [Cache](/usage/cache): how caching integrates with both scrapers
+- [Authoring a DAG](/usage/pipeline): how DAG steps become per-page nodes
+- [Plugins](/usage/plugins): the node/state shape inside a parse node
