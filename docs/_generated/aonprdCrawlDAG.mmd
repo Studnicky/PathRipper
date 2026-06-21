@@ -1,0 +1,15 @@
+flowchart TB
+  %% aonprd:crawl (v1.0)
+  discover
+  discover[[discover]]
+  discover -->|success| scrape
+  discover -->|error| crawl-failed
+  scrape[/scrape/]
+  scrape -->|all-success| done
+  scrape -->|partial| done
+  scrape -->|all-error| done
+  scrape -->|empty| done
+  done(((done)))
+  crawl-failed>crawl-failed]
+  classDef contained-worker fill:#0369a1,stroke:#0ea5e9,color:#eef3f7
+  class scrape contained-worker

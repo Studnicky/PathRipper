@@ -1,0 +1,18 @@
+flowchart TB
+  %% crawl:discover (v1.0)
+  crawl_init-frontier
+  crawl_init-frontier[crawl:init-frontier]
+  crawl_init-frontier -->|ready| crawl_fetch-and-extract
+  crawl_init-frontier -->|empty| crawl_completed
+  crawl_fetch-and-extract[crawl:fetch-and-extract]
+  crawl_fetch-and-extract -->|success| crawl_dedupe-and-enqueue
+  crawl_fetch-and-extract -->|empty| crawl_dedupe-and-enqueue
+  crawl_fetch-and-extract -->|error| crawl_dedupe-and-enqueue
+  crawl_fetch-and-extract -->|permanent| crawl_dedupe-and-enqueue
+  crawl_dedupe-and-enqueue[crawl:dedupe-and-enqueue]
+  crawl_dedupe-and-enqueue -->|frontier-ready| crawl_fetch-and-extract
+  crawl_dedupe-and-enqueue -->|frontier-empty| crawl_exhausted
+  crawl_dedupe-and-enqueue -->|budget-exhausted| crawl_exhausted
+  crawl_exhausted[crawl:exhausted]
+  crawl_exhausted -->|success| crawl_completed
+  crawl_completed(((crawl:completed)))

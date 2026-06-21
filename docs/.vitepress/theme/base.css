@@ -58,3 +58,136 @@
   border-radius: 4px !important;
   box-shadow: none !important;
 }
+
+/* ── DAG diagrams (mermaid) ──────────────────────────────────────────────────
+   mermaid's JS theme can't read CSS vars (khroma parses concrete colours only),
+   so node fills are themed here instead — these vars DO resolve in real CSS and
+   adapt to light/dark automatically. */
+.ripperoni-mermaid { background: transparent; text-align: center; }
+.ripperoni-mermaid svg { max-width: 100%; height: auto; }
+.ripperoni-mermaid .node rect,
+.ripperoni-mermaid .node circle,
+.ripperoni-mermaid .node ellipse,
+.ripperoni-mermaid .node polygon,
+.ripperoni-mermaid .node path {
+  fill: var(--vp-c-bg-soft) !important;
+  stroke: var(--vp-c-brand-1) !important;
+  stroke-width: 1.4px !important;
+}
+.ripperoni-mermaid .node .nodeLabel,
+.ripperoni-mermaid .node text,
+.ripperoni-mermaid span.nodeLabel { color: var(--vp-c-text-1) !important; fill: var(--vp-c-text-1) !important; }
+.ripperoni-mermaid .edgePaths path,
+.ripperoni-mermaid .flowchart-link { stroke: var(--vp-c-divider) !important; }
+.ripperoni-mermaid .edgeLabel,
+.ripperoni-mermaid .edgeLabel p { background: var(--vp-c-bg) !important; color: var(--vp-c-text-2) !important; }
+.ripperoni-mermaid marker { fill: var(--vp-c-divider) !important; stroke: var(--vp-c-divider) !important; }
+/* worker-container placements keep their blue tint */
+.ripperoni-mermaid .node.contained-worker rect,
+.ripperoni-mermaid .node.contained-worker polygon {
+  fill: #0369a1 !important;
+  stroke: #38bdf8 !important;
+}
+.ripperoni-mermaid .node.contained-worker .nodeLabel,
+.ripperoni-mermaid .node.contained-worker text { color: #eef3f7 !important; fill: #eef3f7 !important; }
+
+/* ── Diagram explorer: centred stage + D-pad + fullscreen modal ───────────────
+   The MermaidExplorer enhancer (theme/mermaidExplorer.client.ts) wraps each
+   rendered mermaid SVG in a `.dag-diagram-stage` and overlays a D-pad. */
+.dag-diagram {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 1.25rem 0;
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 8px;
+  background: var(--vp-c-bg-soft);
+}
+.dag-diagram-stage {
+  position: relative;
+  width: 100%;
+  max-height: 520px;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+.dag-diagram-stage.is-dragging { cursor: grabbing; }
+.dag-diagram-stage > svg { display: block; max-width: none !important; will-change: transform; }
+
+/* D-pad: 3×3 grid, bottom-right overlay */
+.dag-dpad {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  display: grid;
+  grid-template-columns: repeat(3, 30px);
+  grid-template-rows: repeat(3, 30px);
+  gap: 3px;
+  padding: 5px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--vp-c-bg) 72%, transparent);
+  backdrop-filter: blur(4px);
+  opacity: 0.55;
+  transition: opacity 0.14s ease;
+  z-index: 2;
+}
+.dag-diagram:hover .dag-dpad,
+.dag-modal .dag-dpad { opacity: 1; }
+.dag-dpad-gap { width: 30px; height: 30px; }
+.dag-dpad-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--vp-c-divider);
+  border-radius: 4px;
+  color: var(--vp-c-text-1);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+.dag-dpad-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+
+/* Fullscreen explore modal */
+.dag-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: color-mix(in srgb, var(--vp-c-bg) 86%, #000 14%);
+  backdrop-filter: blur(6px);
+  animation: dag-modal-in 0.16s ease-out;
+}
+@keyframes dag-modal-in { from { opacity: 0; } to { opacity: 1; } }
+.dag-modal-stage {
+  position: absolute;
+  inset: 0;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+}
+.dag-modal .dag-dpad { bottom: 16px; right: 16px; grid-template-columns: repeat(3, 36px); grid-template-rows: repeat(3, 36px); }
+.dag-modal .dag-dpad-btn { width: 36px; height: 36px; font-size: 15px; }
+.dag-dpad-close {
+  color: #fff !important;
+  background: var(--vp-c-brand-1) !important;
+  border-color: var(--vp-c-brand-1) !important;
+}
+.dag-dpad-close:hover { filter: brightness(1.1); }
+.dag-modal-hint {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--vp-c-divider);
+}
