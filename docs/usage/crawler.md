@@ -5,124 +5,164 @@ title: Crawler
 
 # Crawler
 
-`LinkLister` recursively follows links from one or more starting URLs and returns the set of URLs that match your target pattern. It doesn't scrape content; it builds a URL list. You hand that list to a scraper.
+A crawler starts at one or more seed URLs, follows links that match a pattern (the *frontier*), and collects the detail pages you actually want to scrape. `LinkLister` hands those collected URLs to the scrape pipeline once the run is done; Ripperoni batches the haul and fans out to parse each one.
 
-## Three regexes
+The crawl runs as an embedded DAG inside the parent pipeline, powered by `@studnicky/dagonizer`. Because the traversal loops — fetching a page, extracting new links, enqueuing them, then fetching again — the DAG is cyclic by design.
 
-Problem being solved: You want to crawl a site to build a URL list for scraping, but you don't want the crawler to follow every link it encounters. You want it to traverse category pages (to find all items) but only collect individual item pages (the URLs you'll scrape). Three regexes give you fine-grained control over both traversal and collection.
+## Wiring it up
 
-Three-regex decision tree: For each link the crawler finds, it applies three filters in order:
-
-1. **Domain filter**: Does the link match `domain`? If no, ignore it entirely (don't traverse, don't collect).
-2. **Delimiter filter**: Does the link match `domain` AND `delimiter`? If yes, add it to the frontier (traverse it). If no, skip it (don't follow).
-3. **Target filter**: Does the link match `domain` AND `delimiter` AND `target`? If yes, add it to the results. If no, ignore it (traverse it but don't collect).
+A crawler lives inside its target, under `targets.<name>.crawler`. List `crawl:list-targets` first in the pipeline; it reads that block, walks out from your `startUrls`, and collects every detail-page URL before the fetch and parse steps run.
 
 ```json
 {
-  "crawlers": {
-    "aonprd-feats": {
-      "startUrls": ["https://2e.aonprd.com/Feats.aspx"],
-      "domain":    "2e\\.aonprd\\.com",
-      "delimiter": "Feats\\.aspx",
-      "target":    "Feats\\.aspx\\?ID=\\d+",
-      "maxPages":  500
-    }
-  }
-}
-```
-
-| Regex | Role | Effect |
-|-------|------|--------|
-| `domain` | Scope filter | Links must match to be considered at all. Prevents the crawler from following links off-domain. |
-| `delimiter` | Traversal filter | Links matching `domain` AND `delimiter` are followed (added to the frontier). Others are ignored. |
-| `target` | Collection filter | Links matching `domain` AND `delimiter` AND `target` are collected as results. |
-
-In the example above:
-- Any link to a different domain is ignored.
-- Links to `Feats.aspx` (without query string) are traversed: they're list pages.
-- Links to `Feats.aspx?ID=\d+` are collected; they're detail pages.
-- The starting URL itself is traversed first.
-
-Note: Every link must match `domain` to be considered. If a link doesn't match `domain`, it's not evaluated against `delimiter` or `target` at all. This keeps crawls confined to their target site.
-
-## Visited and collected sets
-
-Two internal sets track state:
-- `#visited`: URLs already traversed (prevents loops).
-- `#collected`: URLs matched as results.
-
-A URL can be traversed without being collected. The crawler follows list pages but only hands back detail pages.
-
-## Concurrency model
-
-Traversal is breadth-first, not depth-first. All URLs at a given frontier depth are fetched and parsed concurrently via `Promise.all`. The crawler collects all links from depth 0, then all links from depth 1, then depth 2, etc. This means you discover broad categories of results before drilling deep into any one.
-
-`rateLimitMs` and `jitterMs` apply per request, same as scrapers. Even though multiple URLs are fetched in parallel, each still waits its turn in the rate limiter. If `rateLimitMs: 500` and concurrency is 10, you're still issuing requests 500ms apart; the concurrency is about how many are in flight (buffered in the rate limiter queue), not about how fast they're issued.
-
-## Revisit semantics
-
-The crawler tracks `#visited` (URLs already traversed) and `#collected` (URLs in results). Once a URL is added to `visited`, revisiting it from another depth is skipped; no duplicate fetches. This prevents infinite loops if your site has bidirectional links. A URL can be traversed without being collected (list pages are traversed but not returned). A URL is collected only if it matches all three regexes.
-
-## maxPages
-
-```json
-"maxPages": 500
-```
-
-Hard ceiling on collected results. The crawl stops as soon as this many URLs have been matched as results, even if there are more frontier URLs to follow. The crawler doesn't keep searching after hitting the limit; the next traversal iteration will discover that `results.size >= maxPages` and halt.
-
-## Deduplication and sorting
-
-Results are deduplicated automatically; the same URL appearing at multiple traversal depths is collected once. The dedupe happens at collection time: if URL A matches `target` at depth 0 and again at depth 2, it's added to results on the first match; the second match sees it's already in `collected` and skips it.
-
-Numeric collation rationale: By default, `Item-10` sorts before `Item-2` because string comparison is lexicographic (`"1" < "2"`). Numeric-aware collation sorts by the numeric value of each segment, so `Item-2` then `Item-10`. This makes URL lists sortable and diff-able across runs; you can `diff before.json after.json` and see only actual changes, not reordering artifacts.
-
-Sorting uses a numeric-aware collator: `Item-10` sorts after `Item-9`, not between `Item-1` and `Item-2`. Consistent ordering makes the output list diff-able.
-
-## Inline crawler vs top-level crawler
-
-Two ways to configure a crawler:
-
-**Top-level** (`crawlers` block); runs as a standalone job, produces a URL list:
-
-```json
-{
-  "crawlers": {
-    "aonprd-feats": {
-      "startUrls": ["https://2e.aonprd.com/Feats.aspx"],
-      "domain":    "2e\\.aonprd\\.com",
-      "delimiter": "Feats\\.aspx",
-      "target":    "Feats\\.aspx\\?ID=\\d+",
-      "maxPages":  500
-    }
-  }
-}
-```
-
-**Inline** (`targets[].crawler`); the scrape target crawls before it fetches:
-
-```json
-{
+  "output": { "basePath": "./output", "format": "json", "pretty": true },
   "targets": {
     "aonprd": {
-      "baseUrl":  "https://2e.aonprd.com",
-      "pipeline": ["html:fetch", "aonprd:parse", "json:write"],
+      "baseUrl":          "https://2e.aonprd.com",
+      "rateLimitMs":      1000,
+      "jitterMs":         250,
+      "maxRetries":       3,
+      "retryBaseDelayMs": 500,
+      "retryMaxDelayMs":  30000,
+      "pipeline": ["crawl:list-targets", "html:fetch", "aonprd:parse", "json:write"],
       "crawler": {
         "startUrls": ["https://2e.aonprd.com/Feats.aspx"],
         "domain":    "2e\\.aonprd\\.com",
-        "delimiter": "Feats\\.aspx",
-        "target":    "Feats\\.aspx\\?ID=\\d+",
-        "maxPages":  500
+        "target":    "\\?ID=",
+        "delimiter": "\\.aspx",
+        "rateLimitMs": 1000,
+        "jitterMs":    250,
+        "maxPages":    5000
       }
     }
   }
 }
 ```
 
-In the inline case, the orchestrator runs the crawler first, then scrapes each collected URL through the target pipeline.
+## Fields
+
+Fields are strings (regex patterns) or integers. Pass raw pattern strings — Ripperoni compiles them internally.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `startUrls` | `string[]` | Yes | Absolute URLs where the crawl begins. At least one required. |
+| `domain` | `string` (regex) | Yes | Links must match this pattern to enter the crawl at all. Keeps traversal on-site. |
+| `target` | `string` (regex) | Yes | Links matching `domain` AND `delimiter` AND `target` get collected as scrape targets. |
+| `delimiter` | `string` (regex) | Yes | Links matching `domain` AND `delimiter` get added to the traversal frontier. |
+| `rateLimitMs` | `integer` | No | Minimum delay between crawler requests. Independent of the parent target's rate limit. |
+| `jitterMs` | `integer` | No | Maximum random additional delay added on top of `rateLimitMs`. |
+| `maxPages` | `integer` | No | Hard ceiling on collected results. Omit for an unbounded crawl — runs until the frontier empties. |
+
+The crawl terminates when the frontier empties, `maxPages` is reached, or all reachable links under `domain`/`delimiter` have been visited.
+
+## Three-regex decision tree
+
+Each link the crawler encounters passes three filters in order:
+
+1. **Domain filter** — matches `domain`? Keep it. Otherwise, drop it entirely.
+2. **Delimiter filter** — also matches `delimiter`? Add it to the traversal frontier (the queue of pages to visit next).
+3. **Target filter** — also matches `target`? Collect it as a scrape URL.
+
+In the aonprd example:
+
+```
+domain    →  2e\.aonprd\.com   (scope: stay on this domain)
+delimiter →  \.aspx            (traverse: follow .aspx pages as list/category pages)
+target    →  \?ID=             (collect: gather ?ID= URLs as scrape targets)
+```
+
+- Links containing `.aspx` get followed as index/list pages. These are the sausage-links — they lead to more links rather than to the content you want.
+- Links containing `?ID=` get collected as individual detail pages.
+- A link can be traversed without being collected — index pages are followed but not handed to the scraper.
+
+## Traversal strategy
+
+The crawler runs breadth-first search (BFS) as a native cyclic DAG in `@studnicky/dagonizer`:
+
+```
+crawl:init-frontier
+  ready → crawl:fetch-and-extract
+  empty → crawl:exhausted
+
+crawl:fetch-and-extract
+  success / empty / error / permanent → crawl:dedupe-and-enqueue
+
+crawl:dedupe-and-enqueue
+  frontier-ready   → crawl:fetch-and-extract   ← back-edge (loop)
+  frontier-empty   → crawl:exhausted
+  budget-exhausted → crawl:exhausted
+
+crawl:exhausted → crawl:completed (terminal)
+```
+
+The back-edge from `crawl:dedupe-and-enqueue` to `crawl:fetch-and-extract` is a native cyclic edge. The engine re-executes on in-place state until `DedupeAndEnqueueNode` routes to `crawl:exhausted`. No trampoline, no DAG cloning.
+
+All URLs at a given frontier depth are fetched and parsed before the next level begins. Each request passes through the rate limiter, so `rateLimitMs`/`jitterMs` apply per request.
+
+## Visited and collected sets
+
+Two internal sets prevent redundant work:
+
+- **visited** — URLs already traversed. A URL seen at depth 0 is skipped if it appears again at depth 3.
+- **discovered** — URLs collected as scrape targets. Deduplicated — a URL appearing at multiple depths is collected once.
+
+Index pages are visited but not included in the result set.
+
+## maxPages
+
+```json
+"maxPages": 5000
+```
+
+Hard ceiling on collected results. The crawl stops as soon as this many target URLs match, even if frontier URLs remain. Leave `maxPages` off and it runs long and hard until the frontier's picked clean.
+
+## Deduplication and sorting
+
+Results are deduplicated at collection time. The final list sorts with a numeric-aware collator so `Item-10` lands after `Item-9`, not between `Item-1` and `Item-2`. Consistent ordering makes the list diff-able across runs.
+
+## Full example (aonprd)
+
+Crawls all index pages on `2e.aonprd.com`, collects every `?ID=` detail URL, then scrapes them through the `aonprd:parse` pipeline:
+
+```json
+{
+  "output": { "basePath": "./output", "format": "json", "pretty": true },
+  "targets": {
+    "aonprd": {
+      "baseUrl":          "https://2e.aonprd.com",
+      "rateLimitMs":      1000,
+      "jitterMs":         250,
+      "maxRetries":       3,
+      "retryBaseDelayMs": 500,
+      "retryMaxDelayMs":  30000,
+      "headers": {
+        "User-Agent": "ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)"
+      },
+      "pipeline": ["crawl:list-targets", "html:fetch", "aonprd:parse", "json:write"],
+      "crawler": {
+        "startUrls": [
+          "https://2e.aonprd.com/Actions.aspx",
+          "https://2e.aonprd.com/Ancestries.aspx",
+          "https://2e.aonprd.com/Classes.aspx",
+          "https://2e.aonprd.com/Equipment.aspx",
+          "https://2e.aonprd.com/Feats.aspx",
+          "https://2e.aonprd.com/Monsters.aspx",
+          "https://2e.aonprd.com/Spells.aspx"
+        ],
+        "domain":      "2e\\.aonprd\\.com",
+        "target":      "\\?ID=",
+        "delimiter":   "\\.aspx",
+        "rateLimitMs": 1000,
+        "jitterMs":    250,
+        "maxPages":    5000
+      }
+    }
+  }
+}
+```
 
 ## Related
 
-- [Configuration](./configuration); crawler config schema
-- [Scrapers](./scrapers); what happens after the crawler hands back URLs
-- [Cache](./cache); crawler requests go through the rate limiter but not the cache
+- [Configuration](./configuration) — full config schema reference
+- [Scrapers](./scrapers) — what happens after the crawler hands back URLs
+- [Cache](./cache) — crawler requests use the rate limiter; configure `target.cache` for response caching

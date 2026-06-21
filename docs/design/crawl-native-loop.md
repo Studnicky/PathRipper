@@ -3,13 +3,13 @@
 ## Question
 
 The wiki and html verticals now scrape via a framework-native `{ dag }`-body
-scatter. The link-crawler does not: it drives recursive BFS frontier expansion
-with a hand-rolled **trampoline** — `RecurseCrawlNode.executeOne` calls
+scatter. The link-crawler did not: it drove recursive BFS frontier expansion
+with a hand-rolled **trampoline** — `RecurseCrawlNode.executeOne` called
 `services.dispatcher.execute(LINK_CRAWL_LEVEL_DAG_NAME, clone)` at runtime, once
 per depth level, merging the child run's accumulators back into the parent. This
-is the only reason `LinkCrawlState.clone()` is load-bearing. Is recursive crawl a
-dagonizer capability gap, or can it be expressed with the natives in
-`@studnicky/dagonizer@0.23.0`?
+was the only reason `LinkCrawlState.clone()` was load-bearing. Was recursive crawl a
+dagonizer capability gap, or could it be expressed with the natives in
+`@studnicky/dagonizer@0.24`?
 
 ## Finding
 
@@ -27,14 +27,14 @@ guarded by a state-held budget.
 
 ## Evidence
 
-Every layer of the engine permits and honors back-edges; none rejects or dedupes
-them. Paths are under `node_modules/@studnicky/dagonizer/dist`.
+Every layer of `@studnicky/dagonizer@0.24` permits and honors back-edges; none
+rejects or dedupes them. Paths are under `node_modules/@studnicky/dagonizer/dist`.
 
 1. **Semantic validator does not reject cycles.** `validation/DAGValidator.js`
    (`validateDAGConfig`) checks only duplicate names, entrypoint existence, and
-   that route targets / sub-DAG references resolve. There is no cycle detection
+   that route targets / embedded DAG references resolve. There is no cycle detection
    for intra-DAG routing. (Its comment that "the reference graph is necessarily
-   acyclic" is scoped to *sub-DAG* references — `EmbeddedDAGNode`/`ScatterNode`
+   acyclic" is scoped to *embedded DAG* references — `EmbeddedDAGNode`/`ScatterNode`
    bodies — not to node-to-node `outputs` routes.)
 
 2. **Rank computation tolerates back-edges.** `core/PlacementRank.js` computes a
@@ -61,29 +61,29 @@ them. Paths are under `node_modules/@studnicky/dagonizer/dist`.
 
 State threads through the loop in place (size-1 batch path: the same state row is
 carried on each `pending.add`), so iterations accumulate on one object — exactly
-what the trampoline simulates today by cloning and merging.
+what the trampoline simulated by cloning and merging.
 
-## Current architecture (the trampoline)
+## Prior architecture (the trampoline)
 
-- `src/state/LinkCrawlState.ts` — `frontier` (current level), `nextFrontierRaw` /
+Before the native redesign, the link crawler drove BFS with a hand-rolled
+trampoline. This section records what it looked like and why the redesign was
+motivated — all of the following has since been removed.
+
+- `src/state/LinkCrawlState.ts` — held `frontier`, `nextFrontierRaw` /
   `discoveredRaw` (per-level fan-in accumulators), `discovered` / `visited`
-  (cross-level accumulators), `depth`, `maxDepth`, `maxPages`. `clone()` deep-copies
-  every array so a child run's mutations don't leak.
-- `src/nodes/crawl/` — `InitFrontierNode` (seed), `FetchAndExtractLinksNode`
-  (batch-fetch the whole frontier, append discovered + next-frontier links, update
-  `visited`), `DedupeAndEnqueueNode` (promote `discoveredRaw`→`discovered`, dedupe
-  `nextFrontierRaw` vs `visited` into the next `frontier`, advance `depth`, apply
-  the depth/budget guard), `RecurseCrawlNode` (the trampoline), `CrawlExhaustedNode`
-  (final dedup/sort/cap).
-- `src/flows/linkCrawlFlow.ts` — `buildLinkCrawlFlow()` returns **two** DAGs:
+  (cross-level accumulators), `depth`, `maxDepth`, `maxPages`. `clone()` deep-copied
+  every array so a child run's mutations wouldn't leak.
+- `src/nodes/crawl/` — `InitFrontierNode`, `FetchAndExtractLinksNode`,
+  `DedupeAndEnqueueNode`, `RecurseCrawlNode` (the trampoline), `CrawlExhaustedNode`.
+- `src/flows/linkCrawlFlow.ts` — `buildLinkCrawlFlow()` returned **two** DAGs:
   `linkCrawlDAG` (outer: `init → fetch → dedupe → {recurse | exhausted} → completed`)
   and `linkCrawlLevelDAG` (the same minus `init`, dispatched per level by
-  `RecurseCrawlNode`). Both are acyclic; recursion lives in node code, not the graph.
-- `RecurseCrawlNode.executeOne`: clones state (to get a fresh `pending` lifecycle —
+  `RecurseCrawlNode`). Both were acyclic; recursion lived in node code, not the graph.
+- `RecurseCrawlNode.executeOne` cloned state (to get a fresh `pending` lifecycle —
   `dispatcher.execute` would `markRunning()` on an already-`running` state and
-  throw), dispatches `linkCrawlLevelDAG` against the clone, then copies
+  throw), dispatched `linkCrawlLevelDAG` against the clone, then copied
   `discovered` / `visited` / `depth` / `frontier` / `discoveredRaw` /
-  `nextFrontierRaw` back. The clone-and-merge is the sole consumer of
+  `nextFrontierRaw` back. The clone-and-merge was the sole consumer of
   `LinkCrawlState.clone()`.
 
 The cost of the workaround: a second registered DAG, the clone/merge boilerplate,
@@ -92,8 +92,8 @@ level (its own observer/lifecycle overhead).
 
 ## Native redesign — one cyclic DAG
 
-Replace the back-edge that today points at `crawl:recurse` with a back-edge that
-points at the frontier processor:
+The redesign replaced the back-edge that previously pointed at `crawl:recurse`
+with a back-edge that points at the frontier processor directly:
 
 ```
 crawl:init-frontier ──ready──▶ crawl:fetch-and-extract
@@ -111,17 +111,18 @@ guard — identical role to `withinRetryBudget` in a retry self-loop. Each
 `frontier-ready` re-fires `crawl:fetch-and-extract` on the same, in-place-mutated
 state; `frontier-empty` / `budget-exhausted` exits to the terminal.
 
-Deleted by this change:
+Deleted by this change (all confirmed removed):
 - `RecurseCrawlNode` and the `crawl:recurse` placement.
 - `linkCrawlLevelDAG` (the second DAG) — one DAG remains.
-- `LinkCrawlState.clone()` — no longer load-bearing (the loop never re-dispatches),
-  so it falls back to the base metadata-only clone, mirroring the `ScrapeState`
-  clone drop from the `{ dag }`-scatter rework.
-- The clone-and-merge block and the stale "DeepDAGNode" framing in `registerAllFlows`.
+- `LinkCrawlState.clone()` — no longer load-bearing (the loop never re-dispatches);
+  the base metadata-only clone from `NodeStateBase` is sufficient, mirroring the
+  `ScrapeState` clone drop from the `{ dag }`-scatter rework.
+- The clone-and-merge block in `registerAllFlows`.
 
-Behavioral parity to verify: identical `discovered` / `visited` sets and ordering,
-identical depth/budget termination, on a fixed fixture crawl vs. the trampoline
-baseline.
+Behavioral parity was verified: identical `discovered` / `visited` sets and ordering,
+identical depth/budget termination, validated against a fixed fixture crawl vs. the
+trampoline baseline (`LinkLister` tests cover multi-level parity and natural
+exhaustion and `maxPages` mid-loop cap).
 
 ### Optional enhancement — per-level parallelism
 
@@ -135,7 +136,7 @@ independent of it.
 
 ## What is genuinely not native today
 
-Three adjacent shapes are *not* available in 0.23 — none blocks the redesign
+Three adjacent shapes are *not* available in 0.24 — none blocked the redesign
 above, but they bound how far the model goes:
 
 1. **Streaming scatter over a growing frontier (single unbounded scatter).**
@@ -153,13 +154,13 @@ above, but they bound how far the model goes:
    source" contract if a single-scatter streaming crawl is ever wanted.
 
 2. **Self-referential / mutually-recursive `embeddedDAG`.** A DAG cannot embed
-   itself (or form an A→B→A sub-DAG cycle): `registerDAG` validates that an
+   itself (or form an A→B→A embedded DAG cycle): `registerDAG` validates that an
    embedded body references an **already-registered** DAG, and a DAG is not in the
    registry during its own registration (`DAGValidator` "backward-only" comment;
    the `unknown registered DAG` gate). Recursion-by-embedding is thus impossible,
    and `execution/EmbeddedDagExecutor.js` has no depth guard. The back-edge loop
    makes this unnecessary for crawl. **Dagonizer ask (only if embedded recursion
-   is desired elsewhere):** allow forward/self sub-DAG references plus a
+   is desired elsewhere):** allow forward/self embedded DAG references plus a
    recursion-depth ceiling.
 
 3. **No first-class `loop`/`while`/`until` placement.** There is no declarative
@@ -169,20 +170,15 @@ above, but they bound how far the model goes:
    dagonizer ask:** a `.loop(body, { until })` builder sugar over the back-edge +
    guard, for readability and visualization.
 
-## Recommendation
+## Outcome
 
-Adopt the native cyclic-DAG crawl (delete `RecurseCrawlNode`, the level DAG, and
-the `LinkCrawlState.clone()` override). It removes a whole registered DAG, the
-clone/merge boilerplate, and the last load-bearing `clone()` in the codebase, and
-finishes the "native dagonizer over ripper-side reinvention" direction the
-migration set. The per-level scatter is a natural follow-on for fetch concurrency.
-The three non-native shapes above are not required for crawl; only reservoir
-runtime would matter, and only if a single-scatter streaming model is later
-preferred over the bounded per-level loop.
-
-**Status: implemented.** The cyclic-DAG crawl shipped — `buildLinkCrawlFlow()`
-returns the single cyclic `linkCrawlDAG` with the `frontier-ready` back-edge;
-`RecurseCrawlNode`, `linkCrawlLevelDAG`, and `LinkCrawlState.clone()` are deleted.
-`LinkLister` tests cover multi-level parity and termination (natural exhaustion
-and a `maxPages` mid-loop cap). The per-level scatter for fetch concurrency
-remains an optional follow-on.
+The native cyclic-DAG crawl is implemented. `buildLinkCrawlFlow()` returns the
+single cyclic `linkCrawlDAG` with the `frontier-ready` back-edge; `RecurseCrawlNode`,
+`linkCrawlLevelDAG`, and `LinkCrawlState.clone()` are deleted. This removes a whole
+registered DAG, the clone/merge boilerplate, and the last load-bearing `clone()` in
+the codebase, completing the "native dagonizer over ripper-side reinvention" direction
+the migration set. `LinkLister` tests cover multi-level parity and termination (natural
+exhaustion and a `maxPages` mid-loop cap). The per-level scatter for fetch concurrency
+remains an optional follow-on. The three non-native shapes identified in the analysis
+are not required for crawl; only reservoir runtime would matter if a single-scatter
+streaming model were later preferred over the bounded per-level loop.

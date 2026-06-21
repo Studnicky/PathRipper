@@ -5,20 +5,30 @@ description: A visual, top-down walkthrough of how the Archives of Nethys (Pathf
 
 # AONPRD Scraper DAG
 
-This page shows how the Archives of Nethys (Pathfinder 2e) scrape is composed, end
-to end. Every diagram below is generated at build time from the **real DAG
-definitions** by `@studnicky/dagonizer`'s `MermaidRenderer`
+Here's one real scraper on the block, top to bottom — from the butcher's run down to the cut that lands on disk.
+
+This page walks the Archives of Nethys (Pathfinder 2e) scrape end to end. Every
+diagram below is generated at build time from the **real DAG definitions** by
+[`@studnicky/dagonizer`](https://github.com/Studnicky/Dagonizer)'s `MermaidRenderer`
 (`docs/.vitepress/scripts/render-dags.mjs`), so the pictures always match the code.
 
-A run is not one flat graph — it is several DAGs nested inside each other. Reading
-top to bottom: the **CLI** dispatches an **outer flow**, the outer flow embeds three
-**phase** DAGs (discovery → scrape → retry), each scrape/retry phase scatters over
-its URL set and runs a **per-page** DAG, and the per-page DAG embeds the
-**`aonprd:parse`** plugin DAG to turn HTML into a typed record.
+A **DAG** (directed acyclic graph) is a set of steps (**nodes**) connected by
+one-way edges — execution flows forward through the graph with no cycles. A
+**scatter** fans one node out over a list so every item runs the same subgraph in
+parallel. An **embedded DAG** is a full DAG dropped into a single node slot of an
+outer DAG, so the outer graph stays readable while the inner graph handles its own
+complexity. All of the diagrams here are rendered by dagonizer's own visualizer and
+show the exact runtime graph the scraper executes.
+
+A run is several DAGs nested inside each other. Reading top to bottom: the **CLI**
+dispatches an **outer flow**, the outer flow embeds three **phase** DAGs (discovery →
+scrape → retry), each scrape/retry phase scatters over its URL set and runs a
+**per-page** DAG, and the per-page DAG embeds the **`aonprd:parse`** plugin DAG to
+turn HTML into a typed record.
 
 ## The target
 
-The aonprd scrape is declared entirely in config — no bespoke code path:
+The aonprd scrape lives entirely in config:
 
 ```json
 {
@@ -75,12 +85,11 @@ crawler (below), then terminates so the scrape phase can begin.
 <!--@include: ./_generated/htmlCrawlPhase.mmd -->
 ```
 
-Under the hood, `crawl:list-targets` runs the **link crawler DAG** — a level-by-level
-BFS that fetches each frontier page, extracts links matching the crawler's
-`delimiter` (traversable) and `target` (collectable `?ID=` pages), dedupes, and
-promotes the next frontier via a back-edge until the frontier empties or a
-`maxPages`/`maxDepth` bound is hit. With no bound configured it traverses the full
-reachable `.aspx` graph.
+`crawl:list-targets` runs the **link crawler DAG** — a level-by-level BFS that
+fetches each frontier page, extracts links matching the crawler's `delimiter`
+(traversable) and `target` (collectable `?ID=` pages), dedupes, and promotes the
+next frontier via a back-edge until the frontier empties or a `maxPages`/`maxDepth`
+bound is hit. With no bound configured it traverses the full reachable `.aspx` graph.
 
 ```mermaid
 <!--@include: ./_generated/linkCrawlDAG.mmd -->
@@ -89,8 +98,8 @@ reachable `.aspx` graph.
 ### 3b · Scrape — `htmlScrapePhase`
 
 The scrape phase scatters over `state.urls` using a native `{ dag }` scatter body —
-each item runs the per-page DAG directly, no dispatch-wrapper node. The fetch node
-reads its URL from the scatter's `currentUrl` item key. Outcomes partition into
+each item runs the per-page DAG directly as an embedded DAG. The fetch node reads its
+URL from the scatter's `currentUrl` item key. Outcomes partition into
 `state.succeeded` / `state.failed`. Scatter concurrency matches the parse
 worker-pool width, so every worker stays fed.
 
@@ -113,17 +122,17 @@ scatter source (`state.failed`) differs. `failures.json` is written from
 
 Each phase item runs the per-page DAG compiled from the target's `pipeline`. For
 aonprd that is `html:fetch → aonprd:parse → json:write`: the cache-aware fetch
-(`success`/`cached` both proceed), the embedded `aonprd:parse` sub-DAG (`[[double
+(`success`/`cached` both proceed), the embedded `aonprd:parse` DAG (`[[double
 border]]`), and the JSON writer. Any `error` routes to the page's `failed` terminal,
-which is what the retry phase later picks up.
+which the retry phase picks up.
 
 ```mermaid
 <!--@include: ./_generated/aonprdPageDAG.mmd -->
 ```
 
-## 5 · `aonprd:parse` plugin DAG
+## 5 · `aonprd:parse` plugin DAG — the meaty bit
 
-`aonprd:parse` is a registered plugin DAG, embedded as a sub-DAG of the per-page
+`aonprd:parse` is a registered plugin DAG, embedded in the per-page
 pipeline. It is **taxonomy-routed**: the entrypoint `aonprd:taxonomy-route`
 classifies each page from its URL and dispatches to that concept's inherited
 capability chain (spell, monster, feat, weapon, …). Pages that match no known
@@ -135,7 +144,7 @@ diagram by hand.
 <!--@include: ./_generated/aonprdParseDAG.mmd -->
 ```
 
-The parsed record is copied back to the per-page state via the embedded DAG's output
+The parsed record copies back to the per-page state via the embedded DAG's output
 mapping, so the downstream `json:write` step sees the typed output and writes one
 JSON record per page.
 

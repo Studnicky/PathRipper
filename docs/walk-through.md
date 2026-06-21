@@ -1,12 +1,14 @@
 # Walk-through
 
-One concrete end-to-end example from URL to structured JSON record. The target is the [Archives of Nethys](https://2e.aonprd.com/) (aonprd): the Pathfinder Second Edition rules reference. All of this is in `tests/e2e/fixtures/` and `plugins/aonprd/`.
+Ripperoni is a butcher for the web — it grinds raw HTML into clean cuts of structured JSON. Watch one page go from raw fetch to a finished record.
+
+The target is the [Archives of Nethys](https://2e.aonprd.com/) (aonprd): the Pathfinder Second Edition rules reference. Everything below lives in `tests/e2e/fixtures/` and `plugins/aonprd/`.
 
 ---
 
-## Before: the input
+## The input
 
-Point Ripperoni at a detail page:
+The starting point is one detail page:
 
 ```
 https://2e.aonprd.com/Feats.aspx?ID=750
@@ -14,13 +16,13 @@ https://2e.aonprd.com/Feats.aspx?ID=750
 
 That URL resolves to the Power Attack feat page: a standard AON HTML page with a structured `<h1>`, a header field table, a body block, and inline links to other rules entries.
 
-Ripperoni fetches the raw HTML, hands it to the configured plugin, and the plugin extracts a typed record. You never see raw HTML in your output.
+Ripperoni fetches the raw HTML, hands it to the configured plugin, and the plugin extracts a typed record.
 
 ---
 
 ## The config
 
-The `targets.aonprd` block from `tests/e2e/fixtures/pathripper-legacy.config.json`:
+The `targets.aonprd` block from `tests/e2e/fixtures/aonprd-crawler.config.json`:
 
 ```json
 {
@@ -33,75 +35,41 @@ The `targets.aonprd` block from `tests/e2e/fixtures/pathripper-legacy.config.jso
       "retryBaseDelayMs": 500,
       "retryMaxDelayMs":  30000,
       "headers": {
-        "User-Agent": "ripperoni/2.0 (+https://github.com/Studnicky/Ripperoni)"
+        "User-Agent": "ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)"
       },
-      "pipeline": [
-        "html:fetch",
-        "aonprd:parse",
-        "json:write"
-      ],
-      "cache": {
-        "dir": "./output/.cache/aonprd",
-        "mode": "read-write"
+      "pipeline": ["crawl:list-targets", "html:fetch", "aonprd:parse", "json:write"],
+      "crawler": {
+        "startUrls": ["https://2e.aonprd.com/Feats.aspx", "..."],
+        "domain":      "2e\\.aonprd\\.com",
+        "target":      "\\?ID=",
+        "delimiter":   "\\.aspx",
+        "rateLimitMs": 1000,
+        "jitterMs":    250,
+        "maxPages":    5000
       }
     }
   }
 }
 ```
 
-Pipeline step breakdown:
+The crawler (the link-discovery component) lives under `targets.aonprd.crawler`. `crawl:list-targets` runs first — it walks out from the seed URLs and collects every link worth fetching.
+
+Pipeline step breakdown (a pipeline is an ordered list of tasks each page passes through):
 
 | Step | What it does |
 |------|-------------|
+| `crawl:list-targets` | Walks `crawler.startUrls`, follows links matching `target` within `domain`, and populates `state.urls`. |
 | `html:fetch` | Rate-limited fetch with retry + backoff. Respects `Retry-After`. Reads from cache on hits. |
-| `aonprd:parse` | Plugin: loads the HTML into cheerio, extracts structured fields, writes `state.output`. |
+| `aonprd:parse` | Plugin: loads the HTML into cheerio, routes by URL taxonomy, extracts a typed record, writes `state.output`. |
 | `json:write` | Writes `state.output` to `./output/aonprd/<slug>.json`. |
 
 ---
 
 ## The plugin
 
-The relevant slice of `plugins/aonprd/` (pure extraction — no HTTP, no I/O):
+The plugin lives in `plugins/aonprd/`. Each scrape run executes a DAG (directed acyclic graph — a set of named task nodes wired by dependency edges, powered by [@studnicky/dagonizer](https://github.com/Studnicky/Dagonizer)). The DAG entrypoint for the aonprd plugin is `aonprd:taxonomy-route`, which dispatches to each concept's inherited capability chain (a node, or a single named task unit) based on the URL path. Unrecognised URLs route to `aonprd:make-unknown`.
 
-```ts
-import type { CheerioAPI } from 'cheerio';
-import { getField, htmlToText, harvestLinks } from './common.js';
-
-export interface FeatOutput {
-  url:         string;
-  feat_id:     number | null;
-  name:        string;
-  level:       number | null;
-  rarity:      string;
-  traits:      string[];
-  action_cost: string | null;
-  description_text: string;
-}
-
-export function extractFeat($: CheerioAPI, url: string): FeatOutput {
-  const name       = $('h1.title').first().text().trim();
-  const level      = parseInt(getField($, 'Level') ?? '', 10) || null;
-  const rarity     = (getField($, 'Rarity') ?? 'common').toLowerCase();
-  const traits     = $('span.trait a').map((_, el) => $(el).text().trim()).get();
-  const action_cost = getField($, 'Actions') ?? null;
-  const description_text = htmlToText($('#ctl00_MainContent_DetailedOutput').html() ?? '');
-
-  return {
-    url,
-    feat_id: null,
-    name,
-    level,
-    rarity,
-    traits,
-    action_cost,
-    description_text,
-  };
-}
-```
-
-`getField`, `htmlToText`, and `harvestLinks` are shared helpers in `plugins/aonprd/common.ts`. `extractFeat` receives a `CheerioAPI` instance; no HTTP, no I/O, no side effects.
-
-The plugin entry point (`plugins/aonprd/parse.task.ts`) exports `register(dispatcher)` which registers all taxonomy-compiled nodes and the `aonprd:parse` DAG:
+The plugin entry point (`plugins/aonprd/parse.task.ts`) exports `register(dispatcher)`, which registers all taxonomy-compiled nodes and the `aonprd:parse` DAG:
 
 ```ts
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
@@ -117,11 +85,13 @@ export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
 }
 ```
 
-The node declares named output ports. The dispatcher routes `success` to the next step (`json:write`), `error` and `unknown` to the failure collector.
+`aonprdParseDAG` is built from the compiled taxonomy via `TAXONOMY.buildDAG('aonprd:parse', '3.0')`. The taxonomy covers ~51 concepts (feats, spells, monsters, equipment, ancestry subclasses, …). Shared cheerio helpers (`extractCommon`, `getField`, `htmlToText`, `harvestLinks`) live in `plugins/aonprd/common.ts`.
+
+Per-item fan-out uses native `{ dag }` scatter (scatter: run the same embedded DAG in parallel over a list of items) via `.embeddedDAG` placements.
 
 ---
 
-## After: the JSON record
+## The output record
 
 ```json
 {
@@ -136,18 +106,19 @@ The node declares named output ports. The dispatcher routes `success` to the nex
 }
 ```
 
-Concept identity is carried by the URL (`Feats.aspx`) and the typed `feat_id` field — not by a discriminator property. Downstream tools (like Squashage) use the URL to derive IRIs and classify the record.
+Concept identity is carried by the URL (`Feats.aspx`) and the typed `feat_id` field. Downstream tools (like Squashage) use the URL to derive IRIs and classify the record.
 
 ---
 
-## What ran in between
+## End-to-end run recap
 
-1. **Rate-limited fetch**: waited `rateLimitMs` (1000ms) + up to `jitterMs` (250ms) random jitter before the request.
-2. **Cache check**: first run: cache miss, HTTP GET. Subsequent runs: cache hit, no network request.
-3. **Retry logic**: on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
-4. **DAG dispatch**: `RipperRun` built a fan-out DAG over the URL list via `DAGDeriver` and dispatched it through `RipperDagonizer`. The `html:fetch` node returned `success`; the `aonprd:parse` node ran next.
-5. **Plugin executed**: `aonprd:parse` ran with `state.page.html` containing the raw HTML. The extractor ran cheerio selectors and set `state.output`.
-6. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/aonprd:parse/Feats.aspx-ID-750.json`.
+1. **Crawl phase**: `crawl:list-targets` walked the `startUrls`, followed `?ID=` links within `2e.aonprd.com`, and populated `state.urls`.
+2. **Rate-limited fetch**: waited `rateLimitMs` (1000ms) plus up to `jitterMs` (250ms) random jitter before each request.
+3. **Cache check**: first run hits the network. Subsequent runs read from cache.
+4. **Retry logic**: on transient failures (5xx, network timeout), retried up to `maxRetries` times with exponential backoff capped at `retryMaxDelayMs`.
+5. **DAG dispatch**: `runHtml` built the phase DAGs, registered the plugin via `PluginLoader`, and dispatched through `RipperDagonizer`. Per-page parse ran in a `{ dag }` scatter (worker-thread pool when the compiled registry is present).
+6. **Plugin executed**: `aonprd:parse` entered at `aonprd:taxonomy-route` with the raw HTML in `state.page.html`. The taxonomy routed to the feat concept chain, which ran cheerio selectors and set `state.output`.
+7. **Record written**: `json:write` serialized `state.output` to `./output/aonprd/<slug>.json`.
 
 ---
 

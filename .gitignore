@@ -85,6 +85,10 @@ src/**/*.js
 src/**/*.js.map
 src/**/*.d.ts
 
+# Local tooling state — never committed.
+litany.json
+.litany/
+
 # User's local configs — never committed.
 # Only the canonical `ripperoni.config.example.json` is tracked.
 ripperoni.config*.json

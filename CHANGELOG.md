@@ -124,12 +124,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dead re-export barrels** `src/nodes/config/index.ts`, `src/nodes/crawl/index.ts`, and
   `src/run/index.ts` — zero importers; consumers import the concrete modules directly.
 
-### Tooling
-
-- Added `.litany/knip.json` so `litany prune dead-code` reports accurate results. Entry
-  points cover the CLI, the worker-thread parse entry, the published subpath exports, the
-  plugin `parse.task`/`parse.dag` entries, the docs scripts, and the test suite.
-
 ### Fixed
 
 - `plugins/aonprd/parse.dag.ts` carried a stale `NodeInterface<…, RipperServices>` →
@@ -566,7 +560,6 @@ extraction pipeline. Plugin source files ship separately as examples in v1.
 **Configuration**
 - AJV-validated JSON config (`ripperoni.config.json`) with full `json-schema-to-ts` derived types
 - All parameters configurable with documented defaults: `rateLimitMs`, `jitterMs`, `batchSize`, `allPagesLimit`, `maxRetries`, `retryBaseDelayMs`, `retryMaxDelayMs`
-- `litany.json` project standards config
 
 **CLI**
 - `ripperoni scrape` — unified command; detects `html`/`mediawiki` mode from config

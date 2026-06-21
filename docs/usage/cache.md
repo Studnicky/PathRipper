@@ -5,11 +5,11 @@ title: Cache
 
 # Cache
 
-`ScraperCache` is a sharded, content-addressed pointer cache. It stores what was fetched so subsequent runs skip the network.
+The cache is the meat locker — fetch a page once and it stays in cold storage. Every subsequent run skips the network entirely and reads the stored body directly, handing it straight to the parse task.
 
-Problem being solved: Iterating on a parse plugin is slow if every run re-fetches all pages. The cache saves every HTTP response to disk so the next run can replay from cache without hitting the network. This makes the edit-test cycle fast: change your parse plugin, rerun, hit cache, extract in seconds instead of minutes.
+Iterating on a parse plugin is fast with the HTTP stack out of the way: change the plugin, rerun, and extraction completes in seconds.
 
-Sharding rationale: Without sharding, a cache directory with 10,000 entries becomes a single flat directory where `readdir()` gets slow (hundreds of milliseconds per operation on some filesystems). By sharding into subdirectories using the first two hex characters of the cache key, each subdirectory holds ~256 entries. A `readdir()` of 256 files is fast; a `readdir()` of 10,000 is not. The two-character prefix is a sweet spot: enough entropy to spread load but not so granular that you end up with thousands of single-file directories.
+Sharding keeps the cache fast at scale. Without it, a directory with 10,000 entries becomes a single flat directory where `readdir()` gets slow (hundreds of milliseconds on some filesystems). Sharding by the first two hex characters of the cache key caps each subdirectory at ~256 entries — fast to traverse, and spread wide enough that collisions are rare.
 
 ## Default-on
 
@@ -23,7 +23,7 @@ where `<targetId>` is the key of the entry in the config (e.g. `"aonprd"` → `o
 
 ### Raw + cache-off invariant
 
-Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load with `RipperConfigError`. Raw content output without a write-capable cache will exhaust disk on large scrapes — the loader catches this misconfiguration before a single byte is fetched.
+Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load with `RipperConfigError`. Raw content output without a write-capable cache exhausts disk on large scrapes — the loader catches this misconfiguration before a single byte is fetched.
 
 To disable caching, set `includeRawContent: false` first (opt out of raw output), then set `cache.mode: "off"`:
 
@@ -46,11 +46,13 @@ The cache stores two things per entry:
 - A `.meta.json` file with request metadata and a `bodyPath` pointer.
 - A body file at `bodyPath` with the raw response body.
 
-Meta files live at `<dir>/<key[0:2]>/<key[2:]>.meta.json`. Sharding by the first two characters of the cache key prevents large directories from slowing filesystem traversal.
+Meta files live at `<dir>/<key[0:2]>/<key[2:]>.meta.json`. Body files live under a separate `bodies/` subdirectory: `<dir>/bodies/<key[0:2]>/<key[2:]>.body` (the body root can be overridden via the programmatic `bodyDir` option). Sharding by the first two characters of the cache key keeps each subdirectory small enough that `readdir()` stays fast even with tens of thousands of entries.
 
-The key is derived from the request: HTTP method + URL, hashed to a fixed-length string.
+The key is derived from the request: HTTP method + URL + sorted request headers, hashed to a 40-character SHA-1 hex string. In practice Ripperoni only issues GET requests with no per-request header overrides, so the key is effectively the URL hash.
 
 ## Modes
+
+`mode` controls whether Ripperoni reads from the cache, writes to it, both, or neither.
 
 ```json
 "cache": {
@@ -66,9 +68,9 @@ The key is derived from the request: HTTP method + URL, hashed to a fixed-length
 | `write-only` | no | yes | Always fetch; always cache. Refreshes stale entries. |
 | `off` | no | no | No caching. Every run hits the network. Only valid when `includeRawContent: false`. |
 
-Cache hit and rate limiting: On a cache hit, the cached body is returned directly without entering the rate limiter. This is intentional: rate limiting protects the remote server, not your disk. Reading from disk is free and fast. However, cache hits still enter the pipeline; your parse task runs, extraction happens, and files are written.
+Cache hit and rate limiting: On a cache hit, the cached body returns directly without entering the rate limiter. Rate limiting protects the remote server, not your disk — reading from disk is free and fast. Cache hits still enter the pipeline; the parse task runs, extraction happens, and files are written.
 
-Concurrent write semantics: If two tasks attempt to cache the same URL simultaneously, the last write wins (second task's body overwrites the first). There's no lock or transaction around cache writes. For a single orchestrator run this isn't an issue because each URL is processed once per concurrency slot. If you run multiple Ripperoni instances against the same cache directory, they'll interfere with each other; use separate cache directories per instance or disable the cache for concurrent runners.
+Concurrent write semantics: When two tasks cache the same URL simultaneously, the last write wins (the second task's body overwrites the first). Cache writes carry no lock or transaction. Within a single run this is a non-issue because the dispatcher routes each URL to one concurrency slot. Give each concurrent Ripperoni instance its own cache directory; sharing a cache directory across instances causes interference.
 
 ## TTL
 
@@ -80,11 +82,11 @@ Concurrent write semantics: If two tasks attempt to cache the same URL simultane
 }
 ```
 
-`ttlMs` is in milliseconds. An entry older than `ttlMs` is treated as a miss on read; the fetcher goes to the network and overwrites the entry. Omit `ttlMs` for no expiration.
+`ttlMs` sets the time-to-live (how long a cached entry stays valid). An entry older than `ttlMs` is treated as a miss; the fetcher goes to the network and overwrites the entry. Omit `ttlMs` for no expiration.
 
 `86400000` = 24 hours. `604800000` = 7 days.
 
-Stale-entry behavior: When you read a cached entry, its timestamp is checked against the current time. If `now - fetchedAt > ttlMs`, the entry is treated as a cache miss. The fetcher re-fetches the URL and overwrites the old entry with a new `fetchedAt` timestamp. The old file is replaced atomically. This is called "write-through" expiration: you only refresh entries when you try to use them, not on a background schedule.
+Stale-entry behavior: On read, the entry's `fetchedAt` timestamp is checked against the current time. When `now - fetchedAt > ttlMs`, the entry is a cache miss. The fetcher re-fetches the URL and writes a fresh entry with an updated `fetchedAt`. This is write-through expiration: entries refresh on access, not on a background schedule.
 
 ## LRU eviction
 
@@ -92,7 +94,7 @@ When `maxEntries` is set (programmatic use only; not in the JSON config schema),
 
 ## Cache key
 
-The key is derived from `{ method, url }`; the same URL always maps to the same key. Ripperoni only GETs, so in practice the key is the URL hash.
+The key derives from `{ method, url, headers }`; headers are sorted alphabetically before hashing so that equivalent header sets in different declaration orders produce the same key. The same method + URL + headers always maps to the same key. Ripperoni only GETs with no per-request header overrides, so in practice the key is the URL hash.
 
 ```ts
 const key = ScraperCache.keyFor({ method: 'GET', url });
@@ -100,37 +102,40 @@ const key = ScraperCache.keyFor({ method: 'GET', url });
 
 ## Workflow
 
-First run; cache cold:
+First run (nothing cached yet):
 
 ```
 html:fetch → cache miss → HTTP GET → store in cache → hand HTML to parse task
 ```
 
-Subsequent runs; cache warm:
+Subsequent runs (entry in cache):
 
 ```
 html:fetch → cache hit → return cached HTML → hand HTML to parse task
 ```
 
-Network is never touched on a cache hit. This makes iterating on your parse plugin fast; change the plugin, rerun, no waiting.
+A cache hit touches the network zero times. Change the parse plugin, rerun, done.
 
-## Cache directory structure
+## Cache directory layout
 
 ```
 output/.cache/aonprd/
   a3/
     b7c9d2e1f4.meta.json
-    b7c9d2e1f4.body
   7f/
     1e8a3c5b29.meta.json
-    1e8a3c5b29.body
+  bodies/
+    a3/
+      b7c9d2e1f4.body
+    7f/
+      1e8a3c5b29.body
 ```
 
-The shard prefix keeps each subdirectory small enough that `readdir()` stays fast even with tens of thousands of entries.
+Meta index files live directly under `<dir>/<shard>/`. Body files live under `<dir>/bodies/<shard>/` by default (the body root can be overridden via the programmatic `bodyDir` option). The shard prefix keeps each subdirectory small enough that `readdir()` stays fast even with tens of thousands of entries.
 
 ## Read-only mode failure modes
 
-When `mode: "read-only"` is set, the cache will not write new entries. If a fetch request for a URL that isn't in the cache occurs, the fetcher throws an error immediately; there's no fallback to the network. This is useful for offline development where you've pre-cached a known set of URLs and want to catch typos in your config (a new URL will surface the error immediately, not silently hit the network).
+In `mode: "read-only"`, the cache writes nothing. A fetch request for a URL absent from the cache throws immediately — the fetcher has no network fallback. This catches config typos early: a new URL surfaces an error on the spot rather than silently hitting the network.
 
 ## Clearing the cache
 
@@ -140,7 +145,7 @@ Delete the cache directory:
 rm -rf ./output/.cache/aonprd
 ```
 
-Or switch `mode` to `write-only` for one run to refresh all entries. In `write-only` mode, every URL is fetched fresh and cached, overwriting any stale entries. This is faster than deleting the directory if you want to do a full refresh without losing directory structure.
+Or switch `mode` to `write-only` for one run to refresh from the network. Every URL fetches fresh and overwrites its cached entry. This is faster than deleting the directory when you want a full refresh and prefer to keep the directory structure intact.
 
 ## Related
 

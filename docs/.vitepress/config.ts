@@ -67,6 +67,7 @@ const sidebar = [
     'items': [
       { 'link': '/getting-started', 'text': 'Getting Started' },
       { 'link': '/walk-through',    'text': 'Walk-through'    },
+      { 'link': '/faq',             'text': 'FAQ'             },
     ],
   },
   {

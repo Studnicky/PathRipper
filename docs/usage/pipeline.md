@@ -5,18 +5,23 @@ title: Orchestration
 
 # Orchestration
 
-Ripperoni uses `@studnicky/dagonizer` for all scrape orchestration. Each run is a directed acyclic graph (DAG) dispatched by `RipperDagonizer`.
+Ripperoni is a butcher for the web. The pipeline is its cutting line: raw HTML in one end, clean JSON out the other — every step doing exactly one job on the way through.
 
-## How it works
+A **pipeline** is the ordered list of step names you declare in config. Ripperoni compiles that list into a [dagonizer](https://github.com/Studnicky/Dagonizer) DAG — a directed acyclic graph (DAG) in which each step becomes a **node** wired to the next in sequence. The DAG is what actually runs. Steps that name a registered plugin DAG (like `aonprd:parse`) become **embedded DAG** placements — a full child DAG dropped in-place as a single logical node. Fan-out over many URLs is handled by a native dagonizer **scatter** node that runs the per-page DAG once per URL in parallel.
+
+Ripperoni drives all scrape orchestration through [`@studnicky/dagonizer`](https://github.com/Studnicky/Dagonizer). Each run is a DAG dispatched by `RipperDagonizer`, built via `DAGBuilder`.
+
+## How a pipeline becomes a DAG
 
 1. `runHtml(opts)` / `runWiki(opts)` (in `src/run/`) reads `pipeline: string[]` from the target config.
-2. Built-in nodes (`html:fetch`, `json:write`, etc.) are always registered. Non-built-in entries resolve to plugin files (`./plugins/<word>/<verb>.task.js`); each plugin's `export function register(dispatcher)` is invoked.
-3. A **composite per-item node** is built from the ordered pipeline list. It executes each configured node in sequence for one URL or wiki title.
-4. A **fan-out DAG** is built that fans over `state.urls` (HTML) or `state.titles` (wiki), running the composite node per item with configurable concurrency.
-5. `state.succeeded` and `state.failed` are populated by the `partition` fan-in strategy.
-6. After dispatch, `failures.json` is written if any items failed.
+2. Built-in nodes (`html:fetch`, `json:write`, etc.) register automatically. Non-built-in entries resolve to plugin modules (`./plugins/<name>/`); each plugin's `export function register(dispatcher)` runs on load. Pipeline entries that name a registered DAG (e.g. `aonprd:parse`) become `embeddedDAG` placements.
+3. A **per-page child DAG** (`htmlPageDAG:<targetId>`) builds from the ordered pipeline list via `DAGBuilder`. Each step wires as a node placement or an `embeddedDAG` placement; non-success ports route to a `htmlPage:failed` terminal, success ports chain to the next step.
+4. A **scatter phase DAG** (`htmlScrapePhase`) fans over `state.urls`, running the per-page child DAG once per URL via a native `{ dag }` scatter body with a `partition` gather that writes results into `state.succeeded` / `state.failed`. Across pages, the whole per-page line runs at once — as many links in the chain as the worker crew is wide.
+5. A **retry phase DAG** (`htmlRetryPhase`) repeats the same scatter over `state.failed`, writing into `state.recovered` / `state.failedAfterRetry`.
+6. The outer composition DAG sequences the phase DAGs as embedded DAG placements, then terminates. When `crawl:list-targets` is in the pipeline and no `--paths` override is supplied, the engine selects the crawl-path outer DAG (`htmlScrapeDAGCrawl`); otherwise it uses the no-crawl outer DAG (`htmlScrapeDAG`).
+7. After dispatch, `failures.json` is written if any items remain in `state.failedAfterRetry`.
 
-## Config surface (unchanged from v2)
+## Config surface
 
 ```json
 {
@@ -29,7 +34,7 @@ Ripperoni uses `@studnicky/dagonizer` for all scrape orchestration. Each run is 
 }
 ```
 
-The `pipeline` array is the only config surface. Step order is preserved. Each name must resolve to a registered `NodeInterface`.
+The `pipeline` array is the only config surface — a short, ordered list that defines the whole run. Step order is preserved. Each name must resolve to a registered `NodeInterface` or a registered DAG. Plugin DAG steps (e.g. `mysite:parse`) place via `.embeddedDAG()` in the per-page child DAG; their `output` field maps back to the parent state so downstream write nodes see the parsed result.
 
 ## Built-in nodes
 
@@ -44,21 +49,22 @@ The `pipeline` array is the only config surface. Step order is preserved. Each n
 | `validate:schema` | `valid \| invalid` | Validates `state.output` against a JSON schema |
 | `crawl:list-targets` | `success \| error \| empty` | Crawls seed URLs via `LinkLister`; populates `state.urls` |
 
-## Error routing
+## Error routing and failure terminal
 
-In the composite per-item node, any port other than `success` (including `error`, `invalid`, `cached`, `skipped`) terminates the remaining steps for that item and records it as a failure. This ensures write nodes never run on a partially-processed page.
+In the per-page child DAG, any port outside the continuation set (`success`, `cached`, `skipped`, `valid`) routes to the `htmlPage:failed` terminal and ends processing for that item. Write nodes run only on fully-processed pages. The scatter's `partition` gather collects `failed` terminal outcomes into `state.failed` for the retry phase.
 
-## State checkpoint support
+## Fan-out and scatter
 
-`ScrapeState` extends `NodeStateBase` and implements `snapshotData()` / `restoreData()`. Long runs interrupted mid-fan-out can be resumed from a checkpoint using dagonizer's `Checkpoint` API. The `failures.json` manifest provides a simpler recovery path for most use cases: re-run with `--resume-failures` to retry only failed items.
+Per-item fan-out is a native dagonizer scatter: the phase DAG places a `scatter` step whose body is `{ dag: '<perPageDagName>' }`. The scatter runs the per-page child DAG once per URL, up to `concurrency` items simultaneously, then applies the `partition` gather strategy. When a step names a registered DAG (like `aonprd:parse`), the runner drops it in as an `embeddedDAG` placement and feeds its output to the next step.
 
 ## Concurrency
 
-Fan-out concurrency defaults:
-- HTML runs: 4 concurrent URLs.
+Scatter concurrency defaults:
+- HTML runs: 4 concurrent URLs (in-process path).
+- HTML runs with worker pool: pool size (system-sized from `NodeSystemInfo.recommendedWorkerCount`).
 - Wiki runs: 8 concurrent titles (batched in 50-title API calls).
 
-Override via `target.concurrency` in config (not yet exposed via the fan-out placement; currently a hardcoded default in the DAG factory).
+Override via `target.concurrency` in config.
 
 ## Related
 
