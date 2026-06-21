@@ -1,13 +1,13 @@
 // Unit tests for the native DAG-document plugin contract.
 //
 // Proves that:
-//   1. aonprd.sprout.dag.jsonld loads and round-trips via DAGDocument.
+//   1. aonprd.dag.jsonld loads and round-trips via DAGDocument.
 //   2. PluginLoader.registerPluginsFromEntry discovers the 'aonprd' namespace
-//      from the sprout DAG's placements, loads plugins/aonprd/page.dag.jsonld
+//      from the DAG's placements, loads plugins/aonprd/page.dag.jsonld
 //      and plugins/aonprd/parse.dag.jsonld, and registers both DAGs.
 //   3. The aonprd plugin's index.ts register() adds the taxonomy nodes.
-//   4. A full runDag dispatch of the sprout DAG with an empty urls list
-//      completes to 'completed' without network I/O (scatter routes to 'empty').
+//   4. A full runDag dispatch of the crawl DAG with empty state completes
+//      without network I/O (crawl:init-frontier routes to 'empty' → done).
 //
 // No network. No filesystem writes beyond a temp outDir. Inline fixtures.
 
@@ -35,7 +35,7 @@ const REPO_ROOT = resolve(new URL('../../../', import.meta.url).pathname);
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 
-const SPROUT_DAG_PATH = join(REPO_ROOT, 'aonprd.sprout.dag.jsonld');
+const AONPRD_DAG_PATH = join(REPO_ROOT, 'aonprd.dag.jsonld');
 
 const MINIMAL_STATE: RunStateType = {
   output: { basePath: '/tmp/ripper-contract-test' },
@@ -43,12 +43,12 @@ const MINIMAL_STATE: RunStateType = {
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
-describe('runDag native contract (aonprd sprout)', () => {
-  it('aonprd.sprout.dag.jsonld round-trips through DAGDocument.load', () => {
-    const json = readFileSync(SPROUT_DAG_PATH, 'utf-8');
+describe('runDag native contract (aonprd crawl)', () => {
+  it('aonprd.dag.jsonld round-trips through DAGDocument.load', () => {
+    const json = readFileSync(AONPRD_DAG_PATH, 'utf-8');
     const dag  = DAGDocument.load(json);
-    assert.equal(dag.name, 'aonprd:scrape', 'sprout DAG name preserved after round-trip');
-    assert.ok(dag.nodes.length > 0, 'sprout DAG must have at least one placement');
+    assert.equal(dag.name, 'aonprd:crawl', 'aonprd DAG name preserved after round-trip');
+    assert.ok(dag.nodes.length > 0, 'aonprd DAG must have at least one placement');
   });
 
   it('registerPluginsFromEntry registers aonprd:page and aonprd:parse DAGs', async () => {
@@ -68,7 +68,7 @@ describe('runDag native contract (aonprd sprout)', () => {
 
     PluginLoader.registerBuiltinNodes(dispatcher);
 
-    const json     = readFileSync(SPROUT_DAG_PATH, 'utf-8');
+    const json     = readFileSync(AONPRD_DAG_PATH, 'utf-8');
     const entryDag = DAGDocument.load(json);
 
     const loaded = await PluginLoader.registerPluginsFromEntry(dispatcher, entryDag, REPO_ROOT);
@@ -86,10 +86,10 @@ describe('runDag native contract (aonprd sprout)', () => {
     );
   });
 
-  it('runDag dispatches aonprd:scrape with empty urls to completed (no network)', async () => {
+  it('runDag dispatches aonprd:crawl with empty state to completed (no network)', async () => {
     const outDir = await mkdtemp(join(tmpdir(), 'ripper-contract-'));
     try {
-      const json     = readFileSync(SPROUT_DAG_PATH, 'utf-8');
+      const json     = readFileSync(AONPRD_DAG_PATH, 'utf-8');
       const entryDag = DAGDocument.load(json);
 
       await assert.doesNotReject(async () => {
@@ -99,16 +99,16 @@ describe('runDag native contract (aonprd sprout)', () => {
           outDir,
           configDir: REPO_ROOT,
         });
-      }, 'runDag must complete without throwing for an empty urls scatter');
+      }, 'runDag must complete without throwing when crawler startUrls is absent (empty frontier)');
     } finally {
       await rm(outDir, { recursive: true, force: true });
     }
   });
 
-  it('runDag does not write failures.json when urls is empty', async () => {
+  it('runDag does not write failures.json when no pages are scraped', async () => {
     const outDir = await mkdtemp(join(tmpdir(), 'ripper-contract-nofail-'));
     try {
-      const json     = readFileSync(SPROUT_DAG_PATH, 'utf-8');
+      const json     = readFileSync(AONPRD_DAG_PATH, 'utf-8');
       const entryDag = DAGDocument.load(json);
 
       await runDag({ dag: entryDag, state: MINIMAL_STATE, outDir, configDir: REPO_ROOT });

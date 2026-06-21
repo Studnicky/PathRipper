@@ -1,14 +1,13 @@
-// Unit tests for generated DAG bundle + RunState pairs.
+// Unit tests for committed single-orchestration .dag.jsonld fixtures.
 //
-// Loads each committed .dag.jsonld + .state.json pair from disk and asserts:
-//   1. The .dag.jsonld parses as a JSON array.
-//   2. Each element is a valid DAGDocument (DAGDocument.ofValue does not throw).
-//   3. Exactly one root DAG exists (not referenced by any other element in the bundle).
-//   4. RunStateSchema.validate(state) returns null.
+// Loads each committed .dag.jsonld via DAGDocument.load and asserts:
+//   1. The file parses as a single DAGDocument (not an array bundle).
+//   2. The DAG has a non-empty name and at least one node.
+//   3. RunStateSchema.validate(state) returns null for the companion .state.json.
 //
 // No dispatcher, no network, no plugin execution.
-// These tests are structural guards — they verify the generator output is
-// well-formed before the runtime consumes it.
+// These tests are structural guards — they verify every committed fixture is a
+// valid single-orchestration document before the runtime consumes it.
 
 import { describe, it } from 'node:test';
 import assert            from 'node:assert/strict';
@@ -24,96 +23,52 @@ import { RunStateSchema } from '../../../src/schemas/internal/RunStateSchema.js'
 
 const ROOT = resolve(import.meta.dirname, '..', '..', '..');
 
-// ── BundleFixture ─────────────────────────────────────────────────────────────
+// ── DagFixture ────────────────────────────────────────────────────────────────
 
 /**
- * Loads and validates a .dag.jsonld + .state.json pair from disk.
+ * Loads a single-orchestration .dag.jsonld + .state.json pair from disk.
  *
- * The .dag.jsonld is a JSON array of serialized DAGDocument objects.
- * Each element is validated through DAGDocument.ofValue.
- *
- * Root detection follows the same logic as runDag: a root DAG is any DAG whose
- * name is not referenced by any other DAG in the bundle (via EmbeddedDAGNode.dag
- * or ScatterNode.body.dag).
+ * The .dag.jsonld must be a single DAGDocument (not a JSON array).
+ * DAGDocument.load is used — it rejects array bundles.
  */
-class BundleFixture {
-  static async load(relPath: string): Promise<{ dags: DAGType[]; state: unknown }> {
+class DagFixture {
+  static async load(relPath: string): Promise<{ dag: DAGType; state: unknown }> {
     const dagPath   = resolve(ROOT, `${relPath}.dag.jsonld`);
     const statePath = resolve(ROOT, `${relPath}.state.json`);
 
     const dagRaw   = await readFile(dagPath,   'utf8');
     const stateRaw = await readFile(statePath, 'utf8');
 
-    const dagArray = JSON.parse(dagRaw) as unknown;
-    const state    = JSON.parse(stateRaw) as unknown;
+    const dag   = DAGDocument.load(dagRaw);
+    const state = JSON.parse(stateRaw) as unknown;
 
-    assert.ok(Array.isArray(dagArray), `${relPath}.dag.jsonld must be a JSON array`);
-
-    const dags = (dagArray as unknown[]).map((element, _index) => {
-      return DAGDocument.ofValue(element as unknown);
-    });
-
-    return { dags, state };
-  }
-
-  static rootOf(dags: DAGType[]): DAGType {
-    const allNames   = new Set(dags.map((dag) => dag.name));
-    const referenced = new Set<string>();
-
-    for (const dag of dags) {
-      for (const node of dag.nodes) {
-        if (node['@type'] === 'EmbeddedDAGNode') {
-          const ref = (node as { dag?: string }).dag;
-          if (typeof ref === 'string' && allNames.has(ref)) {
-            referenced.add(ref);
-          }
-        } else if (node['@type'] === 'ScatterNode') {
-          const bodyDag = (node as { body?: { dag?: string } }).body?.dag;
-          if (typeof bodyDag === 'string' && allNames.has(bodyDag)) {
-            referenced.add(bodyDag);
-          }
-        }
-      }
-    }
-
-    const roots = dags.filter((dag) => !referenced.has(dag.name));
-    assert.equal(roots.length, 1, `Expected exactly 1 root DAG, found ${roots.length}: [${roots.map((dag) => dag.name).join(', ')}]`);
-
-    return roots[0] as DAGType;
+    return { dag, state };
   }
 }
 
-// ── Test pairs ─────────────────────────────────────────────────────────────────
+// ── Test fixtures ──────────────────────────────────────────────────────────────
 
-const PAIRS: ReadonlyArray<{ label: string; path: string }> = [
-  { label: 'examples/docs-scraper (html no-crawl, docs:parse)',         path: 'examples/docs-scraper/ripperoni-docs' },
-  { label: 'examples/wiki-docs (wiki, wiki-docs:parse)',                 path: 'examples/wiki-docs/ripperoni-wiki' },
-  { label: 'tests/e2e/fixtures/aonprd-crawler (html-crawl, aonprd:parse)', path: 'tests/e2e/fixtures/aonprd-crawler' },
-  { label: 'ripperoni.config.example.json (html no-crawl, example)',    path: 'ripperoni.example' },
-  { label: 'aonprd.config.json (html-crawl, aonprd:parse)',             path: 'aonprd' },
+const FIXTURES: ReadonlyArray<{ label: string; path: string }> = [
+  { label: 'examples/docs-scraper (html no-crawl, docs:page)',           path: 'examples/docs-scraper/ripperoni-docs' },
+  { label: 'examples/wiki-docs (wiki, wiki:page)',                        path: 'examples/wiki-docs/ripperoni-wiki' },
+  { label: 'tests/e2e/fixtures/aonprd-crawler (html-crawl, aonprd:page)', path: 'tests/e2e/fixtures/aonprd-crawler' },
+  { label: 'ripperoni.example (html no-crawl, template)',                 path: 'ripperoni.example' },
+  { label: 'aonprd (html-crawl, aonprd:page canonical)',                  path: 'aonprd' },
 ];
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
-describe('generatedDags', () => {
-  for (const pair of PAIRS) {
-    describe(pair.label, () => {
-      it('parses .dag.jsonld as a valid DAGDocument array', async () => {
-        const { dags } = await BundleFixture.load(pair.path);
-        assert.ok(dags.length > 0, 'bundle must contain at least one DAG');
-        for (const dag of dags) {
-          assert.ok(typeof dag.name === 'string' && dag.name.length > 0, `dag.name must be a non-empty string, got: ${dag.name}`);
-        }
-      });
-
-      it('has exactly one root DAG (unreferenced by others in the bundle)', async () => {
-        const { dags } = await BundleFixture.load(pair.path);
-        const root = BundleFixture.rootOf(dags);
-        assert.ok(typeof root.name === 'string' && root.name.length > 0, 'root.name must be a non-empty string');
+describe('dag fixtures — single-orchestration documents', () => {
+  for (const fixture of FIXTURES) {
+    describe(fixture.label, () => {
+      it('loads .dag.jsonld as a single DAGDocument via DAGDocument.load', async () => {
+        const { dag } = await DagFixture.load(fixture.path);
+        assert.ok(typeof dag.name === 'string' && dag.name.length > 0, `dag.name must be non-empty, got: ${String(dag.name)}`);
+        assert.ok(dag.nodes.length > 0, 'DAG must have at least one node');
       });
 
       it('RunStateSchema.validate(state) returns null', async () => {
-        const { state } = await BundleFixture.load(pair.path);
+        const { state } = await DagFixture.load(fixture.path);
         const errors = RunStateSchema.validate(state);
         assert.equal(errors, null, `RunState validation failed: ${errors ?? ''}`);
       });

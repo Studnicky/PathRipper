@@ -1,578 +1,122 @@
-[
-  {
-    "@context": {
-      "@version": 1.1,
-      "name": {
-        "@id": "https://noocodex.dev/ontology/dag/name"
-      },
-      "version": {
-        "@id": "https://noocodex.dev/ontology/dag/version"
-      },
-      "entrypoint": {
-        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
-      },
-      "nodes": {
-        "@id": "https://noocodex.dev/ontology/dag/nodes",
-        "@container": "@set"
-      },
-      "outputs": {
-        "@id": "https://noocodex.dev/ontology/dag/outputs"
-      },
-      "node": {
-        "@id": "https://noocodex.dev/ontology/dag/node"
-      },
-      "dag": {
-        "@id": "https://noocodex.dev/ontology/dag/dag"
-      },
-      "body": {
-        "@id": "https://noocodex.dev/ontology/dag/body"
-      },
-      "source": {
-        "@id": "https://noocodex.dev/ontology/dag/source"
-      },
-      "itemKey": {
-        "@id": "https://noocodex.dev/ontology/dag/itemKey"
-      },
-      "concurrency": {
-        "@id": "https://noocodex.dev/ontology/dag/concurrency"
-      },
-      "gather": {
-        "@id": "https://noocodex.dev/ontology/dag/gather"
-      },
-      "reducer": {
-        "@id": "https://noocodex.dev/ontology/dag/reducer"
-      },
-      "outcome": {
-        "@id": "https://noocodex.dev/ontology/dag/outcome"
-      },
-      "phase": {
-        "@id": "https://noocodex.dev/ontology/dag/phase"
-      },
-      "stateMapping": {
-        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
-      },
-      "container": {
-        "@id": "https://noocodex.dev/ontology/dag/container"
-      },
-      "DAG": {
-        "@id": "https://noocodex.dev/ontology/dag/DAG"
-      },
-      "Placement": {
-        "@id": "https://noocodex.dev/ontology/dag/Placement"
-      },
-      "SingleNode": {
-        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
-      },
-      "ScatterNode": {
-        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
-      },
-      "EmbeddedDAGNode": {
-        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
-      },
-      "TerminalNode": {
-        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
-      },
-      "PhaseNode": {
-        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
-      }
+{
+  "@context": {
+    "@version": 1.1,
+    "name": {
+      "@id": "https://noocodex.dev/ontology/dag/name"
     },
-    "@id": "urn:noocodex:dag:htmlPageDAG:ripperoni-docs",
-    "@type": "DAG",
-    "name": "htmlPageDAG:ripperoni-docs",
-    "version": "2.0",
-    "entrypoint": "docs:parse",
-    "nodes": [
-      {
-        "@id": "urn:noocodex:dag:htmlPageDAG:ripperoni-docs/node/docs:parse",
-        "@type": "EmbeddedDAGNode",
-        "name": "docs:parse",
-        "dag": "docs:parse",
-        "outputs": {
-          "success": "htmlPage:completed",
-          "error": "htmlPage:failed"
-        },
-        "stateMapping": {
-          "input": {
-            "page": "page"
-          },
-          "output": {
-            "output": "output"
-          }
+    "version": {
+      "@id": "https://noocodex.dev/ontology/dag/version"
+    },
+    "entrypoint": {
+      "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+    },
+    "nodes": {
+      "@id": "https://noocodex.dev/ontology/dag/nodes",
+      "@container": "@set"
+    },
+    "outputs": {
+      "@id": "https://noocodex.dev/ontology/dag/outputs"
+    },
+    "node": {
+      "@id": "https://noocodex.dev/ontology/dag/node"
+    },
+    "dag": {
+      "@id": "https://noocodex.dev/ontology/dag/dag"
+    },
+    "body": {
+      "@id": "https://noocodex.dev/ontology/dag/body"
+    },
+    "source": {
+      "@id": "https://noocodex.dev/ontology/dag/source"
+    },
+    "itemKey": {
+      "@id": "https://noocodex.dev/ontology/dag/itemKey"
+    },
+    "concurrency": {
+      "@id": "https://noocodex.dev/ontology/dag/concurrency"
+    },
+    "gather": {
+      "@id": "https://noocodex.dev/ontology/dag/gather"
+    },
+    "reducer": {
+      "@id": "https://noocodex.dev/ontology/dag/reducer"
+    },
+    "outcome": {
+      "@id": "https://noocodex.dev/ontology/dag/outcome"
+    },
+    "phase": {
+      "@id": "https://noocodex.dev/ontology/dag/phase"
+    },
+    "stateMapping": {
+      "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+    },
+    "container": {
+      "@id": "https://noocodex.dev/ontology/dag/container"
+    },
+    "DAG": {
+      "@id": "https://noocodex.dev/ontology/dag/DAG"
+    },
+    "Placement": {
+      "@id": "https://noocodex.dev/ontology/dag/Placement"
+    },
+    "SingleNode": {
+      "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+    },
+    "ScatterNode": {
+      "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+    },
+    "EmbeddedDAGNode": {
+      "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+    },
+    "TerminalNode": {
+      "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+    },
+    "PhaseNode": {
+      "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+    }
+  },
+  "@id": "urn:noocodex:dag:docs:scrape",
+  "@type": "DAG",
+  "name": "docs:scrape",
+  "version": "1.0",
+  "entrypoint": "scatter-pages",
+  "nodes": [
+    {
+      "@id": "urn:noocodex:dag:docs:scrape/node/scatter-pages",
+      "@type": "ScatterNode",
+      "name": "scatter-pages",
+      "source": "urls",
+      "body": {
+        "dag": "docs:page"
+      },
+      "itemKey": "currentUrl",
+      "gather": {
+        "strategy": "partition",
+        "partitions": {
+          "success": "succeeded",
+          "error": "failed"
         }
       },
-      {
-        "@id": "urn:noocodex:dag:htmlPageDAG:ripperoni-docs/node/htmlPage:completed",
-        "@type": "TerminalNode",
-        "name": "htmlPage:completed",
-        "outcome": "completed"
-      },
-      {
-        "@id": "urn:noocodex:dag:htmlPageDAG:ripperoni-docs/node/htmlPage:failed",
-        "@type": "TerminalNode",
-        "name": "htmlPage:failed",
-        "outcome": "failed"
-      }
-    ]
-  },
-  {
-    "@context": {
-      "@version": 1.1,
-      "name": {
-        "@id": "https://noocodex.dev/ontology/dag/name"
-      },
-      "version": {
-        "@id": "https://noocodex.dev/ontology/dag/version"
-      },
-      "entrypoint": {
-        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
-      },
-      "nodes": {
-        "@id": "https://noocodex.dev/ontology/dag/nodes",
-        "@container": "@set"
-      },
+      "reducer": "aggregate",
+      "concurrency": 4,
       "outputs": {
-        "@id": "https://noocodex.dev/ontology/dag/outputs"
-      },
-      "node": {
-        "@id": "https://noocodex.dev/ontology/dag/node"
-      },
-      "dag": {
-        "@id": "https://noocodex.dev/ontology/dag/dag"
-      },
-      "body": {
-        "@id": "https://noocodex.dev/ontology/dag/body"
-      },
-      "source": {
-        "@id": "https://noocodex.dev/ontology/dag/source"
-      },
-      "itemKey": {
-        "@id": "https://noocodex.dev/ontology/dag/itemKey"
-      },
-      "concurrency": {
-        "@id": "https://noocodex.dev/ontology/dag/concurrency"
-      },
-      "gather": {
-        "@id": "https://noocodex.dev/ontology/dag/gather"
-      },
-      "reducer": {
-        "@id": "https://noocodex.dev/ontology/dag/reducer"
-      },
-      "outcome": {
-        "@id": "https://noocodex.dev/ontology/dag/outcome"
-      },
-      "phase": {
-        "@id": "https://noocodex.dev/ontology/dag/phase"
-      },
-      "stateMapping": {
-        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
-      },
-      "container": {
-        "@id": "https://noocodex.dev/ontology/dag/container"
-      },
-      "DAG": {
-        "@id": "https://noocodex.dev/ontology/dag/DAG"
-      },
-      "Placement": {
-        "@id": "https://noocodex.dev/ontology/dag/Placement"
-      },
-      "SingleNode": {
-        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
-      },
-      "ScatterNode": {
-        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
-      },
-      "EmbeddedDAGNode": {
-        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
-      },
-      "TerminalNode": {
-        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
-      },
-      "PhaseNode": {
-        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+        "all-success": "docs:completed",
+        "partial": "docs:completed",
+        "all-error": "docs:failed",
+        "empty": "docs:completed"
       }
     },
-    "@id": "urn:noocodex:dag:htmlScrapePhase",
-    "@type": "DAG",
-    "name": "htmlScrapePhase",
-    "version": "2.0",
-    "entrypoint": "scrape-urls",
-    "nodes": [
-      {
-        "@id": "urn:noocodex:dag:htmlScrapePhase/node/scrape-urls",
-        "@type": "ScatterNode",
-        "name": "scrape-urls",
-        "source": "urls",
-        "body": {
-          "dag": "htmlPageDAG:ripperoni-docs"
-        },
-        "gather": {
-          "strategy": "partition",
-          "partitions": {
-            "success": "succeeded",
-            "error": "failed"
-          }
-        },
-        "outputs": {
-          "all-success": "phase-done",
-          "partial": "phase-done",
-          "all-error": "phase-done",
-          "empty": "phase-done"
-        },
-        "itemKey": "currentUrl",
-        "reducer": "aggregate",
-        "concurrency": 4
-      },
-      {
-        "@id": "urn:noocodex:dag:htmlScrapePhase/node/phase-done",
-        "@type": "TerminalNode",
-        "name": "phase-done",
-        "outcome": "completed"
-      }
-    ]
-  },
-  {
-    "@context": {
-      "@version": 1.1,
-      "name": {
-        "@id": "https://noocodex.dev/ontology/dag/name"
-      },
-      "version": {
-        "@id": "https://noocodex.dev/ontology/dag/version"
-      },
-      "entrypoint": {
-        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
-      },
-      "nodes": {
-        "@id": "https://noocodex.dev/ontology/dag/nodes",
-        "@container": "@set"
-      },
-      "outputs": {
-        "@id": "https://noocodex.dev/ontology/dag/outputs"
-      },
-      "node": {
-        "@id": "https://noocodex.dev/ontology/dag/node"
-      },
-      "dag": {
-        "@id": "https://noocodex.dev/ontology/dag/dag"
-      },
-      "body": {
-        "@id": "https://noocodex.dev/ontology/dag/body"
-      },
-      "source": {
-        "@id": "https://noocodex.dev/ontology/dag/source"
-      },
-      "itemKey": {
-        "@id": "https://noocodex.dev/ontology/dag/itemKey"
-      },
-      "concurrency": {
-        "@id": "https://noocodex.dev/ontology/dag/concurrency"
-      },
-      "gather": {
-        "@id": "https://noocodex.dev/ontology/dag/gather"
-      },
-      "reducer": {
-        "@id": "https://noocodex.dev/ontology/dag/reducer"
-      },
-      "outcome": {
-        "@id": "https://noocodex.dev/ontology/dag/outcome"
-      },
-      "phase": {
-        "@id": "https://noocodex.dev/ontology/dag/phase"
-      },
-      "stateMapping": {
-        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
-      },
-      "container": {
-        "@id": "https://noocodex.dev/ontology/dag/container"
-      },
-      "DAG": {
-        "@id": "https://noocodex.dev/ontology/dag/DAG"
-      },
-      "Placement": {
-        "@id": "https://noocodex.dev/ontology/dag/Placement"
-      },
-      "SingleNode": {
-        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
-      },
-      "ScatterNode": {
-        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
-      },
-      "EmbeddedDAGNode": {
-        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
-      },
-      "TerminalNode": {
-        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
-      },
-      "PhaseNode": {
-        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
-      }
+    {
+      "@id": "urn:noocodex:dag:docs:scrape/node/docs:completed",
+      "@type": "TerminalNode",
+      "name": "docs:completed",
+      "outcome": "completed"
     },
-    "@id": "urn:noocodex:dag:htmlRetryPhase",
-    "@type": "DAG",
-    "name": "htmlRetryPhase",
-    "version": "2.0",
-    "entrypoint": "retry-urls",
-    "nodes": [
-      {
-        "@id": "urn:noocodex:dag:htmlRetryPhase/node/retry-urls",
-        "@type": "ScatterNode",
-        "name": "retry-urls",
-        "source": "failed",
-        "body": {
-          "dag": "htmlPageDAG:ripperoni-docs"
-        },
-        "gather": {
-          "strategy": "partition",
-          "partitions": {
-            "success": "recovered",
-            "error": "failedAfterRetry"
-          }
-        },
-        "outputs": {
-          "all-success": "phase-done",
-          "partial": "phase-done",
-          "all-error": "phase-done",
-          "empty": "phase-done"
-        },
-        "itemKey": "currentUrl",
-        "reducer": "aggregate",
-        "concurrency": 4
-      },
-      {
-        "@id": "urn:noocodex:dag:htmlRetryPhase/node/phase-done",
-        "@type": "TerminalNode",
-        "name": "phase-done",
-        "outcome": "completed"
-      }
-    ]
-  },
-  {
-    "@context": {
-      "@version": 1.1,
-      "name": {
-        "@id": "https://noocodex.dev/ontology/dag/name"
-      },
-      "version": {
-        "@id": "https://noocodex.dev/ontology/dag/version"
-      },
-      "entrypoint": {
-        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
-      },
-      "nodes": {
-        "@id": "https://noocodex.dev/ontology/dag/nodes",
-        "@container": "@set"
-      },
-      "outputs": {
-        "@id": "https://noocodex.dev/ontology/dag/outputs"
-      },
-      "node": {
-        "@id": "https://noocodex.dev/ontology/dag/node"
-      },
-      "dag": {
-        "@id": "https://noocodex.dev/ontology/dag/dag"
-      },
-      "body": {
-        "@id": "https://noocodex.dev/ontology/dag/body"
-      },
-      "source": {
-        "@id": "https://noocodex.dev/ontology/dag/source"
-      },
-      "itemKey": {
-        "@id": "https://noocodex.dev/ontology/dag/itemKey"
-      },
-      "concurrency": {
-        "@id": "https://noocodex.dev/ontology/dag/concurrency"
-      },
-      "gather": {
-        "@id": "https://noocodex.dev/ontology/dag/gather"
-      },
-      "reducer": {
-        "@id": "https://noocodex.dev/ontology/dag/reducer"
-      },
-      "outcome": {
-        "@id": "https://noocodex.dev/ontology/dag/outcome"
-      },
-      "phase": {
-        "@id": "https://noocodex.dev/ontology/dag/phase"
-      },
-      "stateMapping": {
-        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
-      },
-      "container": {
-        "@id": "https://noocodex.dev/ontology/dag/container"
-      },
-      "DAG": {
-        "@id": "https://noocodex.dev/ontology/dag/DAG"
-      },
-      "Placement": {
-        "@id": "https://noocodex.dev/ontology/dag/Placement"
-      },
-      "SingleNode": {
-        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
-      },
-      "ScatterNode": {
-        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
-      },
-      "EmbeddedDAGNode": {
-        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
-      },
-      "TerminalNode": {
-        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
-      },
-      "PhaseNode": {
-        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
-      }
-    },
-    "@id": "urn:noocodex:dag:docs:parse",
-    "@type": "DAG",
-    "name": "docs:parse",
-    "version": "2.0",
-    "entrypoint": "docs:parse-impl",
-    "nodes": [
-      {
-        "@id": "urn:noocodex:dag:docs:parse/node/docs:parse-impl",
-        "@type": "SingleNode",
-        "name": "docs:parse-impl",
-        "node": "docs:parse-impl",
-        "outputs": {
-          "success": "docs:parse:done"
-        }
-      },
-      {
-        "@id": "urn:noocodex:dag:docs:parse/node/docs:parse:done",
-        "@type": "TerminalNode",
-        "name": "docs:parse:done",
-        "outcome": "completed"
-      }
-    ]
-  },
-  {
-    "@context": {
-      "@version": 1.1,
-      "name": {
-        "@id": "https://noocodex.dev/ontology/dag/name"
-      },
-      "version": {
-        "@id": "https://noocodex.dev/ontology/dag/version"
-      },
-      "entrypoint": {
-        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
-      },
-      "nodes": {
-        "@id": "https://noocodex.dev/ontology/dag/nodes",
-        "@container": "@set"
-      },
-      "outputs": {
-        "@id": "https://noocodex.dev/ontology/dag/outputs"
-      },
-      "node": {
-        "@id": "https://noocodex.dev/ontology/dag/node"
-      },
-      "dag": {
-        "@id": "https://noocodex.dev/ontology/dag/dag"
-      },
-      "body": {
-        "@id": "https://noocodex.dev/ontology/dag/body"
-      },
-      "source": {
-        "@id": "https://noocodex.dev/ontology/dag/source"
-      },
-      "itemKey": {
-        "@id": "https://noocodex.dev/ontology/dag/itemKey"
-      },
-      "concurrency": {
-        "@id": "https://noocodex.dev/ontology/dag/concurrency"
-      },
-      "gather": {
-        "@id": "https://noocodex.dev/ontology/dag/gather"
-      },
-      "reducer": {
-        "@id": "https://noocodex.dev/ontology/dag/reducer"
-      },
-      "outcome": {
-        "@id": "https://noocodex.dev/ontology/dag/outcome"
-      },
-      "phase": {
-        "@id": "https://noocodex.dev/ontology/dag/phase"
-      },
-      "stateMapping": {
-        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
-      },
-      "container": {
-        "@id": "https://noocodex.dev/ontology/dag/container"
-      },
-      "DAG": {
-        "@id": "https://noocodex.dev/ontology/dag/DAG"
-      },
-      "Placement": {
-        "@id": "https://noocodex.dev/ontology/dag/Placement"
-      },
-      "SingleNode": {
-        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
-      },
-      "ScatterNode": {
-        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
-      },
-      "EmbeddedDAGNode": {
-        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
-      },
-      "TerminalNode": {
-        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
-      },
-      "PhaseNode": {
-        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
-      }
-    },
-    "@id": "urn:noocodex:dag:htmlScrapeDAG",
-    "@type": "DAG",
-    "name": "htmlScrapeDAG",
-    "version": "2.0",
-    "entrypoint": "scrape",
-    "nodes": [
-      {
-        "@id": "urn:noocodex:dag:htmlScrapeDAG/node/scrape",
-        "@type": "EmbeddedDAGNode",
-        "name": "scrape",
-        "dag": "htmlScrapePhase",
-        "outputs": {
-          "success": "retry",
-          "error": "retry"
-        },
-        "stateMapping": {
-          "input": {
-            "urls": "urls"
-          },
-          "output": {
-            "succeeded": "succeeded",
-            "failed": "failed"
-          }
-        }
-      },
-      {
-        "@id": "urn:noocodex:dag:htmlScrapeDAG/node/retry",
-        "@type": "EmbeddedDAGNode",
-        "name": "retry",
-        "dag": "htmlRetryPhase",
-        "outputs": {
-          "success": "scrape-done",
-          "error": "scrape-done"
-        },
-        "stateMapping": {
-          "input": {
-            "failed": "failed"
-          },
-          "output": {
-            "recovered": "recovered",
-            "failedAfterRetry": "failedAfterRetry"
-          }
-        }
-      },
-      {
-        "@id": "urn:noocodex:dag:htmlScrapeDAG/node/scrape-done",
-        "@type": "TerminalNode",
-        "name": "scrape-done",
-        "outcome": "completed"
-      }
-    ]
-  }
-]
+    {
+      "@id": "urn:noocodex:dag:docs:scrape/node/docs:failed",
+      "@type": "TerminalNode",
+      "name": "docs:failed",
+      "outcome": "failed"
+    }
+  ]
+}
