@@ -91,7 +91,6 @@
   "engines": {
     "node": ">=24.0.0"
   },
-  "private": true,
   "sideEffects": false,
   "author": "a.j.studnicky@gmail.com",
   "license": "UNLICENSED",
