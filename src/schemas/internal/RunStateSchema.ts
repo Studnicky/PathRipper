@@ -262,6 +262,13 @@ const SCHEMA = {
         },
       },
     },
+    urls: {
+      title: 'Seed URLs',
+      description: 'Explicit list of page URLs to scrape. When present, the run seeds `ScrapeState.urls` directly from this list — the orchestration DAG scatters over them without a crawl phase. Mutually convenient with an embedded `crawler` block: supply `urls` for a bounded, deterministic page set; supply `crawler` for link discovery.',
+      type: 'array',
+      items: { type: 'string', minLength: 1 },
+      examples: [['https://example.com/Page.aspx?ID=1']],
+    },
     apiUrl: {
       title: 'API URL',
       description: 'Full URL of the MediaWiki Action API endpoint, typically ending in `/w/api.php`.',

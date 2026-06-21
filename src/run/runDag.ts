@@ -255,8 +255,15 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
   }
 
   // ── Seed initial state ────────────────────────────────────────────────────
+  // When the run state declares an explicit `urls` list, seed `scrapeState.urls`
+  // so an orchestration that scatters over `urls` iterates the supplied page set
+  // (a bounded, deterministic scrape with no crawl phase). Absent `urls`, the
+  // list stays empty and a crawl/seed node inside the DAG is responsible for it.
   const scrapeState = new ScrapeState();
   scrapeState.params = state;
+  if (Array.isArray(state.urls) && state.urls.length > 0) {
+    scrapeState.urls = [...state.urls];
+  }
 
   // ── Dispatch the root ──────────────────────────────────────────────────────
   log.info('runDag', `Dispatching root DAG '${rootName}' (bundle size: ${dags.length.toString()})`);

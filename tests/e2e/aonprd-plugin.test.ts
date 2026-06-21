@@ -7,6 +7,7 @@
 // Full pipeline traversal:    npm run test:e2e -- --test-name-pattern='full pipeline'
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { readFile, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -14,42 +15,48 @@ import { fileURLToPath } from 'node:url';
 
 import { HtmlScraper }  from '../../src/scrapers/HtmlScraper.js';
 import { LinkLister }   from '../../src/crawlers/LinkLister.js';
-import { runHtml }     from '../../src/run/runHtml.js';
-import { RipperConfig } from '../../src/config/RipperConfig.js';
 import { ScraperCache } from '../../src/modules/cache/ScraperCache.js';
+import { DAGDocument }  from '@studnicky/dagonizer';
+import { runDag }       from '../../src/run/runDag.js';
 import { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
 import { ParsedOutput } from '../helpers/ParsedOutput.js';
-import type { SpellOutput } from '../../plugins/aonprd/concepts/spell/index.js';
+import type { SpellOutput }   from '../../plugins/aonprd/concepts/spell/index.js';
 import type { MonsterOutput } from '../../plugins/aonprd/concepts/monster/types.js';
-import type { WeaponOutput } from '../../plugins/aonprd/concepts/weapon.js';
+import type { WeaponOutput }  from '../../plugins/aonprd/concepts/weapon.js';
+import type { RunStateType, RunCrawlerType } from '../../src/types/RunState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE   = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
+const CRAWLER_STATE_PATH = resolve(__dirname, 'fixtures/aonprd-crawler.state.json');
+const SCRAPE_DAG_PATH    = resolve(__dirname, 'fixtures/aonprd-scrape.dag.jsonld');
+const REPO_ROOT          = resolve(__dirname, '..', '..');
 
 // A curated set of stable URLs across every page-type the plugin supports.
-const PLUGIN_PROBES: ReadonlyArray<{ url: string; expect_type: string }> = [
-  { url: 'https://2e.aonprd.com/Spells.aspx?ID=1',     expect_type: 'spell' },
-  { url: 'https://2e.aonprd.com/Feats.aspx?ID=1',      expect_type: 'feat' },
-  { url: 'https://2e.aonprd.com/Monsters.aspx?ID=1',   expect_type: 'monster' },
-  { url: 'https://2e.aonprd.com/Equipment.aspx?ID=1',  expect_type: 'equipment' },
-  { url: 'https://2e.aonprd.com/Weapons.aspx?ID=1',    expect_type: 'weapon' },
-  { url: 'https://2e.aonprd.com/Conditions.aspx?ID=1', expect_type: 'condition' },
-  { url: 'https://2e.aonprd.com/Backgrounds.aspx?ID=1',expect_type: 'background' },
-  { url: 'https://2e.aonprd.com/Traits.aspx?ID=1',     expect_type: 'trait' },
+const PLUGIN_PROBES: ReadonlyArray<{ url: string; expectType: string }> = [
+  { url: 'https://2e.aonprd.com/Spells.aspx?ID=1',     expectType: 'spell' },
+  { url: 'https://2e.aonprd.com/Feats.aspx?ID=1',      expectType: 'feat' },
+  { url: 'https://2e.aonprd.com/Monsters.aspx?ID=1',   expectType: 'monster' },
+  { url: 'https://2e.aonprd.com/Equipment.aspx?ID=1',  expectType: 'equipment' },
+  { url: 'https://2e.aonprd.com/Weapons.aspx?ID=1',    expectType: 'weapon' },
+  { url: 'https://2e.aonprd.com/Conditions.aspx?ID=1', expectType: 'condition' },
+  { url: 'https://2e.aonprd.com/Backgrounds.aspx?ID=1',expectType: 'background' },
+  { url: 'https://2e.aonprd.com/Traits.aspx?ID=1',     expectType: 'trait' },
 ];
 
 describe('AONPRD plugin e2e (local only)', () => {
   it('aonprd plugin smoke — fetch and parse one of every page type', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const target  = config.targets!['aonprd']!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as {
+      baseUrl: string; rateLimitMs: number; jitterMs: number;
+      maxRetries?: number; retryBaseDelayMs?: number; retryMaxDelayMs?: number;
+      headers?: Record<string, string>;
+    };
     const scraper = HtmlScraper.create({
-      baseUrl:          target.baseUrl,
-      rateLimitMs:      target.rateLimitMs,
-      jitterMs:         target.jitterMs,
-      maxRetries:       target.maxRetries,
-      retryBaseDelayMs: target.retryBaseDelayMs,
-      retryMaxDelayMs:  target.retryMaxDelayMs,
-      headers:          target.headers,
+      baseUrl:          crawlerState.baseUrl,
+      rateLimitMs:      crawlerState.rateLimitMs,
+      jitterMs:         crawlerState.jitterMs,
+      maxRetries:       crawlerState.maxRetries,
+      retryBaseDelayMs: crawlerState.retryBaseDelayMs,
+      retryMaxDelayMs:  crawlerState.retryMaxDelayMs,
+      headers:          crawlerState.headers,
     });
 
     process.stdout.write(`\n  smoke: probing ${PLUGIN_PROBES.length.toString()} page types\n`);
@@ -59,7 +66,7 @@ describe('AONPRD plugin e2e (local only)', () => {
       const name = result.name ?? '?';
       const src  = result.source !== undefined ? `${result.source.book ?? '?'} pg. ${(result.source.page ?? 0).toString()}` : '?';
 
-      process.stdout.write(`    • ${probe.expect_type.padEnd(10)}  ${name.padEnd(28)}  ${src}\n`);
+      process.stdout.write(`    • ${probe.expectType.padEnd(10)}  ${name.padEnd(28)}  ${src}\n`);
 
       assert.ok(name !== '' && name !== '?',
         `${probe.url}: parser produced empty name`);
@@ -69,13 +76,15 @@ describe('AONPRD plugin e2e (local only)', () => {
   });
 
   it('spell deep extraction — Abyssal Plague', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const target  = config.targets!['aonprd']!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as {
+      baseUrl: string; rateLimitMs: number; jitterMs: number;
+      headers?: Record<string, string>;
+    };
     const scraper = HtmlScraper.create({
-      baseUrl:     target.baseUrl,
-      rateLimitMs: target.rateLimitMs,
-      jitterMs:    target.jitterMs,
-      headers:     target.headers,
+      baseUrl:     crawlerState.baseUrl,
+      rateLimitMs: crawlerState.rateLimitMs,
+      jitterMs:    crawlerState.jitterMs,
+      headers:     crawlerState.headers,
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Spells.aspx?ID=1');
     const rawSpell: unknown = await parseAonHtml(page.html, page.url);
@@ -98,13 +107,15 @@ describe('AONPRD plugin e2e (local only)', () => {
   });
 
   it('monster deep extraction — Phantasmal Minion', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const target  = config.targets!['aonprd']!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as {
+      baseUrl: string; rateLimitMs: number; jitterMs: number;
+      headers?: Record<string, string>;
+    };
     const scraper = HtmlScraper.create({
-      baseUrl:     target.baseUrl,
-      rateLimitMs: target.rateLimitMs,
-      jitterMs:    target.jitterMs,
-      headers:     target.headers,
+      baseUrl:     crawlerState.baseUrl,
+      rateLimitMs: crawlerState.rateLimitMs,
+      jitterMs:    crawlerState.jitterMs,
+      headers:     crawlerState.headers,
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Monsters.aspx?ID=1');
     const rawMonster: unknown = await parseAonHtml(page.html, page.url);
@@ -127,13 +138,15 @@ describe('AONPRD plugin e2e (local only)', () => {
   });
 
   it('weapon deep extraction — id 1', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const target  = config.targets!['aonprd']!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as {
+      baseUrl: string; rateLimitMs: number; jitterMs: number;
+      headers?: Record<string, string>;
+    };
     const scraper = HtmlScraper.create({
-      baseUrl:     target.baseUrl,
-      rateLimitMs: target.rateLimitMs,
-      jitterMs:    target.jitterMs,
-      headers:     target.headers,
+      baseUrl:     crawlerState.baseUrl,
+      rateLimitMs: crawlerState.rateLimitMs,
+      jitterMs:    crawlerState.jitterMs,
+      headers:     crawlerState.headers,
     });
     const page = await scraper.fetchPage('https://2e.aonprd.com/Weapons.aspx?ID=1');
     const rawWeapon: unknown = await parseAonHtml(page.html, page.url);
@@ -148,9 +161,9 @@ describe('AONPRD plugin e2e (local only)', () => {
     assert.ok(result.category !== null, 'category must parse');
   });
 
-  it('full pipeline — LinkLister + RipperRun + plugin → typed JSON outputs', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.targets!['aonprd']!.crawler!;
+  it('full pipeline — LinkLister + runDag + plugin → typed JSON outputs', async () => {
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as { crawler: RunCrawlerType };
+    const crawler  = crawlerState.crawler;
     const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
@@ -174,24 +187,28 @@ describe('AONPRD plugin e2e (local only)', () => {
 
     const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-e2e-'));
     try {
-      await runHtml({
-        target:    'aonprd',
-        paths:     sample,
-        outDir,
-        configDir: resolve(__dirname, '..', '..'),
-        config:    config,
-      });
+      const entryDag = DAGDocument.load(readFileSync(SCRAPE_DAG_PATH, 'utf-8'));
+      const absoluteUrls = sample.map((p) => p.startsWith('http') ? p : `https://2e.aonprd.com${p}`);
+      const state = {
+        output:  { basePath: outDir },
+        baseUrl: 'https://2e.aonprd.com',
+        headers: { 'User-Agent': 'ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)' },
+        urls:    absoluteUrls,
+      } satisfies RunStateType;
 
+      await runDag({ dags: [entryDag], state, outDir, configDir: REPO_ROOT });
+
+      // aonprd page DAG uses EmbeddedDAGNode (not SingleNode) for aonprd:parse,
+      // so pluginTaskName is undefined → JSON lands directly at <outDir>/aonprd/<slug>.json
       const targetDir = resolve(outDir, 'aonprd');
-      const pluginDir = resolve(targetDir, 'aonprd:parse');
-      const files     = (await readdir(pluginDir)).filter((file: string) => file.endsWith('.json') && file !== 'failures.json');
+      const files     = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
       assert.ok(files.length === sample.length,
-        `expected ${sample.length.toString()} JSON files in aonprd:parse/, got ${files.length.toString()}`);
+        `expected ${sample.length.toString()} JSON files in aonprd/, got ${files.length.toString()}`);
       for (const file of files) {
-        const json = JSON.parse(await readFile(resolve(pluginDir, file), 'utf-8')) as {
-          _type: string; name?: string; source?: { book: string | null }; _raw?: unknown;
+        const json = JSON.parse(await readFile(resolve(targetDir, file), 'utf-8')) as {
+          name?: string; source?: { book: string | null }; _raw?: unknown;
         };
-        process.stdout.write(`    • ${file}  →  _type=${json._type}  name=${json.name ?? '?'}\n`);
+        process.stdout.write(`    • ${file}  →  name=${json.name ?? '?'}\n`);
         assert.ok(json.name !== undefined && json.name !== '', `${file}: missing name`);
         assert.ok(json.source !== undefined && json.source.book !== null,
           `${file}: missing source.book`);

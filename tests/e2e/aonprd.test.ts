@@ -8,22 +8,23 @@
 
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { LinkLister } from '../../src/crawlers/LinkLister.js';
-import { RipperConfig } from '../../src/config/RipperConfig.js';
+import { LinkLister }   from '../../src/crawlers/LinkLister.js';
 import { ScraperCache } from '../../src/modules/cache/ScraperCache.js';
+import type { RunCrawlerType } from '../../src/types/RunState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const FIXTURE   = resolve(__dirname, 'fixtures/aonprd-crawler.config.json');
+const CRAWLER_STATE_PATH = resolve(__dirname, 'fixtures/aonprd-crawler.state.json');
 
 describe('AONPRD crawler e2e (local only)', () => {
   it('smoke — crawl one category and collect at least 5 target URLs', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.targets!['aonprd']!.crawler!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as { crawler: RunCrawlerType };
+    const crawler  = crawlerState.crawler;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-smoke-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
@@ -52,8 +53,8 @@ describe('AONPRD crawler e2e (local only)', () => {
   });
 
   it('full — crawl all 41 categories under the configured maxPages cap', async () => {
-    const config = await RipperConfig.load(FIXTURE);
-    const crawler  = config.targets!['aonprd']!.crawler!;
+    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as { crawler: RunCrawlerType };
+    const crawler  = crawlerState.crawler;
     const cacheDir = await mkdtemp(join(tmpdir(), 'ripper-aonprd-full-cache-'));
     const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
     const lister = LinkLister.create({
