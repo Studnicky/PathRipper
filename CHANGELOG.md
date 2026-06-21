@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-06-21
+
 ### Added
 
 - **`ripperoni run <dag.jsonld> --state <state.json>`** — the single command for executing a scrape run against a native dagonizer DAG document. Loads the orchestration via `DAGDocument.load`, validates state against `RunStateSchema`, builds services, discovers and registers plugins, and dispatches.
