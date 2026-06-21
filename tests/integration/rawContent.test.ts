@@ -367,21 +367,21 @@ export function register(dispatcher) {
     await rm(outDir, { recursive: true, force: true });
   });
 
-  it('plugin pipeline writes JSON to <target>/ and does NOT embed _raw', async () => {
+  it('plugin pipeline writes JSON to <target>/<pluginTaskName>/ and does NOT embed _raw', async () => {
     // Entry DAG name 'raw-default' scatters over stub:parse-page.
-    // pluginTaskName is derived only from the bundle's placements — the entry
-    // DAG uses ScatterNode.body.dag (not SingleNode.node), so pluginTaskName
-    // is undefined. JSON lands directly at <outDir>/raw-default/<slug>.json.
+    // pluginTaskName is the orchestration's first non-builtin ScatterNode.body.dag
+    // ref — 'stub:parse-page'. With splitByTaskName: true JSON lands in the
+    // per-plugin subfolder <outDir>/raw-default/stub:parse-page/<slug>.json.
     const entryDag = DAGDocument.load(OrchDag.forScenario('raw-default', 'stub:parse-page'));
     const state = {
-      output:  { basePath: outDir },
+      output:  { basePath: outDir, splitByTaskName: true },
       baseUrl: 'https://fixture.test',
       urls:    ['https://fixture.test/condition-blinded'],
     } satisfies RunStateType;
 
     await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    const targetDir = join(outDir, 'raw-default');
+    const targetDir = join(outDir, 'raw-default', 'stub:parse-page');
     const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(files.length === 1, `expected 1 plugin JSON file, got ${files.length.toString()}`);
 
@@ -395,10 +395,11 @@ export function register(dispatcher) {
 
   it('raw HTML is written to <target>/raw/<slug>.html when html:write-raw is in pipeline', async () => {
     // Entry DAG 'raw-html' scatters over stub:raw-page (fetch → write-raw → parse → json:write).
-    // Raw HTML lands in <outDir>/raw-html/raw/; JSON lands in <outDir>/raw-html/ (no subdir).
+    // Raw HTML lands in <outDir>/raw-html/raw/; with splitByTaskName: true JSON
+    // lands in the per-plugin subfolder <outDir>/raw-html/stub:raw-page/.
     const entryDag = DAGDocument.load(OrchDag.forScenario('raw-html', 'stub:raw-page'));
     const state = {
-      output:  { basePath: outDir },
+      output:  { basePath: outDir, splitByTaskName: true },
       baseUrl: 'https://fixture.test',
       urls:    ['https://fixture.test/condition-blinded'],
     } satisfies RunStateType;
@@ -410,17 +411,18 @@ export function register(dispatcher) {
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(await readFile(join(rawDir, rawFiles[0]!), 'utf8'), fixtureHtml, 'raw HTML must match fixture byte-for-byte');
 
-    // pluginTaskName undefined (ScatterNode.body.dag, not SingleNode.node in bundle)
-    // → JSON at <outDir>/raw-html/<slug>.json directly
-    const targetDir = join(outDir, 'raw-html');
+    // pluginTaskName = 'stub:raw-page' (the ScatterNode.body.dag ref)
+    // → JSON at <outDir>/raw-html/stub:raw-page/<slug>.json
+    const targetDir = join(outDir, 'raw-html', 'stub:raw-page');
     const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
-    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in raw-html/, got ${jsonFiles.length.toString()}`);
+    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in raw-html/stub:raw-page/, got ${jsonFiles.length.toString()}`);
   });
 
   it('no-plugin pipeline (raw-only): only raw/ folder is populated', async () => {
-    // Entry DAG 'raw-only' scatters over stub:raw-only-page (fetch → write-raw, no parse).
-    // stub:raw-only-page has no SingleNode with stub: prefix → pluginTaskName = undefined
-    // but the namespace 'stub' still gets discovered from ScatterNode.body.dag = 'stub:raw-only-page'.
+    // Entry DAG 'raw-only' scatters over stub:raw-only-page (fetch → write-raw, no
+    // parse, no json:write). The 'stub' namespace is discovered from
+    // ScatterNode.body.dag = 'stub:raw-only-page', but the per-page DAG emits no
+    // JSON, so no plugin output lands regardless of splitByTaskName.
     const entryDag = DAGDocument.load(OrchDag.forScenario('raw-only', 'stub:raw-only-page'));
     const state = {
       output:  { basePath: outDir },
@@ -442,7 +444,7 @@ export function register(dispatcher) {
   it('includeRawContent: false — _raw absent from plugin JSON', async () => {
     const entryDag = DAGDocument.load(OrchDag.forScenario('raw-off', 'stub:parse-page'));
     const state = {
-      output:           { basePath: outDir },
+      output:           { basePath: outDir, splitByTaskName: true },
       baseUrl:          'https://fixture.test',
       urls:             ['https://fixture.test/condition-blinded'],
       includeRawContent: false,
@@ -450,8 +452,9 @@ export function register(dispatcher) {
 
     await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    // pluginTaskName undefined → JSON at <outDir>/raw-off/<slug>.json
-    const targetDir = join(outDir, 'raw-off');
+    // pluginTaskName = 'stub:parse-page' → JSON at
+    // <outDir>/raw-off/stub:parse-page/<slug>.json
+    const targetDir = join(outDir, 'raw-off', 'stub:parse-page');
     const names = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
 
@@ -483,7 +486,7 @@ export function register(dispatcher) {
     // `failedAfterRetry` — which runDag writes to failures.json.
     const entryDag = DAGDocument.load(OrchDag.scrapeRetry('retry-flow', 'stub:parse-page'));
     const state = {
-      output:           { basePath: outDir },
+      output:           { basePath: outDir, splitByTaskName: true },
       baseUrl:          'https://fixture.test',
       urls:             [PASSING_URL, FAILING_URL],
       includeRawContent: false,
@@ -502,21 +505,22 @@ export function register(dispatcher) {
     assert.equal(manifest.titles.length, 1);
     assert.equal(manifest.titles[0], FAILING_URL, 'failing URL must be present after retry exhaustion');
 
-    // pluginTaskName undefined → JSON at <outDir>/retry-flow/<slug>.json.
+    // pluginTaskName = 'stub:parse-page' → JSON at
+    // <outDir>/retry-flow/stub:parse-page/<slug>.json.
     // The passing URL still produces exactly one JSON output.
-    const targetDir = join(outDir, 'retry-flow');
+    const targetDir = join(outDir, 'retry-flow', 'stub:parse-page');
     const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.equal(files.length, 1, 'expected exactly one JSON output for the passing URL');
   });
 
-  it('AONPRD-like full pipeline produces raw/ and sibling JSON output', async () => {
+  it('AONPRD-like full pipeline produces raw/ and per-plugin JSON output', async () => {
     // Entry DAG 'aonprd' scatters over stub:raw-page (fetch → write-raw → parse → json:write).
-    // pluginTaskName undefined (ScatterNode.body.dag in entry DAG, not SingleNode.node)
+    // pluginTaskName = 'stub:raw-page' (the ScatterNode.body.dag ref), splitByTaskName on
     // → raw HTML at <outDir>/aonprd/raw/<slug>.html
-    // → JSON at <outDir>/aonprd/<slug>.json
+    // → JSON at <outDir>/aonprd/stub:raw-page/<slug>.json
     const entryDag = DAGDocument.load(OrchDag.forScenario('aonprd', 'stub:raw-page'));
     const state = {
-      output:  { basePath: outDir },
+      output:  { basePath: outDir, splitByTaskName: true },
       baseUrl: 'https://2e.aonprd.com',
       urls:    ['https://2e.aonprd.com/Conditions.aspx?ID=1'],
     } satisfies RunStateType;
@@ -528,7 +532,7 @@ export function register(dispatcher) {
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html');
 
-    const targetDir = join(outDir, 'aonprd');
+    const targetDir = join(outDir, 'aonprd', 'stub:raw-page');
     const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file, got ${jsonFiles.length.toString()}`);
     assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json');

@@ -63,7 +63,8 @@ describe('AONPRD snapshot e2e (local only)', () => {
 
       // ── PHASE 2 ───────────────────────────────────────────────────────────
       // aonprd DAG: html:fetch (cache read-only) → aonprd:parse → json:write.
-      // Entry DAG name = 'aonprd' → JSON lands at <outDir>/aonprd/<slug>.json
+      // Entry DAG name = 'aonprd'; splitByTaskName: false keeps JSON flat at
+      // <outDir>/aonprd/<slug>.json.
       const fetchCalls: string[] = [];
       const origFetch = globalThis.fetch;
       globalThis.fetch = ((...args: Parameters<typeof origFetch>) => {
@@ -74,7 +75,7 @@ describe('AONPRD snapshot e2e (local only)', () => {
       try {
         const entryDagParse = DAGDocument.load(readFileSync(SCRAPE_DAG_PATH, 'utf-8'));
         const phase2State = {
-          output:  { basePath: outDir },
+          output:  { basePath: outDir, splitByTaskName: false },
           baseUrl: 'https://2e.aonprd.com',
           headers: { 'User-Agent': 'ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)' },
           urls:    [...PROBES],
@@ -89,8 +90,7 @@ describe('AONPRD snapshot e2e (local only)', () => {
       assert.equal(fetchCalls.length, 0,
         `phase 2 must not hit the network; saw: ${fetchCalls.join(', ')}`);
 
-      // aonprd page DAG uses EmbeddedDAGNode for aonprd:parse → pluginTaskName = undefined
-      // → JSON at <outDir>/aonprd/<slug>.json
+      // splitByTaskName: false keeps plugin JSON flat at <outDir>/aonprd/<slug>.json.
       const targetDir   = resolve(outDir, 'aonprd');
       const phase2Files = (await readdir(targetDir)).filter((file): boolean =>
         file.endsWith('.json') && file !== 'failures.json',

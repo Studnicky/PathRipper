@@ -190,7 +190,7 @@ describe('AONPRD plugin e2e (local only)', () => {
       const entryDag = DAGDocument.load(readFileSync(SCRAPE_DAG_PATH, 'utf-8'));
       const absoluteUrls = sample.map((path) => path.startsWith('http') ? path : `https://2e.aonprd.com${path}`);
       const state = {
-        output:  { basePath: outDir },
+        output:  { basePath: outDir, splitByTaskName: false },
         baseUrl: 'https://2e.aonprd.com',
         headers: { 'User-Agent': 'ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)' },
         urls:    absoluteUrls,
@@ -198,8 +198,9 @@ describe('AONPRD plugin e2e (local only)', () => {
 
       await runDag({ dag: entryDag, state, outDir, configDir: REPO_ROOT });
 
-      // aonprd page DAG uses EmbeddedDAGNode (not SingleNode) for aonprd:parse,
-      // so pluginTaskName is undefined → JSON lands directly at <outDir>/aonprd/<slug>.json
+      // splitByTaskName: false keeps plugin JSON flat under <outDir>/aonprd/<slug>.json
+      // (pluginTaskName resolves to the 'aonprd:page' scatter-body ref, but the
+      // explicit false disables per-task subfoldering).
       const targetDir = resolve(outDir, 'aonprd');
       const files     = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
       assert.ok(files.length === sample.length,

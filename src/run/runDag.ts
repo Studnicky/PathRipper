@@ -169,7 +169,7 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
     }),
   });
 
-  // ── Derive pluginTaskName from the orchestration's first non-builtin node ──
+  // ── Derive pluginTaskName from the orchestration's first non-builtin ref ───
   // Populates `services.pluginTaskName` so output nodes that honour
   // `splitByTaskName` know which subfolder to write under.
   const pluginTaskName = PluginLoader.derivePluginTaskName(dag);

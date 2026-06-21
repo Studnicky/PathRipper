@@ -146,43 +146,33 @@ export class PluginLoader {
   /**
    * Derive the plugin task name from a single orchestration DAG.
    *
-   * Walks the orchestration's placements and returns the first non-builtin node
-   * *implementation* name found in:
-   *   - `SingleNode.node`       — the backing implementation
-   *   - `PhaseNode.node`        — the backing implementation
-   *   - `ScatterNode.body.node` — the scatter body implementation (node-body scatter)
+   * Returns the first non-builtin `EmbeddedDAGNode.dag` or `ScatterNode.body.dag`
+   * reference in the orchestration's placements — the name of the plugin DAG the
+   * run drives. Used to populate `services.pluginTaskName` so output nodes that
+   * honour `splitByTaskName` know which subfolder to write under.
    *
-   * A `ScatterNode` with a `{ dag }` body (dag-body scatter) carries no node
-   * implementation at the orchestration level — its plugin step lives inside the
-   * referenced per-page DAG — so such placements do not contribute a task name.
-   *
-   * Populates `services.pluginTaskName` so output nodes that honour
-   * `splitByTaskName` know which subfolder to write under. Returns `undefined`
-   * when every placement resolves to a built-in (or to a dag-body scatter /
-   * terminal with no backing node).
+   * Returns `undefined` when every dag-reference is a built-in (or every
+   * placement is a `SingleNode` / `TerminalNode` carrying no dag reference).
    *
    * @param dag - The orchestration DAG whose placements drive discovery.
-   * @returns The first non-builtin node-implementation name, or `undefined`.
+   * @returns The first non-builtin dag-reference name, or `undefined`.
    */
   static derivePluginTaskName(dag: DAGType): string | undefined {
     for (const placement of dag.nodes) {
-      let nodeName: string | undefined;
-      if (placement['@type'] === 'SingleNode') {
-        nodeName = placement.node;
-      } else if (placement['@type'] === 'PhaseNode') {
-        nodeName = placement.node;
+      let dagRef: string | undefined;
+      if (placement['@type'] === 'EmbeddedDAGNode') {
+        dagRef = placement.dag;
       } else if (placement['@type'] === 'ScatterNode') {
         const body = placement.body;
-        if ('node' in body) {
-          nodeName = body.node;
+        if ('dag' in body) {
+          dagRef = body.dag;
         }
       }
       if (
-        nodeName !== undefined &&
-        !PluginLoader.BUILTIN_PREFIXES.some((prefix) => nodeName!.startsWith(prefix)) &&
-        nodeName !== 'terminal'
+        dagRef !== undefined &&
+        !PluginLoader.BUILTIN_PREFIXES.some((prefix) => dagRef!.startsWith(prefix))
       ) {
-        return nodeName;
+        return dagRef;
       }
     }
     return undefined;
