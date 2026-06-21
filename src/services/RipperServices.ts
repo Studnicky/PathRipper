@@ -21,6 +21,9 @@ import type { RateLimiter }       from '../modules/http/rateLimiter.js';
 import type { HttpRetryPolicy }   from '../modules/http/httpRetryPolicy.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
 import type { RunCrawlerType }    from '../types/RunState.js';
+import type { FailurePolicyInterface } from '../resilience/FailurePolicy.js';
+import type { ReconcilerInterface }    from '../resilience/Reconciler.js';
+import type { ResolveConfigType }      from '../types/LinkResolve.js';
 
 /**
  * Shared services injected into every node via `context.services`.
@@ -88,6 +91,21 @@ export type RipperServices = {
    * absent), it is split per record into a per-plugin subfolder.
    */
   readonly splitByTaskName?: boolean | undefined;
+  /**
+   * Failure policy for classifying and routing node failures.
+   * When absent, `DefaultFailurePolicy` (retryable→retry up to 2x, else→capture) is used.
+   */
+  readonly failurePolicy?: FailurePolicyInterface | undefined;
+  /**
+   * Identity reconciler for the post-crawl `reconcile:identity` phase.
+   * When absent, `DefaultReconciler` (all failures → `missing`) is used.
+   */
+  readonly reconciler?: ReconcilerInterface | undefined;
+  /**
+   * Link-resolution config for the opt-in `resolve:link` node.
+   * When absent, `resolve:link` routes immediately to `unresolved`.
+   */
+  readonly resolve?: ResolveConfigType | undefined;
   /**
    * Dispatcher reference for nodes that need to run child DAGs. Set to the
    * same dispatcher this services bag is registered on so nodes can call

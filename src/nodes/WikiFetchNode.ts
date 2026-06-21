@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import type { WikiPageType } from '../types/MediaWikiScraper.js';
@@ -31,6 +31,30 @@ type WikiFetchOutput = 'success' | 'error';
 class WikiFetchNodeImpl extends ScalarNode<ScrapeState, WikiFetchOutput, RipperServices> {
   public readonly name = 'wiki:fetch';
   public readonly outputs = ['success', 'error'] as const;
+
+  public override get outputSchema(): Record<WikiFetchOutput, SchemaObjectType> {
+    return {
+      // `success` — `state.page` populated with targetId, title, url, and wikitext.
+      success: {
+        type: 'object',
+        properties: {
+          page: {
+            type: 'object',
+            properties: {
+              targetId: { type: 'string' },
+              title:    { type: 'string' },
+              url:      { type: 'string' },
+              wikitext: { type: 'string' },
+            },
+            required: ['targetId', 'title', 'url'],
+          },
+        },
+        required: ['page'],
+      },
+      // `error` — title missing, scraper invalid, or fetch failed; error recorded on state; `state.failed` may have title appended.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

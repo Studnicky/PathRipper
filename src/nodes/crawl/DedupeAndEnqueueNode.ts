@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../state/ScrapeState.js';
 import type { RipperServices } from '../../services/RipperServices.js';
@@ -35,6 +35,63 @@ class DedupeAndEnqueueNodeImpl extends ScalarNode<
 > {
   public readonly name = 'crawl:dedupe-and-enqueue';
   public readonly outputs = ['frontier-ready', 'frontier-empty', 'budget-exhausted'] as const;
+
+  public override get outputSchema(): Record<'frontier-ready' | 'frontier-empty' | 'budget-exhausted', SchemaObjectType> {
+    return {
+      // `frontier-ready` — next level frontier built; `state.crawl.frontier`, `discovered`, `depth` updated; raw accumulators cleared.
+      'frontier-ready': {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              frontier:        { type: 'array', items: { type: 'string' } },
+              nextFrontierRaw: { type: 'array', items: { type: 'string' } },
+              discoveredRaw:   { type: 'array', items: { type: 'string' } },
+              discovered:      { type: 'array', items: { type: 'string' } },
+              depth:           { type: 'integer' },
+            },
+            required: ['frontier', 'nextFrontierRaw', 'discoveredRaw', 'discovered', 'depth'],
+          },
+        },
+        required: ['crawl'],
+      },
+      // `frontier-empty` — no traversable URLs remain; same crawl fields updated; frontier is empty array.
+      'frontier-empty': {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              frontier:        { type: 'array', items: { type: 'string' } },
+              nextFrontierRaw: { type: 'array', items: { type: 'string' } },
+              discoveredRaw:   { type: 'array', items: { type: 'string' } },
+              discovered:      { type: 'array', items: { type: 'string' } },
+              depth:           { type: 'integer' },
+            },
+            required: ['frontier', 'nextFrontierRaw', 'discoveredRaw', 'discovered', 'depth'],
+          },
+        },
+        required: ['crawl'],
+      },
+      // `budget-exhausted` — maxPages or maxDepth limit reached; frontier and nextFrontierRaw cleared; discovered capped.
+      'budget-exhausted': {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              frontier:        { type: 'array', items: { type: 'string' } },
+              nextFrontierRaw: { type: 'array', items: { type: 'string' } },
+              discovered:      { type: 'array', items: { type: 'string' } },
+            },
+            required: ['frontier', 'nextFrontierRaw', 'discovered'],
+          },
+        },
+        required: ['crawl'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

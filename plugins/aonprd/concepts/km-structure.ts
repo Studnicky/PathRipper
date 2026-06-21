@@ -5,7 +5,7 @@
 //
 // bespoke node-folder under nodes/km-structure/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -345,6 +345,12 @@ export type KmStructureBaseOutput = 'success' | 'error';
 class KmStructureBaseNodeImpl extends ScalarNode<ScrapeState, KmStructureBaseOutput> {
   public readonly name = 'extract:km-structure-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmStructureBaseOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -369,6 +375,12 @@ export type KmStructureMechanicsOutput = 'success' | 'error';
 class KmStructureMechanicsNodeImpl extends ScalarNode<ScrapeState, KmStructureMechanicsOutput> {
   public readonly name = 'extract:km-structure-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmStructureMechanicsOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -393,6 +405,11 @@ export type FinalizeKmStructureOutput = 'success';
 class FinalizeKmStructureNodeImpl extends ScalarNode<ScrapeState, FinalizeKmStructureOutput> {
   public readonly name = 'finalize:km-structure';
   public readonly outputs = ['success'] as const;
+  public override get outputSchema(): Record<FinalizeKmStructureOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -1,6 +1,6 @@
 // Skill concept — DAG nodes and concept declaration.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -19,6 +19,15 @@ export type SkillBaseOutput = 'success' | 'error';
 class SkillBaseNode extends ScalarNode<ScrapeState, SkillBaseOutput> {
   public readonly name = 'extract:skill-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SkillBaseSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -47,6 +56,15 @@ class SkillActionsNode extends ScalarNode<ScrapeState, SkillActionsOutput> {
   public readonly name = 'extract:skill-actions';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SkillActionsSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -74,6 +92,15 @@ class SkillProficiencyTiersNode extends ScalarNode<ScrapeState, SkillProficiency
   public readonly name = 'extract:skill-proficiency-tiers';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SkillProficiencyTiersSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -100,6 +127,19 @@ export type FinalizeSkillOutput = 'success';
 class FinalizeSkillNode extends ScalarNode<ScrapeState, FinalizeSkillOutput> {
   public readonly name = 'finalize:skill';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SkillOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

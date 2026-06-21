@@ -1,8 +1,10 @@
 export { HtmlFetchNode }              from './HtmlFetchNode.js';
+export { RouteFailureNode }           from './RouteFailureNode.js';
 export { WikiFetchNode }              from './WikiFetchNode.js';
 export { HtmlWriteRawNode }           from './HtmlWriteRawNode.js';
 export { WikiWriteRawNode }           from './WikiWriteRawNode.js';
 export { JsonWriteNode }              from './JsonWriteNode.js';
+export { CaptureErrorNode }           from './CaptureErrorNode.js';
 export { JsonlAppendNode }            from './JsonlAppendNode.js';
 export { ValidateSchemaNode }         from './ValidateSchemaNode.js';
 export { TerminalNode }               from './TerminalNode.js';
@@ -10,3 +12,6 @@ export { InitFrontierNode }           from './crawl/InitFrontierNode.js';
 export { FetchAndExtractLinksNode }   from './crawl/FetchAndExtractLinksNode.js';
 export { DedupeAndEnqueueNode }       from './crawl/DedupeAndEnqueueNode.js';
 export { CrawlExhaustedNode }         from './crawl/CrawlExhaustedNode.js';
+export { ReconcileIdentityNode }      from './ReconcileIdentityNode.js';
+export { ReportCrawlHealthNode }      from './ReportCrawlHealthNode.js';
+export { ResolveLinkNode }            from './ResolveLinkNode.js';

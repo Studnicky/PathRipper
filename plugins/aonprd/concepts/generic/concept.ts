@@ -3,7 +3,7 @@
 // helpers in contract-carrying capability nodes.
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -21,6 +21,14 @@ export type GenericExtractOutput = 'success' | 'error';
 class GenericExtractNode extends ScalarNode<ScrapeState, GenericExtractOutput> {
   public readonly name    = 'extract:generic';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<GenericExtractOutput, SchemaObjectType> {
+    return {
+      // setConceptOutput writes the extracted GenericOutput to state.output
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -2,7 +2,7 @@
 // Armor-group pages have well-defined structure; the inlined helpers fully
 // cover the content shape.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -217,6 +217,35 @@ class ArmorGroupBaseNode extends ScalarNode<ScrapeState, ArmorGroupBaseOutput> {
   public readonly name = 'extract:armor-group-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ArmorGroupBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              group_id:        { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -241,6 +270,27 @@ export type ArmorGroupContentOutput = 'success' | 'error';
 class ArmorGroupContentNode extends ScalarNode<ScrapeState, ArmorGroupContentOutput> {
   public readonly name = 'extract:armor-group-content';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<ArmorGroupContentOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              armor_specialization_html: { type: 'string' },
+              armor_specialization_text: { type: 'string' },
+              armors: { type: 'array', items: { type: 'object' } },
+            },
+            required: ['armor_specialization_html', 'armor_specialization_text', 'armors'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -268,6 +318,19 @@ export type FinalizeArmorGroupOutput = 'success';
 class FinalizeArmorGroupNode extends ScalarNode<ScrapeState, FinalizeArmorGroupOutput> {
   public readonly name = 'finalize:armor-group';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeArmorGroupOutput, SchemaObjectType> {
+    return {
+      // `success` — merges sections, raw_fields, links, body_text, body_html, meta into state.output (no setConceptOutput call).
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

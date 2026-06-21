@@ -4,7 +4,7 @@
  * Exports: parseFamilyLinks, extractVariants, extractMonsterMeta, monsterMetaNode.
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -60,6 +60,21 @@ export type MonsterMetaOutput = 'success' | 'error';
 class MonsterMetaNode extends ScalarNode<ScrapeState, MonsterMetaOutput> {
   public readonly name = 'extract:monster-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<MonsterMetaOutput, SchemaObjectType> {
+    return {
+      // state.output merged with MonsterMetaSlice (variants array, family_links array)
+      success: {
+        type: 'object',
+        properties: {
+          variants:     { type: 'array', items: { type: 'object' } },
+          family_links: { type: 'array', items: { type: 'object' } },
+        },
+        required: ['variants', 'family_links'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

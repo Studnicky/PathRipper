@@ -5,7 +5,7 @@
 //
 // bespoke node-folder under nodes/camp-meal/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -223,6 +223,36 @@ class CampMealBaseNodeImpl extends ScalarNode<ScrapeState, CampMealBaseOutput> {
   public readonly name    = 'extract:camp-meal-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<CampMealBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              meal_id:         { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              level:           { type: ['integer', 'null'] },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -247,6 +277,30 @@ class CampMealMechanicsNodeImpl extends ScalarNode<ScrapeState, CampMealMechanic
   public readonly name    = 'extract:camp-meal-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<CampMealMechanicsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              recipe_price:  { type: ['string', 'null'] },
+              ingredients:   { type: ['string', 'null'] },
+              preparation:   { type: ['string', 'null'] },
+              favorite_meal: { type: ['string', 'null'] },
+              description:   { type: 'string' },
+              outcomes:      { type: 'array', items: { type: 'object' } },
+            },
+            required: ['description', 'outcomes'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -270,6 +324,18 @@ export type FinalizeCampMealOutput = 'success';
 class FinalizeCampMealNodeImpl extends ScalarNode<ScrapeState, FinalizeCampMealOutput> {
   public readonly name    = 'finalize:camp-meal';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeCampMealOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

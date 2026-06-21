@@ -6,14 +6,14 @@ import type { RipperServices } from '../services/RipperServices.js';
 
 const log = Logger.forComponent('Dispatcher');
 
-export type RipperDagonizerOptionsType<TState extends NodeStateInterface = NodeStateInterface> = {
+export type RipperDagonizerOptionsType = {
   readonly services: RipperServices;
   /**
    * Named container backends to bind to the dispatcher. Keys are the logical
    * role names declared on `embeddedDAG` placements (`container: '<role>'`).
    * When omitted, all placements run in-process (default behaviour).
    */
-  readonly containers?: Record<string, DagContainerInterface<TState>>;
+  readonly containers?: Record<string, DagContainerInterface>;
 };
 
 /**
@@ -29,7 +29,7 @@ export type RipperDagonizerOptionsType<TState extends NodeStateInterface = NodeS
 export class RipperDagonizer<TState extends NodeStateInterface>
   extends Dagonizer<TState, RipperServices> {
 
-  constructor(options: RipperDagonizerOptionsType<TState>) {
+  constructor(options: RipperDagonizerOptionsType) {
     super({
       services: options.services,
       ...(options.containers !== undefined ? { containers: options.containers } : {}),

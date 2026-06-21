@@ -6,7 +6,7 @@
  * at strip time. Node: finalize:spell
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -100,6 +100,19 @@ export type FinalizeSpellOutput = 'success';
 class FinalizeSpellNode extends ScalarNode<ScrapeState, FinalizeSpellOutput> {
   public readonly name    = 'finalize:spell';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SpellOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -5,7 +5,7 @@ import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
-import type { NodeContextType } from '@studnicky/dagonizer';
+import type { NodeContextType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import { Taxonomy, TaxonomyError } from '../../../../plugins/aonprd/taxonomy.js';
@@ -18,8 +18,9 @@ import type { ConceptDecl, CapabilityNode } from '../../../../plugins/aonprd/tax
 function makeStubCap(name: string): CapabilityNode {
   return {
     name,
-    outputs:  ['success', 'error'] as const,
-    timeout:  Timeout.none(),
+    outputs:      ['success', 'error'] as const,
+    timeout:      Timeout.none(),
+    outputSchema: { success: { type: 'object' }, error: { type: 'object' } } as Record<'success' | 'error', SchemaObjectType>,
     async execute(
       batch: Batch<ScrapeState>,
       _ctx:  NodeContextType,

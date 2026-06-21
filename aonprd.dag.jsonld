@@ -115,10 +115,28 @@
       },
       "reducer": "aggregate",
       "outputs": {
-        "all-success": "done",
-        "partial": "done",
-        "all-error": "done",
-        "empty": "done"
+        "all-success": "reconcile:identity",
+        "partial": "reconcile:identity",
+        "all-error": "reconcile:identity",
+        "empty": "reconcile:identity"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:crawl/node/reconcile-identity",
+      "@type": "SingleNode",
+      "name": "reconcile:identity",
+      "node": "reconcile:identity",
+      "outputs": {
+        "done": "report:crawl-health"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:crawl/node/report-crawl-health",
+      "@type": "SingleNode",
+      "name": "report:crawl-health",
+      "node": "report:crawl-health",
+      "outputs": {
+        "done": "done"
       }
     },
     {

@@ -1,6 +1,6 @@
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -23,6 +23,19 @@ export type ClassBaseOutput = 'success' | 'error';
 class ClassBaseNode extends ScalarNode<ScrapeState, ClassBaseOutput> {
   public readonly name = 'extract:class-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<ClassBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -53,6 +66,19 @@ class ClassProgressionNode extends ScalarNode<ScrapeState, ClassProgressionOutpu
   public readonly name = 'extract:class-progression';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassProgressionOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -80,6 +106,19 @@ class ClassSubclassesNode extends ScalarNode<ScrapeState, ClassSubclassesOutput>
   public readonly name = 'extract:class-subclasses';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassSubclassesOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -106,6 +145,18 @@ export type FinalizeClassOutput = 'success';
 class FinalizeClassNode extends ScalarNode<ScrapeState, FinalizeClassOutput> {
   public readonly name = 'finalize:class';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeClassOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

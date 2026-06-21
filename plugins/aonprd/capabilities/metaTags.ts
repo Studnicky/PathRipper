@@ -10,7 +10,7 @@
 // Open-world convention: soft-fail to `'success'` with no writes when
 // `aonprdCheerio` is absent (e.g. rule pages whose load short-circuits).
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -27,6 +27,14 @@ export type MetaTagsOutput = 'success';
 class MetaTagsNode extends ScalarNode<ScrapeState, MetaTagsOutput> {
   public readonly name = 'extract:meta-tags';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<MetaTagsOutput, SchemaObjectType> {
+    return {
+      // `success` — writes `aonprdMetaTags` metadata key: { description: string|null, keywords: string|null }.
+      // No state.output delta; soft-fails with no writes when `aonprdCheerio` is absent.
+      success: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

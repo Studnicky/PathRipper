@@ -6,7 +6,7 @@
 //
 // bespoke node-folder under nodes/km-war-army/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -341,6 +341,12 @@ export type KmWarArmyBaseOutput = 'success' | 'error';
 class KmWarArmyBaseNode extends ScalarNode<ScrapeState, KmWarArmyBaseOutput> {
   public readonly name = 'extract:km-war-army-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmWarArmyBaseOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -366,6 +372,12 @@ export type KmWarArmyStatblockOutput = 'success' | 'error';
 class KmWarArmyStatblockNode extends ScalarNode<ScrapeState, KmWarArmyStatblockOutput> {
   public readonly name = 'extract:km-war-army-statblock';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmWarArmyStatblockOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -391,6 +403,12 @@ export type KmWarArmyAbilitiesOutput = 'success' | 'error';
 class KmWarArmyAbilitiesNode extends ScalarNode<ScrapeState, KmWarArmyAbilitiesOutput> {
   public readonly name = 'extract:km-war-army-abilities';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmWarArmyAbilitiesOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -416,6 +434,11 @@ export type FinalizeKmWarArmyOutput = 'success';
 class FinalizeKmWarArmyNode extends ScalarNode<ScrapeState, FinalizeKmWarArmyOutput> {
   public readonly name = 'finalize:km-war-army';
   public readonly outputs = ['success'] as const;
+  public override get outputSchema(): Record<FinalizeKmWarArmyOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

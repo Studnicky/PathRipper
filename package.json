@@ -1,6 +1,6 @@
 {
   "name": "@studnicky/ripperoni",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "Web ingestion engine; slices wikis, sites, and URL lists into JSON records, one page at a time. Pairs with Squashage for RDF graph reconstitution.",
   "type": "module",
   "private": false,
@@ -62,20 +62,20 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "@studnicky/dagonizer": "^0.24.0",
-    "@studnicky/dagonizer-executor-node": "^0.24.0",
+    "@studnicky/dagonizer": "^0.25.0",
+    "@studnicky/dagonizer-executor-node": "^0.25.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bottleneck": "^2.19.5",
     "cheerio": "^1.0.0",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "domhandler": "^6.0.1",
     "json-schema-to-ts": "^3.1.1",
     "wtf_wikipedia": "^10.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.0.0",
     "cytoscape": "^3.34.0",
     "eslint": "^10.3.0",
     "globals": "^17.6.0",
@@ -83,7 +83,7 @@
     "sharp": "^0.35.2",
     "tsx": "^4.0.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "8.59.2",
+    "typescript-eslint": "^8.61.1",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
     "vue": "^3.0.0"
@@ -100,5 +100,9 @@
       "bingSiteVerification": "",
       "twitterHandle": ""
     }
+  },
+  "overrides": {
+    "vite": "^6.4.3",
+    "esbuild": "^0.25.0"
   }
 }

@@ -9,7 +9,7 @@
 //   extract:deity-category-aspects  — descriptive prose before the Members heading
 //   finalize:deity-category         — assemble + strip raw_fields, attach meta
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -261,6 +261,35 @@ class DeityCategoryBaseNodeImpl extends ScalarNode<ScrapeState, DeityCategoryBas
   public readonly name = 'extract:deity-category-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DeityCategoryBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:               { type: 'string' },
+              deity_category_id: { type: ['integer', 'null'] },
+              name:              { type: 'string' },
+              rarity:            { type: 'string' },
+              pfs:               { type: ['string', 'null'] },
+              legacy:            { type: 'boolean' },
+              alt_edition_url:   { type: ['string', 'null'] },
+              traits:            { type: 'array', items: { type: 'string' } },
+              trait_ids:         { type: 'object' },
+              source:            { type: 'object' },
+              sources:           { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -288,6 +317,36 @@ export type DeityCategoryMembersOutput = 'success' | 'error';
 class DeityCategoryMembersNodeImpl extends ScalarNode<ScrapeState, DeityCategoryMembersOutput> {
   public readonly name = 'extract:deity-category-members';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<DeityCategoryMembersOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              members: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name:     { type: 'string' },
+                    deity_id: { type: ['integer', 'null'] },
+                    href:     { type: 'string' },
+                  },
+                  required: ['name', 'href'],
+                },
+              },
+            },
+            required: ['members'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -318,6 +377,25 @@ class DeityCategoryAspectsNodeImpl extends ScalarNode<ScrapeState, DeityCategory
   public readonly name = 'extract:deity-category-aspects';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DeityCategoryAspectsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              aspects: { type: ['string', 'null'] },
+            },
+            required: ['aspects'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -345,6 +423,18 @@ export type FinalizeDeityCategoryOutput = 'success';
 class FinalizeDeityCategoryNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityCategoryOutput> {
   public readonly name = 'finalize:deity-category';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeDeityCategoryOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

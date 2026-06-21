@@ -11,7 +11,7 @@
 //
 // Lifted into a shared capability to eliminate duplicate parsers across concept files.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState } from '../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../common.js';
@@ -62,6 +62,14 @@ export type SavingThrowOutput = 'success';
 class SavingThrowNodeImpl extends ScalarNode<ScrapeState, SavingThrowOutput> {
   public readonly name    = 'extract:saving-throw';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<SavingThrowOutput, SchemaObjectType> {
+    return {
+      // `success` — writes `aonprdSavingThrow` metadata key: { dc: number|null, save: string|null, basic: boolean }.
+      // No state.output delta; soft-fails with no writes when field is absent.
+      success: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

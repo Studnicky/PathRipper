@@ -4,7 +4,7 @@
 // catalog of every entity sourced from that book organized by h2 category
 // headings. Helpers are inlined with inline contracts.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -308,6 +308,15 @@ class SourceBaseNodeImpl extends ScalarNode<ScrapeState, SourceBaseOutput> {
   public readonly name    = 'extract:source-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SourceBaseSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -331,6 +340,15 @@ export type SourceMetadataOutput = 'success' | 'error';
 class SourceMetadataNodeImpl extends ScalarNode<ScrapeState, SourceMetadataOutput> {
   public readonly name    = 'extract:source-metadata';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SourceMetadataSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -356,6 +374,15 @@ class SourceRelatedNodeImpl extends ScalarNode<ScrapeState, SourceRelatedOutput>
   public readonly name    = 'extract:source-related';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SourceRelatedSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -380,6 +407,19 @@ export type FinalizeSourceOutput = 'success';
 class FinalizeSourceNodeImpl extends ScalarNode<ScrapeState, FinalizeSourceOutput> {
   public readonly name    = 'finalize:source';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SourceOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

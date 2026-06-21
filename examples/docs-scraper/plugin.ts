@@ -8,7 +8,7 @@
 import { load } from 'cheerio';
 
 import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, DAGType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
@@ -33,6 +33,21 @@ type DocsOutput = DocsSectionOutput | DocsPageOutput;
 class DocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
   public readonly name    = 'docs:parse-impl';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — `state.output` is set to the first extracted section or a
+      // fallback page-level object; `state.metadata.sections` may hold all
+      // extracted sections.
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state:    ScrapeState,

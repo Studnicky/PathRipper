@@ -42,6 +42,7 @@ import {
   HtmlWriteRawNode,
   WikiWriteRawNode,
   JsonWriteNode,
+  CaptureErrorNode,
   JsonlAppendNode,
   ValidateSchemaNode,
   TerminalNode,
@@ -49,6 +50,8 @@ import {
   FetchAndExtractLinksNode,
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
+  RouteFailureNode,
+  ResolveLinkNode,
 } from '../src/nodes/index.js';
 
 import { TAXONOMY }       from '../plugins/aonprd/taxonomy/aonprd.js';
@@ -140,6 +143,7 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
       HtmlWriteRawNode,
       WikiWriteRawNode,
       JsonWriteNode,
+      CaptureErrorNode,
       JsonlAppendNode,
       ValidateSchemaNode,
       TerminalNode,
@@ -147,6 +151,8 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
       FetchAndExtractLinksNode,
       DedupeAndEnqueueNode,
       CrawlExhaustedNode,
+      RouteFailureNode,
+      ResolveLinkNode,
       ...TAXONOMY.allNodes(),
     ];
 

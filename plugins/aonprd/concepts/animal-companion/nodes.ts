@@ -1,6 +1,6 @@
 // Animal-companion capability nodes.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -22,6 +22,19 @@ export type AnimalCompanionBaseOutput = 'success' | 'error';
 class AnimalCompanionBaseNode extends ScalarNode<ScrapeState, AnimalCompanionBaseOutput> {
   public readonly name = 'extract:animal-companion-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<AnimalCompanionBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -49,6 +62,19 @@ class AnimalCompanionStatsNode extends ScalarNode<ScrapeState, AnimalCompanionSt
   public readonly name = 'extract:animal-companion-stats';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<AnimalCompanionStatsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -73,6 +99,19 @@ export type AnimalCompanionCombatOutput = 'success' | 'error';
 class AnimalCompanionCombatNode extends ScalarNode<ScrapeState, AnimalCompanionCombatOutput> {
   public readonly name = 'extract:animal-companion-combat';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<AnimalCompanionCombatOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -99,6 +138,19 @@ class AnimalCompanionAdvancementNode extends ScalarNode<ScrapeState, AnimalCompa
   public readonly name = 'extract:animal-companion-advancement';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<AnimalCompanionAdvancementOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -123,6 +175,18 @@ export type FinalizeAnimalCompanionOutput = 'success';
 class FinalizeAnimalCompanionNode extends ScalarNode<ScrapeState, FinalizeAnimalCompanionOutput> {
   public readonly name = 'finalize:animal-companion';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeAnimalCompanionOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

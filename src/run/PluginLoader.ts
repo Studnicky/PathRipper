@@ -14,8 +14,9 @@ import { resolve }      from 'node:path';
 import { DAGDocument }            from '@studnicky/dagonizer';
 import type { DAGType }           from '@studnicky/dagonizer';
 
-import type { RipperDagonizer } from '../dispatcher/RipperDagonizer.js';
-import type { ScrapeState }     from '../state/ScrapeState.js';
+import type { RipperDagonizer }    from '../dispatcher/RipperDagonizer.js';
+import type { ScrapeState }        from '../state/ScrapeState.js';
+import type { ReconcilerInterface } from '../resilience/Reconciler.js';
 
 import {
   HtmlFetchNode,
@@ -23,6 +24,7 @@ import {
   HtmlWriteRawNode,
   WikiWriteRawNode,
   JsonWriteNode,
+  CaptureErrorNode,
   JsonlAppendNode,
   ValidateSchemaNode,
   TerminalNode,
@@ -30,6 +32,10 @@ import {
   FetchAndExtractLinksNode,
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
+  RouteFailureNode,
+  ReconcileIdentityNode,
+  ReportCrawlHealthNode,
+  ResolveLinkNode,
 } from '../nodes/index.js';
 
 // ── Builtin crawl DAG ──────────────────────────────────────────────────────────
@@ -59,7 +65,7 @@ export class PluginLoader {
    * `PluginLoader.registerBuiltinNodes`.
    */
   static readonly BUILTIN_PREFIXES: ReadonlyArray<string> = [
-    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
+    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:', 'reconcile:', 'report:', 'resolve:',
   ];
 
   /**
@@ -76,6 +82,7 @@ export class PluginLoader {
     dispatcher.registerNode(HtmlWriteRawNode);
     dispatcher.registerNode(WikiWriteRawNode);
     dispatcher.registerNode(JsonWriteNode);
+    dispatcher.registerNode(CaptureErrorNode);
     dispatcher.registerNode(JsonlAppendNode);
     dispatcher.registerNode(ValidateSchemaNode);
     dispatcher.registerNode(TerminalNode);
@@ -84,6 +91,12 @@ export class PluginLoader {
     dispatcher.registerNode(FetchAndExtractLinksNode);
     dispatcher.registerNode(DedupeAndEnqueueNode);
     dispatcher.registerNode(CrawlExhaustedNode);
+    // Resilience nodes
+    dispatcher.registerNode(RouteFailureNode);
+    dispatcher.registerNode(ResolveLinkNode);
+    // Post-crawl analysis nodes (MAIN only)
+    dispatcher.registerNode(ReconcileIdentityNode);
+    dispatcher.registerNode(ReportCrawlHealthNode);
     // Builtin crawl DAG document
     dispatcher.registerDAG(
       DAGDocument.load(readFileSync(CRAWL_DISCOVER_DAG_PATH, 'utf-8')),
@@ -196,12 +209,16 @@ export class PluginLoader {
     return undefined;
   }
 
-  static async registerPluginsFromEntry(
-    dispatcher:    RipperDagonizer<ScrapeState>,
-    entryDag:      DAGType,
-    configDir:     string,
-  ): Promise<Set<string>> {
-    // Collect non-builtin dag-reference names from EmbeddedDAGNode and ScatterNode placements.
+  /**
+   * Collect the distinct plugin namespaces referenced by a DAG's placements.
+   *
+   * Scans `EmbeddedDAGNode` and `ScatterNode` placements for non-builtin
+   * dag-reference names, then extracts the namespace (the segment before `:`).
+   *
+   * @param entryDag - The orchestration DAG to inspect.
+   * @returns A `Set<string>` of distinct plugin namespaces.
+   */
+  private static extractNamespaces(entryDag: DAGType): Set<string> {
     const dagRefs = new Set<string>();
     for (const placement of entryDag.nodes) {
       let dagRef: string | undefined;
@@ -221,7 +238,6 @@ export class PluginLoader {
       }
     }
 
-    // Derive distinct plugin namespaces (the segment before `:`).
     const namespaces = new Set<string>();
     for (const ref of dagRefs) {
       const colon = ref.indexOf(':');
@@ -229,6 +245,62 @@ export class PluginLoader {
         namespaces.add(ref.slice(0, colon));
       }
     }
+
+    return namespaces;
+  }
+
+  /**
+   * Discover the first plugin reconciler exported by the entry DAG's plugin.
+   *
+   * Imports the same `plugins/<namespace>/index.js` that
+   * `registerPluginsFromEntry` loads and returns the exported `reconciler`
+   * value if it is a non-null object with `prepare` and `resolveFailure`
+   * methods. Returns `undefined` when no reconciler is exported or the
+   * namespace set is empty.
+   *
+   * The dynamic import hits Node's module cache (same specifier as
+   * `registerPluginsFromEntry`), so no second network/disk load occurs.
+   *
+   * @param entryDag  - The orchestration DAG whose placements drive namespace discovery.
+   * @param configDir - Absolute path to the directory that contains `plugins/`.
+   * @returns The first plugin reconciler found, or `undefined`.
+   */
+  static async resolveReconciler(
+    entryDag:  DAGType,
+    configDir: string,
+  ): Promise<ReconcilerInterface | undefined> {
+    const namespaces = PluginLoader.extractNamespaces(entryDag);
+    for (const namespace of namespaces) {
+      const entryPath = resolve(configDir, `plugins/${namespace}/index.js`);
+      let mod: unknown;
+      try {
+        mod = await import(entryPath);
+      } catch {
+        // Module not found or load failure — skip; registerPluginsFromEntry
+        // will surface the error with a clearer message.
+        continue;
+      }
+      const modRecord = mod as Record<string, unknown>;
+      const candidate = modRecord['reconciler'];
+      if (
+        candidate !== null &&
+        candidate !== undefined &&
+        typeof candidate === 'object' &&
+        typeof (candidate as Record<string, unknown>)['prepare'] === 'function' &&
+        typeof (candidate as Record<string, unknown>)['resolveFailure'] === 'function'
+      ) {
+        return candidate as ReconcilerInterface;
+      }
+    }
+    return undefined;
+  }
+
+  static async registerPluginsFromEntry(
+    dispatcher:    RipperDagonizer<ScrapeState>,
+    entryDag:      DAGType,
+    configDir:     string,
+  ): Promise<Set<string>> {
+    const namespaces = PluginLoader.extractNamespaces(entryDag);
 
     const loaded = new Set<string>();
     for (const namespace of namespaces) {

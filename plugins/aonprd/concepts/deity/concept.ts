@@ -13,7 +13,7 @@
 //   finalize:deity                 — assemble + strip raw_fields, attach meta
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -39,6 +39,19 @@ export type DeityBaseOutput = 'success' | 'error';
 class DeityBaseNodeImpl extends ScalarNode<ScrapeState, DeityBaseOutput> {
   public readonly name = 'extract:deity-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<DeityBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -68,6 +81,19 @@ class DeityDevoteeBenefitsNodeImpl extends ScalarNode<ScrapeState, DeityDevoteeB
   public readonly name = 'extract:deity-devotee-benefits';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DeityDevoteeBenefitsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -96,6 +122,19 @@ class DeityEdictsAnathemaNodeImpl extends ScalarNode<ScrapeState, DeityEdictsAna
   public readonly name = 'extract:deity-edicts-anathema';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DeityEdictsAnathemaOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -122,6 +161,19 @@ export type DeityClericSpellsOutput = 'success' | 'error';
 class DeityClericSpellsNodeImpl extends ScalarNode<ScrapeState, DeityClericSpellsOutput> {
   public readonly name = 'extract:deity-cleric-spells';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<DeityClericSpellsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -150,6 +202,19 @@ class DeityRelationshipsNodeImpl extends ScalarNode<ScrapeState, DeityRelationsh
   public readonly name = 'extract:deity-relationships';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DeityRelationshipsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -177,6 +242,18 @@ export type FinalizeDeityOutput = 'success';
 class FinalizeDeityNodeImpl extends ScalarNode<ScrapeState, FinalizeDeityOutput> {
   public readonly name = 'finalize:deity';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeDeityOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

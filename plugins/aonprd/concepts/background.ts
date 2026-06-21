@@ -5,7 +5,7 @@
 //
 // a single taxonomy node rather than an inline switch arm.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -235,6 +235,35 @@ class BackgroundBaseNode extends ScalarNode<ScrapeState, BackgroundBaseOutput> {
   public readonly name = 'extract:background-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<BackgroundBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              background_id:   { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -265,6 +294,30 @@ class BackgroundBenefitsNode extends ScalarNode<ScrapeState, BackgroundBenefitsO
   public readonly name = 'extract:background-benefits';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<BackgroundBenefitsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              attribute_boost_choice: { type: ['object', 'null'] },
+              trained_skills:         { type: 'array', items: { type: 'object' } },
+              lore_skills:            { type: 'array', items: { type: 'object' } },
+              granted_feat:           { type: ['object', 'null'] },
+              flavor_text:            { type: 'string' },
+              related_sources:        { type: 'array', items: { type: 'object' } },
+            },
+            required: ['trained_skills', 'lore_skills', 'flavor_text', 'related_sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -292,6 +345,18 @@ export type FinalizeBackgroundOutput = 'success';
 class FinalizeBackgroundNode extends ScalarNode<ScrapeState, FinalizeBackgroundOutput> {
   public readonly name = 'finalize:background';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeBackgroundOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

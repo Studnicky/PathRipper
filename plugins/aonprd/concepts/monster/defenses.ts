@@ -4,7 +4,7 @@
  * Exports: splitBodySections, extractMonsterDefenses, monsterDefensesNode.
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -30,6 +30,14 @@ export type MonsterDefensesOutput = 'success' | 'error';
 class MonsterDefensesNodeImpl extends ScalarNode<ScrapeState, MonsterDefensesOutput> {
   public readonly name    = 'extract:monster-defenses';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<MonsterDefensesOutput, SchemaObjectType> {
+    return {
+      // state.output merged with MonsterDefensesSlice (ac, saves, hp, hardness, immunities, weaknesses, resistances)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

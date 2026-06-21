@@ -5,7 +5,7 @@
 //
 // captures any unclassified h2 sections so no data is silently dropped.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -391,6 +391,35 @@ class ClassSampleBaseNode extends ScalarNode<ScrapeState, ClassSampleBaseOutput>
   public readonly name = 'extract:class-sample-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassSampleBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              class_sample_id: { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -418,6 +447,24 @@ export type ClassSampleIdentityOutput = 'success' | 'error';
 class ClassSampleIdentityNode extends ScalarNode<ScrapeState, ClassSampleIdentityOutput> {
   public readonly name = 'extract:class-sample-identity';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<ClassSampleIdentityOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              flavor: { type: ['string', 'null'] },
+            },
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -447,6 +494,31 @@ class ClassSampleBuildNode extends ScalarNode<ScrapeState, ClassSampleBuildOutpu
   public readonly name = 'extract:class-sample-build';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassSampleBuildOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              ability_scores:     { type: ['string', 'null'] },
+              skills:             { type: 'array', items: { type: 'object' } },
+              research_field:     { type: ['object', 'null'] },
+              starting_feat:      { type: ['object', 'null'] },
+              higher_level_feats: { type: 'array', items: { type: 'object' } },
+              implements:         { type: 'array', items: { type: 'object' } },
+              extra_sections:     { type: 'array', items: { type: 'object' } },
+            },
+            required: ['skills', 'higher_level_feats', 'implements', 'extra_sections'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -474,6 +546,18 @@ export type FinalizeClassSampleOutput = 'success';
 class FinalizeClassSampleNode extends ScalarNode<ScrapeState, FinalizeClassSampleOutput> {
   public readonly name = 'finalize:class-sample';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeClassSampleOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

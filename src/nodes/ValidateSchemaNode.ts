@@ -4,7 +4,7 @@ import AjvModule, { type ValidateFunction } from 'ajv';
 import addFormatsModule from 'ajv-formats';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { AjvCtorType, AddFormatsFnInterface } from '../types/AjvInterop.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
@@ -70,6 +70,15 @@ type ValidateSchemaOutput = 'valid' | 'invalid';
 class ValidateSchemaNodeImpl extends ScalarNode<ScrapeState, ValidateSchemaOutput, RipperServices> {
   public readonly name = 'validate:schema';
   public readonly outputs = ['valid', 'invalid'] as const;
+
+  public override get outputSchema(): Record<ValidateSchemaOutput, SchemaObjectType> {
+    return {
+      // `valid` — `state.output` passed AJV validation (or no schema configured); no state delta.
+      valid: { type: 'object' },
+      // `invalid` — validation failed; error recorded on state via collectError; no other delta.
+      invalid: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

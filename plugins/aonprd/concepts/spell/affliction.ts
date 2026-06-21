@@ -5,7 +5,7 @@
  * Node: extract:spell-affliction
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../../common.js';
@@ -33,6 +33,15 @@ export type SpellAfflictionOutput = 'success' | 'error';
 class SpellAfflictionNodeImpl extends ScalarNode<ScrapeState, SpellAfflictionOutput> {
   public readonly name    = 'extract:spell-affliction';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SpellAfflictionSlice (affliction, ritual_primary_check, ritual_secondary_casters, ritual_secondary_checks)
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

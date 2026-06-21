@@ -6,7 +6,7 @@
 // equipment-list slices for downstream consumers without re-running the full
 // pipeline.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -283,6 +283,35 @@ class ClassKitBaseNodeImpl extends ScalarNode<ScrapeState, ClassKitBaseOutput> {
   public readonly name = 'extract:class-kit-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassKitBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              class_kit_id:    { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -310,6 +339,31 @@ class ClassKitContentsNodeImpl extends ScalarNode<ScrapeState, ClassKitContentsO
   public readonly name = 'extract:class-kit-contents';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ClassKitContentsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              price:           { type: ['string', 'null'] },
+              bulk:            { type: ['string', 'null'] },
+              money_left_over: { type: ['string', 'null'] },
+              armor:           { type: 'array', items: { type: 'object' } },
+              weapons:         { type: 'array', items: { type: 'object' } },
+              gear:            { type: 'array', items: { type: 'object' } },
+              options:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['armor', 'weapons', 'gear', 'options'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -336,6 +390,18 @@ export type FinalizeClassKitOutput = 'success';
 class FinalizeClassKitNodeImpl extends ScalarNode<ScrapeState, FinalizeClassKitOutput> {
   public readonly name = 'finalize:class-kit';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeClassKitOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

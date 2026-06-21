@@ -2,7 +2,7 @@
 // Article pages are prose-only entries; no structured improvements warranted
 // beyond legacy-section filtering.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -180,6 +180,36 @@ class ArticleBaseNodeImpl extends ScalarNode<ScrapeState, ArticleBaseOutput> {
   public readonly name    = 'extract:article-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ArticleBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              article_id:      { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+              description:     { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -206,6 +236,19 @@ export type FinalizeArticleOutput = 'success';
 class FinalizeArticleNodeImpl extends ScalarNode<ScrapeState, FinalizeArticleOutput> {
   public readonly name    = 'finalize:article';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeArticleOutput, SchemaObjectType> {
+    return {
+      // `success` — merges sections, raw_fields, links, body_text, body_html, meta into state.output (no setConceptOutput call).
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

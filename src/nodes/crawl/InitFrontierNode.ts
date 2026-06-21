@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../state/ScrapeState.js';
 import type { RipperServices } from '../../services/RipperServices.js';
@@ -20,6 +20,36 @@ import type { RipperServices } from '../../services/RipperServices.js';
 class InitFrontierNodeImpl extends ScalarNode<ScrapeState, 'ready' | 'empty', RipperServices> {
   public readonly name = 'crawl:init-frontier';
   public readonly outputs = ['ready', 'empty'] as const;
+
+  public override get outputSchema(): Record<'ready' | 'empty', SchemaObjectType> {
+    return {
+      // `ready` — `state.crawl` is initialised with the seeded frontier and the
+      // crawl bookkeeping arrays/regex sources copied from `services.crawler`.
+      ready: {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              frontier:        { type: 'array', items: { type: 'string' } },
+              nextFrontierRaw: { type: 'array', items: { type: 'string' } },
+              discoveredRaw:   { type: 'array', items: { type: 'string' } },
+              discovered:      { type: 'array', items: { type: 'string' } },
+              visited:         { type: 'array', items: { type: 'string' } },
+              depth:           { type: 'integer' },
+              domainRe:        { type: 'string' },
+              targetRe:        { type: 'string' },
+              delimiterRe:     { type: 'string' },
+            },
+            required: ['frontier', 'nextFrontierRaw', 'discoveredRaw', 'discovered', 'visited', 'depth', 'domainRe', 'targetRe', 'delimiterRe'],
+          },
+        },
+        required: ['crawl'],
+      },
+      // `empty` — short-circuit with no state delta (no crawler / empty seeds).
+      empty: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

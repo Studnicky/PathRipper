@@ -18,6 +18,7 @@ import { spawnSync } from 'node:child_process';
 import { HtmlScraper }   from '../../src/scrapers/HtmlScraper.js';
 import { ScrapeState }   from '../../src/state/ScrapeState.js';
 import { Dagonizer }     from '@studnicky/dagonizer';
+import { NodeContextBuilder } from '@studnicky/dagonizer/entities';
 import { Logger }        from '../../src/modules/logger/logger.js';
 import type { RipperServices } from '../../src/services/RipperServices.js';
 
@@ -117,13 +118,12 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
     state.page  = { targetId: 'ripperoni-docs', title: 'Architecture', url: page.url, html: page.html };
 
     // Run the node directly (no DAG needed for a single-node test).
-    const ctx = {
+    const ctx = NodeContextBuilder.of<RipperServices>(
+      'test',
+      'docs:parse',
+      new AbortController().signal,
       services,
-      signal:   new AbortController().signal,
-      dagName:  'test',
-      nodeName: 'docs:parse',
-      runId:    'test',
-    };
+    );
     await docsParseNode.execute(Batch.of(state), ctx);
 
     const sections = state.getMetadata<DocsSectionOutput[]>('sections');

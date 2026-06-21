@@ -9,7 +9,7 @@
 // re-execution in the taxonomy pipeline; myth-feat disambiguation is
 // transparent via the `is_mythic` field rather than a separate type.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -462,6 +462,14 @@ class FeatBaseNode extends ScalarNode<ScrapeState, FeatBaseOutput> {
   public readonly name    = 'extract:feat-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<FeatBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FeatBaseSlice (url, feat_id, name, level, rarity, pfs, traits, source, is_mythic, meta_*)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -491,6 +499,14 @@ export type FeatPrerequisitesOutput = 'success' | 'error';
 class FeatPrerequisitesNode extends ScalarNode<ScrapeState, FeatPrerequisitesOutput> {
   public readonly name    = 'extract:feat-prerequisites';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<FeatPrerequisitesOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FeatPrerequisitesSlice (archetypes, archetype_footnotes, class_archetypes, spoiler_source, prerequisites)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -522,6 +538,14 @@ class FeatEffectNode extends ScalarNode<ScrapeState, FeatEffectOutput> {
   public readonly name    = 'extract:feat-effect';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<FeatEffectOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FeatEffectSlice (frequency, trigger, requirements, cost, access, description_html, description_text, special)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -549,6 +573,14 @@ export type FeatMetaOutput = 'success' | 'error';
 class FeatMetaNode extends ScalarNode<ScrapeState, FeatMetaOutput> {
   public readonly name    = 'extract:feat-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<FeatMetaOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FeatMetaSlice (leads_to, related_feats, trait_glossary, links)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -579,6 +611,13 @@ export type FinalizeFeatOutput = 'success';
 class FinalizeFeatNode extends ScalarNode<ScrapeState, FinalizeFeatOutput> {
   public readonly name    = 'finalize:feat';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeFeatOutput, SchemaObjectType> {
+    return {
+      // setConceptOutput writes fully assembled FeatOutput to state.output
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

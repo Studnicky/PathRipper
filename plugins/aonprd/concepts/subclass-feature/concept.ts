@@ -1,6 +1,6 @@
 // Subclass-feature concept — DAG nodes and concept declaration.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -16,6 +16,14 @@ export type SubclassFeatureBaseOutput = 'success' | 'error';
 class SubclassFeatureBaseNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureBaseOutput> {
   public readonly name    = 'extract:subclass-feature-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SubclassFeatureBaseSlice (url, name, traits, sources, etc.)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -41,6 +49,14 @@ class SubclassFeatureFieldsNodeImpl extends ScalarNode<ScrapeState, SubclassFeat
   public readonly name    = 'extract:subclass-feature-fields';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SubclassFeatureFieldsSlice
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -64,6 +80,14 @@ export type SubclassFeatureSpellsOutput = 'success' | 'error';
 class SubclassFeatureSpellsNodeImpl extends ScalarNode<ScrapeState, SubclassFeatureSpellsOutput> {
   public readonly name    = 'extract:subclass-feature-spells';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SubclassFeatureSpellsSlice
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -89,6 +113,14 @@ class SubclassFeatureFeaturesNodeImpl extends ScalarNode<ScrapeState, SubclassFe
   public readonly name    = 'extract:subclass-feature-features';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SubclassFeatureFeaturesSlice
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -112,6 +144,19 @@ export type FinalizeSubclassFeatureOutput = 'success';
 class FinalizeSubclassFeatureNodeImpl extends ScalarNode<ScrapeState, FinalizeSubclassFeatureOutput> {
   public readonly name    = 'finalize:subclass-feature';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SubclassFeatureOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

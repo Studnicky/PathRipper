@@ -5,7 +5,7 @@
 //
 // bespoke node-folder under nodes/km-event/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -263,6 +263,12 @@ export type KmEventBaseOutput = 'success' | 'error';
 class KmEventBaseNodeImpl extends ScalarNode<ScrapeState, KmEventBaseOutput> {
   public readonly name    = 'extract:km-event-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmEventBaseOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -287,6 +293,12 @@ export type KmEventMechanicsOutput = 'success' | 'error';
 class KmEventMechanicsNodeImpl extends ScalarNode<ScrapeState, KmEventMechanicsOutput> {
   public readonly name    = 'extract:km-event-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
+  public override get outputSchema(): Record<KmEventMechanicsOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -311,6 +323,11 @@ export type FinalizeKmEventOutput = 'success';
 class FinalizeKmEventNodeImpl extends ScalarNode<ScrapeState, FinalizeKmEventOutput> {
   public readonly name    = 'finalize:km-event';
   public readonly outputs = ['success'] as const;
+  public override get outputSchema(): Record<FinalizeKmEventOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

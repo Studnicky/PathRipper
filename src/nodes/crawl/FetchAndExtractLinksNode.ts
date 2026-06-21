@@ -2,7 +2,7 @@ import { load } from 'cheerio';
 import type { Element } from 'domhandler';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { CrawlFetcher }        from './CrawlFetcher.js';
 import type { ScrapeState }    from '../../state/ScrapeState.js';
@@ -43,6 +43,45 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
 > {
   public readonly name = 'crawl:fetch-and-extract';
   public readonly outputs = ['success', 'empty', 'error', 'permanent'] as const;
+
+  public override get outputSchema(): Record<'success' | 'empty' | 'error' | 'permanent', SchemaObjectType> {
+    return {
+      // `success` — links found; `state.crawl.visited`, `discoveredRaw`, and `nextFrontierRaw` updated.
+      success: {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              visited:         { type: 'array', items: { type: 'string' } },
+              discoveredRaw:   { type: 'array', items: { type: 'string' } },
+              nextFrontierRaw: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['visited', 'discoveredRaw', 'nextFrontierRaw'],
+          },
+        },
+        required: ['crawl'],
+      },
+      // `empty` — frontier empty or all pages fetched with no new links; `state.crawl.visited` updated.
+      empty: {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              visited: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['visited'],
+          },
+        },
+        required: ['crawl'],
+      },
+      // `error` — transient fetch failures occurred; `state.crawl.visited` may be partially updated.
+      error: { type: 'object' },
+      // `permanent` — all failures were 4xx permanent; no links found; no retry expected.
+      permanent: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

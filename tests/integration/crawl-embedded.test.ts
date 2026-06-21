@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 import { DAGDocument, Timeout } from '@studnicky/dagonizer';
-import type { Batch } from '@studnicky/dagonizer';
+import type { Batch, SchemaObjectType } from '@studnicky/dagonizer';
 import { RipperDagonizer }             from '../../src/dispatcher/RipperDagonizer.js';
 import { ScrapeState }         from '../../src/state/ScrapeState.js';
 import { PluginLoader }        from '../../src/run/PluginLoader.js';
@@ -263,9 +263,10 @@ describe('crawl-embedded integration', () => {
 
     // Stub node: records currentUrl in processedUrls, routes 'success'.
     const stubRecordNode = {
-      name:    'stub:record',
-      outputs: ['success'] as ['success'],
-      timeout: Timeout.none(),
+      name:         'stub:record',
+      outputs:      ['success'] as ['success'],
+      timeout:      Timeout.none(),
+      outputSchema: { success: { type: 'object' } } as Record<'success', SchemaObjectType>,
       async execute(batch: Batch<ScrapeState>) {
         for (const { state } of batch) {
           processedUrls.push(state.page.url);
@@ -351,9 +352,10 @@ describe('crawl-embedded integration', () => {
     });
 
     const stubRecordNode = {
-      name:    'stub:record',
-      outputs: ['success'] as ['success'],
-      timeout: Timeout.none(),
+      name:         'stub:record',
+      outputs:      ['success'] as ['success'],
+      timeout:      Timeout.none(),
+      outputSchema: { success: { type: 'object' } } as Record<'success', SchemaObjectType>,
       async execute(batch: Batch<ScrapeState>) {
         const { RoutedBatchBuilder } = await import('@studnicky/dagonizer');
         return RoutedBatchBuilder.of('success', batch);
