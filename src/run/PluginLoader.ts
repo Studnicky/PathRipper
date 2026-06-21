@@ -195,11 +195,11 @@ export class PluginLoader {
    * @returns The extracted bundle plus the set of plugin DAG names that loaded.
    */
   /**
-   * Discover plugin node modules referenced by a DAG's placements and register
-   * them onto `dispatcher`.
+   * Discover plugin node modules referenced by a DAG bundle's placements and
+   * register them onto `dispatcher`.
    *
-   * Walks every placement in `dag.nodes` and collects the node implementation
-   * names from:
+   * Walks every placement in every DAG in the bundle and collects the node
+   * implementation names from:
    *   - `SingleNode.node`        — the backing implementation
    *   - `PhaseNode.node`         — the backing implementation
    *   - `ScatterNode.body.node`  — the scatter body implementation
@@ -215,30 +215,32 @@ export class PluginLoader {
    * are skipped — `registerBuiltinNodes` already handles them.
    *
    * @param dispatcher - The dispatcher to register plugin nodes and DAGs onto.
-   * @param dag        - The loaded DAG whose placements drive discovery.
+   * @param dags       - The loaded DAG bundle whose placements drive discovery.
    * @param configDir  - Absolute path to the directory that contains `plugins/`.
    * @returns A `Set<string>` of the non-builtin node names for which a plugin loaded.
    */
-  static async registerFromDag(
+  static async registerFromDags(
     dispatcher: RipperDagonizer<ScrapeState>,
-    dag:        DAGType,
+    dags:       ReadonlyArray<DAGType>,
     configDir:  string,
   ): Promise<Set<string>> {
-    // Collect candidate node names from all placement types that carry a node ref.
+    // Collect candidate node names from all placement types across all DAGs.
     const candidates: string[] = [];
-    for (const placement of dag.nodes) {
-      if (placement['@type'] === 'SingleNode') {
-        candidates.push(placement.node);
-      } else if (placement['@type'] === 'PhaseNode') {
-        candidates.push(placement.node);
-      } else if (placement['@type'] === 'ScatterNode') {
-        const body = placement.body;
-        if ('node' in body) {
-          candidates.push(body.node);
+    for (const dag of dags) {
+      for (const placement of dag.nodes) {
+        if (placement['@type'] === 'SingleNode') {
+          candidates.push(placement.node);
+        } else if (placement['@type'] === 'PhaseNode') {
+          candidates.push(placement.node);
+        } else if (placement['@type'] === 'ScatterNode') {
+          const body = placement.body;
+          if ('node' in body) {
+            candidates.push(body.node);
+          }
+          // dag-body scatter: the body DAG must already be registered; no module to import here.
         }
-        // dag-body scatter: the body DAG must already be registered; no module to import here.
+        // TerminalNode, EmbeddedDAGNode: no backing node module to load.
       }
-      // TerminalNode, EmbeddedDAGNode: no backing node module to load.
     }
 
     // Filter to the subset that looks like plugin entries (`word:verb`)
