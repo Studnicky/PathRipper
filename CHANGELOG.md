@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **CodeQL static analysis** — `.github/workflows/codeql.yml` runs the `security-extended` query suite over the TypeScript sources on every push/PR to the protected branches and weekly, surfacing findings under Security > Code scanning.
+
+### Changed
+
+- **Dependency refresh** — `@types/node` 25 → 26, `commander` 14 → 15, `typescript-eslint` 8.59 → 8.61.
+- **Cleared all Dependabot alerts** — `overrides` pin `vite` to `^6.4.3` and `esbuild` to `^0.25.0`, replacing the vulnerable `vite@5`/`esbuild@0.21` that VitePress 1.6.4 pulls transitively. `npm audit` reports zero vulnerabilities; the docs build and dev server both verified on vite 6. These are dev-only (docs toolchain) dependencies and never shipped in `dist/`.
+
 ## [3.1.1] - 2026-06-21
 
 ### Changed
