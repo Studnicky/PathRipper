@@ -1,10 +1,7 @@
 /**
  * PluginLoader — static utility class for plugin discovery and node registration.
  *
- * Centralises the plugin-loading logic that was previously duplicated in
- * `runHtml.ts` and `runWiki.ts`. Both run files delegate to this class for:
- *   - registering built-in nodes onto a dispatcher
- *   - dynamically importing and registering plugin task modules
+ * Centralises the plugin-loading logic used by `runDag`.
  *
  * @module run/PluginLoader
  * @since 4.1.0
@@ -14,12 +11,11 @@ import { readdirSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { resolve }      from 'node:path';
 
-import { DAGDocument }                        from '@studnicky/dagonizer';
-import type { DAGType, DispatcherBundleType } from '@studnicky/dagonizer';
+import { DAGDocument }            from '@studnicky/dagonizer';
+import type { DAGType }           from '@studnicky/dagonizer';
 
-import { RipperDagonizer }      from '../dispatcher/RipperDagonizer.js';
+import type { RipperDagonizer } from '../dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
-import type { RipperServices }  from '../services/RipperServices.js';
 
 import {
   HtmlFetchNode,
@@ -36,7 +32,7 @@ import {
 // ── PluginLoader ───────────────────────────────────────────────────────────────
 
 /**
- * Static plugin-loading utilities shared by `runHtml` and `runWiki`.
+ * Static plugin-loading utilities shared by `runDag`.
  *
  * Every method is static — this class is a namespace for related behaviour, not
  * an instantiable service. All plugin DAG loading, builtin-node registration,
@@ -77,188 +73,6 @@ export class PluginLoader {
   }
 
   /**
-   * Validate and return the pipeline array from an arbitrary target config.
-   *
-   * Throws with a clear message if `pipeline` is absent, empty, or contains
-   * non-string entries.
-   *
-   * @param target   - The raw target config object.
-   * @param targetId - The target identifier used in error messages.
-   * @returns The validated pipeline as a `string[]`.
-   */
-  static requirePipeline(target: Record<string, unknown>, targetId: string): string[] {
-    const pipeline = target['pipeline'];
-    if (!Array.isArray(pipeline) || pipeline.length === 0) {
-      throw new Error(`Target "${targetId}" must declare a non-empty pipeline: string[]`);
-    }
-    for (const name of pipeline) {
-      if (typeof name !== 'string' || name.length === 0) {
-        throw new Error(`Target "${targetId}" pipeline contains a non-string entry`);
-      }
-    }
-    return pipeline as string[];
-  }
-
-  /**
-   * Derive the plugin task name from a pipeline array.
-   *
-   * Returns the first pipeline entry that does not start with one of the
-   * `BUILTIN_PREFIXES`. Returns `undefined` if every entry is a built-in.
-   *
-   * @param pipeline - Ordered list of pipeline step names.
-   * @returns The first non-builtin pipeline entry, or `undefined`.
-   */
-  static derivePluginTaskName(pipeline: ReadonlyArray<string>): string | undefined {
-    for (const entry of pipeline) {
-      if (PluginLoader.BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-      return entry;
-    }
-    return undefined;
-  }
-
-  /**
-   * Dynamically import and register plugin task modules onto a dispatcher.
-   *
-   * Iterates `pipelineNames`, skips built-in prefixes, resolves each plugin as
-   * `./plugins/{word}/{verb}.task.js` under `configDir`, dynamic-imports it
-   * (tsx resolves `.js` → `.ts` in dev/test), and calls `mod.register(dispatcher)`.
-   *
-   * Deduplicates by resolved path so a plugin that appears multiple times in
-   * the pipeline (e.g. `aonprd:parse` and a second `aonprd:load`) loads the
-   * module only once but both entries are added to the returned Set.
-   *
-   * @param dispatcher    - The dispatcher to register plugin nodes and DAGs onto.
-   * @param pipelineNames - Ordered list of pipeline step names from the target config.
-   * @param configDir     - Absolute path to the directory that contains `plugins/`.
-   * @returns A `Set<string>` of the pipeline entry names for which a plugin was loaded.
-   */
-  static async registerInto(
-    dispatcher:    RipperDagonizer<ScrapeState>,
-    pipelineNames: ReadonlyArray<string>,
-    configDir:     string,
-  ): Promise<Set<string>> {
-    const pluginDagNames = new Set<string>();
-    const seen = new Set<string>();
-
-    for (const entry of pipelineNames) {
-      if (PluginLoader.BUILTIN_PREFIXES.some((prefix) => entry.startsWith(prefix))) continue;
-      const colon = entry.indexOf(':');
-      if (colon <= 0) continue;
-      const word = entry.slice(0, colon);
-      const verb = entry.slice(colon + 1);
-      const path = `./plugins/${word}/${verb}.task.js`;
-      if (seen.has(path)) continue;
-      seen.add(path);
-      const absPath = resolve(configDir, path);
-      let mod: unknown;
-      try {
-        mod = await import(absPath);
-      } catch (err) {
-        const nodeErr = err as NodeJS.ErrnoException;
-        if (
-          nodeErr.code === 'ENOENT' ||
-          nodeErr.code === 'MODULE_NOT_FOUND' ||
-          nodeErr.code === 'ERR_MODULE_NOT_FOUND'
-        ) {
-          throw new Error(`Plugin file not found: ${absPath}`, { cause: err });
-        }
-        throw err;
-      }
-      const modRecord = mod as Record<string, unknown>;
-      if (typeof modRecord['register'] !== 'function') {
-        throw new Error(
-          `Plugin at ${absPath} does not export register(dispatcher): void. `
-          + `Add: export function register(dispatcher: RipperDagonizer<ScrapeState>): void { ... }`,
-        );
-      }
-      (modRecord['register'] as (d: RipperDagonizer<ScrapeState>) => void)(dispatcher);
-      pluginDagNames.add(entry);
-    }
-    return pluginDagNames;
-  }
-
-  /**
-   * Build a self-contained `DispatcherBundleType` for a pipeline by loading its
-   * plugins onto a throwaway dispatcher and extracting the registered node + DAG
-   * set.
-   *
-   * Used by the worker-thread parse registry (`src/workers/parseRegistry.ts`):
-   * each worker rebuilds the same `{ nodes, dags }` the coordinator registered,
-   * driven entirely by `pipelineNames` + `configDir` — no plugin is imported by
-   * name. Builtin nodes are registered first so any builtin a plugin DAG
-   * references resolves; the plugin's `register` then adds its own nodes + DAGs.
-   *
-   * The throwaway dispatcher is constructed with a null-holder Proxy services
-   * bag: registration never accesses services (nodes read services only at
-   * execution time, which happens in the host dispatcher, not here), so the
-   * Proxy's get-trap never fires.
-   *
-   * @param pipelineNames - Ordered list of pipeline step names from the target config.
-   * @param configDir     - Absolute path to the directory that contains `plugins/`.
-   * @returns The extracted bundle plus the set of plugin DAG names that loaded.
-   */
-  /**
-   * Discover plugin node modules referenced by a DAG bundle's placements and
-   * register them onto `dispatcher`.
-   *
-   * Walks every placement in every DAG in the bundle and collects the node
-   * implementation names from:
-   *   - `SingleNode.node`        — the backing implementation
-   *   - `PhaseNode.node`         — the backing implementation
-   *   - `ScatterNode.body.node`  — the scatter body implementation
-   *   - `EmbeddedDAGNode.dag`    — sub-DAG names (collected for reference but
-   *     the sub-DAG is registered separately by `runDag`)
-   *
-   * For each non-builtin name of the form `<word>:<verb>`, resolves the plugin
-   * as `./plugins/<word>/<verb>.task.js` under `configDir` and delegates to
-   * `PluginLoader.registerInto`'s import + register logic via an inline pipeline
-   * array so existing deduplication and error handling are reused exactly.
-   *
-   * Built-in names (those starting with `BUILTIN_PREFIXES`, plus `'terminal'`)
-   * are skipped — `registerBuiltinNodes` already handles them.
-   *
-   * @param dispatcher - The dispatcher to register plugin nodes and DAGs onto.
-   * @param dags       - The loaded DAG bundle whose placements drive discovery.
-   * @param configDir  - Absolute path to the directory that contains `plugins/`.
-   * @returns A `Set<string>` of the non-builtin node names for which a plugin loaded.
-   */
-  static async registerFromDags(
-    dispatcher: RipperDagonizer<ScrapeState>,
-    dags:       ReadonlyArray<DAGType>,
-    configDir:  string,
-  ): Promise<Set<string>> {
-    // Collect candidate node names from all placement types across all DAGs.
-    const candidates: string[] = [];
-    for (const dag of dags) {
-      for (const placement of dag.nodes) {
-        if (placement['@type'] === 'SingleNode') {
-          candidates.push(placement.node);
-        } else if (placement['@type'] === 'PhaseNode') {
-          candidates.push(placement.node);
-        } else if (placement['@type'] === 'ScatterNode') {
-          const body = placement.body;
-          if ('node' in body) {
-            candidates.push(body.node);
-          }
-          // dag-body scatter: the body DAG must already be registered; no module to import here.
-        }
-        // TerminalNode, EmbeddedDAGNode: no backing node module to load.
-      }
-    }
-
-    // Filter to the subset that looks like plugin entries (`word:verb`)
-    // and is not a built-in. Feed as a synthetic pipeline to `registerInto`
-    // which handles deduplication, import errors, and `register()` invocation.
-    const pluginCandidates = candidates.filter(
-      (name) => !PluginLoader.BUILTIN_PREFIXES.some((prefix) => name.startsWith(prefix))
-                && name !== 'terminal'
-                && name.includes(':'),
-    );
-
-    return PluginLoader.registerInto(dispatcher, pluginCandidates, configDir);
-  }
-
-  /**
    * Native DAG-document contract: discover plugin namespaces from the entry DAG's
    * placements, load each plugin's `*.dag.jsonld` documents and register them,
    * then import the plugin's `index.js` registration entry and call `register`.
@@ -275,6 +89,7 @@ export class PluginLoader {
    * @param dispatcher - The dispatcher to register plugin DAGs and nodes onto.
    * @param entryDag   - The orchestration DAG whose placements drive namespace discovery.
    * @param configDir  - Absolute path to the directory that contains `plugins/`.
+   * @param bundleDagNames - Names of DAGs already in the bundle (skipped during namespace resolution).
    * @returns A `Set<string>` of the plugin namespaces that were loaded.
    */
   /**
@@ -422,33 +237,5 @@ export class PluginLoader {
     }
 
     return loaded;
-  }
-
-  static async bundle(
-    pipelineNames: ReadonlyArray<string>,
-    configDir:     string,
-  ): Promise<{ bundle: DispatcherBundleType<ScrapeState, RipperServices>; pluginDagNames: Set<string> }> {
-    const holder: { current: RipperServices | null } = { current: null };
-    const throwaway = new RipperDagonizer<ScrapeState>({
-      services: new Proxy({} as RipperServices, {
-        get(_target, prop) {
-          if (holder.current === null) {
-            throw new Error('RipperServices accessed before initialisation');
-          }
-          return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
-        },
-      }),
-    });
-
-    PluginLoader.registerBuiltinNodes(throwaway);
-    const pluginDagNames = await PluginLoader.registerInto(throwaway, pipelineNames, configDir);
-
-    return {
-      bundle: {
-        nodes: [...throwaway.listNodes()],
-        dags:  [...throwaway.listDAGs()],
-      },
-      pluginDagNames,
-    };
   }
 }
