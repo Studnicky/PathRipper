@@ -7,7 +7,6 @@
     "ripperoni": "./dist/cli/cli.js"
   },
   "exports": {
-    "./LinkLister": "./dist/crawlers/LinkLister.js",
     "./HtmlScraper": "./dist/scrapers/HtmlScraper.js",
     "./MediaWikiScraper": "./dist/scrapers/MediaWikiScraper.js",
     "./WikitextParser": "./dist/scrapers/WikitextParser.js",
@@ -15,7 +14,6 @@
     "./RateLimiter": "./dist/modules/http/rateLimiter.js",
     "./Logger": "./dist/modules/logger/logger.js",
     "./Time": "./dist/modules/http/time.js",
-    "./RipperConfig": "./dist/config/RipperConfig.js",
     "./errors/BaseError": "./dist/errors/BaseError.js",
     "./errors/HttpError": "./dist/errors/HttpError.js",
     "./errors/RipperConfigError": "./dist/errors/RipperConfigError.js",
@@ -25,7 +23,8 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc --noEmit false && npm run build:plugins && npm run build:workers",
+    "build": "tsc --noEmit false && npm run build:plugins && npm run build:workers && npm run build:assets",
+    "build:assets": "node scripts/copy-dag-assets.mjs",
     "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false",
     "build:workers": "tsc -p tsconfig.workers.json",
     "typecheck": "tsc --noEmit",
