@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-06-21
+
+### Added
+
+- **Published to GitHub Packages** as `@studnicky/ripperoni`. The package is scoped, public, and ships `dist/` + `dist-workers/`; `publish.yml` builds, validates, and publishes on a new version landing on master (idempotent via a version-already-published check), then cuts the GitHub release.
+- **Social share banner** — `docs/public/og-image.svg` (1200×630, sausage logo + tagline) rendered to `og-image.png` via `scripts/render-og.mjs` (sharp), wired into `docs:build`. Fills the previously-missing `og:image` so unfurls on Discord / Slack / Twitter / LinkedIn show a branded card.
+
+### Changed
+
+- **Favicon is the Ripperoni (sausage) logo** — `favicon.svg` now embeds the logo and small PNG variants (32/48/180/192/512) are generated from it, replacing the placeholder "R". The web manifest gains an SVG icon entry and points at the logo favicons.
+
 ## [3.0.0] - 2026-06-21
 
 ### Added

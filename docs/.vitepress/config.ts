@@ -141,10 +141,11 @@ export default withMermaid(defineConfig({
        use cases where SVG support is patchy. Order matters: browsers
        pick the first `rel=icon` they can render, so SVG goes first. */
     ['link',   { 'rel': 'icon',             'type': 'image/svg+xml',                       'href': `${SITE_BASE}favicon.svg` }],
-    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '32x32',       'href': `${SITE_BASE}ripperoni.png` }],
-    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '192x192',     'href': `${SITE_BASE}ripperoni.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '32x32',       'href': `${SITE_BASE}favicon-32.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '48x48',       'href': `${SITE_BASE}favicon-48.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '192x192',     'href': `${SITE_BASE}favicon-192.png` }],
     ['link',   { 'rel': 'shortcut icon',                                                   'href': `${SITE_BASE}favicon.svg` }],
-    ['link',   { 'rel': 'apple-touch-icon', 'sizes': '180x180',                            'href': `${SITE_BASE}ripperoni.png` }],
+    ['link',   { 'rel': 'apple-touch-icon', 'sizes': '180x180',                            'href': `${SITE_BASE}favicon-180.png` }],
     ['link',   { 'rel': 'mask-icon',        'color': SITE_THEME_COLOR,                     'href': `${SITE_BASE}favicon.svg` }],
     ['link',   { 'rel': 'manifest',                                                    'href': `${SITE_BASE}manifest.webmanifest` }],
     ['link',   { 'rel': 'sitemap',          'type': 'application/xml',  'href': `${SITE_BASE}sitemap.xml` }],
@@ -172,7 +173,7 @@ export default withMermaid(defineConfig({
     ['meta',   { 'name': 'theme-color',                 'content': SITE_THEME_COLOR }],
     ['meta',   { 'name': 'color-scheme',                'content': 'dark light' }],
     ['meta',   { 'name': 'msapplication-TileColor',     'content': SITE_THEME_COLOR }],
-    ['meta',   { 'name': 'msapplication-TileImage',     'content': `${SITE_BASE}ripperoni.png` }],
+    ['meta',   { 'name': 'msapplication-TileImage',     'content': `${SITE_BASE}favicon-192.png` }],
     ['meta',   { 'name': 'apple-mobile-web-app-capable',           'content': 'yes' }],
     ['meta',   { 'name': 'apple-mobile-web-app-title',             'content': SITE_TITLE }],
     ['meta',   { 'name': 'apple-mobile-web-app-status-bar-style',  'content': 'black-translucent' }],

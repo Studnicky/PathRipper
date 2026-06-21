@@ -110,3 +110,4 @@ docs/.vitepress/dist/
 # Plans are local-only working documents; not published
 docs/plans/
 dist-workers/
+docs/.vitepress/cache/
