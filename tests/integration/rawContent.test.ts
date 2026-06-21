@@ -382,7 +382,7 @@ export function register(dispatcher) {
     await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
 
     const targetDir = join(outDir, 'raw-default');
-    const files = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(files.length === 1, `expected 1 plugin JSON file, got ${files.length.toString()}`);
 
     const parsed = JSON.parse(
@@ -406,14 +406,14 @@ export function register(dispatcher) {
     await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'raw-html', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(await readFile(join(rawDir, rawFiles[0]!), 'utf8'), fixtureHtml, 'raw HTML must match fixture byte-for-byte');
 
     // pluginTaskName undefined (ScatterNode.body.dag, not SingleNode.node in bundle)
     // → JSON at <outDir>/raw-html/<slug>.json directly
     const targetDir = join(outDir, 'raw-html');
-    const jsonFiles = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in raw-html/, got ${jsonFiles.length.toString()}`);
   });
 
@@ -431,11 +431,11 @@ export function register(dispatcher) {
     await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'raw-only', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
 
     const targetFiles = await readdir(join(outDir, 'raw-only'));
-    const jsonFiles   = targetFiles.filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const jsonFiles   = targetFiles.filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.equal(jsonFiles.length, 0, 'no JSON output expected without a plugin step');
   });
 
@@ -452,7 +452,7 @@ export function register(dispatcher) {
 
     // pluginTaskName undefined → JSON at <outDir>/raw-off/<slug>.json
     const targetDir = join(outDir, 'raw-off');
-    const names = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const names = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
 
     const parsed = JSON.parse(
@@ -505,7 +505,7 @@ export function register(dispatcher) {
     // pluginTaskName undefined → JSON at <outDir>/retry-flow/<slug>.json.
     // The passing URL still produces exactly one JSON output.
     const targetDir = join(outDir, 'retry-flow');
-    const files = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.equal(files.length, 1, 'expected exactly one JSON output for the passing URL');
   });
 
@@ -524,12 +524,12 @@ export function register(dispatcher) {
     await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'aonprd', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
     assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html');
 
     const targetDir = join(outDir, 'aonprd');
-    const jsonFiles = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+    const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file, got ${jsonFiles.length.toString()}`);
     assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json');
 

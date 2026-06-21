@@ -188,7 +188,7 @@ describe('AONPRD plugin e2e (local only)', () => {
     const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-e2e-'));
     try {
       const entryDag = DAGDocument.load(readFileSync(SCRAPE_DAG_PATH, 'utf-8'));
-      const absoluteUrls = sample.map((p) => p.startsWith('http') ? p : `https://2e.aonprd.com${p}`);
+      const absoluteUrls = sample.map((path) => path.startsWith('http') ? path : `https://2e.aonprd.com${path}`);
       const state = {
         output:  { basePath: outDir },
         baseUrl: 'https://2e.aonprd.com',
@@ -201,7 +201,7 @@ describe('AONPRD plugin e2e (local only)', () => {
       // aonprd page DAG uses EmbeddedDAGNode (not SingleNode) for aonprd:parse,
       // so pluginTaskName is undefined → JSON lands directly at <outDir>/aonprd/<slug>.json
       const targetDir = resolve(outDir, 'aonprd');
-      const files     = (await readdir(targetDir)).filter((f) => f.endsWith('.json') && f !== 'failures.json');
+      const files     = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
       assert.ok(files.length === sample.length,
         `expected ${sample.length.toString()} JSON files in aonprd/, got ${files.length.toString()}`);
       for (const file of files) {

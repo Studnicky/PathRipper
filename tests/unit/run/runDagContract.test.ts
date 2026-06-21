@@ -75,7 +75,7 @@ describe('runDag native contract (aonprd sprout)', () => {
 
     assert.ok(loaded.has('aonprd'), 'aonprd namespace should have been loaded');
 
-    const registeredDags = dispatcher.listDAGs().map((d) => d.name);
+    const registeredDags = dispatcher.listDAGs().map((dag) => dag.name);
     assert.ok(
       registeredDags.includes('aonprd:page'),
       `aonprd:page DAG must be registered. Got: [${registeredDags.join(', ')}]`,
