@@ -334,6 +334,15 @@ import { RoutedBatchBuilder, Timeout } from ${JSON.stringify(`file://${dagonzerI
 const stubParseNode = {
   name:    'stub:parse',
   outputs: ['success'],
+  outputSchema: {
+    success: {
+      type: 'object',
+      properties: {
+        output: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+      },
+      required: ['output'],
+    },
+  },
   timeout: Timeout.none(),
   async execute(batch) {
     for (const { state } of batch) {

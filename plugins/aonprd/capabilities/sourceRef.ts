@@ -6,7 +6,7 @@
 // re-extraction is gone. `extractCommon` is the sole producer of
 // the source reference list; this capability is a pure projection.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }      from '../../../src/state/ScrapeState.js';
@@ -17,6 +17,16 @@ export type SourceRefOutput = 'success' | 'error';
 class SourceRefNode extends ScalarNode<ScrapeState, SourceRefOutput> {
   public readonly name = 'extract:source-ref';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<SourceRefOutput, SchemaObjectType> {
+    return {
+      // `success` — writes `sources` (SourceRef[]) and `source` ({ book, page, source_id }) metadata keys.
+      // No state.output delta; soft-fails to success with no writes when `aonprdCommon` is absent.
+      success: { type: 'object' },
+      // `error` — never emitted (open-world soft-fail to success); no state delta.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -244,7 +244,7 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
       },
     }),
     ...(workerContainer !== undefined
-      ? { containers: { worker: workerContainer as unknown as DagContainerInterface<ScrapeState> } }
+      ? { containers: { worker: workerContainer as unknown as DagContainerInterface } }
       : {}),
   });
 
@@ -287,6 +287,15 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
   PluginLoader.registerBuiltinNodes(dispatcher);
   await PluginLoader.registerPluginsFromEntry(dispatcher, dag, configDir);
   dispatcher.registerDAG(dag);
+
+  // ── Resolve plugin reconciler and patch services ──────────────────────────
+  // The plugin is now loaded (module cached), so this dynamic import is cheap.
+  // If the plugin exports `reconciler`, patch `holder.current` with it so
+  // `reconcile:identity` picks it up when it runs.
+  const pluginReconciler = await PluginLoader.resolveReconciler(dag, configDir);
+  if (pluginReconciler !== undefined) {
+    holder.current = { ...services, reconciler: pluginReconciler };
+  }
 
   // ── Seed initial state ────────────────────────────────────────────────────
   // When the run state declares an explicit `urls` list, seed `scrapeState.urls`

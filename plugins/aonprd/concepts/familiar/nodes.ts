@@ -1,6 +1,6 @@
 // Familiar capability nodes.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
@@ -22,6 +22,14 @@ export type FamiliarBaseOutput = 'success' | 'error';
 class FamiliarBaseNode extends ScalarNode<ScrapeState, FamiliarBaseOutput> {
   public readonly name = 'extract:familiar-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<FamiliarBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FamiliarBaseSlice fields
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -48,6 +56,14 @@ class FamiliarPrerequisitesNode extends ScalarNode<ScrapeState, FamiliarPrerequi
   public readonly name = 'extract:familiar-prerequisites';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<FamiliarPrerequisitesOutput, SchemaObjectType> {
+    return {
+      // state.output merged with FamiliarPrerequisitesSlice fields
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -72,6 +88,13 @@ export type FinalizeFamiliarOutput = 'success';
 class FinalizeFamiliarNode extends ScalarNode<ScrapeState, FinalizeFamiliarOutput> {
   public readonly name = 'finalize:familiar';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeFamiliarOutput, SchemaObjectType> {
+    return {
+      // setConceptOutput writes fully assembled FamiliarOutput to state.output
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

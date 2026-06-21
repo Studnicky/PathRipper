@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join }    from 'node:path';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import { Logger }               from '../modules/logger/logger.js';
@@ -26,6 +26,13 @@ type HtmlWriteRawOutput = 'success';
 class HtmlWriteRawNodeImpl extends ScalarNode<ScrapeState, HtmlWriteRawOutput, RipperServices> {
   public readonly name = 'html:write-raw';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<HtmlWriteRawOutput, SchemaObjectType> {
+    return {
+      // `success` — raw HTML written to disk; no state delta.
+      success: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

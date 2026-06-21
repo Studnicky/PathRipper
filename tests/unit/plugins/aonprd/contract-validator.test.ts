@@ -9,7 +9,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { NodeInterface, NodeContextType, Batch } from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, Batch, SchemaObjectType } from '@studnicky/dagonizer';
 import { DAGBuilder, DAGError, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 
 import { RipperDagonizer } from '../../../../src/dispatcher/RipperDagonizer.js';
@@ -42,9 +42,10 @@ describe('ContractRegistryValidator integration', () => {
     // Build a minimal DAG that references 'broken:nodeB' which is NOT registered.
     // registerDAG must throw DAGError when it finds an unresolved placement.
     const nodeA: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:     'broken:nodeA',
-      outputs:  ['success'] as const,
-      timeout:  Timeout.none(),
+      name:         'broken:nodeA',
+      outputs:      ['success'] as const,
+      timeout:      Timeout.none(),
+      outputSchema: { success: { type: 'object' } } as Record<'success', SchemaObjectType>,
       async execute(
         batch: Batch<ScrapeState>,
         _ctx:  NodeContextType<RipperServices>,
@@ -56,9 +57,10 @@ describe('ContractRegistryValidator integration', () => {
     const brokenDag = new DAGBuilder('broken-dag-1', '1.0')
       .node('broken:nodeA', nodeA, { success: 'broken:nodeB' })
       .node('broken:nodeB', {
-        name:    'broken:nodeB',
-        outputs: ['done'] as const,
-        timeout: Timeout.none(),
+        name:         'broken:nodeB',
+        outputs:      ['done'] as const,
+        timeout:      Timeout.none(),
+        outputSchema: { done: { type: 'object' } } as Record<'done', SchemaObjectType>,
         async execute(
           batch: Batch<ScrapeState>,
           _ctx:  NodeContextType<RipperServices>,
@@ -89,9 +91,10 @@ describe('ContractRegistryValidator integration', () => {
 
   it('DAG with no registered nodes at all throws DAGError at registerDAG', () => {
     const entryNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:     'unregistered:entry',
-      outputs:  ['success'] as const,
-      timeout:  Timeout.none(),
+      name:         'unregistered:entry',
+      outputs:      ['success'] as const,
+      timeout:      Timeout.none(),
+      outputSchema: { success: { type: 'object' } } as Record<'success', SchemaObjectType>,
       async execute(
         batch: Batch<ScrapeState>,
         _ctx:  NodeContextType<RipperServices>,
@@ -101,9 +104,10 @@ describe('ContractRegistryValidator integration', () => {
     };
 
     const tailNode: NodeInterface<ScrapeState, 'success', RipperServices> = {
-      name:     'unregistered:tail',
-      outputs:  ['success'] as const,
-      timeout:  Timeout.none(),
+      name:         'unregistered:tail',
+      outputs:      ['success'] as const,
+      timeout:      Timeout.none(),
+      outputSchema: { success: { type: 'object' } } as Record<'success', SchemaObjectType>,
       async execute(
         batch: Batch<ScrapeState>,
         _ctx:  NodeContextType<RipperServices>,

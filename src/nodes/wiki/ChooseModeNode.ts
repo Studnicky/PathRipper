@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { MemberResolutionState } from '../../state/MemberResolutionState.js';
 import type { RipperServices }        from '../../services/RipperServices.js';
@@ -27,6 +27,19 @@ type ChooseModeOutput = 'resume-failures' | 'single-category' | 'by-categories' 
 class ChooseModeNodeImpl extends ScalarNode<MemberResolutionState, ChooseModeOutput, RipperServices> {
   public readonly name = 'wiki:choose-mode';
   public readonly outputs = ['resume-failures', 'single-category', 'by-categories', 'all-pages'] as const;
+
+  public override get outputSchema(): Record<ChooseModeOutput, SchemaObjectType> {
+    return {
+      // `resume-failures` — routing decision only; no state delta.
+      'resume-failures':  { type: 'object' },
+      // `single-category` — routing decision only; no state delta.
+      'single-category':  { type: 'object' },
+      // `by-categories`   — routing decision only; no state delta.
+      'by-categories':    { type: 'object' },
+      // `all-pages`       — routing decision only; no state delta.
+      'all-pages':        { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: MemberResolutionState,

@@ -5,7 +5,7 @@
 //
 // bespoke node-folder under nodes/camp-activity/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -188,6 +188,36 @@ class CampActivityBaseNode extends ScalarNode<ScrapeState, CampActivityBaseOutpu
   public readonly name = 'extract:camp-activity-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<CampActivityBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              activity_id:     { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              action_cost:     { type: ['string', 'null'] },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -213,6 +243,28 @@ class CampActivityMechanicsNode extends ScalarNode<ScrapeState, CampActivityMech
   public readonly name = 'extract:camp-activity-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<CampActivityMechanicsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              requirements: { type: ['string', 'null'] },
+              frequency:    { type: ['string', 'null'] },
+              description:  { type: 'string' },
+              outcomes:     { type: 'array', items: { type: 'object' } },
+            },
+            required: ['description', 'outcomes'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -237,6 +289,18 @@ export type FinalizeCampActivityOutput = 'success';
 class FinalizeCampActivityNode extends ScalarNode<ScrapeState, FinalizeCampActivityOutput> {
   public readonly name = 'finalize:camp-activity';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeCampActivityOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

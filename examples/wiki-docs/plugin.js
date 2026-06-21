@@ -11,6 +11,19 @@ const TEMPLATE_MARKER = '{{RipperoniComponent';
 class WikiDocsParseNodeImpl extends ScalarNode {
     name = 'wiki-docs:parse-impl';
     outputs = ['success'];
+    get outputSchema() {
+        return {
+            // `success` — `state.output` is set to either a `ripperoni_component`
+            // object (when the template is found) or a `raw_page` fallback.
+            success: {
+                type: 'object',
+                properties: {
+                    output: { type: 'object' },
+                },
+                required: ['output'],
+            },
+        };
+    }
     async executeOne(state, _context) {
         const wikitext = state.page.wikitext ?? '';
         const title = state.page.title;

@@ -6,7 +6,7 @@
 // re-extraction is gone. `extractCommon` is the sole producer of
 // the harvested section list; this capability is a pure projection.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import { CAPABILITY_OUTPUTS } from '../common.js';
 
 import type { ScrapeState }      from '../../../src/state/ScrapeState.js';
@@ -17,6 +17,16 @@ export type SectionWalkerOutput = 'success' | 'error';
 class SectionWalkerNodeImpl extends ScalarNode<ScrapeState, SectionWalkerOutput> {
   public readonly name = 'extract:section-walker';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<SectionWalkerOutput, SchemaObjectType> {
+    return {
+      // `success` — writes `sections` metadata key: Section[] (array of {heading,level,body_html,body_text,links}).
+      // No state.output delta; soft-fails to success with no writes when `aonprdCommon` is absent.
+      success: { type: 'object' },
+      // `error` — never emitted (open-world soft-fail to success); no state delta.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

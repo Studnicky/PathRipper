@@ -5,8 +5,8 @@
 // can be reused with a non-AON strategy. The finalize node reads the
 // projected `aonprdCommon.sections` / `.sources` that the secondary strategy
 // populated and emits a minimal output shape.
-import { ScalarNode, NodeOutputBuilder }      from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import { ScalarNode, NodeOutputBuilder }                        from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../../aonprd/common.js';
@@ -25,6 +25,20 @@ export interface SampleOutput {
 class FinalizeSampleNodeImpl extends ScalarNode<ScrapeState, 'success'> {
   public readonly name    = 'finalize:sample';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — `state.output` is merged with the assembled `SampleOutput`
+      // object drawn from `aonprdCommon` metadata.
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

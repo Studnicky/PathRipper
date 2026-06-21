@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../state/ScrapeState.js';
 import type { RipperServices } from '../../services/RipperServices.js';
@@ -24,6 +24,25 @@ const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'bas
 class CrawlExhaustedNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
   public readonly name = 'crawl:exhausted';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — `state.crawl.discovered` sorted and capped to maxPages.
+      success: {
+        type: 'object',
+        properties: {
+          crawl: {
+            type: 'object',
+            properties: {
+              discovered: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['discovered'],
+          },
+        },
+        required: ['crawl'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

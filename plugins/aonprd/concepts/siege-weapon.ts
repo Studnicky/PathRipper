@@ -2,7 +2,7 @@
 // SiegeWeapons.aspx pages document large ranged engines with body-resident
 // stat-block fields and operator action definitions.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -449,6 +449,15 @@ class SiegeWeaponBaseNode extends ScalarNode<ScrapeState, SiegeWeaponBaseOutput>
   public readonly name = 'extract:siege-weapon-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SiegeWeaponBaseSlice (url, siege_weapon_id, name, level, rarity, pfs, legacy, alt_edition_url, traits, trait_ids, source, sources)
+      success: { type: 'object' },
+      // `error` — aonprdCommon metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -474,6 +483,15 @@ class SiegeWeaponMechanicsNode extends ScalarNode<ScrapeState, SiegeWeaponMechan
   public readonly name = 'extract:siege-weapon-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SiegeWeaponMechanicsSlice (price, ammunition, usage, space, crew, proficiency, ac, fort, ref, hardness, hp, broken_threshold, immunities, speed)
+      success: { type: 'object' },
+      // `error` — aonprdCommon metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -498,6 +516,19 @@ export type FinalizeSiegeWeaponOutput = 'success';
 class FinalizeSiegeWeaponNode extends ScalarNode<ScrapeState, FinalizeSiegeWeaponOutput> {
   public readonly name = 'finalize:siege-weapon';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SiegeWeaponOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

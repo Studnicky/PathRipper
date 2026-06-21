@@ -3,7 +3,7 @@
 // data including skill refs, four-tier outcome blocks, and
 // trigger/frequency/requirements fields.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -253,6 +253,35 @@ class ActionBaseNodeImpl extends ScalarNode<ScrapeState, ActionBaseOutput> {
   public readonly name = 'extract:action-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ActionBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              action_id:       { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              action_cost:     { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources', 'legacy'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -277,6 +306,31 @@ class ActionEffectNodeImpl extends ScalarNode<ScrapeState, ActionEffectOutput> {
   public readonly name = 'extract:action-effect';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ActionEffectOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              trigger:      { type: ['string', 'null'] },
+              frequency:    { type: ['string', 'null'] },
+              requirements: { type: ['string', 'null'] },
+              cost:         { type: ['string', 'null'] },
+              effect_html:  { type: 'string' },
+              effect_text:  { type: 'string' },
+              outcomes:     { type: 'object' },
+            },
+            required: ['effect_html', 'effect_text', 'outcomes'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -300,6 +354,20 @@ export type FinalizeActionOutput = 'success';
 class FinalizeActionNodeImpl extends ScalarNode<ScrapeState, FinalizeActionOutput> {
   public readonly name = 'finalize:action';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeActionOutput, SchemaObjectType> {
+    return {
+      // `success` — calls setConceptOutput(state, assembled): writes state.output as the complete ActionOutput,
+      // which includes all ActionBaseSlice + ActionEffectSlice fields plus skill, raw_fields, links, meta_description, meta_keywords.
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

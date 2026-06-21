@@ -1,7 +1,7 @@
 //
 // the `legacy: true` flag already carries that signal from title extraction.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -254,6 +254,14 @@ class WeatherHazardBaseNode extends ScalarNode<ScrapeState, WeatherHazardBaseOut
   public readonly name = 'extract:weather-hazard-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with WeatherHazardBaseSlice + WeatherHazardEffectsSlice (url, weather_hazard_id, name, level, rarity, pfs, legacy, traits, source, sources, description, effects)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -281,6 +289,19 @@ export type FinalizeWeatherHazardOutput = 'success';
 class FinalizeWeatherHazardNode extends ScalarNode<ScrapeState, FinalizeWeatherHazardOutput> {
   public readonly name = 'finalize:weather-hazard';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full WeatherHazardOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

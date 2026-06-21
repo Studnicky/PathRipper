@@ -51,6 +51,23 @@ type StubServicesType = Record<string, never>;
 const stubEchoNode: NodeInterface<StubState, string, StubServicesType> = {
   name:    'stub:echo',
   outputs: ['done'],
+  // `done` — `state.output` is set to the echoed page url plus a worker marker.
+  outputSchema: {
+    done: {
+      type: 'object',
+      properties: {
+        output: {
+          type: 'object',
+          properties: {
+            url:              { type: 'string' },
+            processedInWorker: { type: 'boolean' },
+          },
+          required: ['url', 'processedInWorker'],
+        },
+      },
+      required: ['output'],
+    },
+  },
   timeout: Timeout.none(),
   async execute(batch) {
     for (const { state } of batch) {

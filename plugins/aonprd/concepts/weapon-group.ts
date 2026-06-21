@@ -2,7 +2,7 @@
 // Weapon-group pages have well-defined structure; the inlined helpers fully
 // cover the content shape.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -231,6 +231,14 @@ class WeaponGroupBaseNodeImpl extends ScalarNode<ScrapeState, WeaponGroupBaseOut
   public readonly name = 'extract:weapon-group-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with WeaponGroupBaseSlice (url, group_id, name, rarity, pfs, legacy, alt_edition_url, traits, trait_ids, source, sources)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -254,6 +262,14 @@ export type WeaponGroupContentOutput = 'success' | 'error';
 class WeaponGroupContentNodeImpl extends ScalarNode<ScrapeState, WeaponGroupContentOutput> {
   public readonly name = 'extract:weapon-group-content';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with WeaponGroupContentSlice (critical_specialization_html, critical_specialization_text, weapons)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -280,6 +296,13 @@ export type FinalizeWeaponGroupOutput = 'success';
 class FinalizeWeaponGroupNodeImpl extends ScalarNode<ScrapeState, FinalizeWeaponGroupOutput> {
   public readonly name = 'finalize:weapon-group';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with sections, raw_fields, links, body_text, body_html, meta_description, meta_keywords
+      success: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

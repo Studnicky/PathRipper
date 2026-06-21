@@ -42,10 +42,9 @@ type CapabilitySuccessErrorNode = NodeInterface<ScrapeState, 'success' | 'error'
 type CapabilityRouterNode       = NodeInterface<ScrapeState, string, unknown>;
 export type CapabilityNode = CapabilitySuccessOnlyNode | CapabilitySuccessErrorNode | CapabilityRouterNode;
 
-// A capability chain is a plain array of nodes. Chainability (each successor's
-// `hardRequired` ⊆ a predecessor's `produces`) is checked at the type layer via
-// dagonizer's native `ChainableType<A, B>`, and enforced at DAG-construction
-// time by `ContractRegistryValidator` (a `DAGError` on dangling-reads / dead-writes).
+// A capability chain is a plain array of nodes. Wiring is enforced at DAG-construction
+// time by DAGBuilder — a DAGError is thrown at registration when routing is misaligned
+// or a node references an undeclared port.
 
 /**
  * Declarative concept node in the taxonomy.

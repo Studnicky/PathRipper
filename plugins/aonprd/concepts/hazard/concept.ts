@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -22,6 +22,14 @@ export type HazardBaseOutput = 'success' | 'error';
 class HazardBaseNode extends ScalarNode<ScrapeState, HazardBaseOutput> {
   public readonly name = 'extract:hazard-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<HazardBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with HazardBaseSlice fields
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -46,6 +54,14 @@ class HazardDefensesNode extends ScalarNode<ScrapeState, HazardDefensesOutput> {
   public readonly name = 'extract:hazard-defenses';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<HazardDefensesOutput, SchemaObjectType> {
+    return {
+      // state.output merged with HazardDefensesSlice fields
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -68,6 +84,13 @@ export type FinalizeHazardOutput = 'success';
 class FinalizeHazardNode extends ScalarNode<ScrapeState, FinalizeHazardOutput> {
   public readonly name = 'finalize:hazard';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeHazardOutput, SchemaObjectType> {
+    return {
+      // setConceptOutput writes fully assembled HazardOutput to state.output
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

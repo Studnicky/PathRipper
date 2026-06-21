@@ -2,7 +2,7 @@
 // Vehicles.aspx pages document piloted transports with body-resident stat-block
 // fields, piloting checks, and operator action definitions.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -440,6 +440,14 @@ class VehicleBaseNodeImpl extends ScalarNode<ScrapeState, VehicleBaseOutput> {
   public readonly name = 'extract:vehicle-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with VehicleBaseSlice (url, vehicle_id, name, level, rarity, pfs, legacy, alt_edition_url, traits, trait_ids, source, sources)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -464,6 +472,14 @@ class VehicleMechanicsNodeImpl extends ScalarNode<ScrapeState, VehicleMechanicsO
   public readonly name = 'extract:vehicle-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with VehicleMechanicsSlice (price, space, crew, passengers, piloting_checks, ac, fort, ref, hardness, hp, broken_threshold, immunities, weaknesses, speed, collision)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -487,6 +503,19 @@ export type FinalizeVehicleOutput = 'success';
 class FinalizeVehicleNodeImpl extends ScalarNode<ScrapeState, FinalizeVehicleOutput> {
   public readonly name = 'finalize:vehicle';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full VehicleOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

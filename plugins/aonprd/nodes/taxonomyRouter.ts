@@ -5,7 +5,7 @@
 // subsequent `aonprd:concept-dispatch` node can re-route after the shared
 // capability prefix.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { CapabilityNode } from '../taxonomy.js';
@@ -36,6 +36,14 @@ export function makeTaxonomyRouter(
     public readonly name    = 'aonprd:taxonomy-route';
     public readonly outputs = outputs;
 
+    public override get outputSchema(): Record<string, SchemaObjectType> {
+      // Dynamic routing node — port names are concept IDs resolved at compile
+      // time. Routing to any port writes only the `aonprdConceptId` metadata key
+      // (not an enumerable state field), so every port carries the same
+      // open-object contract. Built from `outputs` so the schema covers every
+      // declared port, as the engine requires.
+      return Object.fromEntries(outputs.map((port): [string, SchemaObjectType] => [port, { type: 'object' }]));
+    }
 
     protected override async executeOne(
       state: ScrapeState,
@@ -73,6 +81,12 @@ export function makeConceptDispatch(
     public readonly name    = nodeName;
     public readonly outputs = outputs;
 
+    public override get outputSchema(): Record<string, SchemaObjectType> {
+      // Dynamic dispatch node — port names are concept IDs resolved at compile
+      // time. It only re-emits the stored `aonprdConceptId`; no state delta. Built
+      // from `outputs` so the schema covers every declared port.
+      return Object.fromEntries(outputs.map((port): [string, SchemaObjectType] => [port, { type: 'object' }]));
+    }
 
     protected override async executeOne(
       state: ScrapeState,

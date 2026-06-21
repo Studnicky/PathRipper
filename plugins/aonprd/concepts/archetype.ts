@@ -8,7 +8,7 @@
 // dedication_feat_id) is individually accessible; the introduction slice
 // captures the rules_link cross-reference as a typed field.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 
@@ -446,6 +446,35 @@ class ArchetypeBaseNode extends ScalarNode<ScrapeState, ArchetypeBaseOutput> {
   public readonly name    = 'extract:archetype-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ArchetypeBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              archetype_id:    { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -473,6 +502,27 @@ export type ArchetypeIntroductionOutput = 'success' | 'error';
 class ArchetypeIntroductionNode extends ScalarNode<ScrapeState, ArchetypeIntroductionOutput> {
   public readonly name    = 'extract:archetype-introduction';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<ArchetypeIntroductionOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              introduction:      { type: 'string' },
+              introduction_html: { type: 'string' },
+              rules_link:        { type: ['object', 'null'] },
+            },
+            required: ['introduction', 'introduction_html'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -504,6 +554,27 @@ class ArchetypeFeatsNode extends ScalarNode<ScrapeState, ArchetypeFeatsOutput> {
   public readonly name    = 'extract:archetype-feats';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ArchetypeFeatsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              feats:              { type: 'array', items: { type: 'object' } },
+              feat_ids:           { type: 'array', items: { type: 'integer' } },
+              dedication_feat_id: { type: ['integer', 'null'] },
+            },
+            required: ['feats', 'feat_ids'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -533,6 +604,18 @@ export type FinalizeArchetypeOutput = 'success';
 class FinalizeArchetypeNode extends ScalarNode<ScrapeState, FinalizeArchetypeOutput> {
   public readonly name    = 'finalize:archetype';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeArchetypeOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

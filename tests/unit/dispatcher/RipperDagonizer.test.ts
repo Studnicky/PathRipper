@@ -9,7 +9,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { NodeStateBase, DAGBuilder, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
-import type { NodeInterface, NodeContextType, RoutedBatchType, ExecutionResultType , Batch} from '@studnicky/dagonizer';
+import type { NodeInterface, NodeContextType, RoutedBatchType, ExecutionResultType, Batch, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { RipperDagonizer } from '../../../src/dispatcher/RipperDagonizer.js';
 import { Logger }          from '../../../src/modules/logger/logger.js';
@@ -37,6 +37,7 @@ const noopNode: NodeInterface<MinimalState, 'done', RipperServices> = {
   name:     TEST_NODE_NAME,
   outputs:  ['done'],
   timeout:  Timeout.none(),
+  outputSchema: { done: { type: 'object' } } as Record<'done', SchemaObjectType>,
   async execute(
     batch:    Batch<MinimalState>,
     _context: NodeContextType<RipperServices>,

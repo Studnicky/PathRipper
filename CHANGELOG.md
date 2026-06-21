@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`@studnicky/dagonizer` 0.25 adoption** — upgraded `@studnicky/dagonizer` and `@studnicky/dagonizer-executor-node` 0.24 → 0.25. Every `ScalarNode`/`MonadicNode` now declares the mandatory per-port `outputSchema` contract (a JSON Schema fragment describing the state delta each output port writes); manual `NodeContextType` literals move to `NodeContextBuilder.of(...)`; `DagContainerInterface` is no longer generic.
+- **Resilience layer — failures are first-class, classified, recovered, and reported data.** A site-agnostic set of builtin nodes composed from native dagonizer primitives (retry budget, error ports, embedded sub-DAGs), configured per target:
+  - **`FailurePolicy` + `route:failure`** — `html:fetch` stashes a structured failure context and the `route:failure` node consults a pluggable `FailurePolicy` to route `retry | resolve | capture | expected`. The default policy retries *transient* errors (5xx/429/network) on a bounded self-loop via the native `recordAttempt` budget and captures *permanent* 4xx (404) immediately — no wasted requests. Sits above the per-request `HttpRetryPolicy` as a coarser, flow-visible layer.
+  - **`error:capture`** — projects the `NodeError`s on `state.errors` into `state.output` as an `{ _type: 'error', url, errors }` document that `json:write` persists, so a failing page is inspectable data on disk instead of vanishing into an opaque scatter error partition (otherwise unrecoverable across the worker boundary).
+  - **`reconcile:identity` + `report:crawl-health`** — post-crawl nodes that build an identity index from captured concepts via a fully pluggable `Reconciler` (`prepare(concepts) → index`, `resolveFailure(failure, index)`), reclassify each failure as `capturedElsewhere | missing | dead`, and write a `crawl-health.json` audit manifest (totals + `missing[]` + `capturedElsewhere[]`). The AON reconciler matches a broken cross-category link by its preserved id + originating link text, resolving e.g. the mislinked `Classes.aspx?ID=77` "catfolk" to the captured `Ancestries.aspx?ID=77` ancestry — proving data completeness automatically at scale.
+  - **`resolve:link`** (opt-in) — on `route:failure → resolve`, ordered `LinkResolverStrategy` implementations (`crossLocator` probes sibling categories for the same id; `search`; `canonical`) recover a wrong-locator link and re-fetch the corrected url, bounded by a resolve budget. Dormant unless a target supplies `services.resolve`.
+- **CodeQL static analysis** — `.github/workflows/codeql.yml` runs the `security-extended` query suite over the TypeScript sources on every push/PR to the protected branches and weekly, surfacing findings under Security > Code scanning.
+
+### Fixed
+
+- **Worker-thread DAG assets** — `scripts/copy-dag-assets.mjs` now mirrors `.dag.jsonld` documents into `dist-workers/` (both the `src/` builtins and the `plugins/` documents), not only `dist/`. Without them a `WorkerThreadContainer` crashed on init (`DagHost init failed: ENOENT … crawl-discover.dag.jsonld`), so the parallel (`parallelWorkers: true`) scrape path produced no output. The parallel rip now fetches, parses, and writes correctly.
+
+### Changed
+
+- **Dependency refresh** — `@types/node` 25 → 26, `commander` 14 → 15, `typescript-eslint` 8.59 → 8.61.
+- **Cleared all Dependabot alerts** — `overrides` pin `vite` to `^6.4.3` and `esbuild` to `^0.25.0`, replacing the vulnerable `vite@5`/`esbuild@0.21` that VitePress 1.6.4 pulls transitively. `npm audit` reports zero vulnerabilities; the docs build and dev server both verified on vite 6. These are dev-only (docs toolchain) dependencies and never shipped in `dist/`.
+
 ## [3.1.1] - 2026-06-21
 
 ### Changed

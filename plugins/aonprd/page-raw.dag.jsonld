@@ -89,7 +89,7 @@
       "outputs": {
         "success": "html:write-raw",
         "cached": "html:write-raw",
-        "error": "aonprd-page-raw:failed"
+        "error": "route:failure"
       }
     },
     {
@@ -102,16 +102,51 @@
       }
     },
     {
+      "@id": "urn:noocodex:dag:aonprd:page-raw/node/error:capture",
+      "@type": "SingleNode",
+      "name": "error:capture",
+      "node": "error:capture",
+      "outputs": {
+        "captured": "json:write"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page-raw/node/route:failure",
+      "@type": "SingleNode",
+      "name": "route:failure",
+      "node": "route:failure",
+      "outputs": {
+        "retry": "html:fetch",
+        "resolve": "resolve:link",
+        "capture": "error:capture",
+        "expected": "aonprd-page-raw:completed"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page-raw/node/resolve:link",
+      "@type": "SingleNode",
+      "name": "resolve:link",
+      "node": "resolve:link",
+      "outputs": {
+        "resolved": "html:fetch",
+        "unresolved": "error:capture"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page-raw/node/json:write",
+      "@type": "SingleNode",
+      "name": "json:write",
+      "node": "json:write",
+      "outputs": {
+        "success": "aonprd-page-raw:completed",
+        "skipped": "aonprd-page-raw:completed"
+      }
+    },
+    {
       "@id": "urn:noocodex:dag:aonprd:page-raw/node/aonprd-page-raw:completed",
       "@type": "TerminalNode",
       "name": "aonprd-page-raw:completed",
       "outcome": "completed"
-    },
-    {
-      "@id": "urn:noocodex:dag:aonprd:page-raw/node/aonprd-page-raw:failed",
-      "@type": "TerminalNode",
-      "name": "aonprd-page-raw:failed",
-      "outcome": "failed"
     }
   ]
 }

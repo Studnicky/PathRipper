@@ -3,7 +3,7 @@
 // data; the inlined helpers handle the Members framing section harvest and
 // family identity.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -207,6 +207,13 @@ class MonsterFamilyBaseNode extends ScalarNode<ScrapeState, MonsterFamilyBaseOut
   public readonly name = 'extract:monster-family-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<MonsterFamilyBaseOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -232,6 +239,13 @@ class MonsterFamilyMembersNode extends ScalarNode<ScrapeState, MonsterFamilyMemb
   public readonly name = 'extract:monster-family-members';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<MonsterFamilyMembersOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -256,6 +270,12 @@ export type FinalizeMonsterFamilyOutput = 'success';
 class FinalizeMonsterFamilyNode extends ScalarNode<ScrapeState, FinalizeMonsterFamilyOutput> {
   public readonly name = 'finalize:monster-family';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeMonsterFamilyOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

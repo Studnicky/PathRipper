@@ -2,7 +2,7 @@ import { mkdir, appendFile } from 'node:fs/promises';
 import { dirname, join }     from 'node:path';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { Logger }           from '../modules/logger/logger.js';
 import type { ScrapeState } from '../state/ScrapeState.js';
@@ -29,6 +29,15 @@ type JsonlAppendOutput = 'success' | 'skipped';
 class JsonlAppendNodeImpl extends ScalarNode<ScrapeState, JsonlAppendOutput, RipperServices> {
   public readonly name = 'jsonl:append';
   public readonly outputs = ['success', 'skipped'] as const;
+
+  public override get outputSchema(): Record<JsonlAppendOutput, SchemaObjectType> {
+    return {
+      // `success` — JSONL row appended to disk; no state delta.
+      success: { type: 'object' },
+      // `skipped` — `state.output` was null; no write performed; no state delta.
+      skipped: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

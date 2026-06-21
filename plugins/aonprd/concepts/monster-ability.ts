@@ -3,7 +3,7 @@
 // Frequency / Effect labels plus prose). Adds cross-reference harvest for
 // related MonsterAbilities.aspx links.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -254,6 +254,13 @@ class MonsterAbilityBaseNode extends ScalarNode<ScrapeState, MonsterAbilityBaseO
   public readonly name    = 'extract:monster-ability-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<MonsterAbilityBaseOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -279,6 +286,13 @@ class MonsterAbilityDefinitionNode extends ScalarNode<ScrapeState, MonsterAbilit
   public readonly name    = 'extract:monster-ability-definition';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<MonsterAbilityDefinitionOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -303,6 +317,12 @@ export type FinalizeMonsterAbilityOutput = 'success';
 class FinalizeMonsterAbilityNode extends ScalarNode<ScrapeState, FinalizeMonsterAbilityOutput> {
   public readonly name    = 'finalize:monster-ability';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeMonsterAbilityOutput, SchemaObjectType> {
+    return {
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

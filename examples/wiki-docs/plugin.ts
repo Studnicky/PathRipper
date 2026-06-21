@@ -9,7 +9,7 @@
 import wtf from 'wtf_wikipedia';
 
 import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType, DAGType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, DAGType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { RipperDagonizer } from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../../src/state/ScrapeState.js';
@@ -35,6 +35,20 @@ interface RawPageOutput {
 class WikiDocsParseNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
   public readonly name    = 'wiki-docs:parse-impl';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — `state.output` is set to either a `ripperoni_component`
+      // object (when the template is found) or a `raw_page` fallback.
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state:    ScrapeState,
