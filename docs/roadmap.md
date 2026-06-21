@@ -25,6 +25,7 @@ This roadmap tracks what is shipped and what is planned. The scrape engine runs 
 | `RipperServices` | live | Services bag interface (`src/services/RipperServices.ts`) injected via the proxy-services pattern. |
 | Taxonomic extractor (AONPRD plugin) | live | AONPRD plugin covers 51 concepts. URL-routing DAG dispatches to per-concept embedded DAGs at parse time. |
 | Concept identity via URL | live | Concept identity carried by the URL (e.g. `Feats.aspx`) and typed `<concept>_id` fields on the record. |
+| Resilience layer | live | `FailurePolicy`-routed failures (`retry \| resolve \| capture \| expected`), error-as-data capture (`error:capture` writes `{ _type: 'error' }` docs via `json:write`), post-crawl identity reconciliation (`reconcile:identity` + `ReconcilerInterface`), `crawl-health.json` reporting, and opt-in wrong-locator link resolution (`resolve:link` + `LinkResolverRegistry`). |
 
 ## Shipped (v2.x)
 

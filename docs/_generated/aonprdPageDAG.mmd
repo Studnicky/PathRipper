@@ -4,12 +4,21 @@ flowchart TB
   html_fetch[html:fetch]
   html_fetch -->|success| aonprd_parse
   html_fetch -->|cached| aonprd_parse
-  html_fetch -->|error| aonprd-page_failed
+  html_fetch -->|error| route_failure
   aonprd_parse[[aonprd:parse]]
   aonprd_parse -->|success| json_write
-  aonprd_parse -->|error| aonprd-page_failed
+  aonprd_parse -->|error| error_capture
+  error_capture[error:capture]
+  error_capture -->|captured| json_write
+  route_failure[route:failure]
+  route_failure -->|retry| html_fetch
+  route_failure -->|resolve| resolve_link
+  route_failure -->|capture| error_capture
+  route_failure -->|expected| aonprd-page_completed
+  resolve_link[resolve:link]
+  resolve_link -->|resolved| html_fetch
+  resolve_link -->|unresolved| error_capture
   json_write[json:write]
   json_write -->|success| aonprd-page_completed
   json_write -->|skipped| aonprd-page_completed
   aonprd-page_completed(((aonprd-page:completed)))
-  aonprd-page_failed>aonprd-page:failed]

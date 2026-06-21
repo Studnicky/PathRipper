@@ -71,6 +71,8 @@ Ripperoni executes scrape runs as dagonizer DAGs loaded from committed `.dag.jso
 
 **Result-array contract:** `ScrapeState` carries three terminal result arrays: `succeeded` (first-attempt successes), `recovered` (succeeded on retry), `failedAfterRetry` (failed both). The transient `failed` array is meaningful only mid-run.
 
+**Resilience layer:** `html:fetch` stashes a `FailureContextType` under `LAST_FAILURE_KEY` on failure and emits `error`. The `route:failure` node reads that context, increments the attempt counter, and delegates to `FailurePolicyInterface.classify` — returning `retry` (back-edge to `html:fetch`), `resolve` (on to `resolve:link` for wrong-locator recovery), `capture` (on to `error:capture`), or `expected` (terminal). `error:capture` projects `state.errors` into a `{ _type: 'error', url, errors }` document that `json:write` persists — failures are written data, not silent drops. After the scatter, the orchestration runs `reconcile:identity` (reads all per-page docs, builds a plugin-supplied identity index via `ReconcilerInterface`, classifies each failure `capturedElsewhere | missing | dead`, and writes the verdict back into each error doc) then `report:crawl-health` (writes `<outDir>/<target>/crawl-health.json` with totals and per-classification URL lists). See [Resilience & crawl-health](/usage/resilience) for the full model.
+
 **Registration order is load-bearing:** Node instances must be registered before any DAG that references them; leaf/plugin DAGs before the orchestration DAG that embeds them. `PluginLoader` enforces this ordering automatically.
 
 ### Runner flow
@@ -291,6 +293,24 @@ Visited URLs are tracked in a `Set`. Results are deduplicated and sorted with a 
 | `src/nodes/JsonlAppendNode.ts` | `JsonlAppendNode` | `success \| skipped` |
 | `src/nodes/ValidateSchemaNode.ts` | `ValidateSchemaNode` | `valid \| invalid` |
 | `src/nodes/TerminalNode.ts` | `TerminalNode` | `success` — no-op terminator |
+
+### Resilience nodes (`src/nodes/`)
+
+| File | Exports | Output ports |
+|------|---------|--------------|
+| `src/nodes/RouteFailureNode.ts` | `RouteFailureNode` | `retry \| resolve \| capture \| expected` — policy-driven failure router |
+| `src/nodes/CaptureErrorNode.ts` | `CaptureErrorNode` | `captured` — projects `state.errors` into a `{ _type: 'error' }` doc |
+| `src/nodes/ResolveLinkNode.ts` | `ResolveLinkNode` | `resolved \| unresolved` — opt-in wrong-locator URL recovery |
+| `src/nodes/ReconcileIdentityNode.ts` | `ReconcileIdentityNode` | `done` — post-crawl identity reconciliation; writes verdict into each error doc |
+| `src/nodes/ReportCrawlHealthNode.ts` | `ReportCrawlHealthNode` | `done` — writes `<outDir>/<target>/crawl-health.json` |
+
+### Resilience modules (`src/resilience/`)
+
+| File | Exports | Role |
+|------|---------|------|
+| `src/resilience/FailurePolicy.ts` | `FailurePolicyInterface`, `DefaultFailurePolicy`, `LAST_FAILURE_KEY` | Failure classification contract and default retry-then-capture implementation |
+| `src/resilience/Reconciler.ts` | `ReconcilerInterface`, `DefaultReconciler`, `RECONCILIATION_KEY` | Post-crawl identity reconciliation contract and conservative no-op default |
+| `src/resilience/LinkResolve.ts` | `LinkResolverStrategyInterface`, `LinkResolverRegistry` | Wrong-locator URL recovery strategies (`crossLocator`, `canonical`, `search`) |
 
 ### Link-crawl nodes (`src/nodes/crawl/`)
 
