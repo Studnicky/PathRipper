@@ -149,8 +149,9 @@ describe('builtinNodes', () => {
       const state = buildState();
       state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
-        htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
-        target: { id: TARGET, cfg: { includeRawContent: false } },
+        htmlScraper:       scraper as unknown as RipperServices['htmlScraper'],
+        target:            { id: TARGET, cfg: { includeRawContent: false } },
+        includeRawContent: false,
         outDir,
       });
       await HtmlFetchNode.execute(Batch.of(state), ctx);
@@ -284,7 +285,7 @@ describe('builtinNodes', () => {
         type: 'object', required: ['name'], properties: { name: { type: 'string' } },
       }), 'utf8');
       const state = buildState({ output: { name: 'goblin' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outputSchema: schemaPath, outDir });
       const result     = await ValidateSchemaNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('valid'));
     });
@@ -295,7 +296,7 @@ describe('builtinNodes', () => {
         type: 'object', required: ['name'], properties: { name: { type: 'string' } },
       }), 'utf8');
       const state = buildState({ output: { name: 42 } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outputSchema: schemaPath, outDir });
       const result     = await ValidateSchemaNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('invalid'));
     });

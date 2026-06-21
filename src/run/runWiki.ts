@@ -141,6 +141,13 @@ export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
     }),
   });
 
+  const outputSchemaCfgWiki = typeof targetCfg['outputSchema'] === 'string' && (targetCfg['outputSchema'] as string).length > 0
+    ? targetCfg['outputSchema'] as string
+    : undefined;
+  const onSchemaErrorCfgWiki = (targetCfg['onSchemaError'] === 'halt' || targetCfg['onSchemaError'] === 'skip' || targetCfg['onSchemaError'] === 'warn')
+    ? targetCfg['onSchemaError'] as 'halt' | 'skip' | 'warn'
+    : undefined;
+
   const memberServices: RipperServices = {
     log:         Logger.forComponent('runWiki:memberResolution'),
     cache,
@@ -149,6 +156,9 @@ export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
     outDir:      opts.outDir,
     pluginTaskName,
     splitByTaskName,
+    // Typed config fields — nodes read these instead of target.cfg[key].
+    ...(outputSchemaCfgWiki !== undefined  ? { outputSchema:  outputSchemaCfgWiki  } : {}),
+    ...(onSchemaErrorCfgWiki !== undefined ? { onSchemaError: onSchemaErrorCfgWiki } : {}),
     dispatcher:  memberDispatcher as unknown as DagonizerInterface<ScrapeState, RipperServices>,
   };
   memberServicesHolder.current = memberServices;
@@ -236,6 +246,9 @@ export async function runWiki(opts: ScrapeWikiOptionsType): ScrapeWikiResult {
       outDir:         opts.outDir,
       pluginTaskName,
       splitByTaskName,
+      // Typed config fields — nodes read these instead of target.cfg[key].
+      ...(outputSchemaCfgWiki !== undefined  ? { outputSchema:  outputSchemaCfgWiki  } : {}),
+      ...(onSchemaErrorCfgWiki !== undefined ? { onSchemaError: onSchemaErrorCfgWiki } : {}),
       dispatcher:     batchDispatcher as unknown as DagonizerInterface<ScrapeState, RipperServices>,
     };
     batchHolder.current = batchServices;

@@ -7,23 +7,12 @@ import { toNodeError }          from './fileUtils.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
 import type { RipperServices }  from '../services/RipperServices.js';
 
-/** Crawler config block from `target.cfg.crawler`. */
-type CrawlerBlockType = {
-  readonly startUrls:    ReadonlyArray<string>;
-  readonly domain:       string;
-  readonly target:       string;
-  readonly delimiter:    string;
-  readonly rateLimitMs?: number;
-  readonly jitterMs?:    number;
-  readonly maxPages?:    number;
-};
-
 const log = Logger.forComponent('CrawlListTargetsNode');
 
 type CrawlListTargetsOutput = 'success' | 'error' | 'empty';
 
 /**
- * Walks `services.target.cfg.crawler` seeds via `LinkLister` and writes
+ * Walks `services.crawler` seeds via `LinkLister` and writes
  * discovered URLs into `state.urls`.
  *
  * Output ports:
@@ -43,7 +32,7 @@ class CrawlListTargetsNodeImpl extends ScalarNode<ScrapeState, CrawlListTargetsO
     context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<CrawlListTargetsOutput>> {
     const { services } = context;
-    const crawler = services.target.cfg['crawler'] as CrawlerBlockType | undefined;
+    const crawler = services.crawler;
     if (crawler === undefined) {
       state.collectError(toNodeError(
         ExternalSchemaError.create('crawl:list-targets requires a `crawler` block in target config', { metadata: { target: services.target.id, task: 'crawl:list-targets' } }),
@@ -60,7 +49,7 @@ class CrawlListTargetsNodeImpl extends ScalarNode<ScrapeState, CrawlListTargetsO
     }
 
     const { LinkLister } = await import('../crawlers/LinkLister.js');
-    const headers = services.target.cfg['headers'] as Record<string, string> | undefined;
+    const headers = services.headers;
     const lister = LinkLister.create({
       domain:    new RegExp(crawler.domain),
       target:    new RegExp(crawler.target),

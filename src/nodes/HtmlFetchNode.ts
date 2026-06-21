@@ -68,7 +68,7 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
       return NodeOutputBuilder.of('error');
     }
 
-    const includeRaw = services.target.cfg['includeRawContent'] !== false;
+    const includeRaw = services.includeRawContent !== false;
     const raw: RawContentType | undefined = includeRaw
       ? { contentType: 'text/html', content: result.html, fetchedAt: new Date().toISOString() }
       : undefined;

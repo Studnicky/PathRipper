@@ -18,6 +18,7 @@ import type { MediaWikiScraper }  from '../scrapers/MediaWikiScraper.js';
 import type { Logger }            from '../modules/logger/logger.js';
 import type { ScraperCache }      from '../modules/cache/ScraperCache.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
+import type { RunCrawlerType }    from '../types/RunState.js';
 
 /**
  * Shared services injected into every node via `context.services`.
@@ -42,6 +43,35 @@ export type RipperServices = {
   readonly target:         { id: string; cfg: Record<string, unknown> };
   /** Output base directory. */
   readonly outDir:         string;
+  /**
+   * Typed crawler block. Present when a crawler is configured for this run.
+   * Nodes read this instead of `target.cfg['crawler']`.
+   */
+  readonly crawler?:       RunCrawlerType | undefined;
+  /**
+   * Additional HTTP request headers for this run.
+   * Nodes read this instead of `target.cfg['headers']`.
+   */
+  readonly headers?:       Record<string, string> | undefined;
+  /**
+   * When `false`, raw HTTP response bodies are NOT stored alongside output.
+   * Defaults to `true` when absent.
+   * Nodes read this instead of `target.cfg['includeRawContent']`.
+   */
+  readonly includeRawContent?: boolean | undefined;
+  /**
+   * Filesystem path to a JSON Schema file for validating pipeline output records.
+   * Absent when no schema validation is configured.
+   * Nodes read this instead of `target.cfg['outputSchema']`.
+   */
+  readonly outputSchema?:  string | undefined;
+  /**
+   * Governs behaviour when a pipeline output record fails `outputSchema` validation.
+   * `halt` aborts the run; `skip` drops the record; `warn` logs and continues.
+   * Absent when `outputSchema` is not set.
+   * Nodes read this instead of `target.cfg['onSchemaError']`.
+   */
+  readonly onSchemaError?: 'halt' | 'skip' | 'warn' | undefined;
   /** Name of the first non-built-in pipeline step (plugin), if any. */
   readonly pluginTaskName?:  string | undefined;
   /**

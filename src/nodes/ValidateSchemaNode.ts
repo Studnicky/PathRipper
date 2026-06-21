@@ -57,7 +57,7 @@ const compileSchema = async (schemaPath: string): Promise<ValidateFunction<unkno
 type ValidateSchemaOutput = 'valid' | 'invalid';
 
 /**
- * Validates `state.output` against the JSON schema at `services.target.cfg.outputSchema`.
+ * Validates `state.output` against the JSON schema at `services.outputSchema`.
  * No-op when `outputSchema` is unset.
  *
  * Output ports:
@@ -76,14 +76,9 @@ class ValidateSchemaNodeImpl extends ScalarNode<ScrapeState, ValidateSchemaOutpu
     context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<ValidateSchemaOutput>> {
     const { services } = context;
-    const schemaPath = services.target.cfg['outputSchema'];
+    const schemaPath = services.outputSchema;
     if (schemaPath === undefined) {
       return NodeOutputBuilder.of('valid');
-    }
-    if (typeof schemaPath !== 'string' || schemaPath.length === 0) {
-      throw ExternalSchemaError.create('validate:schema requires target.cfg.outputSchema to be a non-empty string', {
-        metadata: { task: 'validate:schema', received: typeof schemaPath },
-      });
     }
 
     const validator = await compileSchema(schemaPath);

@@ -41,6 +41,7 @@ import { HtmlScraper }                from '../scrapers/HtmlScraper.js';
 import { ScrapeState }                from '../state/ScrapeState.js';
 import type { ScrapeHtmlOptionsType, FailuresManifestType } from '../types/RipperRun.js';
 import type { ScrapeHtmlResult }       from '../types/Results.js';
+import type { RunCrawlerType }         from '../types/RunState.js';
 
 import { buildHtmlPageFlow, htmlPageFlowName } from '../flows/htmlPageFlow.js';
 import { PluginLoader }                from './PluginLoader.js';
@@ -212,6 +213,18 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
     ...(containers !== undefined ? { containers } : {}),
   });
 
+  const crawlerCfg = targetCfg['crawler'] as RunCrawlerType | undefined;
+  const headersCfg = targetCfg['headers'] as Record<string, string> | undefined;
+  const includeRawContentCfg = typeof targetCfg['includeRawContent'] === 'boolean'
+    ? targetCfg['includeRawContent'] as boolean
+    : undefined;
+  const outputSchemaCfg = typeof targetCfg['outputSchema'] === 'string' && (targetCfg['outputSchema'] as string).length > 0
+    ? targetCfg['outputSchema'] as string
+    : undefined;
+  const onSchemaErrorCfg = (targetCfg['onSchemaError'] === 'halt' || targetCfg['onSchemaError'] === 'skip' || targetCfg['onSchemaError'] === 'warn')
+    ? targetCfg['onSchemaError'] as 'halt' | 'skip' | 'warn'
+    : undefined;
+
   const services: RipperServices = {
     log:            Logger.forComponent('runHtml'),
     cache,
@@ -220,6 +233,12 @@ export async function runHtml(opts: ScrapeHtmlOptionsType): ScrapeHtmlResult {
     outDir:         opts.outDir,
     pluginTaskName,
     splitByTaskName,
+    // Typed config fields — nodes read these instead of target.cfg[key].
+    ...(crawlerCfg !== undefined          ? { crawler:           crawlerCfg }           : {}),
+    ...(headersCfg !== undefined          ? { headers:           headersCfg }           : {}),
+    ...(includeRawContentCfg !== undefined ? { includeRawContent: includeRawContentCfg } : {}),
+    ...(outputSchemaCfg !== undefined     ? { outputSchema:      outputSchemaCfg }      : {}),
+    ...(onSchemaErrorCfg !== undefined    ? { onSchemaError:     onSchemaErrorCfg }     : {}),
     dispatcher:     dispatcher as unknown as DagonizerInterface<ScrapeState, RipperServices>,
   };
   holder.current = services;

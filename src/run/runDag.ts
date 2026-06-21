@@ -187,6 +187,12 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
     outDir,
     pluginTaskName,
     splitByTaskName,
+    // Typed config fields — nodes read these instead of target.cfg[key].
+    ...(state.crawler !== undefined           ? { crawler:            state.crawler }                     : {}),
+    ...(state.headers !== undefined           ? { headers:            state.headers as Record<string, string> } : {}),
+    ...(state.includeRawContent !== undefined ? { includeRawContent:  state.includeRawContent }           : {}),
+    ...(state.outputSchema !== undefined      ? { outputSchema:       state.outputSchema }                : {}),
+    ...(state.onSchemaError !== undefined     ? { onSchemaError:      state.onSchemaError }               : {}),
     dispatcher:     dispatcher as unknown as DagonizerInterface<ScrapeState, RipperServices>,
   };
   holder.current = services;
