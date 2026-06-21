@@ -1,0 +1,2699 @@
+[
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:htmlPageDAG:aonprd",
+    "@type": "DAG",
+    "name": "htmlPageDAG:aonprd",
+    "version": "2.0",
+    "entrypoint": "html:fetch",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:htmlPageDAG:aonprd/node/html:fetch",
+        "@type": "SingleNode",
+        "name": "html:fetch",
+        "node": "html:fetch",
+        "outputs": {
+          "success": "aonprd:parse",
+          "cached": "aonprd:parse",
+          "error": "htmlPage:failed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlPageDAG:aonprd/node/aonprd:parse",
+        "@type": "EmbeddedDAGNode",
+        "name": "aonprd:parse",
+        "dag": "aonprd:parse",
+        "outputs": {
+          "success": "json:write",
+          "error": "htmlPage:failed"
+        },
+        "stateMapping": {
+          "input": {
+            "page": "page"
+          },
+          "output": {
+            "output": "output"
+          }
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlPageDAG:aonprd/node/json:write",
+        "@type": "SingleNode",
+        "name": "json:write",
+        "node": "json:write",
+        "outputs": {
+          "success": "htmlPage:completed",
+          "skipped": "htmlPage:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlPageDAG:aonprd/node/htmlPage:completed",
+        "@type": "TerminalNode",
+        "name": "htmlPage:completed",
+        "outcome": "completed"
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlPageDAG:aonprd/node/htmlPage:failed",
+        "@type": "TerminalNode",
+        "name": "htmlPage:failed",
+        "outcome": "failed"
+      }
+    ]
+  },
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:htmlCrawlPhase",
+    "@type": "DAG",
+    "name": "htmlCrawlPhase",
+    "version": "2.0",
+    "entrypoint": "crawl:list-targets",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:htmlCrawlPhase/node/crawl:list-targets",
+        "@type": "SingleNode",
+        "name": "crawl:list-targets",
+        "node": "crawl:list-targets",
+        "outputs": {
+          "success": "phase-done",
+          "error": "phase-done",
+          "empty": "phase-done"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlCrawlPhase/node/phase-done",
+        "@type": "TerminalNode",
+        "name": "phase-done",
+        "outcome": "completed"
+      }
+    ]
+  },
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:htmlScrapePhase",
+    "@type": "DAG",
+    "name": "htmlScrapePhase",
+    "version": "2.0",
+    "entrypoint": "scrape-urls",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:htmlScrapePhase/node/scrape-urls",
+        "@type": "ScatterNode",
+        "name": "scrape-urls",
+        "source": "urls",
+        "body": {
+          "dag": "htmlPageDAG:aonprd"
+        },
+        "gather": {
+          "strategy": "partition",
+          "partitions": {
+            "success": "succeeded",
+            "error": "failed"
+          }
+        },
+        "outputs": {
+          "all-success": "phase-done",
+          "partial": "phase-done",
+          "all-error": "phase-done",
+          "empty": "phase-done"
+        },
+        "itemKey": "currentUrl",
+        "reducer": "aggregate",
+        "concurrency": 4
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlScrapePhase/node/phase-done",
+        "@type": "TerminalNode",
+        "name": "phase-done",
+        "outcome": "completed"
+      }
+    ]
+  },
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:htmlRetryPhase",
+    "@type": "DAG",
+    "name": "htmlRetryPhase",
+    "version": "2.0",
+    "entrypoint": "retry-urls",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:htmlRetryPhase/node/retry-urls",
+        "@type": "ScatterNode",
+        "name": "retry-urls",
+        "source": "failed",
+        "body": {
+          "dag": "htmlPageDAG:aonprd"
+        },
+        "gather": {
+          "strategy": "partition",
+          "partitions": {
+            "success": "recovered",
+            "error": "failedAfterRetry"
+          }
+        },
+        "outputs": {
+          "all-success": "phase-done",
+          "partial": "phase-done",
+          "all-error": "phase-done",
+          "empty": "phase-done"
+        },
+        "itemKey": "currentUrl",
+        "reducer": "aggregate",
+        "concurrency": 4
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlRetryPhase/node/phase-done",
+        "@type": "TerminalNode",
+        "name": "phase-done",
+        "outcome": "completed"
+      }
+    ]
+  },
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:aonprd:parse",
+    "@type": "DAG",
+    "name": "aonprd:parse",
+    "version": "3.0",
+    "entrypoint": "aonprd:taxonomy-route",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:taxonomy-route",
+        "@type": "SingleNode",
+        "name": "aonprd:taxonomy-route",
+        "node": "aonprd:taxonomy-route",
+        "outputs": {
+          "language": "aonprd:load-and-common",
+          "plane": "aonprd:load-and-common",
+          "contributor": "aonprd:load-and-common",
+          "weapon-group": "aonprd:load-and-common",
+          "armor-group": "aonprd:load-and-common",
+          "article": "aonprd:load-and-common",
+          "condition": "aonprd:load-and-common",
+          "trait": "aonprd:load-and-common",
+          "action": "aonprd:load-and-common",
+          "hazard": "aonprd:load-and-common",
+          "weather-hazard": "aonprd:load-and-common",
+          "weapon": "aonprd:load-and-common",
+          "armor": "aonprd:load-and-common",
+          "equipment": "aonprd:load-and-common",
+          "relic": "aonprd:load-and-common",
+          "set-relic": "aonprd:load-and-common",
+          "siege-weapon": "aonprd:load-and-common",
+          "vehicle": "aonprd:load-and-common",
+          "familiar": "aonprd:load-and-common",
+          "monster": "aonprd:load-and-common",
+          "animal-companion": "aonprd:load-and-common",
+          "monster-ability": "aonprd:load-and-common",
+          "monster-template": "aonprd:load-and-common",
+          "monster-family": "aonprd:load-and-common",
+          "curse": "aonprd:load-and-common",
+          "disease": "aonprd:load-and-common",
+          "domain": "aonprd:load-and-common",
+          "source": "aonprd:load-and-common",
+          "ancestry": "aonprd:load-and-common",
+          "background": "aonprd:load-and-common",
+          "class": "aonprd:load-and-common",
+          "class-sample": "aonprd:load-and-common",
+          "class-kit": "aonprd:load-and-common",
+          "npc-theme-template": "aonprd:load-and-common",
+          "feat": "aonprd:load-and-common",
+          "skill": "aonprd:load-and-common",
+          "archetype": "aonprd:load-and-common",
+          "subclass-feature": "aonprd:load-and-common",
+          "spell": "aonprd:load-and-common",
+          "ritual": "aonprd:load-and-common",
+          "deity": "aonprd:load-and-common",
+          "deity-category": "aonprd:load-and-common",
+          "rule": "aonprd:load-and-common",
+          "km-structure": "aonprd:load-and-common",
+          "km-event": "aonprd:load-and-common",
+          "tactic": "aonprd:load-and-common",
+          "camp-meal": "aonprd:load-and-common",
+          "camp-activity": "aonprd:load-and-common",
+          "km-war-tactic": "aonprd:load-and-common",
+          "km-war-army": "aonprd:load-and-common",
+          "generic": "aonprd:load-and-common",
+          "unknown": "aonprd:unknown-end"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:load-and-common",
+        "@type": "SingleNode",
+        "name": "aonprd:load-and-common",
+        "node": "aonprd:load-and-common",
+        "outputs": {
+          "success": "aonprd:concept-dispatch-after:aonprd:load-and-common",
+          "error": "aonprd:concept-dispatch-after:aonprd:load-and-common"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:label-pair-block",
+        "@type": "SingleNode",
+        "name": "extract:label-pair-block",
+        "node": "extract:label-pair-block",
+        "outputs": {
+          "success": "extract:section-walker",
+          "error": "extract:section-walker"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:section-walker",
+        "@type": "SingleNode",
+        "name": "extract:section-walker",
+        "node": "extract:section-walker",
+        "outputs": {
+          "success": "extract:source-ref",
+          "error": "extract:source-ref"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:source-ref",
+        "@type": "SingleNode",
+        "name": "extract:source-ref",
+        "node": "extract:source-ref",
+        "outputs": {
+          "success": "extract:meta-tags",
+          "error": "extract:meta-tags"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:meta-tags",
+        "@type": "SingleNode",
+        "name": "extract:meta-tags",
+        "node": "extract:meta-tags",
+        "outputs": {
+          "success": "extract:saving-throw"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:saving-throw",
+        "@type": "SingleNode",
+        "name": "extract:saving-throw",
+        "node": "extract:saving-throw",
+        "outputs": {
+          "success": "aonprd:concept-dispatch-after:extract:saving-throw"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:language-base",
+        "@type": "SingleNode",
+        "name": "extract:language-base",
+        "node": "extract:language-base",
+        "outputs": {
+          "success": "extract:language-description",
+          "error": "extract:language-description"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:language-description",
+        "@type": "SingleNode",
+        "name": "extract:language-description",
+        "node": "extract:language-description",
+        "outputs": {
+          "success": "extract:language-speakers",
+          "error": "extract:language-speakers"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:language-speakers",
+        "@type": "SingleNode",
+        "name": "extract:language-speakers",
+        "node": "extract:language-speakers",
+        "outputs": {
+          "success": "extract:language-pfs-note",
+          "error": "extract:language-pfs-note"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:language-pfs-note",
+        "@type": "SingleNode",
+        "name": "extract:language-pfs-note",
+        "node": "extract:language-pfs-note",
+        "outputs": {
+          "success": "finalize:language",
+          "error": "finalize:language"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:language",
+        "@type": "SingleNode",
+        "name": "finalize:language",
+        "node": "finalize:language",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:plane-base",
+        "@type": "SingleNode",
+        "name": "extract:plane-base",
+        "node": "extract:plane-base",
+        "outputs": {
+          "success": "extract:plane-characteristics",
+          "error": "extract:plane-characteristics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:plane-characteristics",
+        "@type": "SingleNode",
+        "name": "extract:plane-characteristics",
+        "node": "extract:plane-characteristics",
+        "outputs": {
+          "success": "finalize:plane",
+          "error": "finalize:plane"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:plane",
+        "@type": "SingleNode",
+        "name": "finalize:plane",
+        "node": "finalize:plane",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:contributor-base",
+        "@type": "SingleNode",
+        "name": "extract:contributor-base",
+        "node": "extract:contributor-base",
+        "outputs": {
+          "success": "extract:contributor-profile",
+          "error": "extract:contributor-profile"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:contributor-profile",
+        "@type": "SingleNode",
+        "name": "extract:contributor-profile",
+        "node": "extract:contributor-profile",
+        "outputs": {
+          "success": "finalize:contributor",
+          "error": "finalize:contributor"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:contributor",
+        "@type": "SingleNode",
+        "name": "finalize:contributor",
+        "node": "finalize:contributor",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:weapon-group-base",
+        "@type": "SingleNode",
+        "name": "extract:weapon-group-base",
+        "node": "extract:weapon-group-base",
+        "outputs": {
+          "success": "extract:weapon-group-content",
+          "error": "extract:weapon-group-content"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:weapon-group-content",
+        "@type": "SingleNode",
+        "name": "extract:weapon-group-content",
+        "node": "extract:weapon-group-content",
+        "outputs": {
+          "success": "finalize:weapon-group",
+          "error": "finalize:weapon-group"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:weapon-group",
+        "@type": "SingleNode",
+        "name": "finalize:weapon-group",
+        "node": "finalize:weapon-group",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:armor-group-base",
+        "@type": "SingleNode",
+        "name": "extract:armor-group-base",
+        "node": "extract:armor-group-base",
+        "outputs": {
+          "success": "extract:armor-group-content",
+          "error": "extract:armor-group-content"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:armor-group-content",
+        "@type": "SingleNode",
+        "name": "extract:armor-group-content",
+        "node": "extract:armor-group-content",
+        "outputs": {
+          "success": "finalize:armor-group",
+          "error": "finalize:armor-group"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:armor-group",
+        "@type": "SingleNode",
+        "name": "finalize:armor-group",
+        "node": "finalize:armor-group",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:article-base",
+        "@type": "SingleNode",
+        "name": "extract:article-base",
+        "node": "extract:article-base",
+        "outputs": {
+          "success": "finalize:article",
+          "error": "finalize:article"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:article",
+        "@type": "SingleNode",
+        "name": "finalize:article",
+        "node": "finalize:article",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:condition-base",
+        "@type": "SingleNode",
+        "name": "extract:condition-base",
+        "node": "extract:condition-base",
+        "outputs": {
+          "success": "finalize:condition",
+          "error": "finalize:condition"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:condition",
+        "@type": "SingleNode",
+        "name": "finalize:condition",
+        "node": "finalize:condition",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:trait-base",
+        "@type": "SingleNode",
+        "name": "extract:trait-base",
+        "node": "extract:trait-base",
+        "outputs": {
+          "success": "finalize:trait",
+          "error": "finalize:trait"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:trait",
+        "@type": "SingleNode",
+        "name": "finalize:trait",
+        "node": "finalize:trait",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:action-base",
+        "@type": "SingleNode",
+        "name": "extract:action-base",
+        "node": "extract:action-base",
+        "outputs": {
+          "success": "extract:action-effect",
+          "error": "extract:action-effect"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:action-effect",
+        "@type": "SingleNode",
+        "name": "extract:action-effect",
+        "node": "extract:action-effect",
+        "outputs": {
+          "success": "finalize:action",
+          "error": "finalize:action"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:action",
+        "@type": "SingleNode",
+        "name": "finalize:action",
+        "node": "finalize:action",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:hazard-base",
+        "@type": "SingleNode",
+        "name": "extract:hazard-base",
+        "node": "extract:hazard-base",
+        "outputs": {
+          "success": "extract:hazard-defenses",
+          "error": "extract:hazard-defenses"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:hazard-defenses",
+        "@type": "SingleNode",
+        "name": "extract:hazard-defenses",
+        "node": "extract:hazard-defenses",
+        "outputs": {
+          "success": "finalize:hazard",
+          "error": "finalize:hazard"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:hazard",
+        "@type": "SingleNode",
+        "name": "finalize:hazard",
+        "node": "finalize:hazard",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:weather-hazard-base",
+        "@type": "SingleNode",
+        "name": "extract:weather-hazard-base",
+        "node": "extract:weather-hazard-base",
+        "outputs": {
+          "success": "finalize:weather-hazard",
+          "error": "finalize:weather-hazard"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:weather-hazard",
+        "@type": "SingleNode",
+        "name": "finalize:weather-hazard",
+        "node": "finalize:weather-hazard",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:weapon-base",
+        "@type": "SingleNode",
+        "name": "extract:weapon-base",
+        "node": "extract:weapon-base",
+        "outputs": {
+          "success": "extract:weapon-mechanics",
+          "error": "extract:weapon-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:weapon-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:weapon-mechanics",
+        "node": "extract:weapon-mechanics",
+        "outputs": {
+          "success": "finalize:weapon",
+          "error": "finalize:weapon"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:weapon",
+        "@type": "SingleNode",
+        "name": "finalize:weapon",
+        "node": "finalize:weapon",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:armor-base",
+        "@type": "SingleNode",
+        "name": "extract:armor-base",
+        "node": "extract:armor-base",
+        "outputs": {
+          "success": "extract:armor-mechanics",
+          "error": "extract:armor-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:armor-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:armor-mechanics",
+        "node": "extract:armor-mechanics",
+        "outputs": {
+          "success": "finalize:armor",
+          "error": "finalize:armor"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:armor",
+        "@type": "SingleNode",
+        "name": "finalize:armor",
+        "node": "finalize:armor",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:equipment-base",
+        "@type": "SingleNode",
+        "name": "extract:equipment-base",
+        "node": "extract:equipment-base",
+        "outputs": {
+          "success": "extract:equipment-mechanics",
+          "error": "extract:equipment-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:equipment-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:equipment-mechanics",
+        "node": "extract:equipment-mechanics",
+        "outputs": {
+          "success": "finalize:equipment",
+          "error": "finalize:equipment"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:equipment",
+        "@type": "SingleNode",
+        "name": "finalize:equipment",
+        "node": "finalize:equipment",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:relic-base",
+        "@type": "SingleNode",
+        "name": "extract:relic-base",
+        "node": "extract:relic-base",
+        "outputs": {
+          "success": "extract:relic-gift",
+          "error": "extract:relic-gift"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:relic-gift",
+        "@type": "SingleNode",
+        "name": "extract:relic-gift",
+        "node": "extract:relic-gift",
+        "outputs": {
+          "success": "finalize:relic",
+          "error": "finalize:relic"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:relic",
+        "@type": "SingleNode",
+        "name": "finalize:relic",
+        "node": "finalize:relic",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:set-relic-base",
+        "@type": "SingleNode",
+        "name": "extract:set-relic-base",
+        "node": "extract:set-relic-base",
+        "outputs": {
+          "success": "extract:set-relic-components",
+          "error": "extract:set-relic-components"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:set-relic-components",
+        "@type": "SingleNode",
+        "name": "extract:set-relic-components",
+        "node": "extract:set-relic-components",
+        "outputs": {
+          "success": "finalize:set-relic",
+          "error": "finalize:set-relic"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:set-relic",
+        "@type": "SingleNode",
+        "name": "finalize:set-relic",
+        "node": "finalize:set-relic",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:siege-weapon-base",
+        "@type": "SingleNode",
+        "name": "extract:siege-weapon-base",
+        "node": "extract:siege-weapon-base",
+        "outputs": {
+          "success": "extract:siege-weapon-mechanics",
+          "error": "extract:siege-weapon-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:siege-weapon-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:siege-weapon-mechanics",
+        "node": "extract:siege-weapon-mechanics",
+        "outputs": {
+          "success": "finalize:siege-weapon",
+          "error": "finalize:siege-weapon"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:siege-weapon",
+        "@type": "SingleNode",
+        "name": "finalize:siege-weapon",
+        "node": "finalize:siege-weapon",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:vehicle-base",
+        "@type": "SingleNode",
+        "name": "extract:vehicle-base",
+        "node": "extract:vehicle-base",
+        "outputs": {
+          "success": "extract:vehicle-mechanics",
+          "error": "extract:vehicle-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:vehicle-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:vehicle-mechanics",
+        "node": "extract:vehicle-mechanics",
+        "outputs": {
+          "success": "finalize:vehicle",
+          "error": "finalize:vehicle"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:vehicle",
+        "@type": "SingleNode",
+        "name": "finalize:vehicle",
+        "node": "finalize:vehicle",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:familiar-base",
+        "@type": "SingleNode",
+        "name": "extract:familiar-base",
+        "node": "extract:familiar-base",
+        "outputs": {
+          "success": "extract:familiar-prerequisites",
+          "error": "extract:familiar-prerequisites"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:familiar-prerequisites",
+        "@type": "SingleNode",
+        "name": "extract:familiar-prerequisites",
+        "node": "extract:familiar-prerequisites",
+        "outputs": {
+          "success": "finalize:familiar",
+          "error": "finalize:familiar"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:familiar",
+        "@type": "SingleNode",
+        "name": "finalize:familiar",
+        "node": "finalize:familiar",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-base",
+        "@type": "SingleNode",
+        "name": "extract:monster-base",
+        "node": "extract:monster-base",
+        "outputs": {
+          "success": "extract:monster-defenses",
+          "error": "extract:monster-defenses"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-defenses",
+        "@type": "SingleNode",
+        "name": "extract:monster-defenses",
+        "node": "extract:monster-defenses",
+        "outputs": {
+          "success": "extract:monster-offense",
+          "error": "extract:monster-offense"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-offense",
+        "@type": "SingleNode",
+        "name": "extract:monster-offense",
+        "node": "extract:monster-offense",
+        "outputs": {
+          "success": "extract:monster-abilities",
+          "error": "extract:monster-abilities"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-abilities",
+        "@type": "SingleNode",
+        "name": "extract:monster-abilities",
+        "node": "extract:monster-abilities",
+        "outputs": {
+          "success": "extract:monster-meta",
+          "error": "extract:monster-meta"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-meta",
+        "@type": "SingleNode",
+        "name": "extract:monster-meta",
+        "node": "extract:monster-meta",
+        "outputs": {
+          "success": "finalize:monster",
+          "error": "finalize:monster"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:monster",
+        "@type": "SingleNode",
+        "name": "finalize:monster",
+        "node": "finalize:monster",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:animal-companion-base",
+        "@type": "SingleNode",
+        "name": "extract:animal-companion-base",
+        "node": "extract:animal-companion-base",
+        "outputs": {
+          "success": "extract:animal-companion-stats",
+          "error": "extract:animal-companion-stats"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:animal-companion-stats",
+        "@type": "SingleNode",
+        "name": "extract:animal-companion-stats",
+        "node": "extract:animal-companion-stats",
+        "outputs": {
+          "success": "extract:animal-companion-combat",
+          "error": "extract:animal-companion-combat"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:animal-companion-combat",
+        "@type": "SingleNode",
+        "name": "extract:animal-companion-combat",
+        "node": "extract:animal-companion-combat",
+        "outputs": {
+          "success": "extract:animal-companion-advancement",
+          "error": "extract:animal-companion-advancement"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:animal-companion-advancement",
+        "@type": "SingleNode",
+        "name": "extract:animal-companion-advancement",
+        "node": "extract:animal-companion-advancement",
+        "outputs": {
+          "success": "finalize:animal-companion",
+          "error": "finalize:animal-companion"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:animal-companion",
+        "@type": "SingleNode",
+        "name": "finalize:animal-companion",
+        "node": "finalize:animal-companion",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-ability-base",
+        "@type": "SingleNode",
+        "name": "extract:monster-ability-base",
+        "node": "extract:monster-ability-base",
+        "outputs": {
+          "success": "extract:monster-ability-definition",
+          "error": "extract:monster-ability-definition"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-ability-definition",
+        "@type": "SingleNode",
+        "name": "extract:monster-ability-definition",
+        "node": "extract:monster-ability-definition",
+        "outputs": {
+          "success": "finalize:monster-ability",
+          "error": "finalize:monster-ability"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:monster-ability",
+        "@type": "SingleNode",
+        "name": "finalize:monster-ability",
+        "node": "finalize:monster-ability",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-template-base",
+        "@type": "SingleNode",
+        "name": "extract:monster-template-base",
+        "node": "extract:monster-template-base",
+        "outputs": {
+          "success": "extract:monster-template-modifications",
+          "error": "extract:monster-template-modifications"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-template-modifications",
+        "@type": "SingleNode",
+        "name": "extract:monster-template-modifications",
+        "node": "extract:monster-template-modifications",
+        "outputs": {
+          "success": "finalize:monster-template",
+          "error": "finalize:monster-template"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:monster-template",
+        "@type": "SingleNode",
+        "name": "finalize:monster-template",
+        "node": "finalize:monster-template",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-family-base",
+        "@type": "SingleNode",
+        "name": "extract:monster-family-base",
+        "node": "extract:monster-family-base",
+        "outputs": {
+          "success": "extract:monster-family-members",
+          "error": "extract:monster-family-members"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:monster-family-members",
+        "@type": "SingleNode",
+        "name": "extract:monster-family-members",
+        "node": "extract:monster-family-members",
+        "outputs": {
+          "success": "finalize:monster-family",
+          "error": "finalize:monster-family"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:monster-family",
+        "@type": "SingleNode",
+        "name": "finalize:monster-family",
+        "node": "finalize:monster-family",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:curse-base",
+        "@type": "SingleNode",
+        "name": "extract:curse-base",
+        "node": "extract:curse-base",
+        "outputs": {
+          "success": "extract:curse-mechanics",
+          "error": "extract:curse-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:curse-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:curse-mechanics",
+        "node": "extract:curse-mechanics",
+        "outputs": {
+          "success": "extract:curse-stages",
+          "error": "extract:curse-stages"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:curse-stages",
+        "@type": "SingleNode",
+        "name": "extract:curse-stages",
+        "node": "extract:curse-stages",
+        "outputs": {
+          "success": "finalize:curse",
+          "error": "finalize:curse"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:curse",
+        "@type": "SingleNode",
+        "name": "finalize:curse",
+        "node": "finalize:curse",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:disease-base",
+        "@type": "SingleNode",
+        "name": "extract:disease-base",
+        "node": "extract:disease-base",
+        "outputs": {
+          "success": "extract:disease-mechanics",
+          "error": "extract:disease-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:disease-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:disease-mechanics",
+        "node": "extract:disease-mechanics",
+        "outputs": {
+          "success": "extract:disease-stages",
+          "error": "extract:disease-stages"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:disease-stages",
+        "@type": "SingleNode",
+        "name": "extract:disease-stages",
+        "node": "extract:disease-stages",
+        "outputs": {
+          "success": "finalize:disease",
+          "error": "finalize:disease"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:disease",
+        "@type": "SingleNode",
+        "name": "finalize:disease",
+        "node": "finalize:disease",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:domain-base",
+        "@type": "SingleNode",
+        "name": "extract:domain-base",
+        "node": "extract:domain-base",
+        "outputs": {
+          "success": "extract:domain-spells",
+          "error": "extract:domain-spells"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:domain-spells",
+        "@type": "SingleNode",
+        "name": "extract:domain-spells",
+        "node": "extract:domain-spells",
+        "outputs": {
+          "success": "extract:domain-meta",
+          "error": "extract:domain-meta"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:domain-meta",
+        "@type": "SingleNode",
+        "name": "extract:domain-meta",
+        "node": "extract:domain-meta",
+        "outputs": {
+          "success": "finalize:domain",
+          "error": "finalize:domain"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:domain",
+        "@type": "SingleNode",
+        "name": "finalize:domain",
+        "node": "finalize:domain",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:source-base",
+        "@type": "SingleNode",
+        "name": "extract:source-base",
+        "node": "extract:source-base",
+        "outputs": {
+          "success": "extract:source-metadata",
+          "error": "extract:source-metadata"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:source-metadata",
+        "@type": "SingleNode",
+        "name": "extract:source-metadata",
+        "node": "extract:source-metadata",
+        "outputs": {
+          "success": "extract:source-related",
+          "error": "extract:source-related"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:source-related",
+        "@type": "SingleNode",
+        "name": "extract:source-related",
+        "node": "extract:source-related",
+        "outputs": {
+          "success": "finalize:source",
+          "error": "finalize:source"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:source",
+        "@type": "SingleNode",
+        "name": "finalize:source",
+        "node": "finalize:source",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ancestry-base",
+        "@type": "SingleNode",
+        "name": "extract:ancestry-base",
+        "node": "extract:ancestry-base",
+        "outputs": {
+          "success": "extract:ancestry-heritages",
+          "error": "extract:ancestry-heritages"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ancestry-heritages",
+        "@type": "SingleNode",
+        "name": "extract:ancestry-heritages",
+        "node": "extract:ancestry-heritages",
+        "outputs": {
+          "success": "extract:ancestry-features",
+          "error": "extract:ancestry-features"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ancestry-features",
+        "@type": "SingleNode",
+        "name": "extract:ancestry-features",
+        "node": "extract:ancestry-features",
+        "outputs": {
+          "success": "finalize:ancestry",
+          "error": "finalize:ancestry"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:ancestry",
+        "@type": "SingleNode",
+        "name": "finalize:ancestry",
+        "node": "finalize:ancestry",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:background-base",
+        "@type": "SingleNode",
+        "name": "extract:background-base",
+        "node": "extract:background-base",
+        "outputs": {
+          "success": "extract:background-benefits",
+          "error": "extract:background-benefits"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:background-benefits",
+        "@type": "SingleNode",
+        "name": "extract:background-benefits",
+        "node": "extract:background-benefits",
+        "outputs": {
+          "success": "finalize:background",
+          "error": "finalize:background"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:background",
+        "@type": "SingleNode",
+        "name": "finalize:background",
+        "node": "finalize:background",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-base",
+        "@type": "SingleNode",
+        "name": "extract:class-base",
+        "node": "extract:class-base",
+        "outputs": {
+          "success": "extract:class-progression",
+          "error": "extract:class-progression"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-progression",
+        "@type": "SingleNode",
+        "name": "extract:class-progression",
+        "node": "extract:class-progression",
+        "outputs": {
+          "success": "extract:class-subclasses",
+          "error": "extract:class-subclasses"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-subclasses",
+        "@type": "SingleNode",
+        "name": "extract:class-subclasses",
+        "node": "extract:class-subclasses",
+        "outputs": {
+          "success": "finalize:class",
+          "error": "finalize:class"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:class",
+        "@type": "SingleNode",
+        "name": "finalize:class",
+        "node": "finalize:class",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-sample-base",
+        "@type": "SingleNode",
+        "name": "extract:class-sample-base",
+        "node": "extract:class-sample-base",
+        "outputs": {
+          "success": "extract:class-sample-identity",
+          "error": "extract:class-sample-identity"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-sample-identity",
+        "@type": "SingleNode",
+        "name": "extract:class-sample-identity",
+        "node": "extract:class-sample-identity",
+        "outputs": {
+          "success": "extract:class-sample-build",
+          "error": "extract:class-sample-build"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-sample-build",
+        "@type": "SingleNode",
+        "name": "extract:class-sample-build",
+        "node": "extract:class-sample-build",
+        "outputs": {
+          "success": "finalize:class-sample",
+          "error": "finalize:class-sample"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:class-sample",
+        "@type": "SingleNode",
+        "name": "finalize:class-sample",
+        "node": "finalize:class-sample",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-kit-base",
+        "@type": "SingleNode",
+        "name": "extract:class-kit-base",
+        "node": "extract:class-kit-base",
+        "outputs": {
+          "success": "extract:class-kit-contents",
+          "error": "extract:class-kit-contents"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:class-kit-contents",
+        "@type": "SingleNode",
+        "name": "extract:class-kit-contents",
+        "node": "extract:class-kit-contents",
+        "outputs": {
+          "success": "finalize:class-kit",
+          "error": "finalize:class-kit"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:class-kit",
+        "@type": "SingleNode",
+        "name": "finalize:class-kit",
+        "node": "finalize:class-kit",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:npc-theme-template-base",
+        "@type": "SingleNode",
+        "name": "extract:npc-theme-template-base",
+        "node": "extract:npc-theme-template-base",
+        "outputs": {
+          "success": "extract:npc-theme-template-traits-mods",
+          "error": "extract:npc-theme-template-traits-mods"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:npc-theme-template-traits-mods",
+        "@type": "SingleNode",
+        "name": "extract:npc-theme-template-traits-mods",
+        "node": "extract:npc-theme-template-traits-mods",
+        "outputs": {
+          "success": "finalize:npc-theme-template",
+          "error": "finalize:npc-theme-template"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:npc-theme-template",
+        "@type": "SingleNode",
+        "name": "finalize:npc-theme-template",
+        "node": "finalize:npc-theme-template",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:feat-base",
+        "@type": "SingleNode",
+        "name": "extract:feat-base",
+        "node": "extract:feat-base",
+        "outputs": {
+          "success": "extract:feat-prerequisites",
+          "error": "extract:feat-prerequisites"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:feat-prerequisites",
+        "@type": "SingleNode",
+        "name": "extract:feat-prerequisites",
+        "node": "extract:feat-prerequisites",
+        "outputs": {
+          "success": "extract:feat-effect",
+          "error": "extract:feat-effect"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:feat-effect",
+        "@type": "SingleNode",
+        "name": "extract:feat-effect",
+        "node": "extract:feat-effect",
+        "outputs": {
+          "success": "extract:feat-meta",
+          "error": "extract:feat-meta"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:feat-meta",
+        "@type": "SingleNode",
+        "name": "extract:feat-meta",
+        "node": "extract:feat-meta",
+        "outputs": {
+          "success": "finalize:feat",
+          "error": "finalize:feat"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:feat",
+        "@type": "SingleNode",
+        "name": "finalize:feat",
+        "node": "finalize:feat",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:skill-base",
+        "@type": "SingleNode",
+        "name": "extract:skill-base",
+        "node": "extract:skill-base",
+        "outputs": {
+          "success": "extract:skill-actions",
+          "error": "extract:skill-actions"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:skill-actions",
+        "@type": "SingleNode",
+        "name": "extract:skill-actions",
+        "node": "extract:skill-actions",
+        "outputs": {
+          "success": "extract:skill-proficiency-tiers",
+          "error": "extract:skill-proficiency-tiers"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:skill-proficiency-tiers",
+        "@type": "SingleNode",
+        "name": "extract:skill-proficiency-tiers",
+        "node": "extract:skill-proficiency-tiers",
+        "outputs": {
+          "success": "finalize:skill",
+          "error": "finalize:skill"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:skill",
+        "@type": "SingleNode",
+        "name": "finalize:skill",
+        "node": "finalize:skill",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:archetype-base",
+        "@type": "SingleNode",
+        "name": "extract:archetype-base",
+        "node": "extract:archetype-base",
+        "outputs": {
+          "success": "extract:archetype-introduction",
+          "error": "extract:archetype-introduction"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:archetype-introduction",
+        "@type": "SingleNode",
+        "name": "extract:archetype-introduction",
+        "node": "extract:archetype-introduction",
+        "outputs": {
+          "success": "extract:archetype-feats",
+          "error": "extract:archetype-feats"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:archetype-feats",
+        "@type": "SingleNode",
+        "name": "extract:archetype-feats",
+        "node": "extract:archetype-feats",
+        "outputs": {
+          "success": "finalize:archetype",
+          "error": "finalize:archetype"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:archetype",
+        "@type": "SingleNode",
+        "name": "finalize:archetype",
+        "node": "finalize:archetype",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:subclass-feature-base",
+        "@type": "SingleNode",
+        "name": "extract:subclass-feature-base",
+        "node": "extract:subclass-feature-base",
+        "outputs": {
+          "success": "extract:subclass-feature-fields",
+          "error": "extract:subclass-feature-fields"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:subclass-feature-fields",
+        "@type": "SingleNode",
+        "name": "extract:subclass-feature-fields",
+        "node": "extract:subclass-feature-fields",
+        "outputs": {
+          "success": "extract:subclass-feature-spells",
+          "error": "extract:subclass-feature-spells"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:subclass-feature-spells",
+        "@type": "SingleNode",
+        "name": "extract:subclass-feature-spells",
+        "node": "extract:subclass-feature-spells",
+        "outputs": {
+          "success": "extract:subclass-feature-features",
+          "error": "extract:subclass-feature-features"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:subclass-feature-features",
+        "@type": "SingleNode",
+        "name": "extract:subclass-feature-features",
+        "node": "extract:subclass-feature-features",
+        "outputs": {
+          "success": "finalize:subclass-feature",
+          "error": "finalize:subclass-feature"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:subclass-feature",
+        "@type": "SingleNode",
+        "name": "finalize:subclass-feature",
+        "node": "finalize:subclass-feature",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-base",
+        "@type": "SingleNode",
+        "name": "extract:spell-base",
+        "node": "extract:spell-base",
+        "outputs": {
+          "success": "extract:spell-cast",
+          "error": "extract:spell-cast"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-cast",
+        "@type": "SingleNode",
+        "name": "extract:spell-cast",
+        "node": "extract:spell-cast",
+        "outputs": {
+          "success": "extract:spell-outcomes",
+          "error": "extract:spell-outcomes"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-outcomes",
+        "@type": "SingleNode",
+        "name": "extract:spell-outcomes",
+        "node": "extract:spell-outcomes",
+        "outputs": {
+          "success": "extract:spell-affliction",
+          "error": "extract:spell-affliction"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-affliction",
+        "@type": "SingleNode",
+        "name": "extract:spell-affliction",
+        "node": "extract:spell-affliction",
+        "outputs": {
+          "success": "extract:spell-heightened",
+          "error": "extract:spell-heightened"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-heightened",
+        "@type": "SingleNode",
+        "name": "extract:spell-heightened",
+        "node": "extract:spell-heightened",
+        "outputs": {
+          "success": "extract:spell-meta",
+          "error": "extract:spell-meta"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:spell-meta",
+        "@type": "SingleNode",
+        "name": "extract:spell-meta",
+        "node": "extract:spell-meta",
+        "outputs": {
+          "success": "finalize:spell",
+          "error": "finalize:spell"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:spell",
+        "@type": "SingleNode",
+        "name": "finalize:spell",
+        "node": "finalize:spell",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-base",
+        "@type": "SingleNode",
+        "name": "extract:ritual-base",
+        "node": "extract:ritual-base",
+        "outputs": {
+          "success": "extract:ritual-cast",
+          "error": "extract:ritual-cast"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-cast",
+        "@type": "SingleNode",
+        "name": "extract:ritual-cast",
+        "node": "extract:ritual-cast",
+        "outputs": {
+          "success": "extract:ritual-outcomes",
+          "error": "extract:ritual-outcomes"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-outcomes",
+        "@type": "SingleNode",
+        "name": "extract:ritual-outcomes",
+        "node": "extract:ritual-outcomes",
+        "outputs": {
+          "success": "extract:ritual-affliction",
+          "error": "extract:ritual-affliction"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-affliction",
+        "@type": "SingleNode",
+        "name": "extract:ritual-affliction",
+        "node": "extract:ritual-affliction",
+        "outputs": {
+          "success": "extract:ritual-heightened",
+          "error": "extract:ritual-heightened"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-heightened",
+        "@type": "SingleNode",
+        "name": "extract:ritual-heightened",
+        "node": "extract:ritual-heightened",
+        "outputs": {
+          "success": "extract:ritual-meta",
+          "error": "extract:ritual-meta"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:ritual-meta",
+        "@type": "SingleNode",
+        "name": "extract:ritual-meta",
+        "node": "extract:ritual-meta",
+        "outputs": {
+          "success": "finalize:ritual",
+          "error": "finalize:ritual"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:ritual",
+        "@type": "SingleNode",
+        "name": "finalize:ritual",
+        "node": "finalize:ritual",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-base",
+        "@type": "SingleNode",
+        "name": "extract:deity-base",
+        "node": "extract:deity-base",
+        "outputs": {
+          "success": "extract:deity-devotee-benefits",
+          "error": "extract:deity-devotee-benefits"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-devotee-benefits",
+        "@type": "SingleNode",
+        "name": "extract:deity-devotee-benefits",
+        "node": "extract:deity-devotee-benefits",
+        "outputs": {
+          "success": "extract:deity-edicts-anathema",
+          "error": "extract:deity-edicts-anathema"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-edicts-anathema",
+        "@type": "SingleNode",
+        "name": "extract:deity-edicts-anathema",
+        "node": "extract:deity-edicts-anathema",
+        "outputs": {
+          "success": "extract:deity-cleric-spells",
+          "error": "extract:deity-cleric-spells"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-cleric-spells",
+        "@type": "SingleNode",
+        "name": "extract:deity-cleric-spells",
+        "node": "extract:deity-cleric-spells",
+        "outputs": {
+          "success": "extract:deity-relationships",
+          "error": "extract:deity-relationships"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-relationships",
+        "@type": "SingleNode",
+        "name": "extract:deity-relationships",
+        "node": "extract:deity-relationships",
+        "outputs": {
+          "success": "finalize:deity",
+          "error": "finalize:deity"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:deity",
+        "@type": "SingleNode",
+        "name": "finalize:deity",
+        "node": "finalize:deity",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-category-base",
+        "@type": "SingleNode",
+        "name": "extract:deity-category-base",
+        "node": "extract:deity-category-base",
+        "outputs": {
+          "success": "extract:deity-category-members",
+          "error": "extract:deity-category-members"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-category-members",
+        "@type": "SingleNode",
+        "name": "extract:deity-category-members",
+        "node": "extract:deity-category-members",
+        "outputs": {
+          "success": "extract:deity-category-aspects",
+          "error": "extract:deity-category-aspects"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:deity-category-aspects",
+        "@type": "SingleNode",
+        "name": "extract:deity-category-aspects",
+        "node": "extract:deity-category-aspects",
+        "outputs": {
+          "success": "finalize:deity-category",
+          "error": "finalize:deity-category"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:deity-category",
+        "@type": "SingleNode",
+        "name": "finalize:deity-category",
+        "node": "finalize:deity-category",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:rule-base",
+        "@type": "SingleNode",
+        "name": "extract:rule-base",
+        "node": "extract:rule-base",
+        "outputs": {
+          "success": "extract:rule-subsections",
+          "error": "extract:rule-subsections"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:rule-subsections",
+        "@type": "SingleNode",
+        "name": "extract:rule-subsections",
+        "node": "extract:rule-subsections",
+        "outputs": {
+          "success": "finalize:rule",
+          "error": "finalize:rule"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:rule",
+        "@type": "SingleNode",
+        "name": "finalize:rule",
+        "node": "finalize:rule",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-structure-base",
+        "@type": "SingleNode",
+        "name": "extract:km-structure-base",
+        "node": "extract:km-structure-base",
+        "outputs": {
+          "success": "extract:km-structure-mechanics",
+          "error": "extract:km-structure-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-structure-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:km-structure-mechanics",
+        "node": "extract:km-structure-mechanics",
+        "outputs": {
+          "success": "finalize:km-structure",
+          "error": "finalize:km-structure"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:km-structure",
+        "@type": "SingleNode",
+        "name": "finalize:km-structure",
+        "node": "finalize:km-structure",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-event-base",
+        "@type": "SingleNode",
+        "name": "extract:km-event-base",
+        "node": "extract:km-event-base",
+        "outputs": {
+          "success": "extract:km-event-mechanics",
+          "error": "extract:km-event-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-event-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:km-event-mechanics",
+        "node": "extract:km-event-mechanics",
+        "outputs": {
+          "success": "finalize:km-event",
+          "error": "finalize:km-event"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:km-event",
+        "@type": "SingleNode",
+        "name": "finalize:km-event",
+        "node": "finalize:km-event",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:tactic-base",
+        "@type": "SingleNode",
+        "name": "extract:tactic-base",
+        "node": "extract:tactic-base",
+        "outputs": {
+          "success": "extract:tactic-mechanics",
+          "error": "extract:tactic-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:tactic-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:tactic-mechanics",
+        "node": "extract:tactic-mechanics",
+        "outputs": {
+          "success": "finalize:tactic",
+          "error": "finalize:tactic"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:tactic",
+        "@type": "SingleNode",
+        "name": "finalize:tactic",
+        "node": "finalize:tactic",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:camp-meal-base",
+        "@type": "SingleNode",
+        "name": "extract:camp-meal-base",
+        "node": "extract:camp-meal-base",
+        "outputs": {
+          "success": "extract:camp-meal-mechanics",
+          "error": "extract:camp-meal-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:camp-meal-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:camp-meal-mechanics",
+        "node": "extract:camp-meal-mechanics",
+        "outputs": {
+          "success": "finalize:camp-meal",
+          "error": "finalize:camp-meal"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:camp-meal",
+        "@type": "SingleNode",
+        "name": "finalize:camp-meal",
+        "node": "finalize:camp-meal",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:camp-activity-base",
+        "@type": "SingleNode",
+        "name": "extract:camp-activity-base",
+        "node": "extract:camp-activity-base",
+        "outputs": {
+          "success": "extract:camp-activity-mechanics",
+          "error": "extract:camp-activity-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:camp-activity-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:camp-activity-mechanics",
+        "node": "extract:camp-activity-mechanics",
+        "outputs": {
+          "success": "finalize:camp-activity",
+          "error": "finalize:camp-activity"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:camp-activity",
+        "@type": "SingleNode",
+        "name": "finalize:camp-activity",
+        "node": "finalize:camp-activity",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-war-tactic-base",
+        "@type": "SingleNode",
+        "name": "extract:km-war-tactic-base",
+        "node": "extract:km-war-tactic-base",
+        "outputs": {
+          "success": "extract:km-war-tactic-mechanics",
+          "error": "extract:km-war-tactic-mechanics"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-war-tactic-mechanics",
+        "@type": "SingleNode",
+        "name": "extract:km-war-tactic-mechanics",
+        "node": "extract:km-war-tactic-mechanics",
+        "outputs": {
+          "success": "finalize:km-war-tactic",
+          "error": "finalize:km-war-tactic"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:km-war-tactic",
+        "@type": "SingleNode",
+        "name": "finalize:km-war-tactic",
+        "node": "finalize:km-war-tactic",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-war-army-base",
+        "@type": "SingleNode",
+        "name": "extract:km-war-army-base",
+        "node": "extract:km-war-army-base",
+        "outputs": {
+          "success": "extract:km-war-army-statblock",
+          "error": "extract:km-war-army-statblock"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-war-army-statblock",
+        "@type": "SingleNode",
+        "name": "extract:km-war-army-statblock",
+        "node": "extract:km-war-army-statblock",
+        "outputs": {
+          "success": "extract:km-war-army-abilities",
+          "error": "extract:km-war-army-abilities"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:km-war-army-abilities",
+        "@type": "SingleNode",
+        "name": "extract:km-war-army-abilities",
+        "node": "extract:km-war-army-abilities",
+        "outputs": {
+          "success": "finalize:km-war-army",
+          "error": "finalize:km-war-army"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/finalize:km-war-army",
+        "@type": "SingleNode",
+        "name": "finalize:km-war-army",
+        "node": "finalize:km-war-army",
+        "outputs": {
+          "success": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/extract:generic",
+        "@type": "SingleNode",
+        "name": "extract:generic",
+        "node": "extract:generic",
+        "outputs": {
+          "success": "aonprd:completed",
+          "error": "aonprd:completed"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:concept-dispatch-after:aonprd:load-and-common",
+        "@type": "SingleNode",
+        "name": "aonprd:concept-dispatch-after:aonprd:load-and-common",
+        "node": "aonprd:concept-dispatch-after:aonprd:load-and-common",
+        "outputs": {
+          "language": "extract:label-pair-block",
+          "plane": "extract:label-pair-block",
+          "contributor": "extract:label-pair-block",
+          "weapon-group": "extract:label-pair-block",
+          "armor-group": "extract:label-pair-block",
+          "article": "extract:label-pair-block",
+          "condition": "extract:label-pair-block",
+          "trait": "extract:label-pair-block",
+          "action": "extract:label-pair-block",
+          "hazard": "extract:label-pair-block",
+          "weather-hazard": "extract:label-pair-block",
+          "weapon": "extract:label-pair-block",
+          "armor": "extract:label-pair-block",
+          "equipment": "extract:label-pair-block",
+          "relic": "extract:label-pair-block",
+          "set-relic": "extract:label-pair-block",
+          "siege-weapon": "extract:label-pair-block",
+          "vehicle": "extract:label-pair-block",
+          "familiar": "extract:label-pair-block",
+          "monster": "extract:label-pair-block",
+          "animal-companion": "extract:label-pair-block",
+          "monster-ability": "extract:label-pair-block",
+          "monster-template": "extract:label-pair-block",
+          "monster-family": "extract:label-pair-block",
+          "curse": "extract:label-pair-block",
+          "disease": "extract:label-pair-block",
+          "domain": "extract:label-pair-block",
+          "source": "extract:label-pair-block",
+          "ancestry": "extract:label-pair-block",
+          "background": "extract:label-pair-block",
+          "class": "extract:label-pair-block",
+          "class-sample": "extract:label-pair-block",
+          "class-kit": "extract:label-pair-block",
+          "npc-theme-template": "extract:label-pair-block",
+          "feat": "extract:label-pair-block",
+          "skill": "extract:label-pair-block",
+          "archetype": "extract:label-pair-block",
+          "subclass-feature": "extract:label-pair-block",
+          "spell": "extract:label-pair-block",
+          "ritual": "extract:label-pair-block",
+          "deity": "extract:label-pair-block",
+          "deity-category": "extract:label-pair-block",
+          "rule": "extract:rule-base",
+          "km-structure": "extract:label-pair-block",
+          "km-event": "extract:label-pair-block",
+          "tactic": "extract:label-pair-block",
+          "camp-meal": "extract:label-pair-block",
+          "camp-activity": "extract:label-pair-block",
+          "km-war-tactic": "extract:label-pair-block",
+          "km-war-army": "extract:label-pair-block",
+          "unknown": "aonprd:unknown-end"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:concept-dispatch-after:extract:saving-throw",
+        "@type": "SingleNode",
+        "name": "aonprd:concept-dispatch-after:extract:saving-throw",
+        "node": "aonprd:concept-dispatch-after:extract:saving-throw",
+        "outputs": {
+          "language": "extract:language-base",
+          "plane": "extract:plane-base",
+          "contributor": "extract:contributor-base",
+          "weapon-group": "extract:weapon-group-base",
+          "armor-group": "extract:armor-group-base",
+          "article": "extract:article-base",
+          "condition": "extract:condition-base",
+          "trait": "extract:trait-base",
+          "action": "extract:action-base",
+          "hazard": "extract:hazard-base",
+          "weather-hazard": "extract:weather-hazard-base",
+          "weapon": "extract:weapon-base",
+          "armor": "extract:armor-base",
+          "equipment": "extract:equipment-base",
+          "relic": "extract:relic-base",
+          "set-relic": "extract:set-relic-base",
+          "siege-weapon": "extract:siege-weapon-base",
+          "vehicle": "extract:vehicle-base",
+          "familiar": "extract:familiar-base",
+          "monster": "extract:monster-base",
+          "animal-companion": "extract:animal-companion-base",
+          "monster-ability": "extract:monster-ability-base",
+          "monster-template": "extract:monster-template-base",
+          "monster-family": "extract:monster-family-base",
+          "curse": "extract:curse-base",
+          "disease": "extract:disease-base",
+          "domain": "extract:domain-base",
+          "source": "extract:source-base",
+          "ancestry": "extract:ancestry-base",
+          "background": "extract:background-base",
+          "class": "extract:class-base",
+          "class-sample": "extract:class-sample-base",
+          "class-kit": "extract:class-kit-base",
+          "npc-theme-template": "extract:npc-theme-template-base",
+          "feat": "extract:feat-base",
+          "skill": "extract:skill-base",
+          "archetype": "extract:archetype-base",
+          "subclass-feature": "extract:subclass-feature-base",
+          "spell": "extract:spell-base",
+          "ritual": "extract:ritual-base",
+          "deity": "extract:deity-base",
+          "deity-category": "extract:deity-category-base",
+          "rule": "aonprd:completed",
+          "km-structure": "extract:km-structure-base",
+          "km-event": "extract:km-event-base",
+          "tactic": "extract:tactic-base",
+          "camp-meal": "extract:camp-meal-base",
+          "camp-activity": "extract:camp-activity-base",
+          "km-war-tactic": "extract:km-war-tactic-base",
+          "km-war-army": "extract:km-war-army-base",
+          "unknown": "aonprd:unknown-end"
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:unknown-end",
+        "@type": "TerminalNode",
+        "name": "aonprd:unknown-end",
+        "outcome": "completed"
+      },
+      {
+        "@id": "urn:noocodex:dag:aonprd:parse/node/aonprd:completed",
+        "@type": "TerminalNode",
+        "name": "aonprd:completed",
+        "outcome": "completed"
+      }
+    ]
+  },
+  {
+    "@context": {
+      "@version": 1.1,
+      "name": {
+        "@id": "https://noocodex.dev/ontology/dag/name"
+      },
+      "version": {
+        "@id": "https://noocodex.dev/ontology/dag/version"
+      },
+      "entrypoint": {
+        "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+      },
+      "nodes": {
+        "@id": "https://noocodex.dev/ontology/dag/nodes",
+        "@container": "@set"
+      },
+      "outputs": {
+        "@id": "https://noocodex.dev/ontology/dag/outputs"
+      },
+      "node": {
+        "@id": "https://noocodex.dev/ontology/dag/node"
+      },
+      "dag": {
+        "@id": "https://noocodex.dev/ontology/dag/dag"
+      },
+      "body": {
+        "@id": "https://noocodex.dev/ontology/dag/body"
+      },
+      "source": {
+        "@id": "https://noocodex.dev/ontology/dag/source"
+      },
+      "itemKey": {
+        "@id": "https://noocodex.dev/ontology/dag/itemKey"
+      },
+      "concurrency": {
+        "@id": "https://noocodex.dev/ontology/dag/concurrency"
+      },
+      "gather": {
+        "@id": "https://noocodex.dev/ontology/dag/gather"
+      },
+      "reducer": {
+        "@id": "https://noocodex.dev/ontology/dag/reducer"
+      },
+      "outcome": {
+        "@id": "https://noocodex.dev/ontology/dag/outcome"
+      },
+      "phase": {
+        "@id": "https://noocodex.dev/ontology/dag/phase"
+      },
+      "stateMapping": {
+        "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+      },
+      "container": {
+        "@id": "https://noocodex.dev/ontology/dag/container"
+      },
+      "DAG": {
+        "@id": "https://noocodex.dev/ontology/dag/DAG"
+      },
+      "Placement": {
+        "@id": "https://noocodex.dev/ontology/dag/Placement"
+      },
+      "SingleNode": {
+        "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+      },
+      "ScatterNode": {
+        "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+      },
+      "EmbeddedDAGNode": {
+        "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+      },
+      "TerminalNode": {
+        "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+      },
+      "PhaseNode": {
+        "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+      }
+    },
+    "@id": "urn:noocodex:dag:htmlScrapeDAGCrawl",
+    "@type": "DAG",
+    "name": "htmlScrapeDAGCrawl",
+    "version": "2.0",
+    "entrypoint": "crawl",
+    "nodes": [
+      {
+        "@id": "urn:noocodex:dag:htmlScrapeDAGCrawl/node/crawl",
+        "@type": "EmbeddedDAGNode",
+        "name": "crawl",
+        "dag": "htmlCrawlPhase",
+        "outputs": {
+          "success": "scrape",
+          "error": "scrape-done"
+        },
+        "stateMapping": {
+          "output": {
+            "urls": "urls"
+          }
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlScrapeDAGCrawl/node/scrape",
+        "@type": "EmbeddedDAGNode",
+        "name": "scrape",
+        "dag": "htmlScrapePhase",
+        "outputs": {
+          "success": "retry",
+          "error": "retry"
+        },
+        "stateMapping": {
+          "input": {
+            "urls": "urls"
+          },
+          "output": {
+            "succeeded": "succeeded",
+            "failed": "failed"
+          }
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlScrapeDAGCrawl/node/retry",
+        "@type": "EmbeddedDAGNode",
+        "name": "retry",
+        "dag": "htmlRetryPhase",
+        "outputs": {
+          "success": "scrape-done",
+          "error": "scrape-done"
+        },
+        "stateMapping": {
+          "input": {
+            "failed": "failed"
+          },
+          "output": {
+            "recovered": "recovered",
+            "failedAfterRetry": "failedAfterRetry"
+          }
+        }
+      },
+      {
+        "@id": "urn:noocodex:dag:htmlScrapeDAGCrawl/node/scrape-done",
+        "@type": "TerminalNode",
+        "name": "scrape-done",
+        "outcome": "completed"
+      }
+    ]
+  }
+]

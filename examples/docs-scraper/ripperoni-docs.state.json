@@ -1,0 +1,7 @@
+{
+  "output": {
+    "basePath": "./examples/docs-scraper/output"
+  },
+  "baseUrl": "https://studnicky.github.io/PathRipper",
+  "rateLimitMs": 500
+}

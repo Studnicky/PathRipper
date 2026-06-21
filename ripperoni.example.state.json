@@ -1,0 +1,19 @@
+{
+  "output": {
+    "basePath": "./output",
+    "format": "json",
+    "pretty": true
+  },
+  "baseUrl": "https://example.com",
+  "rateLimitMs": 500,
+  "maxRetries": 3,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs": 30000,
+  "headers": {
+    "User-Agent": "MyApp/1.0"
+  },
+  "cache": {
+    "dir": "./output/.cache/your-html-target",
+    "mode": "read-write"
+  }
+}
