@@ -2,6 +2,7 @@ import { NodeStateBase } from '@studnicky/dagonizer';
 import type { JsonObjectType } from '@studnicky/dagonizer/entities';
 
 import type { PipelinePageType } from '../types/PipelineState.js';
+import type { RunStateType }     from '../types/RunState.js';
 
 /**
  * Shared state flowing through every node in a scrape DAG.
@@ -79,6 +80,18 @@ export class ScrapeState extends NodeStateBase {
    * Written to `failures.json` by the orchestrator after the DAG completes.
    */
   failedAfterRetry: string[] = [];
+
+  /**
+   * Run params seeded by `runDag` for the native-DAG execution model.
+   *
+   * Present when the run was started via `runDag`; `undefined` in the
+   * legacy pipeline path (`runHtml`, `runWiki`). Nodes in Wave 3 will
+   * migrate off `services.target.cfg` and read params from here instead.
+   *
+   * Non-breaking: the old path never sets this field, so existing nodes
+   * and tests are unaffected.
+   */
+  params?: RunStateType | undefined;
 
   /**
    * Clear transient plugin metadata at end-of-parse so per-page state doesn't

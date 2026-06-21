@@ -1,4 +1,6 @@
 import type { NormalizedRipperConfigType } from './Config.js';
+import type { DAGType }                    from '@studnicky/dagonizer';
+import type { RunStateType }               from './RunState.js';
 
 /**
  * Options for `runHtml`.
@@ -78,4 +80,45 @@ export type FailuresManifestType = {
   readonly count:     number;
   /** Page titles that could not be scraped. */
   readonly titles:    string[];
+};
+
+/**
+ * Options for `runDagFromFiles`.
+ *
+ * Both `dagPath` and `statePath` are resolved relative to `cwd` when relative.
+ *
+ * @category Orchestrators
+ * @since 2.7.0
+ * @group Orchestrators
+ */
+export type RunDagFromFilesOptionsType = {
+  /** Absolute or cwd-relative path to a `.dag.jsonld` file. */
+  readonly dagPath:   string;
+  /** Absolute or cwd-relative path to a `.state.json` file. */
+  readonly statePath: string;
+  /** Output directory root for scraped JSON files. */
+  readonly outDir:    string;
+  /** Directory used to resolve relative plugin modules. */
+  readonly configDir: string;
+};
+
+/**
+ * Options for `runDag`.
+ *
+ * The DAG and state are already decoded — no IO happens inside this function.
+ * Testable without touching the filesystem.
+ *
+ * @category Orchestrators
+ * @since 2.7.0
+ * @group Orchestrators
+ */
+export type RunDagOptionsType = {
+  /** Validated `DAGType` loaded from a `.dag.jsonld` file. */
+  readonly dag:       DAGType;
+  /** Validated run params loaded from a `.state.json` file. */
+  readonly state:     RunStateType;
+  /** Output directory root for scraped JSON files. */
+  readonly outDir:    string;
+  /** Directory used to resolve relative plugin modules. */
+  readonly configDir: string;
 };

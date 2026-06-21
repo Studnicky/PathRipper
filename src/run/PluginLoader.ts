@@ -12,7 +12,7 @@
 
 import { resolve } from 'node:path';
 
-import type { DispatcherBundleType } from '@studnicky/dagonizer';
+import type { DAGType, DispatcherBundleType } from '@studnicky/dagonizer';
 
 import { RipperDagonizer }      from '../dispatcher/RipperDagonizer.js';
 import type { ScrapeState }     from '../state/ScrapeState.js';
@@ -194,6 +194,65 @@ export class PluginLoader {
    * @param configDir     - Absolute path to the directory that contains `plugins/`.
    * @returns The extracted bundle plus the set of plugin DAG names that loaded.
    */
+  /**
+   * Discover plugin node modules referenced by a DAG's placements and register
+   * them onto `dispatcher`.
+   *
+   * Walks every placement in `dag.nodes` and collects the node implementation
+   * names from:
+   *   - `SingleNode.node`        — the backing implementation
+   *   - `PhaseNode.node`         — the backing implementation
+   *   - `ScatterNode.body.node`  — the scatter body implementation
+   *   - `EmbeddedDAGNode.dag`    — sub-DAG names (collected for reference but
+   *     the sub-DAG is registered separately by `runDag`)
+   *
+   * For each non-builtin name of the form `<word>:<verb>`, resolves the plugin
+   * as `./plugins/<word>/<verb>.task.js` under `configDir` and delegates to
+   * `PluginLoader.registerInto`'s import + register logic via an inline pipeline
+   * array so existing deduplication and error handling are reused exactly.
+   *
+   * Built-in names (those starting with `BUILTIN_PREFIXES`, plus `'terminal'`)
+   * are skipped — `registerBuiltinNodes` already handles them.
+   *
+   * @param dispatcher - The dispatcher to register plugin nodes and DAGs onto.
+   * @param dag        - The loaded DAG whose placements drive discovery.
+   * @param configDir  - Absolute path to the directory that contains `plugins/`.
+   * @returns A `Set<string>` of the non-builtin node names for which a plugin loaded.
+   */
+  static async registerFromDag(
+    dispatcher: RipperDagonizer<ScrapeState>,
+    dag:        DAGType,
+    configDir:  string,
+  ): Promise<Set<string>> {
+    // Collect candidate node names from all placement types that carry a node ref.
+    const candidates: string[] = [];
+    for (const placement of dag.nodes) {
+      if (placement['@type'] === 'SingleNode') {
+        candidates.push(placement.node);
+      } else if (placement['@type'] === 'PhaseNode') {
+        candidates.push(placement.node);
+      } else if (placement['@type'] === 'ScatterNode') {
+        const body = placement.body;
+        if ('node' in body) {
+          candidates.push(body.node);
+        }
+        // dag-body scatter: the body DAG must already be registered; no module to import here.
+      }
+      // TerminalNode, EmbeddedDAGNode: no backing node module to load.
+    }
+
+    // Filter to the subset that looks like plugin entries (`word:verb`)
+    // and is not a built-in. Feed as a synthetic pipeline to `registerInto`
+    // which handles deduplication, import errors, and `register()` invocation.
+    const pluginCandidates = candidates.filter(
+      (name) => !PluginLoader.BUILTIN_PREFIXES.some((prefix) => name.startsWith(prefix))
+                && name !== 'terminal'
+                && name.includes(':'),
+    );
+
+    return PluginLoader.registerInto(dispatcher, pluginCandidates, configDir);
+  }
+
   static async bundle(
     pipelineNames: ReadonlyArray<string>,
     configDir:     string,
