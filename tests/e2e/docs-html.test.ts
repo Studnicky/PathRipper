@@ -106,7 +106,7 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
     const services = {
       log:    Logger.forComponent('docs-html-e2e'),
       cache:  null,
-      target: { id: 'ripperoni-docs', cfg: {} },
+      target: { id: 'ripperoni-docs' },
       outDir: OUT_DIR,
     } as unknown as RipperServices;
 

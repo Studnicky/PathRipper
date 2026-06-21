@@ -39,7 +39,7 @@ const makeContext = (services: Partial<RipperServices>): NodeContextType<RipperS
   services: {
     log:    Logger.forComponent('test'),
     cache:  null,
-    target: { id: TARGET, cfg: {} },
+    target: { id: TARGET },
     outDir: '',
     ...services,
   } as RipperServices,
@@ -100,7 +100,7 @@ describe('builtinNodes', () => {
       const ctx   = makeContext({
         htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
         outDir,
-        target: { id: TARGET, cfg: {} },
+        target: { id: TARGET },
       });
 
       const result = await HtmlFetchNode.execute(Batch.of(state), ctx);
@@ -114,7 +114,7 @@ describe('builtinNodes', () => {
     it('returns error when htmlScraper is absent', async () => {
       const state  = buildState();
       state.setMetadata('currentUrl', 'https://example.test/page');
-      const ctx    = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx    = makeContext({ target: { id: TARGET }, outDir });
       const result = await HtmlFetchNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('error'));
     });
@@ -130,7 +130,7 @@ describe('builtinNodes', () => {
       state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
         htmlScraper: scraper as unknown as RipperServices['htmlScraper'],
-        target: { id: TARGET, cfg: {} },
+        target: { id: TARGET },
         outDir,
       });
       await HtmlFetchNode.execute(Batch.of(state), ctx);
@@ -150,7 +150,7 @@ describe('builtinNodes', () => {
       state.setMetadata('currentUrl', 'https://example.test/page');
       const ctx   = makeContext({
         htmlScraper:       scraper as unknown as RipperServices['htmlScraper'],
-        target:            { id: TARGET, cfg: { includeRawContent: false } },
+        target:            { id: TARGET },
         includeRawContent: false,
         outDir,
       });
@@ -162,7 +162,7 @@ describe('builtinNodes', () => {
   describe('HtmlWriteRawNode', () => {
     it('writes html to <outDir>/<target>/raw/<url-slug>.html', async () => {
       const state = buildState({ page: { html: '<p>raw</p>' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await HtmlWriteRawNode.execute(Batch.of(state), ctx);
       const expected = join(outDir, TARGET, 'raw', 'page.html');
       assert.equal(await readFile(expected, 'utf8'), '<p>raw</p>');
@@ -170,7 +170,7 @@ describe('builtinNodes', () => {
 
     it('writes query-string URL to correct slug', async () => {
       const state = buildState({ page: { url: 'https://2e.aonprd.com/Feats.aspx?ID=750', html: '<p>feat</p>' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await HtmlWriteRawNode.execute(Batch.of(state), ctx);
       const expected = join(outDir, TARGET, 'raw', 'Feats.aspx-ID-750.html');
       assert.equal(await readFile(expected, 'utf8'), '<p>feat</p>');
@@ -178,7 +178,7 @@ describe('builtinNodes', () => {
 
     it('throws when html is missing', async () => {
       const state = buildState();
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await assert.rejects(
         HtmlWriteRawNode.execute(Batch.of(state), ctx),
         (error: unknown) => error instanceof ExternalSchemaError,
@@ -189,7 +189,7 @@ describe('builtinNodes', () => {
   describe('JsonWriteNode', () => {
     it('writes JSON to <target>/<slug>.json with no pluginTaskName', async () => {
       const state = buildState({ page: { url: 'https://x.test/page-title' }, output: { hello: 'world' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       const result     = await JsonWriteNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('success'));
       const expected = join(outDir, TARGET, 'page-title.json');
@@ -198,7 +198,7 @@ describe('builtinNodes', () => {
 
     it('writes JSON under <pluginTaskName>/<slug>.json when pluginTaskName is set', async () => {
       const state = buildState({ page: { url: 'https://2e.aonprd.com/Feats.aspx?ID=750' }, output: { _type: 'feat', name: 'Dwarven Lore' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'aonprd:parse' });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'aonprd:parse' });
       await JsonWriteNode.execute(Batch.of(state), ctx);
       const expected = join(outDir, TARGET, 'aonprd:parse', 'Feats.aspx-ID-750.json');
       const parsed   = JSON.parse(await readFile(expected, 'utf8')) as { _type: string; name: string };
@@ -208,7 +208,7 @@ describe('builtinNodes', () => {
     it('does NOT include _raw in written JSON', async () => {
       const raw: RawContentType = { contentType: 'text/html', content: '<p/>', fetchedAt: '2026-01-01T00:00:00.000Z' };
       const state = buildState({ page: { url: 'https://example.test/raw-page', _raw: raw }, output: { name: 'X' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'stub:parse' });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'stub:parse' });
       await JsonWriteNode.execute(Batch.of(state), ctx);
       const parsed = JSON.parse(await readFile(join(outDir, TARGET, 'stub:parse', 'raw-page.json'), 'utf8')) as { _raw?: unknown };
       assert.equal(parsed._raw, undefined, '_raw must NOT appear in plugin JSON');
@@ -216,7 +216,7 @@ describe('builtinNodes', () => {
 
     it('returns skipped when output is null', async () => {
       const state = buildState();
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       const result     = await JsonWriteNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('skipped'));
       assert.equal(await exists(join(outDir, TARGET, 'page.json')), false);
@@ -224,7 +224,7 @@ describe('builtinNodes', () => {
 
     it('ignores pluginTaskName when splitByTaskName is false', async () => {
       const state = buildState({ page: { url: 'https://x.test/entry' }, output: { n: 42 } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'myplugin:parse', splitByTaskName: false });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'myplugin:parse', splitByTaskName: false });
       await JsonWriteNode.execute(Batch.of(state), ctx);
       const parsed = JSON.parse(await readFile(join(outDir, TARGET, 'entry.json'), 'utf8')) as { n: number };
       assert.equal(parsed.n, 42);
@@ -233,7 +233,7 @@ describe('builtinNodes', () => {
 
   describe('JsonlAppendNode', () => {
     it('appends one JSON line per invocation to all.jsonl', async () => {
-      const ctx = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx = makeContext({ target: { id: TARGET }, outDir });
       await JsonlAppendNode.execute(Batch.of(buildState({ output: { n: 1 } })), ctx);
       await JsonlAppendNode.execute(Batch.of(buildState({ output: { n: 2 } })), ctx);
       await JsonlAppendNode.execute(Batch.of(buildState({ output: { n: 3 } })), ctx);
@@ -242,7 +242,7 @@ describe('builtinNodes', () => {
     });
 
     it('appends to <pluginTaskName>/all.jsonl when set', async () => {
-      const ctx = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'myplugin:parse' });
+      const ctx = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'myplugin:parse' });
       await JsonlAppendNode.execute(Batch.of(buildState({ output: { n: 1 } })), ctx);
       await JsonlAppendNode.execute(Batch.of(buildState({ output: { n: 2 } })), ctx);
       assert.equal(
@@ -253,7 +253,7 @@ describe('builtinNodes', () => {
 
     it('does NOT include _raw in appended JSONL rows', async () => {
       const raw: RawContentType = { contentType: 'text/html', content: '<b/>', fetchedAt: '2026-06-01T00:00:00.000Z' };
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'stub:parse' });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'stub:parse' });
       const state = buildState({ page: { _raw: raw }, output: { n: 1 } });
       await JsonlAppendNode.execute(Batch.of(state), ctx);
       const row = JSON.parse((await readFile(join(outDir, TARGET, 'stub:parse', 'all.jsonl'), 'utf8')).split('\n')[0]!) as { _raw?: unknown };
@@ -264,7 +264,7 @@ describe('builtinNodes', () => {
   describe('WikiWriteRawNode', () => {
     it('writes wikitext to <outDir>/<target>/raw/<slug>.txt', async () => {
       const state = buildState({ page: { title: 'Goblin Warrior', url: '', wikitext: '==Goblin==' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await WikiWriteRawNode.execute(Batch.of(state), ctx);
       const expected = join(outDir, TARGET, 'raw', 'goblin-warrior.txt');
       assert.equal(await readFile(expected, 'utf8'), '==Goblin==');
@@ -274,7 +274,7 @@ describe('builtinNodes', () => {
   describe('ValidateSchemaNode', () => {
     it('returns valid when config.outputSchema is unset', async () => {
       const state = buildState({ output: { anything: true } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       const result     = await ValidateSchemaNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('valid'));
     });
@@ -285,7 +285,7 @@ describe('builtinNodes', () => {
         type: 'object', required: ['name'], properties: { name: { type: 'string' } },
       }), 'utf8');
       const state = buildState({ output: { name: 'goblin' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outputSchema: schemaPath, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outputSchema: schemaPath, outDir });
       const result     = await ValidateSchemaNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('valid'));
     });
@@ -296,7 +296,7 @@ describe('builtinNodes', () => {
         type: 'object', required: ['name'], properties: { name: { type: 'string' } },
       }), 'utf8');
       const state = buildState({ output: { name: 42 } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: { outputSchema: schemaPath } }, outputSchema: schemaPath, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outputSchema: schemaPath, outDir });
       const result     = await ValidateSchemaNode.execute(Batch.of(state), ctx);
       assert.ok(result.has('invalid'));
     });
@@ -305,21 +305,21 @@ describe('builtinNodes', () => {
   describe('URL-based filename derivation', () => {
     it('derives slug from URL path+query', async () => {
       const state = buildState({ page: { url: 'https://2e.aonprd.com/Feats.aspx?ID=750', html: '<p/>' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await HtmlWriteRawNode.execute(Batch.of(state), ctx);
       assert.equal(await exists(join(outDir, TARGET, 'raw', 'Feats.aspx-ID-750.html')), true);
     });
 
     it('derives slug from nested path (no query)', async () => {
       const state = buildState({ page: { url: 'https://example.com/wiki/Goblin', html: '<p/>' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await HtmlWriteRawNode.execute(Batch.of(state), ctx);
       assert.equal(await exists(join(outDir, TARGET, 'raw', 'wiki-Goblin.html')), true);
     });
 
     it('falls back to title-based slug when URL is empty', async () => {
       const state = buildState({ page: { title: 'Goblin Warrior', url: '', wikitext: '==g==' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await WikiWriteRawNode.execute(Batch.of(state), ctx);
       assert.equal(await exists(join(outDir, TARGET, 'raw', 'goblin-warrior.txt')), true);
     });
@@ -328,14 +328,14 @@ describe('builtinNodes', () => {
   describe('folder split — plugin vs no-plugin', () => {
     it('json:write without pluginTaskName writes directly under <target>/', async () => {
       const state = buildState({ page: { url: 'https://x.test/entry-a' }, output: { raw_only: true } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir });
       await JsonWriteNode.execute(Batch.of(state), ctx);
       assert.equal(await exists(join(outDir, TARGET, 'entry-a.json')), true);
     });
 
     it('json:write with pluginTaskName writes under <target>/<plugin>/', async () => {
       const state = buildState({ page: { url: 'https://x.test/entry-b' }, output: { _type: 'feat' } });
-      const ctx   = makeContext({ target: { id: TARGET, cfg: {} }, outDir, pluginTaskName: 'aonprd:parse' });
+      const ctx   = makeContext({ target: { id: TARGET }, outDir, pluginTaskName: 'aonprd:parse' });
       await JsonWriteNode.execute(Batch.of(state), ctx);
       assert.equal(await exists(join(outDir, TARGET, 'aonprd:parse', 'entry-b.json')), true);
     });

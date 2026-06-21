@@ -46,24 +46,20 @@ export type RunDagFromFilesOptionsType = {
 /**
  * Options for `runDag`.
  *
- * The DAG bundle and state are already decoded — no IO happens inside this
- * function. Testable without touching the filesystem.
+ * The orchestration DAG and state are already decoded — no IO happens inside
+ * this function. Testable without touching the filesystem.
  *
- * `dags` is a bundle: one or more pure dagonizer DAG documents. When the
- * bundle contains multiple DAGs, `runDag` discovers the root (the DAG not
- * referenced by any other), topologically sorts (leaves first), registers all,
- * and dispatches the root. A single-element bundle is the degenerate case.
+ * `dag` is the single native orchestration DAG document. It imports plugin DAGs
+ * as embedded-dag / scatter{dag} references; those plugin DAGs are supplied by
+ * `PluginLoader.registerPluginsFromEntry`, not bundled into this file.
  *
  * @category Orchestrators
  * @since 2.7.0
  * @group Orchestrators
  */
 export type RunDagOptionsType = {
-  /**
-   * Bundle of validated `DAGType` objects loaded from a `.dag.jsonld` file.
-   * Single-DAG runs pass a one-element array.
-   */
-  readonly dags:      ReadonlyArray<DAGType>;
+  /** The validated orchestration `DAGType` loaded from a `.dag.jsonld` file. */
+  readonly dag:       DAGType;
   /** Validated run params loaded from a `.state.json` file. */
   readonly state:     RunStateType;
   /** Output directory root for scraped JSON files. */

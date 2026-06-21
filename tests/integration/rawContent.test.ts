@@ -379,7 +379,7 @@ export function register(dispatcher) {
       urls:    ['https://fixture.test/condition-blinded'],
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     const targetDir = join(outDir, 'raw-default');
     const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
@@ -403,7 +403,7 @@ export function register(dispatcher) {
       urls:    ['https://fixture.test/condition-blinded'],
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'raw-html', 'raw');
     const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
@@ -428,7 +428,7 @@ export function register(dispatcher) {
       urls:    ['https://fixture.test/condition-blinded'],
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'raw-only', 'raw');
     const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
@@ -448,7 +448,7 @@ export function register(dispatcher) {
       includeRawContent: false,
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     // pluginTaskName undefined → JSON at <outDir>/raw-off/<slug>.json
     const targetDir = join(outDir, 'raw-off');
@@ -490,7 +490,7 @@ export function register(dispatcher) {
       cache:             { mode: 'off' as const, dir: join(outDir, '.cache') },
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     // runDag writes the failures manifest at <outDir>/failures.json (the run-level
     // outDir root), not under the per-target subdir — see runDag's failures step.
@@ -521,7 +521,7 @@ export function register(dispatcher) {
       urls:    ['https://2e.aonprd.com/Conditions.aspx?ID=1'],
     } satisfies RunStateType;
 
-    await runDag({ dags: [entryDag], state, outDir, configDir: outDir });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
     const rawDir   = join(outDir, 'aonprd', 'raw');
     const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));

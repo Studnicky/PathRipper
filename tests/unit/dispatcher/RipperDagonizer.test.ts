@@ -56,7 +56,7 @@ const buildTestDag = () =>
 const makeServices = (): RipperServices => ({
   log:        Logger.forComponent('RipperDagonizer.test'),
   cache:      null,
-  target:     { id: 'test', cfg: {} },
+  target:     { id: 'test' },
   outDir:     '/tmp/ripper-dagonizer-test',
   dispatcher: null as unknown as RipperServices['dispatcher'],
 } as unknown as RipperServices);

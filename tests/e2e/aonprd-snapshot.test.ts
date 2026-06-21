@@ -46,7 +46,7 @@ describe('AONPRD snapshot e2e (local only)', () => {
         cache:   { dir: cacheDir, mode: 'write-only' as const },
       } satisfies RunStateType;
 
-      await runDag({ dags: [entryDagRaw], state: phase1State, outDir, configDir: REPO_ROOT });
+      await runDag({ dag: entryDagRaw, state: phase1State, outDir, configDir: REPO_ROOT });
 
       // Raw HTML files land at <outDir>/aonprd-raw/raw/<slug>.html
       const rawDir   = resolve(outDir, 'aonprd-raw', 'raw');
@@ -81,7 +81,7 @@ describe('AONPRD snapshot e2e (local only)', () => {
           cache:   { dir: cacheDir, mode: 'read-only' as const },
         } satisfies RunStateType;
 
-        await runDag({ dags: [entryDagParse], state: phase2State, outDir, configDir: REPO_ROOT });
+        await runDag({ dag: entryDagParse, state: phase2State, outDir, configDir: REPO_ROOT });
       } finally {
         globalThis.fetch = origFetch;
       }

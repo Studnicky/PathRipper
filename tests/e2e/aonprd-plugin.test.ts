@@ -196,7 +196,7 @@ describe('AONPRD plugin e2e (local only)', () => {
         urls:    absoluteUrls,
       } satisfies RunStateType;
 
-      await runDag({ dags: [entryDag], state, outDir, configDir: REPO_ROOT });
+      await runDag({ dag: entryDag, state, outDir, configDir: REPO_ROOT });
 
       // aonprd page DAG uses EmbeddedDAGNode (not SingleNode) for aonprd:parse,
       // so pluginTaskName is undefined → JSON lands directly at <outDir>/aonprd/<slug>.json

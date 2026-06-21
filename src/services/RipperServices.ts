@@ -39,37 +39,32 @@ export type RipperServices = {
   readonly htmlScraper?:   HtmlScraper | undefined;
   /** MediaWiki scraper; present for wiki runs, absent for HTML runs. */
   readonly wikiScraper?:   MediaWikiScraper | undefined;
-  /** Target identifier and raw config slice for this run. */
-  readonly target:         { id: string; cfg: Record<string, unknown> };
+  /** Target identifier for this run (the orchestration DAG name). */
+  readonly target:         { id: string };
   /** Output base directory. */
   readonly outDir:         string;
   /**
    * Typed crawler block. Present when a crawler is configured for this run.
-   * Nodes read this instead of `target.cfg['crawler']`.
    */
   readonly crawler?:       RunCrawlerType | undefined;
   /**
    * Additional HTTP request headers for this run.
-   * Nodes read this instead of `target.cfg['headers']`.
    */
   readonly headers?:       Record<string, string> | undefined;
   /**
    * When `false`, raw HTTP response bodies are NOT stored alongside output.
    * Defaults to `true` when absent.
-   * Nodes read this instead of `target.cfg['includeRawContent']`.
    */
   readonly includeRawContent?: boolean | undefined;
   /**
    * Filesystem path to a JSON Schema file for validating pipeline output records.
    * Absent when no schema validation is configured.
-   * Nodes read this instead of `target.cfg['outputSchema']`.
    */
   readonly outputSchema?:  string | undefined;
   /**
    * Governs behaviour when a pipeline output record fails `outputSchema` validation.
    * `halt` aborts the run; `skip` drops the record; `warn` logs and continues.
    * Absent when `outputSchema` is not set.
-   * Nodes read this instead of `target.cfg['onSchemaError']`.
    */
   readonly onSchemaError?: 'halt' | 'skip' | 'warn' | undefined;
   /** Name of the first non-built-in pipeline step (plugin), if any. */

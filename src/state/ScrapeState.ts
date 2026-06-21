@@ -84,12 +84,9 @@ export class ScrapeState extends NodeStateBase {
   /**
    * Run params seeded by `runDag` for the native-DAG execution model.
    *
-   * Present when the run was started via `runDag`; `undefined` in the
-   * legacy pipeline path (`runHtml`, `runWiki`). Nodes in Wave 3 will
-   * migrate off `services.target.cfg` and read params from here instead.
-   *
-   * Non-breaking: the old path never sets this field, so existing nodes
-   * and tests are unaffected.
+   * Present when the run was started via `runDag`; `undefined` when a
+   * `ScrapeState` is constructed directly (e.g. in isolated unit tests).
+   * Nodes read run params from here.
    */
   params?: RunStateType | undefined;
 

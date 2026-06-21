@@ -94,7 +94,7 @@ describe('runDag native contract (aonprd sprout)', () => {
 
       await assert.doesNotReject(async () => {
         await runDag({
-          dags:      [entryDag],
+          dag:       entryDag,
           state:     MINIMAL_STATE,
           outDir,
           configDir: REPO_ROOT,
@@ -111,7 +111,7 @@ describe('runDag native contract (aonprd sprout)', () => {
       const json     = readFileSync(SPROUT_DAG_PATH, 'utf-8');
       const entryDag = DAGDocument.load(json);
 
-      await runDag({ dags: [entryDag], state: MINIMAL_STATE, outDir, configDir: REPO_ROOT });
+      await runDag({ dag: entryDag, state: MINIMAL_STATE, outDir, configDir: REPO_ROOT });
 
       const { access } = await import('node:fs/promises');
       await assert.rejects(

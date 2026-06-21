@@ -143,15 +143,57 @@ export class PluginLoader {
     return result;
   }
 
+  /**
+   * Derive the plugin task name from a single orchestration DAG.
+   *
+   * Walks the orchestration's placements and returns the first non-builtin node
+   * *implementation* name found in:
+   *   - `SingleNode.node`       — the backing implementation
+   *   - `PhaseNode.node`        — the backing implementation
+   *   - `ScatterNode.body.node` — the scatter body implementation (node-body scatter)
+   *
+   * A `ScatterNode` with a `{ dag }` body (dag-body scatter) carries no node
+   * implementation at the orchestration level — its plugin step lives inside the
+   * referenced per-page DAG — so such placements do not contribute a task name.
+   *
+   * Populates `services.pluginTaskName` so output nodes that honour
+   * `splitByTaskName` know which subfolder to write under. Returns `undefined`
+   * when every placement resolves to a built-in (or to a dag-body scatter /
+   * terminal with no backing node).
+   *
+   * @param dag - The orchestration DAG whose placements drive discovery.
+   * @returns The first non-builtin node-implementation name, or `undefined`.
+   */
+  static derivePluginTaskName(dag: DAGType): string | undefined {
+    for (const placement of dag.nodes) {
+      let nodeName: string | undefined;
+      if (placement['@type'] === 'SingleNode') {
+        nodeName = placement.node;
+      } else if (placement['@type'] === 'PhaseNode') {
+        nodeName = placement.node;
+      } else if (placement['@type'] === 'ScatterNode') {
+        const body = placement.body;
+        if ('node' in body) {
+          nodeName = body.node;
+        }
+      }
+      if (
+        nodeName !== undefined &&
+        !PluginLoader.BUILTIN_PREFIXES.some((prefix) => nodeName!.startsWith(prefix)) &&
+        nodeName !== 'terminal'
+      ) {
+        return nodeName;
+      }
+    }
+    return undefined;
+  }
+
   static async registerPluginsFromEntry(
     dispatcher:    RipperDagonizer<ScrapeState>,
     entryDag:      DAGType,
     configDir:     string,
-    bundleDagNames?: ReadonlySet<string>,
   ): Promise<Set<string>> {
     // Collect non-builtin dag-reference names from EmbeddedDAGNode and ScatterNode placements.
-    // Skip references that are satisfied within the bundle itself (those are handled
-    // by the bundle topological sort and don't need plugin-namespace resolution).
     const dagRefs = new Set<string>();
     for (const placement of entryDag.nodes) {
       let dagRef: string | undefined;
@@ -165,8 +207,7 @@ export class PluginLoader {
       }
       if (
         dagRef !== undefined &&
-        !PluginLoader.BUILTIN_PREFIXES.some((prefix) => dagRef!.startsWith(prefix)) &&
-        !(bundleDagNames?.has(dagRef) === true)
+        !PluginLoader.BUILTIN_PREFIXES.some((prefix) => dagRef!.startsWith(prefix))
       ) {
         dagRefs.add(dagRef);
       }

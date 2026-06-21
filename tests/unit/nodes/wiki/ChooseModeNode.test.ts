@@ -17,7 +17,7 @@ import { Logger }                from '../../../../src/modules/logger/logger.js'
 const SERVICES = {
   log:    Logger.forComponent('ChooseModeNode.test'),
   cache:  null,
-  target: { id: 'test', cfg: {} },
+  target: { id: 'test' },
   outDir: '/tmp',
 } as unknown as RipperServices;
 
