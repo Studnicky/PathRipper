@@ -1,5 +1,9 @@
 name: Publish Package
 
+# Publishes @studnicky/ripperoni to GitHub Packages when a new version lands on
+# master (via the release flow). The version-already-published check makes it
+# idempotent, so it only publishes when package.json's version changes.
+
 on:
   push:
     branches: [master]
@@ -8,6 +12,9 @@ jobs:
   validate:
     name: Validate Before Publish
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v4
 
@@ -16,31 +23,34 @@ jobs:
           cache: npm
           node-version: '24'
 
+      - name: Authenticate to GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
       - name: Install dependencies
-        run: npm ci --include=dev --include=optional
+        run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Type check
-        run: npm run type-check
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Lint
-        run: npx eslint .
+        run: npm run lint
 
-      - name: Run tests
-        run: npm test
+      - name: Unit tests
+        run: npm run test:unit
 
     timeout-minutes: 15
 
   publish:
     needs: validate
-    if: ${{ vars.NPM_PUBLISH_ENABLED == 'true' }}
     outputs:
       published: ${{ steps.publish-package.outputs.published }}
       version: ${{ steps.check-version.outputs.version }}
     permissions:
       contents: read
+      packages: write
       id-token: write
     runs-on: ubuntu-latest
     steps:
@@ -50,10 +60,14 @@ jobs:
         with:
           cache: npm
           node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@studnicky'
+
+      - name: Authenticate to GitHub Packages
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm ci --include=dev --include=optional
+        run: npm ci
 
       - name: Build
         run: npm run build
@@ -69,12 +83,11 @@ jobs:
       - name: Check if version already published
         id: check-version
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PKG_NAME=$(node -p "require('./package.json').name")
           PKG_VERSION=$(node -p "require('./package.json').version")
           echo "version=${PKG_VERSION}" >> $GITHUB_OUTPUT
-
           if npm view "${PKG_NAME}@${PKG_VERSION}" version 2>/dev/null; then
             echo "Version ${PKG_VERSION} already published, skipping"
             echo "already_published=true" >> $GITHUB_OUTPUT
@@ -83,11 +96,11 @@ jobs:
             echo "already_published=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Publish to npm
+      - name: Publish to GitHub Packages
         id: publish-package
         if: steps.check-version.outputs.already_published == 'false'
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm publish --provenance --access public
           echo "published=true" >> $GITHUB_OUTPUT
@@ -142,5 +155,3 @@ jobs:
             --title "$VERSION" \
             --notes-file release_notes.md \
             --verify-tag=false
-
-    timeout-minutes: 15

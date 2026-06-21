@@ -13,13 +13,19 @@
   "categories": ["productivity", "developer", "utilities"],
   "icons": [
     {
-      "src": "/Ripperoni/ripperoni.png",
+      "src": "/Ripperoni/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/Ripperoni/favicon-192.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "/Ripperoni/ripperoni.png",
+      "src": "/Ripperoni/favicon-512.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
