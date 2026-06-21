@@ -5,7 +5,7 @@ import { DAGBuilder } from '@studnicky/dagonizer';
 import type { DAGType } from '@studnicky/dagonizer';
 
 import type { ScrapeState } from '../../src/state/ScrapeState.js';
-import { HtmlFetchNode, JsonWriteNode, CaptureErrorNode, RouteFailureNode } from '../../src/nodes/index.js';
+import { HtmlFetchNode, JsonWriteNode, CaptureErrorNode, RouteFailureNode, ResolveLinkNode } from '../../src/nodes/index.js';
 
 const COMPLETED = 'aonprd-page:completed';
 const CAPTURE   = 'error:capture';
@@ -29,7 +29,8 @@ export const aonprdPageDAG: DAGType = (() => {
     outputs: { output: 'output' },
   });
   builder.node(CAPTURE, CaptureErrorNode, { captured: 'json:write' });
-  builder.node('route:failure', RouteFailureNode, { retry: 'html:fetch', resolve: CAPTURE, capture: CAPTURE, expected: COMPLETED });
+  builder.node('route:failure', RouteFailureNode, { retry: 'html:fetch', resolve: 'resolve:link', capture: CAPTURE, expected: COMPLETED });
+  builder.node('resolve:link', ResolveLinkNode, { resolved: 'html:fetch', unresolved: CAPTURE });
   builder.node('json:write', JsonWriteNode, { success: COMPLETED, skipped: COMPLETED });
   builder.terminal(COMPLETED, { outcome: 'completed' });
   return builder.build();

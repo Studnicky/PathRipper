@@ -117,9 +117,19 @@
       "node": "route:failure",
       "outputs": {
         "retry": "html:fetch",
-        "resolve": "error:capture",
+        "resolve": "resolve:link",
         "capture": "error:capture",
         "expected": "aonprd-page-raw:completed"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page-raw/node/resolve:link",
+      "@type": "SingleNode",
+      "name": "resolve:link",
+      "node": "resolve:link",
+      "outputs": {
+        "resolved": "html:fetch",
+        "unresolved": "error:capture"
       }
     },
     {

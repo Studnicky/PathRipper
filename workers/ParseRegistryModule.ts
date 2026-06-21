@@ -51,6 +51,7 @@ import {
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
   RouteFailureNode,
+  ResolveLinkNode,
 } from '../src/nodes/index.js';
 
 import { TAXONOMY }       from '../plugins/aonprd/taxonomy/aonprd.js';
@@ -151,6 +152,7 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
       DedupeAndEnqueueNode,
       CrawlExhaustedNode,
       RouteFailureNode,
+      ResolveLinkNode,
       ...TAXONOMY.allNodes(),
     ];
 

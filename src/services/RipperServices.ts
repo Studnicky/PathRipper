@@ -23,6 +23,7 @@ import type { ScrapeState }       from '../state/ScrapeState.js';
 import type { RunCrawlerType }    from '../types/RunState.js';
 import type { FailurePolicyInterface } from '../resilience/FailurePolicy.js';
 import type { ReconcilerInterface }    from '../resilience/Reconciler.js';
+import type { ResolveConfigType }      from '../types/LinkResolve.js';
 
 /**
  * Shared services injected into every node via `context.services`.
@@ -100,6 +101,11 @@ export type RipperServices = {
    * When absent, `DefaultReconciler` (all failures → `missing`) is used.
    */
   readonly reconciler?: ReconcilerInterface | undefined;
+  /**
+   * Link-resolution config for the opt-in `resolve:link` node.
+   * When absent, `resolve:link` routes immediately to `unresolved`.
+   */
+  readonly resolve?: ResolveConfigType | undefined;
   /**
    * Dispatcher reference for nodes that need to run child DAGs. Set to the
    * same dispatcher this services bag is registered on so nodes can call

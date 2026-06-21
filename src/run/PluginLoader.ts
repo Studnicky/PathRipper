@@ -35,6 +35,7 @@ import {
   RouteFailureNode,
   ReconcileIdentityNode,
   ReportCrawlHealthNode,
+  ResolveLinkNode,
 } from '../nodes/index.js';
 
 // ── Builtin crawl DAG ──────────────────────────────────────────────────────────
@@ -64,7 +65,7 @@ export class PluginLoader {
    * `PluginLoader.registerBuiltinNodes`.
    */
   static readonly BUILTIN_PREFIXES: ReadonlyArray<string> = [
-    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:', 'reconcile:', 'report:',
+    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:', 'reconcile:', 'report:', 'resolve:',
   ];
 
   /**
@@ -92,6 +93,7 @@ export class PluginLoader {
     dispatcher.registerNode(CrawlExhaustedNode);
     // Resilience nodes
     dispatcher.registerNode(RouteFailureNode);
+    dispatcher.registerNode(ResolveLinkNode);
     // Post-crawl analysis nodes (MAIN only)
     dispatcher.registerNode(ReconcileIdentityNode);
     dispatcher.registerNode(ReportCrawlHealthNode);
