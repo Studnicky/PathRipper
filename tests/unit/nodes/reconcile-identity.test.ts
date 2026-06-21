@@ -15,9 +15,10 @@ import { ReportCrawlHealthNode }    from '../../../src/nodes/ReportCrawlHealthNo
 import { RECONCILIATION_KEY }       from '../../../src/resilience/Reconciler.js';
 import type { ReconcilerInterface } from '../../../src/resilience/Reconciler.js';
 import type {
+  CapturedConceptType,
   CapturedFailureType,
-  IdentityIndexType,
   ReconciliationSummaryType,
+  ResolutionType,
 } from '../../../src/types/Reconciler.js';
 import type { RipperServices }      from '../../../src/services/RipperServices.js';
 
@@ -68,26 +69,30 @@ const writeErrorDoc = (slug: string, doc: Record<string, unknown>): string => {
 
 // ── Stub reconciler ────────────────────────────────────────────────────────────
 
+type StubIndex = ReadonlyMap<string, string>; // name → url
+
 /**
- * Test reconciler: indexes on `output.name`; resolves a failure whose
- * `linkText` matches a known name to the URL where that name was captured.
+ * Test reconciler: indexes on `output.name`; resolves a failure whose first
+ * error message matches a known name to the URL where that name was captured.
  */
-class StubReconciler implements ReconcilerInterface {
-  public indexConcept(_url: string, output: Record<string, unknown>): readonly string[] {
-    const name = output['name'];
-    return typeof name === 'string' ? [name] : [];
+class StubReconciler implements ReconcilerInterface<StubIndex> {
+  public prepare(concepts: readonly CapturedConceptType[]): StubIndex {
+    const map = new Map<string, string>();
+    for (const concept of concepts) {
+      const name = concept.output['name'];
+      if (typeof name === 'string') map.set(name, concept.url);
+    }
+    return map;
   }
 
   public resolveFailure(
     failure: CapturedFailureType,
-    index: IdentityIndexType,
-  ): import('../../../src/types/Reconciler.js').ResolutionType {
+    index: StubIndex,
+  ): ResolutionType {
     // Use the first error's message as "link text" for test matching.
     const linkText = failure.errors[0]?.message ?? '';
-    const hits = index.get(linkText);
-    if (hits !== undefined && hits.length > 0) {
-      return { status: 'capturedElsewhere', at: hits[0] as string };
-    }
+    const at = index.get(linkText);
+    if (at !== undefined) return { status: 'capturedElsewhere', at };
     return { status: 'missing' };
   }
 }

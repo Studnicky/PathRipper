@@ -14,8 +14,9 @@ import { resolve }      from 'node:path';
 import { DAGDocument }            from '@studnicky/dagonizer';
 import type { DAGType }           from '@studnicky/dagonizer';
 
-import type { RipperDagonizer } from '../dispatcher/RipperDagonizer.js';
-import type { ScrapeState }     from '../state/ScrapeState.js';
+import type { RipperDagonizer }    from '../dispatcher/RipperDagonizer.js';
+import type { ScrapeState }        from '../state/ScrapeState.js';
+import type { ReconcilerInterface } from '../resilience/Reconciler.js';
 
 import {
   HtmlFetchNode,
@@ -206,12 +207,16 @@ export class PluginLoader {
     return undefined;
   }
 
-  static async registerPluginsFromEntry(
-    dispatcher:    RipperDagonizer<ScrapeState>,
-    entryDag:      DAGType,
-    configDir:     string,
-  ): Promise<Set<string>> {
-    // Collect non-builtin dag-reference names from EmbeddedDAGNode and ScatterNode placements.
+  /**
+   * Collect the distinct plugin namespaces referenced by a DAG's placements.
+   *
+   * Scans `EmbeddedDAGNode` and `ScatterNode` placements for non-builtin
+   * dag-reference names, then extracts the namespace (the segment before `:`).
+   *
+   * @param entryDag - The orchestration DAG to inspect.
+   * @returns A `Set<string>` of distinct plugin namespaces.
+   */
+  private static extractNamespaces(entryDag: DAGType): Set<string> {
     const dagRefs = new Set<string>();
     for (const placement of entryDag.nodes) {
       let dagRef: string | undefined;
@@ -231,7 +236,6 @@ export class PluginLoader {
       }
     }
 
-    // Derive distinct plugin namespaces (the segment before `:`).
     const namespaces = new Set<string>();
     for (const ref of dagRefs) {
       const colon = ref.indexOf(':');
@@ -239,6 +243,62 @@ export class PluginLoader {
         namespaces.add(ref.slice(0, colon));
       }
     }
+
+    return namespaces;
+  }
+
+  /**
+   * Discover the first plugin reconciler exported by the entry DAG's plugin.
+   *
+   * Imports the same `plugins/<namespace>/index.js` that
+   * `registerPluginsFromEntry` loads and returns the exported `reconciler`
+   * value if it is a non-null object with `prepare` and `resolveFailure`
+   * methods. Returns `undefined` when no reconciler is exported or the
+   * namespace set is empty.
+   *
+   * The dynamic import hits Node's module cache (same specifier as
+   * `registerPluginsFromEntry`), so no second network/disk load occurs.
+   *
+   * @param entryDag  - The orchestration DAG whose placements drive namespace discovery.
+   * @param configDir - Absolute path to the directory that contains `plugins/`.
+   * @returns The first plugin reconciler found, or `undefined`.
+   */
+  static async resolveReconciler(
+    entryDag:  DAGType,
+    configDir: string,
+  ): Promise<ReconcilerInterface | undefined> {
+    const namespaces = PluginLoader.extractNamespaces(entryDag);
+    for (const namespace of namespaces) {
+      const entryPath = resolve(configDir, `plugins/${namespace}/index.js`);
+      let mod: unknown;
+      try {
+        mod = await import(entryPath);
+      } catch {
+        // Module not found or load failure — skip; registerPluginsFromEntry
+        // will surface the error with a clearer message.
+        continue;
+      }
+      const modRecord = mod as Record<string, unknown>;
+      const candidate = modRecord['reconciler'];
+      if (
+        candidate !== null &&
+        candidate !== undefined &&
+        typeof candidate === 'object' &&
+        typeof (candidate as Record<string, unknown>)['prepare'] === 'function' &&
+        typeof (candidate as Record<string, unknown>)['resolveFailure'] === 'function'
+      ) {
+        return candidate as ReconcilerInterface;
+      }
+    }
+    return undefined;
+  }
+
+  static async registerPluginsFromEntry(
+    dispatcher:    RipperDagonizer<ScrapeState>,
+    entryDag:      DAGType,
+    configDir:     string,
+  ): Promise<Set<string>> {
+    const namespaces = PluginLoader.extractNamespaces(entryDag);
 
     const loaded = new Set<string>();
     for (const namespace of namespaces) {

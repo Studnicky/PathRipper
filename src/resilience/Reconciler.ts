@@ -1,7 +1,7 @@
 /**
  * Reconciler — identity matching interface and default implementation.
  *
- * Types (`ResolutionType`, `CapturedFailureType`, `IdentityIndexType`,
+ * Types (`ResolutionType`, `CapturedFailureType`, `CapturedConceptType`,
  * `ReconciliationSummaryType`) live in `src/types/Reconciler.ts`.
  * This module provides the interface contract, the default implementation,
  * and the shared metadata key used to hand the summary between nodes.
@@ -10,17 +10,17 @@
  * @since 3.2.0
  */
 
-import type {
-  ResolutionType,
-  CapturedFailureType,
-  IdentityIndexType,
-} from '../types/Reconciler.js';
-
 export type {
   ResolutionType,
   CapturedFailureType,
-  IdentityIndexType,
+  CapturedConceptType,
   ReconciliationSummaryType,
+} from '../types/Reconciler.js';
+
+import type {
+  ResolutionType,
+  CapturedFailureType,
+  CapturedConceptType,
 } from '../types/Reconciler.js';
 
 /** Metadata key used to pass the reconciliation summary from `reconcile:identity` to `report:crawl-health`. */
@@ -33,54 +33,56 @@ export const RECONCILIATION_KEY = 'reconciliation';
  * and how a captured failure matches a known concept. Pass the implementation
  * as `services.reconciler` to override the default conservative behaviour.
  *
- * The framework owns the mechanism (scan, index, aggregate); the plugin owns
- * the semantics (what keys to emit, how to match).
+ * The framework owns the mechanism (scan, prepare, aggregate); the plugin owns
+ * the semantics (what index shape to build, how to match failures).
+ *
+ * `TIndex` is the opaque index shape produced by `prepare` and consumed by
+ * `resolveFailure`. The node never inspects it — it just threads it through.
  *
  * @category Resilience
  * @since 3.2.0
  */
-export interface ReconcilerInterface {
+export interface ReconcilerInterface<TIndex = unknown> {
   /**
-   * Emit zero or more identity keys for a successfully scraped concept doc.
+   * Build an opaque identity index from the full set of successfully scraped
+   * concept docs.
    *
-   * The returned keys are inserted into the identity index. A failure doc is
-   * considered `capturedElsewhere` if its reconciler resolves it to a key that
-   * appears in the index.
+   * The returned index is passed verbatim to every `resolveFailure` call.
+   * The framework never reads or transforms it.
    *
-   * @param url    - The URL the concept was scraped from.
-   * @param output - The full parsed concept document.
-   * @returns An array of index keys (e.g. name, slug, id). Empty → not indexed.
+   * @param concepts - All successfully scraped concept docs for this run.
+   * @returns An opaque index whose shape is defined by the implementation.
    */
-  indexConcept(url: string, output: Record<string, unknown>): readonly string[];
+  prepare(concepts: readonly CapturedConceptType[]): TIndex;
 
   /**
    * Decide the resolution status for a single captured failure.
    *
    * @param failure - The captured error document (url + error list).
-   * @param index   - The identity index built from all concept docs.
+   * @param index   - The opaque index built by `prepare`.
    * @returns A {@link ResolutionType} describing how the failure resolved.
    */
-  resolveFailure(failure: CapturedFailureType, index: IdentityIndexType): ResolutionType;
+  resolveFailure(failure: CapturedFailureType, index: TIndex): ResolutionType;
 }
 
 /**
  * Default reconciler: conservative no-op.
  *
- * `indexConcept` returns an empty array (no indexing), so every failure
- * resolves to `missing`. Targets without a plugin reconciler still produce
- * a valid, complete report — just with all failures classified as missing.
+ * `prepare` returns `null` (no indexing), so every failure resolves to
+ * `missing`. Targets without a plugin reconciler still produce a valid,
+ * complete report — just with all failures classified as missing.
  *
  * @category Resilience
  * @since 3.2.0
  */
-export class DefaultReconciler implements ReconcilerInterface {
-  public indexConcept(_url: string, _output: Record<string, unknown>): readonly string[] {
-    return [];
+export class DefaultReconciler implements ReconcilerInterface<null> {
+  public prepare(_concepts: readonly CapturedConceptType[]): null {
+    return null;
   }
 
   public resolveFailure(
     _failure: CapturedFailureType,
-    _index: IdentityIndexType,
+    _index: null,
   ): ResolutionType {
     return { status: 'missing' };
   }

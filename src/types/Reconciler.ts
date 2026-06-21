@@ -48,16 +48,20 @@ export type CapturedFailureType = {
 };
 
 /**
- * Identity index built from successfully scraped concept docs.
+ * A successfully scraped concept document as passed to
+ * {@link ReconcilerInterface.prepare}.
  *
- * Maps an index key (e.g. a concept name, slug, or id) to the list of URLs
- * where that key was captured. A key may appear in multiple docs if the site
- * has duplicates; reconciliation uses membership to decide `capturedElsewhere`.
+ * The plugin controls the full index shape — this type carries just the
+ * raw URL and parsed output so the plugin can extract whatever identity
+ * keys it needs.
  *
  * @category Resilience
- * @since 3.2.0
+ * @since 3.3.0
  */
-export type IdentityIndexType = ReadonlyMap<string, readonly string[]>;
+export type CapturedConceptType = {
+  readonly url: string;
+  readonly output: Record<string, unknown>;
+};
 
 /**
  * Aggregated reconciliation summary produced by `reconcile:identity` and

@@ -17,3 +17,5 @@ import { TAXONOMY } from './taxonomy/aonprd.js';
 export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
   for (const node of TAXONOMY.allNodes()) dispatcher.registerNode(node);
 }
+
+export { aonprdReconciler as reconciler } from './AonprdReconciler.js';

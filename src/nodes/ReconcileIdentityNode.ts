@@ -3,10 +3,10 @@
  *
  * Runs once in the MAIN process after the scatter completes, reading every
  * per-page JSON doc the scatter wrote. Partitions docs into concepts and
- * failures, builds an identity index via the plugin's reconciler (or the
- * default no-op), resolves each failure, writes the resolution back into the
- * error doc on disk, and stashes a {@link ReconciliationSummaryType} in state
- * metadata under {@link RECONCILIATION_KEY} for the downstream
+ * failures, builds an opaque identity index via the plugin's reconciler (or
+ * the default no-op), resolves each failure, writes the resolution back into
+ * the error doc on disk, and stashes a {@link ReconciliationSummaryType} in
+ * state metadata under {@link RECONCILIATION_KEY} for the downstream
  * `report:crawl-health` node.
  *
  * Output ports:
@@ -29,8 +29,11 @@ import {
   defaultReconciler,
 } from '../resilience/Reconciler.js';
 import type {
+  ReconcilerInterface,
   CapturedFailureType,
+  CapturedConceptType,
   ReconciliationSummaryType,
+  ResolutionType,
 } from '../resilience/Reconciler.js';
 
 // ── ReconcileIdentityNode ──────────────────────────────────────────────────────
@@ -44,6 +47,22 @@ class ReconcileIdentityNodeImpl extends ScalarNode<ScrapeState, 'done', RipperSe
       // `done` — reconciliation summary stashed in state metadata under RECONCILIATION_KEY.
       done: { type: 'object' },
     };
+  }
+
+  /**
+   * Thread an opaque index through a typed reconciler without losing the
+   * `TIndex` type relationship between `prepare` and `resolveFailure`.
+   *
+   * The node never inspects `TIndex` — it just passes the value through.
+   * A generic private static method preserves the bound without requiring
+   * the caller to know `TIndex`.
+   */
+  private static applyReconciler<TIndex>(
+    reconciler: ReconcilerInterface<TIndex>,
+    failure: CapturedFailureType,
+    index: TIndex,
+  ): ResolutionType {
+    return reconciler.resolveFailure(failure, index);
   }
 
   protected override async executeOne(
@@ -88,21 +107,8 @@ class ReconcileIdentityNodeImpl extends ScalarNode<ScrapeState, 'done', RipperSe
 
     // ── Build identity index ─────────────────────────────────────────────────
     const reconciler = services.reconciler ?? defaultReconciler;
-    const indexMut = new Map<string, string[]>();
-
-    for (const { url, doc } of concepts) {
-      const keys = reconciler.indexConcept(url, doc);
-      for (const key of keys) {
-        const existing = indexMut.get(key);
-        if (existing !== undefined) {
-          existing.push(url);
-        } else {
-          indexMut.set(key, [url]);
-        }
-      }
-    }
-
-    const index: ReadonlyMap<string, readonly string[]> = indexMut;
+    const conceptList: CapturedConceptType[] = concepts.map((concept) => ({ url: concept.url, output: concept.doc }));
+    const index = reconciler.prepare(conceptList);
 
     // ── Resolve each failure ─────────────────────────────────────────────────
     let countCapturedElsewhere = 0;
@@ -114,7 +120,7 @@ class ReconcileIdentityNodeImpl extends ScalarNode<ScrapeState, 'done', RipperSe
     const deadList:              Array<{ url: string; reason: string }> = [];
 
     for (const { failure, file } of failures) {
-      const resolution = reconciler.resolveFailure(failure, index);
+      const resolution = ReconcileIdentityNodeImpl.applyReconciler(reconciler, failure, index);
 
       // Write resolution back into the error doc on disk.
       let existingDoc: Record<string, unknown> = {};
