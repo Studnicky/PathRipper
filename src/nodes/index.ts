@@ -1,4 +1,5 @@
 export { HtmlFetchNode }              from './HtmlFetchNode.js';
+export { RouteFailureNode }           from './RouteFailureNode.js';
 export { WikiFetchNode }              from './WikiFetchNode.js';
 export { HtmlWriteRawNode }           from './HtmlWriteRawNode.js';
 export { WikiWriteRawNode }           from './WikiWriteRawNode.js';

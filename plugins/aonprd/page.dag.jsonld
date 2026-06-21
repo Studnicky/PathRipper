@@ -89,8 +89,7 @@
       "outputs": {
         "success": "aonprd:parse",
         "cached": "aonprd:parse",
-        "retry": "html:fetch",
-        "error": "error:capture"
+        "error": "route:failure"
       }
     },
     {
@@ -118,6 +117,18 @@
       "node": "error:capture",
       "outputs": {
         "captured": "json:write"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page/node/route:failure",
+      "@type": "SingleNode",
+      "name": "route:failure",
+      "node": "route:failure",
+      "outputs": {
+        "retry": "html:fetch",
+        "resolve": "error:capture",
+        "capture": "error:capture",
+        "expected": "aonprd-page:completed"
       }
     },
     {

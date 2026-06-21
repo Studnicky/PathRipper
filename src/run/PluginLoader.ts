@@ -31,6 +31,7 @@ import {
   FetchAndExtractLinksNode,
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
+  RouteFailureNode,
 } from '../nodes/index.js';
 
 // ── Builtin crawl DAG ──────────────────────────────────────────────────────────
@@ -60,7 +61,7 @@ export class PluginLoader {
    * `PluginLoader.registerBuiltinNodes`.
    */
   static readonly BUILTIN_PREFIXES: ReadonlyArray<string> = [
-    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:',
+    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:',
   ];
 
   /**
@@ -86,6 +87,8 @@ export class PluginLoader {
     dispatcher.registerNode(FetchAndExtractLinksNode);
     dispatcher.registerNode(DedupeAndEnqueueNode);
     dispatcher.registerNode(CrawlExhaustedNode);
+    // Resilience nodes
+    dispatcher.registerNode(RouteFailureNode);
     // Builtin crawl DAG document
     dispatcher.registerDAG(
       DAGDocument.load(readFileSync(CRAWL_DISCOVER_DAG_PATH, 'utf-8')),

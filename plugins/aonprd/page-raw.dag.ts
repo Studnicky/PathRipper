@@ -6,7 +6,7 @@
 import { DAGBuilder } from '@studnicky/dagonizer';
 import type { DAGType } from '@studnicky/dagonizer';
 
-import { HtmlFetchNode, HtmlWriteRawNode, JsonWriteNode, CaptureErrorNode } from '../../src/nodes/index.js';
+import { HtmlFetchNode, HtmlWriteRawNode, JsonWriteNode, CaptureErrorNode, RouteFailureNode } from '../../src/nodes/index.js';
 
 const COMPLETED = 'aonprd-page-raw:completed';
 const CAPTURE   = 'error:capture';
@@ -23,9 +23,10 @@ const CAPTURE   = 'error:capture';
  */
 export const aonprdPageRawDAG: DAGType = (() => {
   const builder = new DAGBuilder('aonprd:page-raw', '1.0');
-  builder.node('html:fetch', HtmlFetchNode, { success: 'html:write-raw', cached: 'html:write-raw', retry: 'html:fetch', error: CAPTURE });
+  builder.node('html:fetch', HtmlFetchNode, { success: 'html:write-raw', cached: 'html:write-raw', error: 'route:failure' });
   builder.node('html:write-raw', HtmlWriteRawNode, { success: COMPLETED });
   builder.node(CAPTURE, CaptureErrorNode, { captured: 'json:write' });
+  builder.node('route:failure', RouteFailureNode, { retry: 'html:fetch', resolve: CAPTURE, capture: CAPTURE, expected: COMPLETED });
   builder.node('json:write', JsonWriteNode, { success: COMPLETED, skipped: COMPLETED });
   builder.terminal(COMPLETED, { outcome: 'completed' });
   return builder.build();
