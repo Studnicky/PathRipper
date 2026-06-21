@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Resilience layer docs** — `docs/usage/resilience.md` documents the failure model (`route:failure`/`FailurePolicy`, `error:capture`, `reconcile:identity`/`report:crawl-health` + the `crawl-health.json` audit, opt-in `resolve:link`) and the plugin contracts; architecture and roadmap pages updated; sidebar entry added.
+
+### Removed
+
+- **Superseded dead code** — deleted the orphaned `plugins/aonprd/concepts/generic/{condition,hazard,trait}.ts` slices (freestanding extractors superseded by the dedicated `concepts/<x>/` `ScalarNode` concepts that produce the live output), the redundant `plugins/aonprd/page-raw.dag.ts` builder (the `aonprd:page-raw` capability runs from its `.dag.jsonld`), and the unused `vue` devDependency.
+
 ## [3.2.0] - 2026-06-21
 
 ### Added

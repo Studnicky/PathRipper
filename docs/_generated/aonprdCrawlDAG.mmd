@@ -5,10 +5,14 @@ flowchart TB
   discover -->|success| scrape
   discover -->|error| crawl-failed
   scrape[/scrape/]
-  scrape -->|all-success| done
-  scrape -->|partial| done
-  scrape -->|all-error| done
-  scrape -->|empty| done
+  scrape -->|all-success| reconcile_identity
+  scrape -->|partial| reconcile_identity
+  scrape -->|all-error| reconcile_identity
+  scrape -->|empty| reconcile_identity
+  reconcile_identity[reconcile:identity]
+  reconcile_identity -->|done| report_crawl-health
+  report_crawl-health[report:crawl-health]
+  report_crawl-health -->|done| done
   done(((done)))
   crawl-failed>crawl-failed]
   classDef contained-worker fill:#0369a1,stroke:#0ea5e9,color:#eef3f7

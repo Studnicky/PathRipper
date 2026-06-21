@@ -80,6 +80,7 @@ const sidebar = [
       { 'link': '/usage/crawler',       'text': 'Crawler'       },
       { 'link': '/usage/cache',         'text': 'Cache'         },
       { 'link': '/usage/plugins',       'text': 'Plugins'       },
+      { 'link': '/usage/resilience',    'text': 'Resilience & crawl-health' },
     ],
   },
   {
