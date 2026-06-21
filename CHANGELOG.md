@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.1] - 2026-06-21
+
 ### Added
 
 - **Resilience layer docs** — `docs/usage/resilience.md` documents the failure model (`route:failure`/`FailurePolicy`, `error:capture`, `reconcile:identity`/`report:crawl-health` + the `crawl-health.json` audit, opt-in `resolve:link`) and the plugin contracts; architecture and roadmap pages updated; sidebar entry added.

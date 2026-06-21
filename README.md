@@ -7,7 +7,7 @@
 [![CI](https://github.com/Studnicky/Ripperoni/actions/workflows/ci.yml/badge.svg)](https://github.com/Studnicky/Ripperoni/actions/workflows/ci.yml)
 [![docs](https://img.shields.io/badge/docs-studnicky.github.io-c8284a)](https://studnicky.github.io/Ripperoni/)
 [![node](https://img.shields.io/badge/node-%3E%3D24-brightgreen)](package.json)
-[![version](https://img.shields.io/badge/version-3.2.0-c8284a)](CHANGELOG.md)
+[![version](https://img.shields.io/badge/version-3.2.1-c8284a)](CHANGELOG.md)
 
 ## Documentation
 
