@@ -1,0 +1,262 @@
+{
+  "_type": "monster",
+  "url": "https://2e.aonprd.com/Monsters.aspx?ID=691&Elite=true&NoRedirect=1",
+  "monster_id": 691,
+  "name": "Elite Grimstalker",
+  "level": 6,
+  "rarity": "common",
+  "size": "Medium",
+  "alignment": "CE",
+  "traits": [
+    "Fey"
+  ],
+  "trait_ids": {
+    "CE": 95,
+    "Medium": 445,
+    "Fey": 69
+  },
+  "source": {
+    "book": "Bestiary 2",
+    "page": 137,
+    "source_id": 32
+  },
+  "sources": [
+    {
+      "book": "Bestiary 2",
+      "page": 137,
+      "source_id": 32,
+      "raw": "Bestiary 2 pg. 137"
+    }
+  ],
+  "alt_edition_url": null,
+  "pfs": "standard",
+  "recall_knowledge": {
+    "dc": null,
+    "lores": [],
+    "raw": null
+  },
+  "perception": {
+    "modifier": null,
+    "senses": [],
+    "raw": "+"
+  },
+  "languages": {
+    "languages": [
+      "Aklo",
+      "Common"
+    ],
+    "special": [],
+    "raw": "Aklo, Common"
+  },
+  "skills": [],
+  "abilities": {
+    "str": 4,
+    "dex": 4,
+    "con": 2,
+    "int": 2,
+    "wis": 3,
+    "cha": 2
+  },
+  "items": [],
+  "ac": {
+    "value": null,
+    "conditional": null,
+    "saves_note": null
+  },
+  "saves": {
+    "fort": null,
+    "ref": null,
+    "will": null
+  },
+  "hp": {
+    "value": null,
+    "special": null
+  },
+  "hardness": null,
+  "immunities": [],
+  "weaknesses": [
+    {
+      "type": "cold iron",
+      "value": 5
+    }
+  ],
+  "resistances": [],
+  "speed": {
+    "walk": 40,
+    "burrow": null,
+    "climb": 20,
+    "fly": null,
+    "swim": null,
+    "special": null
+  },
+  "strikes": [
+    {
+      "kind": "melee",
+      "action": "one-action",
+      "weapon": "[one-action]",
+      "attack_bonus": null,
+      "map_bonuses": null,
+      "traits": [],
+      "damage": [],
+      "effects": null
+    }
+  ],
+  "spell_lists": [],
+  "top_abilities": [],
+  "defensive_abilities": [],
+  "offensive_abilities": [
+    {
+      "name": "Grimstalker Sap",
+      "actions": null,
+      "traits": [
+        "poison"
+      ],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [
+        {
+          "stage": 1,
+          "text": "1d6 poison damage (1 round)"
+        },
+        {
+          "stage": 2,
+          "text": "1d6 poison damage and clumsy 1 (1 round)"
+        },
+        {
+          "stage": 3,
+          "text": "2d6 poison damage and clumsy 2 (1 round)"
+        }
+      ],
+      "body_html": "<b>Grimstalker Sap</b> (<a href=\"Traits.aspx?ID=126\"><u>poison</u></a>) <b>Saving Throw</b> DC <span class=\"EWChange\"><b>24</b></span> Fortitude; <b>Maximum Duration</b> 6 rounds; <b>Stage 1</b> 1d6 poison damage (1 round); <b>Stage 2</b> 1d6 poison damage and <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=3\">clumsy 1</a> (1 round), <b>Stage 3</b> 2d6 poison damage and clumsy 2 (1 round)",
+      "body_text": "Grimstalker Sap (poison) Saving Throw DC 24 Fortitude; Maximum Duration 6 rounds; Stage 1 1d6 poison damage (1 round); Stage 2 1d6 poison damage and clumsy 1 (1 round), Stage 3 2d6 poison damage and clumsy 2 (1 round)"
+    },
+    {
+      "name": "Woodland Stride",
+      "actions": null,
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Woodland Stride</b> A grimstalker can always find a path, almost as if foliage parts before it. A grimstalker ignores difficult terrain caused by plants, such as bushes, vines, and undergrowth. Even plants manipulated by magic don't impede its progress.",
+      "body_text": "Woodland Stride A grimstalker can always find a path, almost as if foliage parts before it. A grimstalker ignores difficult terrain caused by plants, such as bushes, vines, and undergrowth. Even plants manipulated by magic don't impede its progress."
+    }
+  ],
+  "variants": [
+    {
+      "kind": "elite",
+      "url": "Monsters.aspx?ID=691&Elite=true&NoRedirect=1"
+    },
+    {
+      "kind": "normal",
+      "url": "Monsters.aspx?ID=691&NoRedirect=1"
+    },
+    {
+      "kind": "weak",
+      "url": "Monsters.aspx?ID=691&Weak=true&NoRedirect=1"
+    },
+    {
+      "kind": "pwl",
+      "url": "Monsters.aspx?ID=691&PWL=true&NoRedirect=1"
+    }
+  ],
+  "family_links": [],
+  "raw_fields": {
+    "6": "Legacy ContentCE Medium Fey",
+    "13": ", Stealth +",
+    "14": "; low-light vision",
+    "15": ", Intimidation +",
+    "22": "• Fey (Nature)",
+    "Elite": "|",
+    "Normal": "|",
+    "Proficiency without Level": "Print Stat BlockElite GrimstalkerCreature",
+    "marked": ". The +2 damage bonus to non-strike offensive abilities (+4 if the ability is limited, such as spells) is NOT factored in.",
+    "Perception": "+",
+    "Languages": "Aklo, Common",
+    "Skills": "Acrobatics +",
+    "Str": "+4,",
+    "Dex": "+4,",
+    "Con": "+2,",
+    "Int": "+2,",
+    "Wis": "+3,",
+    "Cha": "+2",
+    "Camouflage": "A grimstalker can Hide in natural environments, even if it doesn't have cover."
+  },
+  "links": [
+    {
+      "href": "Rules.aspx?ID=322",
+      "text": "+13/+9",
+      "kind": "Rules",
+      "id": 322
+    },
+    {
+      "href": "Traits.aspx?ID=170",
+      "text": "agile",
+      "kind": "Traits",
+      "id": 170
+    },
+    {
+      "href": "Spells.aspx?ID=94",
+      "text": "earthbind",
+      "kind": "Spells",
+      "id": 94
+    },
+    {
+      "href": "Spells.aspx?ID=366",
+      "text": "wall of thorns",
+      "kind": "Spells",
+      "id": 366
+    },
+    {
+      "href": "Spells.aspx?ID=103",
+      "text": "entangle",
+      "kind": "Spells",
+      "id": 103
+    },
+    {
+      "href": "Spells.aspx?ID=215",
+      "text": "pass without trace",
+      "kind": "Spells",
+      "id": 215
+    },
+    {
+      "href": "Spells.aspx?ID=342",
+      "text": "tree shape",
+      "kind": "Spells",
+      "id": 342
+    },
+    {
+      "href": "Spells.aspx?ID=330",
+      "text": "tanglefoot",
+      "kind": "Spells",
+      "id": 330
+    },
+    {
+      "href": "Traits.aspx?ID=126",
+      "text": "poison",
+      "kind": "Traits",
+      "id": 126
+    },
+    {
+      "href": "Conditions.aspx?ID=3",
+      "text": "clumsy 1",
+      "kind": "Conditions",
+      "id": 3
+    },
+    {
+      "href": "Monsters.aspx?ID=555",
+      "text": "assassin vines",
+      "kind": "Monsters",
+      "id": 555
+    }
+  ],
+  "body_text": "AC 24; Fort +11, Ref +17, Will +14 HP 80; Weaknesses cold iron 5Speed 40 feet, climb 20 feet; woodland stride Melee [one-action] claw +17 [+13/+9] (agile), Damage 2d6+2+7 slashing plus grimstalker sapPrimal Innate Spells DC 24, attack +16 (+4 dmg); 3rd earthbind, wall of thorns; 2nd entangle, pass without trace, tree shape; Cantrips (3rd) tanglefoot Grimstalker Sap (poison) Saving Throw DC 24 Fortitude; Maximum Duration 6 rounds; Stage 1 1d6 poison damage (1 round); Stage 2 1d6 poison damage and clumsy 1 (1 round), Stage 3 2d6 poison damage and clumsy 2 (1 round)Woodland Stride A grimstalker can always find a path, almost as if foliage parts before it. A grimstalker ignores difficult terrain caused by plants, such as bushes, vines, and undergrowth. Even plants manipulated by magic don't impede its progress. Grimstalker ForestryGrimstalkers often harvest the seeds of carnivorous plants, particularly assassin vines, which they sow during their wanderings. Typically they seed their territory's borders with these dangerous plants as a defense tactic, but they also sow gardens and fields, weaponizing these plots of land against hapless gardeners and farmers.",
+  "body_html": "<b>AC</b> <span class=\"EWChange\"><b>24</b></span>; <b>Fort</b> +<span class=\"EWChange\"><b>11</b></span>, <b>Ref</b> +<span class=\"EWChange\"><b>17</b></span>, <b>Will</b> +<span class=\"EWChange\"><b>14</b></span><br><b>HP</b> <span class=\"EWChange\"><b>80</b></span>; <b>Weaknesses</b> cold iron 5<hr><b>Speed</b> 40 feet, climb 20 feet; woodland stride<br><span class=\"hanging-indent\"><b>Melee</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  claw +<span class=\"EWChange\"><b>17</b></span> [<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=322\"><u>+13/+9</u></a>] (<a href=\"Traits.aspx?ID=170\"><u>agile</u></a>), <b>Damage</b> 2d6<span class=\"EWChange\"><b>+2</b></span>+7 slashing plus grimstalker sap</span><b>Primal Innate Spells</b> DC <span class=\"EWChange\"><b>24</b></span>, attack +<span class=\"EWChange\"><b>16</b></span> (<span class=\"EWChange\"><b>+4 dmg</b></span>); <b>3rd</b> <i><u><a href=\"Spells.aspx?ID=94\">earthbind</a></u></i>, <i><u><a href=\"Spells.aspx?ID=366\">wall of thorns</a></u></i>; <b>2nd</b> <i><u><a href=\"Spells.aspx?ID=103\">entangle</a></u></i>, <i><u><a href=\"Spells.aspx?ID=215\">pass without trace</a></u></i>, <i><u><a href=\"Spells.aspx?ID=342\">tree shape</a></u></i>; <b>Cantrips</b> <b>(3rd)</b> <i><u><a href=\"Spells.aspx?ID=330\">tanglefoot</a></u></i><br><span class=\"hanging-indent\"><b>Grimstalker Sap</b> (<a href=\"Traits.aspx?ID=126\"><u>poison</u></a>) <b>Saving Throw</b> DC <span class=\"EWChange\"><b>24</b></span> Fortitude; <b>Maximum Duration</b> 6 rounds; <b>Stage 1</b> 1d6 poison damage (1 round); <b>Stage 2</b> 1d6 poison damage and <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=3\">clumsy 1</a> (1 round), <b>Stage 3</b> 2d6 poison damage and clumsy 2 (1 round)</span><span class=\"hanging-indent\"><b>Woodland Stride</b> A grimstalker can always find a path, almost as if foliage parts before it. A grimstalker ignores difficult terrain caused by plants, such as bushes, vines, and undergrowth. Even plants manipulated by magic don't impede its progress.</span><h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Grimstalker Forestry</h3>Grimstalkers often harvest the seeds of carnivorous plants, particularly <a style=\"text-decoration:underline\" href=\"Monsters.aspx?ID=555\">assassin vines</a>, which they sow during their wanderings. Typically they seed their territory's borders with these dangerous plants as a defense tactic, but they also sow gardens and fields, weaponizing these plots of land against hapless gardeners and farmers.",
+  "meta_description": "These violently murderous fey have one purpose: to stealthily hunt down and slay humanoids brazen enough to dare set foot in the wilderness. Though they prefer to hunt from the shadows, grimstalkers do not fear taking their grisly work to the very edges of civilization. This boldness serves as a reminder that nature can be cruel, capricious, and owes no debt to humanity. Grimstalkers are happy to perform nature's dirty work and particularly enjoy targeting loggers, hunters, and explorers, regardless of whether they respect the natural setting they work or travel within. Grimstalkers are gaunt and hairless, and their mottled, green and brown flesh gives them the appearance of moss-draped bark. When damaged, they bleed a thick, sap-like blood. They mark their territories by lopping off the heads of their victims and stringing them up in the surrounding trees, a practice that often lures dangerous scavengers into their lands. Carnivorous and thorny plants are often found in wilds where grimstalkers dwell, filling roles that pets might in human society, though grimstalkers tend to treat these “pets” poorly at best. There are few accounts of grimstalkers working with other fey—for the most part, grimstalkers see their kin from the First World as cowards or weaklings, or perhaps both. Even notoriously violent fey such as redcaps shy from them, as grimstalkers consider their own kind the only company worth keeping. Grimstalkers hunt in small bands, using stealth to approach their targets. They surround enemies first, then work to unnerve them by knocking on trees or howling out threats in Aklo to distract and panic their quarry. Of course, a band of grimstalkers won't stay together for long, quickly succumbing to bickering and infighting. These violent arguments are common pastimes among grimstalkers, often ending with each grimstalker going its own way. Not even the presence of more powerful fey or commanding creatures can keep grimstalkers from their predisposed bickering. Some scholars theorize that this quality speaks to an ancient curse that once afflicted fey who were judged too cantankerous, but in truth, it's just part of what makes a grimstalker what it is: ill-tempered, confrontational, and bitter.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Monsters, Grimstalker"
+}

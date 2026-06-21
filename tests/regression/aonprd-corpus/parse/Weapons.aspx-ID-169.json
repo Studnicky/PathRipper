@@ -1,0 +1,110 @@
+{
+  "_type": "weapon",
+  "url": "https://2e.aonprd.com/Weapons.aspx?ID=169",
+  "weapon_id": 169,
+  "name": "Gaff",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Weapons.aspx?ID=169&NoRedirect=1",
+  "traits": [
+    "Trip",
+    "Versatile P"
+  ],
+  "trait_ids": {
+    "Trip": 196,
+    "Versatile P": 200
+  },
+  "source": {
+    "book": "Battlecry!",
+    "page": 118,
+    "source_id": 268
+  },
+  "sources": [
+    {
+      "book": "Battlecry!",
+      "page": 118,
+      "source_id": 268,
+      "raw": "Battlecry! pg. 118"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 283,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 283"
+    }
+  ],
+  "favored_weapon": [],
+  "price": {
+    "gp": 1,
+    "sp": null,
+    "cp": null,
+    "raw": "1 gp"
+  },
+  "damage": {
+    "dice": "1d6",
+    "type": "B",
+    "rider": null
+  },
+  "bulk": 1,
+  "hands": "1",
+  "reload": null,
+  "range": null,
+  "ammunition": null,
+  "weapon_type": "melee",
+  "category": "martial",
+  "group": {
+    "name": "Club",
+    "group_id": 5
+  },
+  "description_html": "These hooked staffs are popular among fishers and warriors alike.",
+  "description_text": "These hooked staffs are popular among fishers and warriors alike.",
+  "critical_specialization": {
+    "source": "Core Rulebook pg. 283",
+    "by_group": {
+      "Club": "You knock the target away from you up to 10 feet (you choose the distance). This is forced movement."
+    }
+  },
+  "specific_magic_weapons": [],
+  "trait_glossary": [
+    {
+      "trait": "Trip",
+      "description": "You can use this weapon to Trip with the Athletics skill even if you don't have a free hand. This uses the weapon's reach (if different from your own) and adds the weapon's item bonus to attack rolls as an item bonus to the Athletics check. If you critically fail a check to Trip using the weapon, you can drop the weapon to take the effects of a failure instead of a critical failure."
+    },
+    {
+      "trait": "Versatile P",
+      "description": "A versatile weapon can be used to deal a different type of damage than its listed type. This trait indicates the alternate damage type. For instance, a piercing weapon with versatile S can deal piercing or slashing damage. You choose the damage type each time you attack."
+    }
+  ],
+  "raw_fields": {
+    "Price": "1 gp",
+    "Damage": "1d6 B",
+    "Bulk": "1",
+    "Hands": "1",
+    "Type": "Melee",
+    "Category": "Martial",
+    "Group": "Club"
+  },
+  "links": [
+    {
+      "href": "Actions.aspx?ID=2382",
+      "text": "Trip",
+      "kind": "Actions",
+      "id": 2382
+    },
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 283",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "Rules.aspx?ID=451",
+      "text": "forced movement",
+      "kind": "Rules",
+      "id": 451
+    }
+  ],
+  "meta_description": "These hooked staffs are popular among fishers and warriors alike.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Weapons, Gaff"
+}

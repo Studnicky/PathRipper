@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * const opts: BaseErrorOptionsInterface = {
+ * const opts: BaseErrorOptionsType = {
  *   code: 'SCRAPE_FAILED',
  *   cause: originalError,
  *   metadata: { url: 'https://example.com' },
@@ -20,7 +20,7 @@
  * @see {@link BaseErrorJsonType}
  * @group Types
  */
-export interface BaseErrorOptionsInterface {
+export type BaseErrorOptionsType = {
   /** Optional override for the auto-derived error code. */
   readonly code?:      string | undefined;
   /** Underlying error that caused this one. */
@@ -29,7 +29,7 @@ export interface BaseErrorOptionsInterface {
   readonly metadata?:  Readonly<Record<string, unknown>> | undefined;
   /** Whether the operation that produced this error can be retried. */
   readonly retryable?: boolean | undefined;
-}
+};
 
 /**
  * JSON-serializable shape produced by `BaseError.toJson()`.
@@ -47,7 +47,7 @@ export interface BaseErrorOptionsInterface {
  *
  * @category Errors
  * @since 2.0.0
- * @see {@link BaseErrorOptionsInterface}
+ * @see {@link BaseErrorOptionsType}
  * @group Types
  */
 export type BaseErrorJsonType = Readonly<{

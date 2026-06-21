@@ -1,0 +1,339 @@
+{
+  "_type": "ancestry",
+  "url": "https://2e.aonprd.com/Ancestries.aspx?ID=89",
+  "entity_id": 89,
+  "name": "Sarangay",
+  "rarity": "rare",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Rare",
+    "Humanoid",
+    "Sarangay"
+  ],
+  "trait_ids": {
+    "Rare": 683,
+    "Humanoid": 628,
+    "Sarangay": 829
+  },
+  "source": {
+    "book": "Tian Xia Character Guide",
+    "page": 59,
+    "source_id": 230
+  },
+  "sources": [
+    {
+      "book": "Tian Xia Character Guide",
+      "page": 59,
+      "source_id": 230,
+      "raw": "Tian Xia Character Guide pg. 59"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Show off your head gem to loved ones but hide it from those that you don't trust.</li><li>Exalt a warrior culture that focuses on protecting what's yours as well as the forests and lands around your settlements.</li><li>Be overly protective of those you care about, even to violent ends.</li></ul>",
+      "body_text": "Show off your head gem to loved ones but hide it from those that you don't trust.Exalt a warrior culture that focuses on protecting what's yours as well as the forests and lands around your settlements.Be overly protective of those you care about, even to violent ends.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Are circumspect about the topic of your head gem,either out of empathetic respect or scheming greed.</li><li>Trust your word when you say you would protect the ones you love.</li><li>Underestimate just how gentle you can be when it comes to those you care for.</li></ul>",
+      "body_text": "Are circumspect about the topic of your head gem,either out of empathetic respect or scheming greed.Trust your word when you say you would protect the ones you love.Underestimate just how gentle you can be when it comes to those you care for.",
+      "links": []
+    },
+    {
+      "heading": "Physical Description",
+      "level": 2,
+      "body_html": "Sarangay are tall warriors with humanoid bodies that almost always have naturally heavy builds. They average at about 6 to 7 feet tall and have visibly muscular physiques—sarangay very often describe humans and similarly built ancestries as “slender” due to the difference between their typical figures. Their eyes are black orbs with white crescents for pupils. They have large, clawed hands, while their legs end in hooves that have the capacity to topple trees. Sarangay reach adulthood when their horns reach 2 feet in length. Their jewelry tends to include large horn platings, nose rings, and excessively large bangles made of gold common in the forests where sarangay live. <br><br>From birth, every sarangay has a giant gleaming stone upon their brow known as their head gem, which houses their soul. When sarangay choose a partner, they switch their head gems with each other and are in love for the rest of their lives. Unsurprisingly, sarangay are belligerent against anyone who would steal these gems. Unfortunately, the size, quality, and rarity of the head gems give them a staggering market value, and their spiritual associations attract unscrupulous magicians.Callous nobles of Tian Xia love to carve such gems into decorations or display the gems upon their desks and in their lavish living areas.<br>",
+      "body_text": "Sarangay are tall warriors with humanoid bodies that almost always have naturally heavy builds. They average at about 6 to 7 feet tall and have visibly muscular physiques—sarangay very often describe humans and similarly built ancestries as “slender” due to the difference between their typical figures. Their eyes are black orbs with white crescents for pupils. They have large, clawed hands, while their legs end in hooves that have the capacity to topple trees. Sarangay reach adulthood when their horns reach 2 feet in length. Their jewelry tends to include large horn platings, nose rings, and excessively large bangles made of gold common in the forests where sarangay live. From birth, every sarangay has a giant gleaming stone upon their brow known as their head gem, which houses their soul. When sarangay choose a partner, they switch their head gems with each other and are in love for the rest of their lives. Unsurprisingly, sarangay are belligerent against anyone who would steal these gems. Unfortunately, the size, quality, and rarity of the head gems give them a staggering market value, and their spiritual associations attract unscrupulous magicians.Callous nobles of Tian Xia love to carve such gems into decorations or display the gems upon their desks and in their lavish living areas.",
+      "links": []
+    },
+    {
+      "heading": "Society",
+      "level": 2,
+      "body_html": "Sarangay are strong individually, but together, they're considered unbeatable. Most sarangay communities are small villages deep within the forests, but they demonstrate the same amount of diversity as the other ancestries of Tian Xia. These settlements are built out of houses that can be easily destroyed and remade; these residences can be moved with the shifting seasons and tides, to avoid invaders and other threats, and to uphold the proper geomancy of a village. The center of a village is always the house of the village chief, usually known as the datu, or sometimes ratu. The datu's house is known as the kraton, a large multi-storied palace made of the best hardwood, lacquered and oiled, making it less disposable than the other houses. <br><br>The datu is surrounded in their daily lives by their closest companions, usually either their own kin or a coterie of vassals who are indebted to the datu and are obliged to fight as the datu's own warband of faithful knights. Those sarangay related to the datu are often known as nobles, and they can take on any profession of their liking. The rest of the village is made up of commoners who do a large amount of the work for the village. They render a part of their labor to the datu in return for the protection and prestige of the datu's stewardship. This hierarchy isn't mandated by some divinity, but rather out of respect for a worthy leader. Datu who are deemed unworthy by the rest of the village are often overthrown by the concerted efforts of the commoners, who then choose a better datu, who can even come from their own ranks.<br><br>Sarangay hold their gleaming head gems in the highest regard, for the gems are said to contain their souls and all their memories. If a sarangay's gem is destroyed, it can regrow through the help of a shaman's ritual, but the gem-less sarangay falls into a state of dreamless stupor until then. Entire warbands are formed in villages to protect against poachers and adventurers who would steal head gems to achieve untold riches.<br>",
+      "body_text": "Sarangay are strong individually, but together, they're considered unbeatable. Most sarangay communities are small villages deep within the forests, but they demonstrate the same amount of diversity as the other ancestries of Tian Xia. These settlements are built out of houses that can be easily destroyed and remade; these residences can be moved with the shifting seasons and tides, to avoid invaders and other threats, and to uphold the proper geomancy of a village. The center of a village is always the house of the village chief, usually known as the datu, or sometimes ratu. The datu's house is known as the kraton, a large multi-storied palace made of the best hardwood, lacquered and oiled, making it less disposable than the other houses. The datu is surrounded in their daily lives by their closest companions, usually either their own kin or a coterie of vassals who are indebted to the datu and are obliged to fight as the datu's own warband of faithful knights. Those sarangay related to the datu are often known as nobles, and they can take on any profession of their liking. The rest of the village is made up of commoners who do a large amount of the work for the village. They render a part of their labor to the datu in return for the protection and prestige of the datu's stewardship. This hierarchy isn't mandated by some divinity, but rather out of respect for a worthy leader. Datu who are deemed unworthy by the rest of the village are often overthrown by the concerted efforts of the commoners, who then choose a better datu, who can even come from their own ranks. Sarangay hold their gleaming head gems in the highest regard, for the gems are said to contain their souls and all their memories. If a sarangay's gem is destroyed, it can regrow through the help of a shaman's ritual, but the gem-less sarangay falls into a state of dreamless stupor until then. Entire warbands are formed in villages to protect against poachers and adventurers who would steal head gems to achieve untold riches.",
+      "links": []
+    },
+    {
+      "heading": "Beliefs",
+      "level": 2,
+      "body_html": " Despite their inherent occult powers, sarangay are very attuned to the forces of nature and the rhythms of wild places. They particularly hold the moon, which they call Ama Vulan—Father Moon—in the highest regard. Sarangay believe their horns represent the moon in its crescent phase, and their head gem is the moon at its fullest. During the full moon, sarangay perform intricate rituals to earn merit and favor from Father Moon, whom they believe to be their First Ancestor. Other than Father Moon and Mother Earth, they pay proper reverence to the thousand little gods who live in the leaves, in the droplets of water, in the embers of a bonfire. Sarangay believe that nature is inherently divine and alive, living much like they do.<br><br><b>Popular Edicts</b> protect what's yours, seek to understand the duality of the earth and moon, spend time enjoying the rhythms of nature <br><br><b>Popular Anathema</b> betray a worthy leader, remove your head gem without good cause<br>",
+      "body_text": "Despite their inherent occult powers, sarangay are very attuned to the forces of nature and the rhythms of wild places. They particularly hold the moon, which they call Ama Vulan—Father Moon—in the highest regard. Sarangay believe their horns represent the moon in its crescent phase, and their head gem is the moon at its fullest. During the full moon, sarangay perform intricate rituals to earn merit and favor from Father Moon, whom they believe to be their First Ancestor. Other than Father Moon and Mother Earth, they pay proper reverence to the thousand little gods who live in the leaves, in the droplets of water, in the embers of a bonfire. Sarangay believe that nature is inherently divine and alive, living much like they do. Popular Edicts protect what's yours, seek to understand the duality of the earth and moon, spend time enjoying the rhythms of nature Popular Anathema betray a worthy leader, remove your head gem without good cause",
+      "links": []
+    },
+    {
+      "heading": "Names",
+      "level": 2,
+      "body_html": "Dakal, Davvun, Karatallu, Kasta, Kunnasi, Makkan Vulan, Mangi Yavu, Mappia, Nallutu, Ngatta, Nikanni, Sikamu, Tadday, Tullung, Uzzin, Vulu Vvuga",
+      "body_text": "Dakal, Davvun, Karatallu, Kasta, Kunnasi, Makkan Vulan, Mangi Yavu, Mappia, Nallutu, Ngatta, Nikanni, Sikamu, Tadday, Tullung, Uzzin, Vulu Vvuga",
+      "links": []
+    },
+    {
+      "heading": "Hit Points",
+      "level": 2,
+      "body_html": "8<br>",
+      "body_text": "8",
+      "links": []
+    },
+    {
+      "heading": "Size",
+      "level": 2,
+      "body_html": "Medium<br>",
+      "body_text": "Medium",
+      "links": []
+    },
+    {
+      "heading": "Speed",
+      "level": 2,
+      "body_html": "25 feet<br>",
+      "body_text": "25 feet",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "Strength<br>Charisma<br>Free<br>",
+      "body_text": "Strength Charisma Free",
+      "links": []
+    },
+    {
+      "heading": "Attribute Flaw",
+      "level": 2,
+      "body_html": "Wisdom<br>",
+      "body_text": "Wisdom",
+      "links": []
+    },
+    {
+      "heading": "Languages",
+      "level": 2,
+      "body_html": "<a href=\"Languages.aspx?ID=155\">Common</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=16\">Empyreal</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=87\">Nagaji</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=109\">Petran</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=110\">Pyric</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=111\">Sussuran</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=113\">Thalassic</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=181\">Yaksha</a>, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "body_text": "Common Additional languages equal to your Intelligence modifier (if it's positive). Choose from Empyreal, Fey, Nagaji, Petran, Pyric, Sussuran, Thalassic, Yaksha, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "links": [
+        {
+          "href": "Languages.aspx?ID=155",
+          "text": "Common",
+          "kind": "Languages",
+          "id": 155
+        },
+        {
+          "href": "Languages.aspx?ID=16",
+          "text": "Empyreal",
+          "kind": "Languages",
+          "id": 16
+        },
+        {
+          "href": "Languages.aspx?ID=119",
+          "text": "Fey",
+          "kind": "Languages",
+          "id": 119
+        },
+        {
+          "href": "Languages.aspx?ID=87",
+          "text": "Nagaji",
+          "kind": "Languages",
+          "id": 87
+        },
+        {
+          "href": "Languages.aspx?ID=109",
+          "text": "Petran",
+          "kind": "Languages",
+          "id": 109
+        },
+        {
+          "href": "Languages.aspx?ID=110",
+          "text": "Pyric",
+          "kind": "Languages",
+          "id": 110
+        },
+        {
+          "href": "Languages.aspx?ID=111",
+          "text": "Sussuran",
+          "kind": "Languages",
+          "id": 111
+        },
+        {
+          "href": "Languages.aspx?ID=113",
+          "text": "Thalassic",
+          "kind": "Languages",
+          "id": 113
+        },
+        {
+          "href": "Languages.aspx?ID=181",
+          "text": "Yaksha",
+          "kind": "Languages",
+          "id": 181
+        }
+      ]
+    },
+    {
+      "heading": "Head Gem",
+      "level": 2,
+      "body_html": "Upon your brow is a gem that houses your soul. When <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2863\">casting any spell</a> or ritual to return you to life, your intact head gem can be substituted for your body. While you can freely remove your head gem, it's typically impossible for another creature to forcibly remove or destroy your head gem unless you're killed or permanently incapacitated first; at the GM's discretion, powerful magic or abilities can circumvent this restriction. If your head gem is removed or destroyed, it can be regrown using a day-long ritual. When this occurs, any remains of the previous gem immediately crumble to dust.",
+      "body_text": "Upon your brow is a gem that houses your soul. When casting any spell or ritual to return you to life, your intact head gem can be substituted for your body. While you can freely remove your head gem, it's typically impossible for another creature to forcibly remove or destroy your head gem unless you're killed or permanently incapacitated first; at the GM's discretion, powerful magic or abilities can circumvent this restriction. If your head gem is removed or destroyed, it can be regrown using a day-long ritual. When this occurs, any remains of the previous gem immediately crumble to dust.",
+      "links": [
+        {
+          "href": "Actions.aspx?ID=2863",
+          "text": "casting any spell",
+          "kind": "Actions",
+          "id": 2863
+        }
+      ]
+    },
+    {
+      "heading": "Horns",
+      "level": 2,
+      "body_html": "Your powerful horns are formidable weapons. You have a horns unarmed attack that deals 1d6 piercing damage and has the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=694\">shove</a> trait. Your horns are in the <a style=\"text-decoration:underline\" href=\"WeaponGroups.aspx?ID=4\">brawling</a>  group.",
+      "body_text": "Your powerful horns are formidable weapons. You have a horns unarmed attack that deals 1d6 piercing damage and has the shove trait. Your horns are in the brawling group.",
+      "links": [
+        {
+          "href": "Traits.aspx?ID=694",
+          "text": "shove",
+          "kind": "Traits",
+          "id": 694
+        },
+        {
+          "href": "WeaponGroups.aspx?ID=4",
+          "text": "brawling",
+          "kind": "WeaponGroups",
+          "id": 4
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Ancestries.aspx?ID=89",
+      "text": "Sarangay",
+      "kind": "Ancestries",
+      "id": 89
+    },
+    {
+      "href": "/Traits.aspx?ID=683",
+      "text": "Rare",
+      "kind": "Traits",
+      "id": 683
+    },
+    {
+      "href": "/Traits.aspx?ID=628",
+      "text": "Humanoid",
+      "kind": "Traits",
+      "id": 628
+    },
+    {
+      "href": "/Traits.aspx?ID=829",
+      "text": "Sarangay",
+      "kind": "Traits",
+      "id": 829
+    },
+    {
+      "href": "Sources.aspx?ID=230",
+      "text": "Tian Xia Character Guide pg. 59",
+      "kind": "Sources",
+      "id": 230
+    },
+    {
+      "href": "Languages.aspx?ID=155",
+      "text": "Common",
+      "kind": "Languages",
+      "id": 155
+    },
+    {
+      "href": "Languages.aspx?ID=16",
+      "text": "Empyreal",
+      "kind": "Languages",
+      "id": 16
+    },
+    {
+      "href": "Languages.aspx?ID=119",
+      "text": "Fey",
+      "kind": "Languages",
+      "id": 119
+    },
+    {
+      "href": "Languages.aspx?ID=87",
+      "text": "Nagaji",
+      "kind": "Languages",
+      "id": 87
+    },
+    {
+      "href": "Languages.aspx?ID=109",
+      "text": "Petran",
+      "kind": "Languages",
+      "id": 109
+    },
+    {
+      "href": "Languages.aspx?ID=110",
+      "text": "Pyric",
+      "kind": "Languages",
+      "id": 110
+    },
+    {
+      "href": "Languages.aspx?ID=111",
+      "text": "Sussuran",
+      "kind": "Languages",
+      "id": 111
+    },
+    {
+      "href": "Languages.aspx?ID=113",
+      "text": "Thalassic",
+      "kind": "Languages",
+      "id": 113
+    },
+    {
+      "href": "Languages.aspx?ID=181",
+      "text": "Yaksha",
+      "kind": "Languages",
+      "id": 181
+    },
+    {
+      "href": "Actions.aspx?ID=2863",
+      "text": "casting any spell",
+      "kind": "Actions",
+      "id": 2863
+    },
+    {
+      "href": "Traits.aspx?ID=694",
+      "text": "shove",
+      "kind": "Traits",
+      "id": 694
+    },
+    {
+      "href": "WeaponGroups.aspx?ID=4",
+      "text": "brawling",
+      "kind": "WeaponGroups",
+      "id": 4
+    }
+  ],
+  "body_text": "Powerful carabao-headed warriors who live on the isles of Minata. Known for the magical gems in their foreheads that are said to contain their souls. Sarangay are carabao-headed people who have long survived deep in the forests across Tian Xia. Many adventurers have thought them to be monsters at first, but sarangay are nothing more than a thriving society who value their community and their souls above all else. Their cultures are built upon the intense desire to protect their communities and their chosen leader. Their horns are said to be a crescent moon, and their towering statures are said to have come from their ancestors being stretched so far up to reach their Father Moon while their Mother Earth kept them close to her bosom. They revere the great Father Moon, their First Ancestor, and endeavor to protect and exalt nature above all else, for they understand that they're part of it. Sarangay tend to be rare and appear even rarer within the diverse confines of adventuring cities. When they leave their society, it's typically because they either have a duty to fulfill or they must depart in order to save their community. In the rising chaos of the modern lands of Tian Xia, more sarangay have begun to venture out into the world, either preemptively investigating potential threats or facing a breakdown in their own societies. The most tragic sarangay are those who wander alone because they have nothing and no one to protect and care for. If you want to play a character who is at home in the wild, possesses inherent occult power, is sharply aware of their impressive strength, and comes from a proud culture, you should play a sarangay.You Might...Show off your head gem to loved ones but hide it from those that you don't trust.Exalt a warrior culture that focuses on protecting what's yours as well as the forests and lands around your settlements.Be overly protective of those you care about, even to violent ends.Others Probably...Are circumspect about the topic of your head gem,either out of empathetic respect or scheming greed.Trust your word when you say you would protect the ones you love.Underestimate just how gentle you can be when it comes to those you care for.Physical DescriptionSarangay are tall warriors with humanoid bodies that almost always have naturally heavy builds. They average at about 6 to 7 feet tall and have visibly muscular physiques—sarangay very often describe humans and similarly built ancestries as “slender” due to the difference between their typical figures. Their eyes are black orbs with white crescents for pupils. They have large, clawed hands, while their legs end in hooves that have the capacity to topple trees. Sarangay reach adulthood when their horns reach 2 feet in length. Their jewelry tends to include large horn platings, nose rings, and excessively large bangles made of gold common in the forests where sarangay live. From birth, every sarangay has a giant gleaming stone upon their brow known as their head gem, which houses their soul. When sarangay choose a partner, they switch their head gems with each other and are in love for the rest of their lives. Unsurprisingly, sarangay are belligerent against anyone who would steal these gems. Unfortunately, the size, quality, and rarity of the head gems give them a staggering market value, and their spiritual associations attract unscrupulous magicians.Callous nobles of Tian Xia love to carve such gems into decorations or display the gems upon their desks and in their lavish living areas. SocietySarangay are strong individually, but together, they're considered unbeatable. Most sarangay communities are small villages deep within the forests, but they demonstrate the same amount of diversity as the other ancestries of Tian Xia. These settlements are built out of houses that can be easily destroyed and remade; these residences can be moved with the shifting seasons and tides, to avoid invaders and other threats, and to uphold the proper geomancy of a village. The center of a village is always the house of the village chief, usually known as the datu, or sometimes ratu. The datu's house is known as the kraton, a large multi-storied palace made of the best hardwood, lacquered and oiled, making it less disposable than the other houses. The datu is surrounded in their daily lives by their closest companions, usually either their own kin or a coterie of vassals who are indebted to the datu and are obliged to fight as the datu's own warband of faithful knights. Those sarangay related to the datu are often known as nobles, and they can take on any profession of their liking. The rest of the village is made up of commoners who do a large amount of the work for the village. They render a part of their labor to the datu in return for the protection and prestige of the datu's stewardship. This hierarchy isn't mandated by some divinity, but rather out of respect for a worthy leader. Datu who are deemed unworthy by the rest of the village are often overthrown by the concerted efforts of the commoners, who then choose a better datu, who can even come from their own ranks. Sarangay hold their gleaming head gems in the highest regard, for the gems are said to contain their souls and all their memories. If a sarangay's gem is destroyed, it can regrow through the help of a shaman's ritual, but the gem-less sarangay falls into a state of dreamless stupor until then. Entire warbands are formed in villages to protect against poachers and adventurers who would steal head gems to achieve untold riches. Beliefs Despite their inherent occult powers, sarangay are very attuned to the forces of nature and the rhythms of wild places. They particularly hold the moon, which they call Ama Vulan—Father Moon—in the highest regard. Sarangay believe their horns represent the moon in its crescent phase, and their head gem is the moon at its fullest. During the full moon, sarangay perform intricate rituals to earn merit and favor from Father Moon, whom they believe to be their First Ancestor. Other than Father Moon and Mother Earth, they pay proper reverence to the thousand little gods who live in the leaves, in the droplets of water, in the embers of a bonfire. Sarangay believe that nature is inherently divine and alive, living much like they do. Popular Edicts protect what's yours, seek to understand the duality of the earth and moon, spend time enjoying the rhythms of nature Popular Anathema betray a worthy leader, remove your head gem without good cause NamesDakal, Davvun, Karatallu, Kasta, Kunnasi, Makkan Vulan, Mangi Yavu, Mappia, Nallutu, Ngatta, Nikanni, Sikamu, Tadday, Tullung, Uzzin, Vulu VvugaSarangay MechanicsHit Points8 SizeMedium Speed25 feet Attribute BoostsStrength Charisma Free Attribute FlawWisdom LanguagesCommon Additional languages equal to your Intelligence modifier (if it's positive). Choose from Empyreal, Fey, Nagaji, Petran, Pyric, Sussuran, Thalassic, Yaksha, and any other languages to which you have access (such as the languages prevalent in your region).Head GemUpon your brow is a gem that houses your soul. When casting any spell or ritual to return you to life, your intact head gem can be substituted for your body. While you can freely remove your head gem, it's typically impossible for another creature to forcibly remove or destroy your head gem unless you're killed or permanently incapacitated first; at the GM's discretion, powerful magic or abilities can circumvent this restriction. If your head gem is removed or destroyed, it can be regrown using a day-long ritual. When this occurs, any remains of the previous gem immediately crumble to dust.HornsYour powerful horns are formidable weapons. You have a horns unarmed attack that deals 1d6 piercing damage and has the shove trait. Your horns are in the brawling group.",
+  "body_html": "<i>Powerful carabao-headed warriors who live on the isles of Minata. Known for the magical gems in their foreheads that are said to contain their souls.</i><br><br>Sarangay are carabao-headed people who have long survived deep in the forests across Tian Xia. Many adventurers have thought them to be monsters at first, but sarangay are nothing more than a thriving society who value their community and their souls above all else. Their cultures are built upon the intense desire to protect their communities and their chosen leader. Their horns are said to be a crescent moon, and their towering statures are said to have come from their ancestors being stretched so far up to reach their Father Moon while their Mother Earth kept them close to her bosom. They revere the great Father Moon, their First Ancestor, and endeavor to protect and exalt nature above all else, for they understand that they're part of it. <br><br>Sarangay tend to be rare and appear even rarer within the diverse confines of adventuring cities. When they leave their society, it's typically because they either have a duty to fulfill or they must depart in order to save their community. In the rising chaos of the modern lands of Tian Xia, more sarangay have begun to venture out into the world, either preemptively investigating potential threats or facing a breakdown in their own societies. The most tragic sarangay are those who wander alone because they have nothing and no one to protect and care for. <br><br>If you want to play a character who is at home in the wild, possesses inherent occult power, is sharply aware of their impressive strength, and comes from a proud culture, you should play a sarangay.<h2 class=\"title\">You Might...</h2><ul><li>Show off your head gem to loved ones but hide it from those that you don't trust.</li><li>Exalt a warrior culture that focuses on protecting what's yours as well as the forests and lands around your settlements.</li><li>Be overly protective of those you care about, even to violent ends.</li></ul><h2 class=\"title\">Others Probably...</h2><ul><li>Are circumspect about the topic of your head gem,either out of empathetic respect or scheming greed.</li><li>Trust your word when you say you would protect the ones you love.</li><li>Underestimate just how gentle you can be when it comes to those you care for.</li></ul><h2 class=\"title\">Physical Description</h2>Sarangay are tall warriors with humanoid bodies that almost always have naturally heavy builds. They average at about 6 to 7 feet tall and have visibly muscular physiques—sarangay very often describe humans and similarly built ancestries as “slender” due to the difference between their typical figures. Their eyes are black orbs with white crescents for pupils. They have large, clawed hands, while their legs end in hooves that have the capacity to topple trees. Sarangay reach adulthood when their horns reach 2 feet in length. Their jewelry tends to include large horn platings, nose rings, and excessively large bangles made of gold common in the forests where sarangay live. <br><br>From birth, every sarangay has a giant gleaming stone upon their brow known as their head gem, which houses their soul. When sarangay choose a partner, they switch their head gems with each other and are in love for the rest of their lives. Unsurprisingly, sarangay are belligerent against anyone who would steal these gems. Unfortunately, the size, quality, and rarity of the head gems give them a staggering market value, and their spiritual associations attract unscrupulous magicians.Callous nobles of Tian Xia love to carve such gems into decorations or display the gems upon their desks and in their lavish living areas.<br><h2 class=\"title\">Society</h2>Sarangay are strong individually, but together, they're considered unbeatable. Most sarangay communities are small villages deep within the forests, but they demonstrate the same amount of diversity as the other ancestries of Tian Xia. These settlements are built out of houses that can be easily destroyed and remade; these residences can be moved with the shifting seasons and tides, to avoid invaders and other threats, and to uphold the proper geomancy of a village. The center of a village is always the house of the village chief, usually known as the datu, or sometimes ratu. The datu's house is known as the kraton, a large multi-storied palace made of the best hardwood, lacquered and oiled, making it less disposable than the other houses. <br><br>The datu is surrounded in their daily lives by their closest companions, usually either their own kin or a coterie of vassals who are indebted to the datu and are obliged to fight as the datu's own warband of faithful knights. Those sarangay related to the datu are often known as nobles, and they can take on any profession of their liking. The rest of the village is made up of commoners who do a large amount of the work for the village. They render a part of their labor to the datu in return for the protection and prestige of the datu's stewardship. This hierarchy isn't mandated by some divinity, but rather out of respect for a worthy leader. Datu who are deemed unworthy by the rest of the village are often overthrown by the concerted efforts of the commoners, who then choose a better datu, who can even come from their own ranks.<br><br>Sarangay hold their gleaming head gems in the highest regard, for the gems are said to contain their souls and all their memories. If a sarangay's gem is destroyed, it can regrow through the help of a shaman's ritual, but the gem-less sarangay falls into a state of dreamless stupor until then. Entire warbands are formed in villages to protect against poachers and adventurers who would steal head gems to achieve untold riches.<br><h2 class=\"title\">Beliefs</h2> Despite their inherent occult powers, sarangay are very attuned to the forces of nature and the rhythms of wild places. They particularly hold the moon, which they call Ama Vulan—Father Moon—in the highest regard. Sarangay believe their horns represent the moon in its crescent phase, and their head gem is the moon at its fullest. During the full moon, sarangay perform intricate rituals to earn merit and favor from Father Moon, whom they believe to be their First Ancestor. Other than Father Moon and Mother Earth, they pay proper reverence to the thousand little gods who live in the leaves, in the droplets of water, in the embers of a bonfire. Sarangay believe that nature is inherently divine and alive, living much like they do.<br><br><b>Popular Edicts</b> protect what's yours, seek to understand the duality of the earth and moon, spend time enjoying the rhythms of nature <br><br><b>Popular Anathema</b> betray a worthy leader, remove your head gem without good cause<br><h2 class=\"title\">Names</h2>Dakal, Davvun, Karatallu, Kasta, Kunnasi, Makkan Vulan, Mangi Yavu, Mappia, Nallutu, Ngatta, Nikanni, Sikamu, Tadday, Tullung, Uzzin, Vulu Vvuga<h1 class=\"title\">Sarangay Mechanics</h1><h2 class=\"title\">Hit Points</h2>8<br><h2 class=\"title\">Size</h2>Medium<br><h2 class=\"title\">Speed</h2>25 feet<br><h2 class=\"title\">Attribute Boosts</h2>Strength<br>Charisma<br>Free<br><h2 class=\"title\">Attribute Flaw</h2>Wisdom<br><h2 class=\"title\">Languages</h2><a href=\"Languages.aspx?ID=155\">Common</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=16\">Empyreal</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=87\">Nagaji</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=109\">Petran</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=110\">Pyric</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=111\">Sussuran</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=113\">Thalassic</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=181\">Yaksha</a>, and any other languages to which you have access (such as the languages prevalent in your region).<h2 class=\"title\">Head Gem</h2>Upon your brow is a gem that houses your soul. When <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2863\">casting any spell</a> or ritual to return you to life, your intact head gem can be substituted for your body. While you can freely remove your head gem, it's typically impossible for another creature to forcibly remove or destroy your head gem unless you're killed or permanently incapacitated first; at the GM's discretion, powerful magic or abilities can circumvent this restriction. If your head gem is removed or destroyed, it can be regrown using a day-long ritual. When this occurs, any remains of the previous gem immediately crumble to dust.<h2 class=\"title\">Horns</h2>Your powerful horns are formidable weapons. You have a horns unarmed attack that deals 1d6 piercing damage and has the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=694\">shove</a> trait. Your horns are in the <a style=\"text-decoration:underline\" href=\"WeaponGroups.aspx?ID=4\">brawling</a>  group.",
+  "meta_description": "Sarangay are carabao-headed people who have long survived deep in the forests across Tian Xia. Many adventurers have thought them to be monsters at first, but sarangay are nothing more than a thriving society who value their community and their souls above all else. Their cultures are built upon the intense desire to protect their communities and their chosen leader. Their horns are said to be a crescent moon, and their towering statures are said to have come from their ancestors being stretched so far up to reach their Father Moon while their Mother Earth kept them close to her bosom. They revere the great Father Moon, their First Ancestor, and endeavor to protect and exalt nature above all else, for they understand that they're part of it. Sarangay tend to be rare and appear even rarer within the diverse confines of adventuring cities. When they leave their society, it's typically because they either have a duty to fulfill or they must depart in order to save their community. In the rising chaos of the modern lands of Tian Xia, more sarangay have begun to venture out into the world, either preemptively investigating potential threats or facing a breakdown in their own societies. The most tragic sarangay are those who wander alone because they have nothing and no one to protect and care for. If you want to play a character who is at home in the wild, possesses inherent occult power, is sharply aware of their impressive strength, and comes from a proud culture, you should play a sarangay.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Ancestries, Ancestry, Sarangay",
+  "mechanics": {
+    "hit_points": null,
+    "size": null,
+    "speed": null,
+    "attribute_boosts": [],
+    "attribute_flaws": [],
+    "languages": {
+      "fixed": [],
+      "bonus_choice": [],
+      "raw": null
+    },
+    "vision": null,
+    "granted": []
+  },
+  "popular_edicts": "protect what's yours, seek to understand the duality of the earth and moon, spend time enjoying the rhythms of nature",
+  "popular_anathema": "betray a worthy leader, remove your head gem without good cause"
+}

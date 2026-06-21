@@ -1,176 +1,118 @@
 ---
 layout: doc
-title: Pipeline
+title: Authoring a DAG
 ---
 
-# Pipeline
+# Authoring a DAG
 
-The pipeline is a typed async middleware queue. Tasks receive `(next, state)`. Call `next()` to hand off; skip it to terminate the chain early.
+A DAG document is the program. You author it with `DAGBuilder`, serialize it with `DAGDocument.serialize()`, and commit the resulting `*.dag.jsonld` file. The runner loads it at startup and dispatches it via the dagonizer engine. No pipeline array, no config compilation — the document is the execution graph.
 
-Problem: Ripperoni needs to fetch a page, parse it with domain-specific logic (your plugin), and write it to disk; three separate concerns. The pipeline lets you plug in custom extraction logic (your parse task) without touching the HTTP or I/O machinery. Each task sees the state that previous tasks wrote and can add to it or skip execution.
+Ripperoni drives all scrape orchestration through [`@studnicky/dagonizer`](https://github.com/Studnicky/Dagonizer). Each run is a DAG dispatched by `RipperDagonizer`, built via `DAGBuilder`.
 
-State machine: Each task either calls `await next()` to advance the queue or returns without calling it to terminate. There's no error handling middleware; if your parse task encounters invalid HTML, it just doesn't set `state.output` and skips `next()`. The write task sees `output === null` and decides (per config) whether to fail, warn, or skip the file. This gives you local control without exception bubbling.
+## Placement types
 
-```ts
-type TaskFnType<TState> = (next: () => Promise<void>, state: TState) => Promise<void>
-```
+A DAG document is a set of named placements wired by output routes.
 
-`TState` extends `Record<string, unknown>`. Tasks mutate state directly; the same reference flows through the whole chain.
+| Placement type | `@type` | Description |
+|---------------|---------|-------------|
+| `SingleNode` | `"SingleNode"` | Runs a registered node instance. `node` field names the registered node. |
+| `ScatterNode` | `"ScatterNode"` | Fans over a list (`source` field) running the body sub-DAG once per item. |
+| `EmbeddedDAGNode` | `"EmbeddedDAGNode"` | Drops a full registered DAG in-place as a single logical step. |
+| `TerminalNode` | `"TerminalNode"` | Ends processing for a path. `outcome` is `"completed"` or `"failed"`. |
 
-```mermaid
-flowchart TD
-    Start["pipeline.execute(state)"] -->|index=0| Task0["task 0"]
-    Task0 -->|calls next| Advance0["index += 1"]
-    Task0 -->|skips next| Done["Done: return state"]
-    Advance0 -->|index=1| Task1["task 1"]
-    Task1 -->|calls next| Advance1["index += 1"]
-    Task1 -->|skips next| Done
-    Advance1 -->|index=N+1| Task2["task N"]
-    Task2 -->|calls next| Advance2["index += 1"]
-    Advance2 -->|index > queue.length| Done
-    Task2 -->|skips next| Done
-```
-
-Why this matters: You can halt processing without throwing errors. If a task decides the data is too bad to parse, it returns without calling `next()`. The write task downstream sees the flag or missing field and handles it gracefully. No try/catch nesting, no promise rejection winding back up the stack.
-
-## TaskRegistry
-
-Tasks are registered by name and resolved at pipeline build time.
+## DAGBuilder API
 
 ```ts
-import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
+import { DAGBuilder, DAGDocument } from '@studnicky/dagonizer';
 
-// Self-registration at import time (the standard pattern)
-TaskRegistry.register('mywiki:parse', async (next, state) => {
-  // ... extract data from state.input.html or state.input.wikitext ...
-  state.output = { /* your record */ };
-  await next();
-});
+const dag = new DAGBuilder('ns:name', '1.0')
+  .entrypoint('first-node')                              // set the entry placement name
+  .node('html:fetch', HtmlFetchNode, {                   // SingleNode placement
+    success: 'next-step',
+    error:   'my-dag:failed',
+  })
+  .embeddedDAG('my-parse', 'myplugin:parse', {          // EmbeddedDAGNode placement
+    success: 'json:write',
+    error:   'my-dag:failed',
+  }, {
+    inputs:  { page: 'page' },
+    outputs: { output: 'output' },
+  })
+  .scatter('fan-out', {                                  // ScatterNode placement
+    source:    'urls',
+    body:      { dag: 'myplugin:page' },
+    container: 'worker',
+    itemKey:   'currentUrl',
+    gather:    { strategy: 'partition', partitions: { success: 'succeeded', error: 'failed' } },
+    reducer:   'aggregate',
+    outputs:   { 'all-success': 'done', partial: 'done', 'all-error': 'done', empty: 'done' },
+  })
+  .terminal('my-dag:completed', { outcome: 'completed' })
+  .terminal('my-dag:failed',    { outcome: 'failed' })
+  .build();
+
+// Serialize to a committed *.dag.jsonld file:
+const jsonld = DAGDocument.serialize(dag);
 ```
 
-Built-in tasks (`html:fetch`, `json:write`) are pre-registered. Plugin tasks register themselves when loaded.
+`DAGBuilder` methods chain. Call `.build()` once when the graph is complete. Pass the result to `DAGDocument.serialize()` to produce the JSON-LD string; write it to a `*.dag.jsonld` file and commit it. The runner loads the file at startup via `PluginLoader`.
 
-Load a plugin file dynamically:
+## Built-in nodes
 
-```ts
-await TaskRegistry.load('./plugins/mywiki.js');
-```
+These nodes are always registered by `PluginLoader.registerBuiltinNodes` — reference them by name in any DAG document:
 
-The module's top-level `TaskRegistry.register(...)` calls fire on import.
+| Node name | Ports | Description |
+|-----------|-------|-------------|
+| `html:fetch` | `success \| cached \| error` | Fetches `state.page.url` via `HtmlScraper`. `cached` port fires on a cache hit. |
+| `wiki:fetch` | `success \| error` | Fetches `state.page.title` via `MediaWikiScraper`. |
+| `html:write-raw` | `success` | Writes raw HTML to `<outDir>/<taskName>/raw/<slug>.html`. |
+| `wiki:write-raw` | `success` | Writes raw wikitext to `<outDir>/<taskName>/raw/<slug>.txt`. |
+| `json:write` | `success \| skipped` | Writes `state.output` as JSON. `skipped` when `state.output` is null. |
+| `jsonl:append` | `success \| skipped` | Appends `state.output` to a JSONL file. `skipped` when `state.output` is null. |
+| `validate:schema` | `valid \| invalid` | Validates `state.output` against a JSON schema. |
+| `crawl:init-frontier` | `ready \| empty` | Initializes the crawl frontier from the `crawler.startUrls` in state. |
+| `crawl:fetch-and-extract` | `success \| empty \| error \| permanent` | Fetches a frontier page and extracts links. |
+| `crawl:dedupe-and-enqueue` | `frontier-ready \| frontier-empty \| budget-exhausted` | Deduplicates extracted links, promotes the next frontier, checks `maxPages`. |
+| `crawl:exhausted` | `success` | Terminal for the crawl loop — crawl:discover's exit point. |
 
-## State shape
+Built-in node names follow the convention `namespace:verb`. `BUILTIN_PREFIXES` are `html:`, `wiki:`, `json:`, `jsonl:`, `validate:`, and `crawl:`.
 
-```ts
-interface PipelineStateInterface {
-  targetId: string;              // target or mediawiki block name
-  source:   InputSourceInterface;
-  input:    Record<string, unknown>;  // populated by html:fetch / wiki scraper
-  output:   Record<string, unknown> | null;  // populated by your parse task
-  // ... plus any extra keys tasks attach
+## Built-in `crawl:discover` DAG
+
+`crawl:discover` is a built-in cyclic DAG (loaded from `src/crawlers/crawl-discover.dag.jsonld`) registered by `PluginLoader.registerBuiltinNodes`. It implements level-by-level BFS with a native back-edge loop.
+
+Embed it in any orchestration via `EmbeddedDAGNode`:
+
+```json
+{
+  "@type": "EmbeddedDAGNode",
+  "name":  "discover",
+  "dag":   "crawl:discover",
+  "stateMapping": {
+    "output": { "urls": "crawl.discovered" }
+  },
+  "outputs": { "success": "next-step", "error": "crawl-failed" }
 }
 ```
 
-`state.input.html`; raw HTML string, set by `html:fetch`.
-`state.input.wikitext`; raw wikitext string, set by wiki fetch.
-`state.input.url`; the URL fetched.
+The `stateMapping.output` block seeds `state.urls` from `crawl.discovered` after the crawl completes. Configure the crawl behaviour via the `crawler` block in `state.json`. See [Crawler](/usage/crawler).
 
-`state.output`; set by your parse task. `json:write` serializes this to disk.
+## Parallel parse
 
-Tasks can attach extra keys using the `Record<string, unknown>` index signature. This is how tasks pass data to each other without coupling to canonical fields.
+Route scatter items to a worker-thread pool with two changes:
 
-## Built-in tasks
+1. Set `container: "worker"` on the `ScatterNode`.
+2. Set `parallelWorkers: true` in `state.json`.
+3. Build the worker registry: `npm run build:workers`.
 
-| Name | What it does |
-|------|-------------|
-| `html:fetch` | Rate-limited fetch with retry + backoff. Reads from cache on hits. Sets `state.input.html`. |
-| `json:write` | Writes `state.output` to `<basePath>/<target>/<slug>.json`. |
+The `WorkerThreadContainer` pool is sized by `NodeSystemInfo.recommendedWorkerCount`. When the worker registry is absent, the scatter falls back to in-process execution automatically.
 
-## The parse task pattern
+## Plugin DAG registration order
 
-Your plugin's task is the only domain-specific code you write. It receives `state.input.html` (or `state.input.wikitext` for wiki targets) and sets `state.output`:
-
-```ts
-import type { CheerioAPI } from 'cheerio';
-import * as cheerio from 'cheerio';
-
-TaskRegistry.register('mysite:parse', async (next, state) => {
-  const html = state.input['html'] as string;
-  const url  = state.input['url'] as string;
-  const $    = cheerio.load(html);
-
-  state.output = {
-    _type:  'article',
-    url,
-    title:  $('h1').first().text().trim(),
-    body:   $('#content').text().trim(),
-    _source: { target: state.targetId, url, plugin: 'mysite:parse' },
-  };
-
-  await next();
-});
-```
-
-No HTTP in the plugin. No file I/O in the plugin. The pipeline handles both. Your plugin just reads the HTML and writes a record.
-
-## Ordering and early termination
-
-```
-html:fetch  →  mysite:parse  →  json:write
-```
-
-`html:fetch` must come first. `json:write` must come last. Your parse task goes in between.
-
-Early termination: If `html:fetch` encounters a permanent HTTP error (e.g. 404) it throws, halting the pipeline. If your parse task finds malformed HTML it can skip `await next()` to prevent `json:write` from running. There's no explicit error handling middleware; control flow is implicit: a task either advances the queue or halts it.
-
-Unregistered task error: If your config names a pipeline task that doesn't exist (e.g. `["html:fetch", "nonexistent:parse", "json:write"]`), the error surfaces at orchestration time (when building the pipeline), not at runtime. The orchestrator calls `TaskRegistry.get()` which throws if the task is not registered. This means typos in your config fail fast before the scrape starts.
-
-For wiki targets, the orchestrator handles the fetch; your task receives a pre-populated `state.input` and sets `state.output`. The write task is always added last by the orchestrator.
-
-Task-name collision: If two tasks register the same name (e.g. two plugins both call `TaskRegistry.register('aonprd:parse', ...)`), the second registration overwrites the first. There's no warning or error. The last-loaded plugin wins. This is by design; your test plugins can shadow the production ones. If you're seeing the wrong task execute, check plugin load order in your config.
-
-## ScrapeOrchestrator
-
-You don't build the pipeline directly; the `ScrapeOrchestrator` builds it per page from the target config. It:
-
-1. Resolves the target's `pipeline` array against the registry.
-2. Optionally prepends the fetch task.
-3. Appends the write task.
-4. Calls `pipeline.execute(state)` for each page URL or wiki page.
-
-If you want to run a pipeline directly in code (tests, scripts):
-
-```ts
-import { Pipeline } from 'ripperoni/pipeline/Pipeline';
-import { PipelineState } from 'ripperoni/registry/PipelineState';
-
-const pipeline = new Pipeline<PipelineStateInterface>({ name: 'mysite' });
-pipeline.addTaskByName('mysite:parse');
-pipeline.addTask(async (next, state) => { console.log(state.output); await next(); });
-
-await pipeline.execute(PipelineState.fromHtmlPage('mysite', url, html));
-```
-
-## The _type discriminator convention
-
-Put a `_type` field on every output record. Downstream tools use it for classification. The `_source` block makes records traceable back to their origin:
-
-```ts
-state.output = {
-  _type:   'spell',              // discriminator
-  url,
-  name,
-  level,
-  _source: {
-    target: state.targetId,
-    url,
-    plugin: 'mywiki:parse',
-  },
-};
-```
+Leaves (plugin DAGs with no external dependencies) register before dependents. `PluginLoader.pluginDagsInRegistrationOrder` topologically sorts the DAG documents found in `plugins/<namespace>/` so that an embedded DAG reference is always registered before the DAG that embeds it. The orchestration DAG is registered last.
 
 ## Related
 
-- [Configuration](./configuration); pipeline declaration in config
-- [Scrapers](./scrapers); what html:fetch hands your plugin
-- [MediaWiki](./mediawiki); wiki-specific state shape
-- [Plugins](./plugins); full plugin authoring guide
+- [Configuration](/usage/configuration): `state.json` field reference
+- [Plugins](/usage/plugins): writing nodes and the `register` contract
+- [Architecture](/architecture): DAG topology diagrams

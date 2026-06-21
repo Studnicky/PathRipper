@@ -1,0 +1,76 @@
+{
+  "_type": "trait",
+  "url": "https://2e.aonprd.com/Traits.aspx?ID=481",
+  "entity_id": 481,
+  "name": "Integrated",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": "Traits.aspx?ID=934&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Treasure Vault (Remastered)",
+    "page": 219,
+    "source_id": 191
+  },
+  "sources": [
+    {
+      "book": "Treasure Vault (Remastered)",
+      "page": 219,
+      "source_id": 191,
+      "raw": "Treasure Vault (Remastered) pg. 219"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Traits.aspx?ID=934&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Traits",
+      "id": 934
+    },
+    {
+      "href": "Traits.aspx?ID=481",
+      "text": "Integrated",
+      "kind": "Traits",
+      "id": 481
+    },
+    {
+      "href": "Sources.aspx?ID=191",
+      "text": "Treasure Vault (Remastered) pg. 219",
+      "kind": "Sources",
+      "id": 191
+    },
+    {
+      "href": "Traits.aspx?ID=171",
+      "text": "attached",
+      "kind": "Traits",
+      "id": 171
+    },
+    {
+      "href": "WeaponGroups.aspx?ID=12",
+      "text": "shield",
+      "kind": "WeaponGroups",
+      "id": 12
+    },
+    {
+      "href": "Equipment.aspx?Category=23",
+      "text": "runes",
+      "kind": "Equipment",
+      "id": null
+    },
+    {
+      "href": "Conditions.aspx?ID=2",
+      "text": "broken",
+      "kind": "Conditions",
+      "id": 2
+    }
+  ],
+  "body_text": "This shield has been created to include a weapon in its construction, which works like an attached weapon but can't be removed from the shield. This also prevents other attached weapons from being added to the shield. The integrated weapon's damage is listed alongside the trait, such as “integrated d6 S,” with any traits in parentheses. Unless otherwise noted in the shield's description, an integrated weapon is a martial weapon in the shield weapon group and requires one hand to attack with. The attached weapon can have runes etched onto it like other attached weapons. You can continue fighting normally with the integrated weapon if the shield is broken, but if the shield is destroyed, so is the weapon.",
+  "body_html": "This shield has been created to include a weapon in its construction, which works like an <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=171\">attached</a> weapon but can't be removed from the shield. This also prevents other attached weapons from being added to the shield. The integrated weapon's damage is listed alongside the trait, such as “integrated d6 S,” with any traits in parentheses. Unless otherwise noted in the shield's description, an integrated weapon is a martial weapon in the <a style=\"text-decoration:underline\" href=\"WeaponGroups.aspx?ID=12\">shield</a> weapon group and requires one hand to attack with. The attached weapon can have <a style=\"text-decoration:underline\" href=\"Equipment.aspx?Category=23\">runes</a> etched onto it like other attached weapons. You can continue fighting normally with the integrated weapon if the shield is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=2\">broken</a>, but if the shield is destroyed, so is the weapon.<br><br><nethys-search default-query=\"ap-creatures=hide&amp;display=grouped&amp;group-fields=type&amp;link-layout=horizontal\" fixed-params=\"ID=481\" fixed-query-string=\"trait:&quot;Integrated&quot; !type:trait\" page-id=\"trait\" load-all=\"true\"></nethys-search>",
+  "meta_description": "This shield has been created to include a weapon in its construction, which works like an attached weapon but can't be removed from the shield. This also prevents other attached weapons from being added to the shield. The integrated weapon's damage is listed alongside the trait, such as “integrated d6 S,” with any traits in parentheses. Unless otherwise noted in the shield's description, an integrated weapon is a martial weapon in the shield weapon group and requires one hand to attack with. The attached weapon can have runes etched onto it like other attached weapons. You can continue fighting normally with the integrated weapon if the shield is broken , but if the shield is destroyed, so is the weapon.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Traits, Integrated",
+  "category": null
+}

@@ -1,0 +1,96 @@
+{
+  "_type": "feat",
+  "url": "https://2e.aonprd.com/Feats.aspx?ID=492",
+  "feat_id": 492,
+  "name": "Hunted Shot",
+  "level": 1,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Feats.aspx?ID=492&NoRedirect=1",
+  "action_cost": "one-action",
+  "traits": [
+    "Flourish",
+    "Ranger"
+  ],
+  "trait_ids": {
+    "Flourish": 73,
+    "Ranger": 682
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 157,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 157,
+      "source_id": 216,
+      "raw": "Player Core pg. 157"
+    }
+  ],
+  "archetypes": [],
+  "archetype_footnotes": [],
+  "prerequisites": null,
+  "frequency": null,
+  "trigger": null,
+  "requirements": "You are wielding a ranged weapon with reload 0",
+  "cost": null,
+  "access": null,
+  "is_mythic": false,
+  "description_html": "You take two quick shots against the one you hunt. Make two Strikes against your prey with the required weapon. If both hit the same creature, combine their damage for the purpose of resistances and weaknesses. Apply your multiple attack penalty to each Strike normally",
+  "description_text": "You take two quick shots against the one you hunt. Make two Strikes against your prey with the required weapon. If both hit the same creature, combine their damage for the purpose of resistances and weaknesses. Apply your multiple attack penalty to each Strike normally",
+  "special": null,
+  "leads_to": [],
+  "related_feats": [],
+  "trait_glossary": [
+    {
+      "trait": "Flourish",
+      "description": "Actions with the flourish trait are special techniques that require too much exertion for you to perform frequently. You can use only one action with the flourish trait per round."
+    }
+  ],
+  "raw_fields": {
+    "Requirements": "You are wielding a ranged weapon with reload 0"
+  },
+  "links": [
+    {
+      "href": "Feats.aspx?ID=492&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Feats",
+      "id": 492
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?ID=4861",
+      "text": "Hunted Shot",
+      "kind": "Feats",
+      "id": 4861
+    },
+    {
+      "href": "/Traits.aspx?ID=73",
+      "text": "Flourish",
+      "kind": "Traits",
+      "id": 73
+    },
+    {
+      "href": "/Traits.aspx?ID=682",
+      "text": "Ranger",
+      "kind": "Traits",
+      "id": 682
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 157",
+      "kind": "Sources",
+      "id": 216
+    }
+  ],
+  "meta_description": "You take two quick shots against the one you hunt. Make two Strikes against your prey with the required weapon. If both hit the same creature, combine their damage for the purpose of resistances and weaknesses. Apply your multiple attack penalty to each Strike normally",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, FeatHunted Shot"
+}

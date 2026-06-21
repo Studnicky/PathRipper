@@ -1,0 +1,64 @@
+{
+  "_type": "action",
+  "url": "https://2e.aonprd.com/Actions.aspx?ID=2311",
+  "action_id": 2311,
+  "name": "Dismiss",
+  "rarity": "common",
+  "action_cost": "one-action",
+  "traits": [
+    "Concentrate"
+  ],
+  "trait_ids": {
+    "Concentrate": 32
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 419,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 419,
+      "source_id": 216,
+      "raw": "Player Core pg. 419"
+    }
+  ],
+  "legacy": false,
+  "alt_edition_url": null,
+  "trigger": null,
+  "frequency": null,
+  "requirements": null,
+  "cost": null,
+  "effect_html": "You end an effect that states you can Dismiss it. Dismissing ends the entire effect unless noted otherwise.",
+  "effect_text": "You end an effect that states you can Dismiss it. Dismissing ends the entire effect unless noted otherwise.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Actions.aspx?ID=2311",
+      "text": "Dismiss",
+      "kind": "Actions",
+      "id": 2311
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 419",
+      "kind": "Sources",
+      "id": 216
+    }
+  ],
+  "meta_description": "You end an effect that states you can Dismiss it. Dismissing ends the entire effect unless noted otherwise.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Actions, Dismiss"
+}

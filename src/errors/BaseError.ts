@@ -1,12 +1,12 @@
 import type { FlattenResult } from '../types/Results.js';
 // Ported from @noocodec/cogitator/src/errors/BaseError.ts.
-// Stripped of redact/JsonObject machinery — ripperoni's errors don't (yet)
+// Stripped of redact/JsonObjectType machinery — ripperoni's errors don't (yet)
 // carry redaction schemas. Same shape, same protected constructor, same
 // code-derivation rule, same flatten()/serialize()/toJson() surface.
 
-import type { BaseErrorOptionsInterface, BaseErrorJsonType } from '../types/BaseError.js';
+import type { BaseErrorOptionsType, BaseErrorJsonType } from '../types/BaseError.js';
 
-export type { BaseErrorOptionsInterface, BaseErrorJsonType };
+export type { BaseErrorOptionsType, BaseErrorJsonType };
 
 /**
  * Base class for all ripperoni domain errors.
@@ -41,7 +41,7 @@ export class BaseError extends Error {
    * @param message - Human-readable error description.
    * @param options - Optional code, cause, metadata, and retryable flag.
    */
-  protected constructor(message: string, options: BaseErrorOptionsInterface = {}) {
+  protected constructor(message: string, options: BaseErrorOptionsType = {}) {
     super(message);
     this.name      = this.constructor.name;
     this.cause     = options.cause;

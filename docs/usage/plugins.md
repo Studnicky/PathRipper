@@ -5,266 +5,245 @@ title: Plugins
 
 # Plugins
 
-A plugin is a file that calls `TaskRegistry.register` at module load time. The orchestrator loads the file, the registration fires as a side effect, and the task is available under its name.
+A plugin teaches Ripperoni how to turn one site's HTML or wikitext into typed JSON. Each plugin is a dagonizer node — a `ScalarNode` subclass (from [@studnicky/dagonizer](https://github.com/Studnicky/Dagonizer)) — that you register on the run's dispatcher. The dispatcher is the object that owns node and DAG registration, routes state through them, and wires outputs to downstream steps. A plugin exports a `register` function. The runner imports the file, calls `register(dispatcher)`, and your nodes join the run. All wiring is explicit and scoped to the dispatcher the runner passes in.
 
-## Task signature
+## Plugin contract
 
-```ts
-type TaskFnType<TState> = (next: () => Promise<void>, state: TState) => Promise<void>
-```
-
-The task receives `next` (call it when you're done) and `state` (the pipeline state for the current page). Call `await next()` at the end.
-
-Error handling: If your plugin throws an error, the error bubbles out of the pipeline and halts the orchestrator. There's no error recovery; the run fails. If you want to skip a malformed page gracefully, don't throw; instead, skip `await next()` or set a flag on state. The write task downstream can check the flag and decide whether to write.
-
-Plugin-load timing: Plugins are loaded by `TaskRegistry.load()` which imports the plugin file as an ES module. The module's top-level `TaskRegistry.register()` calls fire immediately. This happens before the orchestrator starts scraping, during the config parsing phase. If you have a syntax error in your plugin, you'll see it before any pages are scraped.
-
-## State shape per scraper
-
-For HTML targets, state.input is populated by `html:fetch`:
+Every plugin's `index.ts` (or `index.js`) must export:
 
 ```ts
-state.targetId           // the target block name (from config)
-state.source.url         // the URL being processed
-state.input.html         // raw HTML string
-state.input.url          // the URL fetched
-state.output             // null until your plugin sets it; json:write reads this
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void
 ```
 
-For MediaWiki targets, the orchestrator populates state.input before your plugin runs:
+`register` calls `dispatcher.registerNode(...)` for each node instance. It does **not** call `dispatcher.registerDAG` — DAGs come from `*.dag.jsonld` files in the plugin directory, loaded automatically by `PluginLoader` at startup.
+
+A missing `register` export aborts the run with an error at startup.
+
+## Plugin discovery
+
+`PluginLoader.registerPluginsFromEntry` walks the orchestration DAG's `EmbeddedDAGNode.dag` and `ScatterNode.body.dag` references. For each reference, it derives the namespace (the prefix before `:`), then:
+
+1. Loads `plugins/<namespace>/index.js` and calls `register(dispatcher)`.
+2. Loads all `*.dag.jsonld` files from `plugins/<namespace>/` in registration order (leaves first, via `PluginLoader.pluginDagsInRegistrationOrder`) and calls `dispatcher.registerDAG(dag)` for each.
+
+Built-in nodes and DAGs (those with `BUILTIN_PREFIXES`) are registered first by `PluginLoader.registerBuiltinNodes` before any plugin is loaded.
+
+## Node signature
+
+Nodes are `ScalarNode` subclasses. The subclass declares `name` and `outputs` as readonly fields and implements `executeOne(state, context)`, which returns `NodeOutputBuilder.of('<port>')`. Raw HTML or wikitext goes in via `state`; your node writes a structured record to `state.output` before returning.
 
 ```ts
-state.targetId           // the mediawiki block name (from config)
-state.source.url         // the canonical wiki page URL
-state.input.url          // the canonical wiki page URL
-state.input.title        // page title
-state.input.wikitext     // raw wikitext string
-state.input.parsedPage   // WikitextParser output (infobox, sections, categories)
-state.output             // null until your plugin sets it; json:write reads this
-```
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
 
-Inter-plugin state coordination: If you have multiple tasks in your pipeline (e.g. a pre-parse task that enriches state), they share the same state object. Task 1 can set arbitrary fields on state, and Task 2 sees them. This is how data flows between tasks without tight coupling. Tasks can attach extra keys using the `Record<string, unknown>` index signature.
+class MyParseNodeImpl extends ScalarNode<ScrapeState, 'success' | 'error', RipperServices> {
+  public readonly name    = 'mysite:parse';
+  public readonly outputs = ['success', 'error'] as const;
 
-Plugin isolation: Plugins run serially within the pipeline for a single page, but the orchestrator runs multiple pages in parallel (via concurrency setting). Two pages never share state; they each get their own state object. Your plugin can't have global side effects that affect other pages (no shared counters, no global state mutations). If you need to coordinate across pages, use the file system or an external service.
+  protected override async executeOne(
+    state:    ScrapeState,
+    context:  NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success' | 'error'>> {
+    const html = state.page.html ?? '';
+    if (html.length === 0) return NodeOutputBuilder.of('error');
 
-## HTML plugin
-
-Your task gets `state.input.html` and a URL. Use cheerio to pull out what you need:
-
-```ts
-import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
-import * as cheerio from 'cheerio';
-
-TaskRegistry.register('mysite:parse', async (next, state) => {
-  const html = state.input['html'] as string;
-  const url  = state.input['url'] as string;
-  const $    = cheerio.load(html);
-
-  const name        = $('h1.title').first().text().trim();
-  const description = $('div.content p').first().text().trim();
-
-  state.output = {
-    _type:       'article',
-    url,
-    name,
-    description,
-    _source: {
-      target: state.targetId,
-      url,
-      plugin: 'mysite:parse',
-    },
-  };
-
-  await next();
-});
-```
-
-No HTTP in the plugin. No file I/O. No cheerio initialization; `html:fetch` has already fetched; you load the string into cheerio yourself. The pipeline handles the I/O, you handle the extraction.
-
-## MediaWiki plugin
-
-For wiki targets, the wikitext is pre-parsed. Use `state.input.parsedPage`:
-
-```ts
-import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
-
-TaskRegistry.register('mywiki:parse', async (next, state) => {
-  const page = state.input['parsedPage'] as {
-    title:    string;
-    infobox:  Record<string, string>;
-    sections: Array<{ title: string; wikitext: string }>;
-    categories: string[];
-  };
-  const url = state.input['url'] as string;
-
-  // Typed accessor: string | null
-  const name  = page.infobox['name'] ?? page.title;
-  // Parse as number
-  const level = parseInt(page.infobox['level'] ?? '', 10) || null;
-
-  state.output = {
-    _type:  'entry',
-    url,
-    name,
-    level,
-    categories: page.categories,
-    _source: {
-      target: state.targetId,
-      url,
-      plugin: 'mywiki:parse',
-    },
-  };
-
-  await next();
-});
-```
-
-## The _type discriminator convention
-
-Every record should have `_type`. It's the field downstream tools (like Squashage) use for classification. Pick a string per record type and keep it consistent across your plugin.
-
-## The _source block
-
-Every record should have `_source`. Include at minimum `target`, `url`, and `plugin`. Squashage reads `_source.url` to derive graph IRIs; if it's missing, IRI derivation falls back to a default.
-
-```ts
-_source: {
-  target: state.targetId,  // the name of the config block
-  url,                     // the canonical source URL
-  plugin: 'mysite:parse',  // the task that produced the record
-}
-```
-
-## Loading plugins
-
-Plugins are declared in the target config under `plugins` (array of paths relative to the config file):
-
-```json
-{
-  "targets": {
-    "mysite": {
-      "plugins": ["./plugins/mysite.js"],
-      "pipeline": ["html:fetch", "mysite:parse", "json:write"]
-    }
+    // extract...
+    state.output = { url: state.page.url, name: 'Example' };
+    return NodeOutputBuilder.of('success');
   }
 }
+
+export const myParseNode = new MyParseNodeImpl();
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myParseNode);
+}
 ```
 
-Plugins are loaded in array order. If two plugins register the same task name, the second one wins (overwrites the first). This allows test plugins to shadow production ones if you load them after.
+### Output ports
 
-Or load manually in code:
+Declare every port the node can return in `outputs`. The dispatcher validates wiring at registration time and rejects DAGs with un-wired outputs.
+
+Common conventions:
+- `success` — processed cleanly; downstream write node runs.
+- `error` — fetch failed, parse failed, or required data absent; item recorded in `state.failed`.
+- `skipped` — optional skip (e.g. `json:write` when `state.output` is null).
+- `valid` / `invalid` — used by `validate:schema` for schema-pass / schema-fail branching.
+
+In the per-page DAG any non-success port typically routes to a failed terminal and ends processing for that item.
+
+### State shape
 
 ```ts
-await TaskRegistry.load('./plugins/mysite.js');
+state.page.url       // resolved URL (html targets)
+state.page.html      // raw HTML string (populated by html:fetch)
+state.page.title     // page title (wiki targets)
+state.page.wikitext  // raw wikitext (populated by wiki:fetch)
+state.output         // null until your plugin sets it; write nodes read this
 ```
 
-The module's top-level `TaskRegistry.register(...)` calls fire on import. Plugin file paths are resolved relative to `process.cwd()`, not relative to the config file.
+`state.getMetadata(key)` / `state.setMetadata(key, value)` carries per-item data across nodes within the same fan-out item.
+
+### Services
+
+`context.services` carries shared dependencies:
+
+```ts
+context.services.log             // Logger
+context.services.cache           // ScraperCache | null
+context.services.htmlScraper     // HtmlScraper | undefined (html targets)
+context.services.wikiScraper     // MediaWikiScraper | undefined (wiki targets)
+context.services.outDir          // output base directory
+context.services.pluginTaskName  // name of first non-built-in pipeline step (optional)
+context.services.splitByTaskName // when false, output is a single JSONL (optional)
+context.services.dispatcher      // DagonizerInterface for child DAG execution
+```
+
+### Cancellation
+
+Long-running IO should propagate `context.signal`:
+
+```ts
+const res = await fetch(url, { signal: context.signal });
+```
+
+## HTML plugin example
+
+```ts
+import { load } from 'cheerio';
+
+import { ScalarNode, NodeOutputBuilder, DAGBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
+
+class MyParseNodeImpl extends ScalarNode<ScrapeState, 'success' | 'error', RipperServices> {
+  public readonly name    = 'mysite:parse-impl';
+  public readonly outputs = ['success', 'error'] as const;
+
+  protected override async executeOne(
+    state:    ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success' | 'error'>> {
+    const html = state.page.html;
+    if (!html) return NodeOutputBuilder.of('error');
+
+    const $ = load(html);
+    state.output = {
+      url:  state.page.url,
+      name: $('h1.title').first().text().trim(),
+    };
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const myParseNode = new MyParseNodeImpl();
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myParseNode);
+}
+```
+
+The parse DAG for this node is authored separately with `DAGBuilder`, serialized, and committed as `plugins/mysite/parse.dag.jsonld`. The runner loads it from disk.
+
+## MediaWiki plugin example
+
+```ts
+import wtf from 'wtf_wikipedia';
+
+import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { ScrapeState }    from 'ripperoni/state/ScrapeState';
+import type { RipperServices } from 'ripperoni/services/RipperServices';
+import type { RipperDagonizer } from 'ripperoni/dispatcher/RipperDagonizer';
+
+class MyWikiNodeImpl extends ScalarNode<ScrapeState, 'success', RipperServices> {
+  public readonly name    = 'mywiki:parse-impl';
+  public readonly outputs = ['success'] as const;
+
+  protected override async executeOne(
+    state:    ScrapeState,
+    _context: NodeContextType<RipperServices>,
+  ): Promise<NodeOutputType<'success'>> {
+    const doc  = wtf(state.page.wikitext ?? '');
+    const ibox = doc.infobox()?.json() as Record<string, string> ?? {};
+    state.output = {
+      name:  ibox['name'] ?? state.page.title,
+      level: parseInt(ibox['level'] ?? '', 10) || null,
+    };
+    return NodeOutputBuilder.of('success');
+  }
+}
+
+export const myWikiNode = new MyWikiNodeImpl();
+
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(myWikiNode);
+}
+```
+
+## Multi-node plugins
+
+Plugins that need multiple nodes register all of them in `register`:
+
+```ts
+export function register(dispatcher: RipperDagonizer<ScrapeState>): void {
+  dispatcher.registerNode(parseNode);
+  dispatcher.registerNode(finalizeNode);
+  // DAGs are loaded from *.dag.jsonld files — do not registerDAG here
+}
+```
 
 ## Testing a plugin in isolation
 
+Register the node and load its DAG on a `Dagonizer` instance, then call `dispatcher.execute('dag:name', state)`:
+
 ```ts
-import { Pipeline } from 'ripperoni/pipeline/Pipeline';
-import { TaskRegistry } from 'ripperoni/registry/TaskRegistry';
-import './my-plugin.js'; // side-effect: registers the task
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
+import { Dagonizer } from '@studnicky/dagonizer';
+import { ScrapeState } from 'ripperoni/state/ScrapeState';
+import { myParseNode } from './parse.task.js';
+import myParseDAG from './parse.dag.jsonld' with { type: 'json' };
 
-const pipeline = new Pipeline({ name: 'test' });
-pipeline.addTaskByName('mysite:parse');
+describe('mysite:parse', () => {
+  it('extracts name from h1.title', async () => {
+    const dispatcher = new Dagonizer<ScrapeState, undefined>({ services: undefined });
+    dispatcher.registerNode(myParseNode);
+    dispatcher.registerDAG(myParseDAG);
 
-const state = {
-  targetId: 'mysite',
-  source:   { url: 'https://example.com/page' },
-  input:    { html: '<html><h1 class="title">Hello</h1></html>', url: 'https://example.com/page' },
-  output:   null,
-};
+    const state = new ScrapeState();
+    state.page = {
+      targetId: 'mysite',
+      title: '',
+      url: 'https://example.com/page',
+      html: '<h1 class="title">Hello</h1>',
+    };
 
-await pipeline.execute(state);
-console.log(state.output); // your extracted record
+    await dispatcher.execute('mysite:parse', state);
+
+    assert.equal(state.output?.['name'], 'Hello');
+  });
+});
 ```
 
-No HTTP, no file system, no network. Just the extraction logic.
+No network, no file system — just the extraction logic running through its node DAG.
 
 ## AONPRD plugin (built-in example)
 
-The `plugins/aonprd/` directory ships a full-featured example plugin that parses
-Archives of Nethys (2e.aonprd.com) HTML. It demonstrates all major patterns: URL-based
-type dispatch, shared extraction utilities, per-type structured output, and fixture-based
-unit testing.
+The `plugins/aonprd/` directory ships a full-featured example plugin that parses Archives of Nethys (2e.aonprd.com) HTML. It demonstrates URL-based concept dispatch via a taxonomy, shared extraction helpers, per-concept structured output, and fixture-based unit tests. It is the reference implementation for a production-grade plugin.
 
-### Output types
+The entry point `plugins/aonprd/index.ts` exports `register(dispatcher)`, which iterates all taxonomy-compiled nodes via `TAXONOMY.allNodes()` and registers them. The `aonprd:parse` DAG is loaded from `plugins/aonprd/parse.dag.jsonld` by the runner.
 
-Every AONPRD output carries a `_type` discriminator and the following common fields:
-
-| Field | Type | Description |
-|---|---|---|
-| `url` | `string` | Source URL |
-| `entity_id` | `number \| null` | Numeric `?ID=N` from the URL |
-| `name` | `string` | Display name |
-| `source` | `SourceRef` | First source book reference |
-| `sources` | `SourceRef[]` | All source references on the page |
-| `traits` | `string[]` | Trait pill labels in source order |
-| `trait_ids` | `Record<string, number>` | Traits.aspx ID keyed by trait name |
-| `rarity` | `Rarity` | unique, rare, uncommon, or common |
-| `pfs` | `PfsLegality \| null` | PFS Standard, Limited, or Restricted |
-| `legacy` | `boolean` | Page carries a legacy-content-warning |
-| `alt_edition_url` | `string \| null` | Sibling page URL (legacy/remaster redirect) |
-| `meta_description` | `string \| null` | `<meta name="description">` content |
-| `meta_keywords` | `string \| null` | `<meta name="keywords">` content |
-| `raw_fields` | `Record<string, string>` | All header label/value pairs |
-| `links` | `LinkRef[]` | All internal cross-reference anchors |
-
-### Per-type additional fields
-
-**Spell** (`_type: 'spell'`): `spell_id`, `kind` (spell/cantrip/focus/ritual), `rank`,
-`traditions[]`, `cast`, `range`, `area`, `targets`, `defense` (remaster Defense field),
-`saving_throw`, `duration`, `bloodlines[]`, `domain[]`, `cult[]`, `deities[]`,
-`mysteries[]`, `patron_themes[]`, `catalysts[]`, `outcomes`, `affliction`, `heightened[]`.
-
-**Feat** (`_type: 'feat'`): `feat_id`, `level`, `action_cost`, `archetypes[]`,
-`prerequisites`, `frequency`, `trigger`, `requirements`, `is_mythic`, `leads_to[]`,
-`related_feats[]`, `trait_glossary[]`.
-
-**Monster** (`_type: 'monster'`): `monster_id`, `level`, `size`, `alignment`,
-`recall_knowledge`, `perception`, `languages`, `skills[]`, `abilities`, `ac`, `saves`,
-`hp`, `immunities[]`, `weaknesses[]`, `resistances[]`, `speed`, `strikes[]`,
-`spell_lists[]`, `top_abilities[]`, `defensive_abilities[]`, `offensive_abilities[]`,
-`variants[]`, `family_links[]`.
-
-**Weapon** (`_type: 'weapon'`): `weapon_id`, `price`, `damage`, `bulk`, `hands`, `reload`,
-`range`, `ammunition`, `weapon_type`, `category`, `group`, `favored_weapon[]`,
-`critical_specialization`, `specific_magic_weapons[]`, `trait_glossary[]`.
-
-**Armor** (`_type: 'armor'`): `armor_id`, `price`, `ac_bonus`, `dex_cap`, `check_penalty`,
-`speed_penalty`, `strength`, `bulk`, `category`, `group`.
-
-**Equipment** (`_type: 'equipment'`): `equipment_id`, `item_level`, `tiered_variants`,
-`price`, `bulk`, `usage`, `hands`, `activations[]`, `variants[]`.
-
-**Background** (`_type: 'background'`): `entity_id`, `attribute_boost_choice`,
-`trained_skills[]`, `lore_skills[]`, `granted_feat`, `flavor_text`, `related_sources[]`.
-
-**Ancestry** (`_type: 'ancestry'`): `entity_id`, `mechanics` (hit_points, size, speed,
-attribute_boosts, languages, vision, granted), `popular_edicts`, `popular_anathema`.
-
-**Class** (`_type: 'class'`): `entity_id`, `key_attribute`, `hp_per_level`,
-`initial_proficiencies`, `class_dc`, `subclasses[]`.
-
-**Condition** (`_type: 'condition'`): `entity_id`, `stages[]`, `related_conditions[]`.
-
-**Trait** (`_type: 'trait'`): `entity_id`, `category`.
-
-**Hazard** (`_type: 'hazard'`): `entity_id`, `level`, `complexity`, `stealth`,
-`disable[]`, `defenses`, `routines[]`, `reset`.
-
-### Testing the AONPRD plugin
-
-Fixture-based tests live in `tests/e2e/plugins/aonprd.parse.test.ts`. They load HTML
-files from `tests/e2e/plugins/fixtures/aonprd/` and verify extraction without any network.
-To add a new fixture, copy a body file from the pointer-store cache and assert specific
-field values against the known page.
+See [Architecture](/architecture) for the DAG topology and `plugins/aonprd/index.ts` for the reference implementation.
 
 ## Related
 
-- [Pipeline](./pipeline); how the task queue works
-- [Scrapers](./scrapers); what state.input looks like per scraper type
-- [MediaWiki](./mediawiki); infobox helpers and wiki-specific state
-- [Configuration](./configuration); how to declare plugins in config
+- [Authoring a DAG](/usage/pipeline): placement types and `DAGBuilder` API
+- [Scrapers](/usage/scrapers): what `state.page` looks like per scraper
+- [MediaWiki](/usage/mediawiki): wiki-specific state
+- [Configuration](/usage/configuration): `state.json` field reference

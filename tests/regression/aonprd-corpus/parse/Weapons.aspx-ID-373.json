@@ -1,0 +1,126 @@
+{
+  "_type": "weapon",
+  "url": "https://2e.aonprd.com/Weapons.aspx?ID=373",
+  "weapon_id": 373,
+  "name": "Falchion",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Weapons.aspx?ID=18&NoRedirect=1",
+  "traits": [
+    "Forceful",
+    "Sweep"
+  ],
+  "trait_ids": {
+    "Forceful": 180,
+    "Sweep": 194
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 278,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 278,
+      "source_id": 216,
+      "raw": "Player Core pg. 278"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 283,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 283"
+    }
+  ],
+  "favored_weapon": [
+    {
+      "deity": "Charg",
+      "deity_id": 594
+    },
+    {
+      "deity": "Lamashtu",
+      "deity_id": 287
+    },
+    {
+      "deity": "Reymenda",
+      "deity_id": 482
+    },
+    {
+      "deity": "Rull",
+      "deity_id": 559
+    },
+    {
+      "deity": "Sobek",
+      "deity_id": 642
+    }
+  ],
+  "price": {
+    "gp": 3,
+    "sp": null,
+    "cp": null,
+    "raw": "3 gp"
+  },
+  "damage": {
+    "dice": "1d10",
+    "type": "S",
+    "rider": null
+  },
+  "bulk": 2,
+  "hands": "2",
+  "reload": null,
+  "range": null,
+  "ammunition": null,
+  "weapon_type": "melee",
+  "category": "martial",
+  "group": {
+    "name": "Sword",
+    "group_id": 15
+  },
+  "description_html": "This weapon is a heavier, two-handed version of the curved-bladed scimitar. It is weighted toward the blade's end, making it a powerful slashing weapon.",
+  "description_text": "This weapon is a heavier, two-handed version of the curved-bladed scimitar. It is weighted toward the blade's end, making it a powerful slashing weapon.",
+  "critical_specialization": {
+    "source": "Core Rulebook pg. 283",
+    "by_group": {
+      "Sword": "The target is made off-balance by your attack, becoming off-guard until the start of your next turn."
+    }
+  },
+  "specific_magic_weapons": [],
+  "trait_glossary": [
+    {
+      "trait": "Forceful",
+      "description": "This weapon becomes more dangerous as you build momentum. When you attack with it more than once on your turn, the second attack gains a circumstance bonus to damage equal to the number of weapon damage dice, and each later attack gains a circumstance bonus to damage equal to double the number of damage dice."
+    },
+    {
+      "trait": "Sweep",
+      "description": "This weapon makes wide swinging attacks. When you attack with this weapon, you gain a +1 circumstance bonus to your attack roll if you already attempted to attack a different target this turn using this weapon."
+    }
+  ],
+  "raw_fields": {
+    "Favored Weapon": "Charg, Lamashtu, Reymenda, Rull, Sobek",
+    "Price": "3 gp",
+    "Damage": "1d10 S",
+    "Bulk": "2",
+    "Hands": "2",
+    "Type": "Melee",
+    "Category": "Martial",
+    "Group": "Sword"
+  },
+  "links": [
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 283",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "Conditions.aspx?ID=58",
+      "text": "off-guard",
+      "kind": "Conditions",
+      "id": 58
+    }
+  ],
+  "meta_description": "This weapon is a heavier, two-handed version of the curved-bladed scimitar. It is weighted toward the blade's end, making it a powerful slashing weapon.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Weapons, Falchion"
+}

@@ -1,0 +1,301 @@
+import { NodeStateBase } from '@studnicky/dagonizer';
+import type { JsonObjectType } from '@studnicky/dagonizer/entities';
+
+import type { PipelinePageType } from '../types/PipelineState.js';
+import type { RunStateType }     from '../types/RunState.js';
+
+/**
+ * Crawl working state nested under `ScrapeState.crawl`.
+ *
+ * @remarks
+ * JSON-safe: regex patterns are stored as string sources (`domainRe`,
+ * `targetRe`, `delimiterRe`). Rebuild live `RegExp` objects at each use site
+ * via `new RegExp(state.crawl.domainRe)`.
+ *
+ * `frontier` holds URLs to fetch at the current depth level.
+ * `nextFrontierRaw` is the fan-in accumulator; `DedupeAndEnqueueNode`
+ * deduplicates and promotes it to `frontier`.
+ * `discovered` accumulates target-matching URLs; `discoveredRaw` is the
+ * per-level accumulator that `DedupeAndEnqueueNode` merges into `discovered`.
+ *
+ * @category State
+ * @since 4.1.0
+ */
+export type CrawlSubStateType = {
+  /** Current-level URLs to fetch. Swapped by `DedupeAndEnqueueNode`. */
+  frontier:        string[];
+  /**
+   * Fan-in accumulator for the current level's traversable links.
+   * Cleared after promotion to `frontier`.
+   */
+  nextFrontierRaw: string[];
+  /**
+   * Fan-in accumulator for target URLs found this level.
+   * Promoted to `discovered` by `DedupeAndEnqueueNode`.
+   */
+  discoveredRaw:   string[];
+  /**
+   * URLs that matched the `target` regex — the crawl result.
+   * Deduplicated across all levels.
+   */
+  discovered:      string[];
+  /** Already-visited URLs. Serializable substitute for `Set<string>`. */
+  visited:         string[];
+  /** Current depth level (0-based). */
+  depth:           number;
+  /** Maximum depth to crawl (inclusive). Undefined = unlimited. */
+  maxDepth:        number | undefined;
+  /** RegExp source for the domain filter. */
+  domainRe:        string;
+  /** RegExp source for the target filter. */
+  targetRe:        string;
+  /** RegExp source for the delimiter/traversal filter. */
+  delimiterRe:     string;
+};
+
+/**
+ * Shared state flowing through every node in a scrape DAG.
+ *
+ * @remarks
+ * Extends `NodeStateBase` from `@studnicky/dagonizer` so the dispatcher can
+ * manage the execution lifecycle, collect errors/warnings, and checkpoint the
+ * state for resumable runs.
+ *
+ * `page` carries the currently-scraped document (URL, HTML, wikitext).
+ * `output` is `null` until a parse node populates it; write nodes skip when `null`.
+ * `urls` / `titles` are the source arrays for fan-out placements.
+ *
+ * ### Result-array contract (three-bucket retry shape)
+ *
+ * The outer DAG runs three phases: discovery → scrape → retry. Result items
+ * land in one of three sibling arrays:
+ *
+ * - `succeeded` — items that completed on the **first** attempt (scrape phase).
+ * - `recovered` — items that initially failed but succeeded on retry.
+ * - `failedAfterRetry` — items that failed both the initial attempt and the retry;
+ *   this is what the orchestrator writes to `failures.json`.
+ *
+ * `failed` is the transient bucket between the scrape and retry phases — it
+ * carries the initial-attempt failures into the retry phase's fan-out source,
+ * and is drained by the retry phase (items move to either `recovered` or
+ * `failedAfterRetry`).
+ *
+ * Consumers querying outcomes should treat the three terminal arrays
+ * (`succeeded`, `recovered`, `failedAfterRetry`) as the authoritative report;
+ * `failed` is meaningful only mid-flow.
+ *
+ * @category State
+ * @since 3.0.0
+ */
+export class ScrapeState extends NodeStateBase {
+  /** Currently-active page document (set per fan-out item by fetch nodes). */
+  page: PipelinePageType = { targetId: '', title: '', url: '' };
+
+  /** Plugin-populated output; `null` until a parse node writes to it. */
+  output: Record<string, unknown> | null = null;
+
+  /**
+   * Source array for HTML fan-out.
+   * Each item is a URL string to fetch + process in the per-URL sub-flow.
+   */
+  urls: string[] = [];
+
+  /**
+   * Link-crawl working state. Present during embedded crawl DAG execution.
+   * Nodes in the `crawl:discover` DAG read/write this sub-object exclusively;
+   * the `EmbeddedDAGNode` output mapping copies `crawl.discovered` → `urls`
+   * after the child finishes.
+   */
+  crawl: CrawlSubStateType = {
+    frontier:        [],
+    nextFrontierRaw: [],
+    discoveredRaw:   [],
+    discovered:      [],
+    visited:         [],
+    depth:           0,
+    maxDepth:        undefined,
+    domainRe:        '',
+    targetRe:        '',
+    delimiterRe:     '',
+  };
+
+  /**
+   * Source array for MediaWiki fan-out.
+   * Each item is a page title to fetch + process in the per-title sub-flow.
+   */
+  titles: string[] = [];
+
+  /**
+   * Items that completed successfully on the first attempt (scrape phase).
+   * Populated by the scrape-phase fan-in `partition` strategy.
+   */
+  succeeded: string[] = [];
+
+  /**
+   * Transient bucket: items that failed the initial scrape phase.
+   * Drained by the retry phase into `recovered` / `failedAfterRetry`.
+   */
+  failed: string[] = [];
+
+  /**
+   * Items that failed the initial attempt but succeeded on retry.
+   * Populated by the retry-phase fan-in `partition` strategy.
+   */
+  recovered: string[] = [];
+
+  /**
+   * Items that failed both the initial attempt and the retry.
+   * Written to `failures.json` by the orchestrator after the DAG completes.
+   */
+  failedAfterRetry: string[] = [];
+
+  /**
+   * Run params seeded by `runDag` for the native-DAG execution model.
+   *
+   * Present when the run was started via `runDag`; `undefined` when a
+   * `ScrapeState` is constructed directly (e.g. in isolated unit tests).
+   * Nodes read run params from here.
+   */
+  params?: RunStateType | undefined;
+
+  /**
+   * Clear transient plugin metadata at end-of-parse so per-page state doesn't
+   * leak across parses in fan-out dispatchers, and so large objects (CheerioAPI
+   * handles holding multi-MB parsed DOM trees) get released eagerly.
+   *
+   * Default-clears the keys this codebase's aonprd plugin writes. Callers
+   * supplying `keys` override the default list (use for other plugins).
+   */
+  clearTransientMetadata(keys?: readonly string[]): void {
+    const toClear = keys ?? [
+      'aonprdCheerio',
+      'aonprdCommon',
+      'aonprdTarget',
+      'aonprdConceptId',
+      'aonprdRuleContext',
+      'aonprdMetaTags',
+      'field_map',
+      'fields',
+      'sections',
+      'source',
+      'sources',
+    ];
+    // NodeStateBase exposes metadata as Readonly<Record<…>>; cast through to
+    // delete keys outright (setMetadata(key, undefined) keeps the key with a
+    // stale undefined value, which still retains downstream object refs).
+    const meta = this.metadata as Record<string, unknown>;
+    for (const key of toClear) {
+      delete meta[key];
+    }
+  }
+
+  /**
+   * Serialize state to a JSON-safe snapshot for transport or checkpointing.
+   *
+   * Overrides the base to clear transient non-serialisable plugin metadata
+   * (CheerioAPI handles, CheerioNode objects) IN PLACE on `this._metadata`
+   * before `super.snapshot()` spreads `_metadata` into the wire object.
+   * `clearTransientMetadata` deletes the keys directly from `this.metadata`
+   * via a cast — it does not operate on a copy.
+   *
+   * The cleared handles (CheerioAPI etc.) are cheaply re-derived from
+   * `state.page.html` by `aonprd:load-and-common` when a worker thread or
+   * checkpoint resumes execution for the next node in the pipeline.
+   *
+   * At the coordinator's worker-handoff point none of the transient metadata
+   * keys are set yet — `html:fetch` runs first (populating `state.page.html`),
+   * and the parse nodes that write these keys run inside the worker. The
+   * `clearTransientMetadata` call at coordinator snapshot time is therefore
+   * a no-op for the coordinator and never strips handles the coordinator
+   * still needs.
+   */
+  override snapshot(): JsonObjectType {
+    this.clearTransientMetadata();
+    return super.snapshot();
+  }
+
+  /**
+   * Snapshots domain-specific fields for `Checkpoint.from()`.
+   * Called by the engine automatically; do not call directly.
+   */
+  protected override snapshotData(): JsonObjectType {
+    return {
+      page:             this.page as unknown as JsonObjectType,
+      output:           this.output as JsonObjectType | null,
+      urls:             [...this.urls],
+      titles:           [...this.titles],
+      succeeded:        [...this.succeeded],
+      failed:           [...this.failed],
+      recovered:        [...this.recovered],
+      failedAfterRetry: [...this.failedAfterRetry],
+      crawl: {
+        frontier:        [...this.crawl.frontier],
+        nextFrontierRaw: [...this.crawl.nextFrontierRaw],
+        discoveredRaw:   [...this.crawl.discoveredRaw],
+        discovered:      [...this.crawl.discovered],
+        visited:         [...this.crawl.visited],
+        depth:           this.crawl.depth,
+        maxDepth:        this.crawl.maxDepth ?? null,
+        domainRe:        this.crawl.domainRe,
+        targetRe:        this.crawl.targetRe,
+        delimiterRe:     this.crawl.delimiterRe,
+      },
+    };
+  }
+
+  /**
+   * Restores domain-specific fields from a checkpoint snapshot.
+   * Called by `Checkpoint.restore()`; do not call directly.
+   */
+  protected override restoreData(snap: JsonObjectType): void {
+    const page = snap['page'];
+    if (page !== null && typeof page === 'object' && !Array.isArray(page)) {
+      this.page = page as unknown as PipelinePageType;
+    }
+    const out = snap['output'];
+    this.output = (out !== null && typeof out === 'object' && !Array.isArray(out))
+      ? (out as Record<string, unknown>)
+      : null;
+    const urls = snap['urls'];
+    if (Array.isArray(urls)) this.urls = urls as string[];
+    const titles = snap['titles'];
+    if (Array.isArray(titles)) this.titles = titles as string[];
+    const succ = snap['succeeded'];
+    if (Array.isArray(succ)) this.succeeded = succ as string[];
+    const fail = snap['failed'];
+    if (Array.isArray(fail)) this.failed = fail as string[];
+    const rec = snap['recovered'];
+    if (Array.isArray(rec)) this.recovered = rec as string[];
+    const failedAfterRetrySnap = snap['failedAfterRetry'];
+    if (Array.isArray(failedAfterRetrySnap)) this.failedAfterRetry = failedAfterRetrySnap as string[];
+
+    const crawlSnap = snap['crawl'];
+    if (crawlSnap !== null && typeof crawlSnap === 'object' && !Array.isArray(crawlSnap)) {
+      const crawlRecord = crawlSnap as Record<string, unknown>;
+      const arr = (key: string): string[] => {
+        const val = crawlRecord[key];
+        return Array.isArray(val) ? (val as string[]) : [];
+      };
+      const str = (key: string): string => {
+        const val = crawlRecord[key];
+        return typeof val === 'string' ? val : '';
+      };
+      const num = (key: string): number | undefined => {
+        const val = crawlRecord[key];
+        return typeof val === 'number' ? val : undefined;
+      };
+      this.crawl = {
+        frontier:        arr('frontier'),
+        nextFrontierRaw: arr('nextFrontierRaw'),
+        discoveredRaw:   arr('discoveredRaw'),
+        discovered:      arr('discovered'),
+        visited:         arr('visited'),
+        depth:           num('depth') ?? 0,
+        maxDepth:        num('maxDepth'),
+        domainRe:        str('domainRe'),
+        targetRe:        str('targetRe'),
+        delimiterRe:     str('delimiterRe'),
+      };
+    }
+  }
+}

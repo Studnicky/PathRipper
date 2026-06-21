@@ -1,0 +1,15 @@
+flowchart TB
+  %% aonprd:page (v1.0)
+  html_fetch
+  html_fetch[html:fetch]
+  html_fetch -->|success| aonprd_parse
+  html_fetch -->|cached| aonprd_parse
+  html_fetch -->|error| aonprd-page_failed
+  aonprd_parse[[aonprd:parse]]
+  aonprd_parse -->|success| json_write
+  aonprd_parse -->|error| aonprd-page_failed
+  json_write[json:write]
+  json_write -->|success| aonprd-page_completed
+  json_write -->|skipped| aonprd-page_completed
+  aonprd-page_completed(((aonprd-page:completed)))
+  aonprd-page_failed>aonprd-page:failed]

@@ -1,9 +1,9 @@
 import wtf from 'wtf_wikipedia';
 
-import type { WikitextSectionType, ParsedPageInterface, WtfSectionType } from '../types/Scrapers.js';
+import type { WikitextSectionType, ParsedPageType, WtfSectionType } from '../types/Scrapers.js';
 import type { InfoboxFieldResult, InfoboxNumberResult } from '../types/Results.js';
 
-export type { ParsedPageInterface };
+export type { ParsedPageType };
 
 /**
  * Parses raw wikitext into structured infobox, section, and category data.
@@ -19,17 +19,17 @@ export type { ParsedPageInterface };
  * @category Scrapers
  * @since 2.0.0
  * @group Scrapers
- * @see ParsedPageInterface
+ * @see ParsedPageType
  */
 export class WikitextParser {
   /**
-   * Parses a raw wikitext string into a structured `ParsedPageInterface`.
+   * Parses a raw wikitext string into a structured `ParsedPageType`.
    *
    * @param title - Article title used as-is in the returned object.
    * @param wikitext - Raw wikitext content to parse.
    * @returns Parsed page with infobox fields, sections, and categories.
    */
-  static parse(title: string, wikitext: string): ParsedPageInterface {
+  static parse(title: string, wikitext: string): ParsedPageType {
     const doc = wtf(wikitext);
 
     const infobox: WikitextSectionType = {};
@@ -43,9 +43,9 @@ export class WikitextParser {
 
     const rawSections = doc.sections();
     const sectionArray = Array.isArray(rawSections) ? rawSections : (rawSections !== null ? [rawSections] : []);
-    const sections = sectionArray.map((s: WtfSectionType): { title: string; text: string } => ({
-      title: (s as { title: () => string }).title(),
-      text:  (s as { wikitext: () => string }).wikitext(),
+    const sections = sectionArray.map((section: WtfSectionType): { title: string; text: string } => ({
+      title: (section as { title: () => string }).title(),
+      text:  (section as { wikitext: () => string }).wikitext(),
     }));
 
     const categories = doc.categories() as string[];
@@ -60,7 +60,7 @@ export class WikitextParser {
    * @param field - Infobox field key to look up.
    * @returns String value if the field exists, otherwise `null`.
    */
-  static infoboxField(parsed: ParsedPageInterface, field: string): InfoboxFieldResult {
+  static infoboxField(parsed: ParsedPageType, field: string): InfoboxFieldResult {
     const val = parsed.infobox[field];
     return val !== undefined && val !== null ? String(val) : null;
   }
@@ -72,10 +72,10 @@ export class WikitextParser {
    * @param field - Infobox field key to look up.
    * @returns Parsed finite number if the field exists and is numeric, otherwise `null`.
    */
-  static infoboxNumber(parsed: ParsedPageInterface, field: string): InfoboxNumberResult {
+  static infoboxNumber(parsed: ParsedPageType, field: string): InfoboxNumberResult {
     const val = WikitextParser.infoboxField(parsed, field);
     if (val === null) return null;
-    const n = parseFloat(val);
-    return Number.isFinite(n) ? n : null;
+    const num = parseFloat(val);
+    return Number.isFinite(num) ? num : null;
   }
 }

@@ -1,0 +1,64 @@
+{
+  "_type": "condition",
+  "url": "https://2e.aonprd.com/Conditions.aspx?ID=17",
+  "entity_id": 17,
+  "name": "Fleeing",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 444,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 444,
+      "source_id": 216,
+      "raw": "Player Core pg. 444"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=74",
+      "text": "Fleeing",
+      "kind": "Conditions",
+      "id": 74
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 444",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Actions.aspx?ID=77",
+      "text": "Delay",
+      "kind": "Actions",
+      "id": 77
+    },
+    {
+      "href": "Equipment.aspx?ID=741",
+      "text": "Ready",
+      "kind": "Equipment",
+      "id": 741
+    }
+  ],
+  "body_text": "You're forced to run away due to fear or some other compulsion. On your turn, you must spend each of your actions trying to escape the source of the fleeing condition as expediently as possible (such as by using move actions to flee, or opening doors barring your escape). The source is usually the effect or creature that gave you the condition, though some effects might define something else as the source. You can't Delay or Ready while fleeing.",
+  "body_html": "You're forced to run away due to fear or some other compulsion. On your turn, you must spend each of your actions trying to escape the source of the fleeing condition as expediently as possible (such as by using move actions to flee, or opening doors barring your escape). The source is usually the effect or creature that gave you the condition, though some effects might define something else as the source. You can't <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=77\">Delay</a> or <a style=\"text-decoration:underline\" href=\"Equipment.aspx?ID=741\">Ready</a> while fleeing.",
+  "meta_description": "You're forced to run away due to fear or some other compulsion. On your turn, you must spend each of your actions trying to escape the source of the fleeing condition as expediently as possible (such as by using move actions to flee, or opening doors barring your escape). The source is usually the effect or creature that gave you the condition, though some effects might define something else as the source. You can't Delay or Ready while fleeing.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Conditions, Fleeing",
+  "stages": [],
+  "related_conditions": [
+    {
+      "name": "Fleeing",
+      "condition_id": 74
+    }
+  ]
+}

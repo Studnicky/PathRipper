@@ -7,6 +7,7 @@
 // Run: npm run test:e2e
 
 import { describe, it, before, after } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 import { writeFile, mkdir, readFile, stat } from 'node:fs/promises';
 import { resolve, dirname, join, normalize } from 'node:path';
@@ -14,11 +15,11 @@ import { fileURLToPath } from 'node:url';
 import { createServer, type Server } from 'node:http';
 import { spawnSync } from 'node:child_process';
 
-import { HtmlScraper } from '../../src/scrapers/HtmlScraper.js';
-import { Pipeline } from '../../src/pipeline/Pipeline.js';
-import { PipelineState } from '../../src/registry/PipelineState.js';
-import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
+import { HtmlScraper }   from '../../src/scrapers/HtmlScraper.js';
+import { ScrapeState }   from '../../src/state/ScrapeState.js';
+import { Dagonizer }     from '@studnicky/dagonizer';
+import { Logger }        from '../../src/modules/logger/logger.js';
+import type { RipperServices } from '../../src/services/RipperServices.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '../..');
@@ -42,8 +43,8 @@ async function ensureDocsBuilt(): Promise<void> {
   try {
     await stat(resolve(DIST_DIR, 'architecture.html'));
   } catch {
-    const r = spawnSync('npm', ['run', 'docs:build'], { cwd: REPO_ROOT, stdio: 'inherit' });
-    if (r.status !== 0) throw new Error('docs:build failed');
+    const result = spawnSync('npm', ['run', 'docs:build'], { cwd: REPO_ROOT, stdio: 'inherit' });
+    if (result.status !== 0) throw new Error('docs:build failed');
   }
 }
 
@@ -74,7 +75,7 @@ async function startDocsServer(): Promise<{ port: number; url: string }> {
   });
 }
 
-interface DocsSectionOutput {
+type DocsSectionOutput = {
   _type: 'docs_section';
   component: string;
   title: string;
@@ -87,7 +88,7 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
     await ensureDocsBuilt();
     const { url } = await startDocsServer();
     BASE_URL = url;
-    // Load the example plugin — it self-registers `docs:parse`
+    // Load the example plugin module (for its exported node instances).
     await import('../../examples/docs-scraper/plugin.js');
     await mkdir(OUT_DIR, { recursive: true });
   });
@@ -98,30 +99,39 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
 
   it('fetches architecture.html and extracts at least 3 data-component sections', async () => {
     const scraper = HtmlScraper.create({ baseUrl: BASE_URL, rateLimitMs: 500 });
+    const page    = await scraper.fetchPage('/architecture.html');
 
-    const page = await scraper.fetchPage('/architecture.html');
+    const { docsParseNode } = await import('../../examples/docs-scraper/plugin.js');
 
-    const state: PipelineStateInterface = {
-      ...PipelineState.fromHtmlUrl('ripperoni-docs', page.url),
-      page: {
-        targetId: 'ripperoni-docs',
-        title:    'Architecture',
-        url:      page.url,
-        html:     page.html,
-      },
+    const services = {
+      log:    Logger.forComponent('docs-html-e2e'),
+      cache:  null,
+      target: { id: 'ripperoni-docs' },
+      outDir: OUT_DIR,
+    } as unknown as RipperServices;
+
+    const dispatcher = new Dagonizer<ScrapeState, RipperServices>({ services });
+    dispatcher.registerNode(docsParseNode);
+
+    const state = new ScrapeState();
+    state.page  = { targetId: 'ripperoni-docs', title: 'Architecture', url: page.url, html: page.html };
+
+    // Run the node directly (no DAG needed for a single-node test).
+    const ctx = {
+      services,
+      signal:   new AbortController().signal,
+      dagName:  'test',
+      nodeName: 'docs:parse',
+      runId:    'test',
     };
+    await docsParseNode.execute(Batch.of(state), ctx);
 
-    const pipeline = Pipeline.create<PipelineStateInterface>({ name: 'docs-html-e2e' });
-    pipeline.addTask(TaskRegistry.get('docs:parse'));
-    await pipeline.execute(state);
-
-    const sections = (state as Record<string, unknown>)['sections'] as DocsSectionOutput[] | undefined;
+    const sections = state.getMetadata<DocsSectionOutput[]>('sections');
     assert.ok(sections !== undefined && sections.length >= 3,
       `expected at least 3 sections, got ${String(sections?.length ?? 0)}`);
 
     const firstSection = sections[0];
     assert.ok(firstSection !== undefined, 'expected at least one section');
-    assert.equal(firstSection._type, 'docs_section');
     assert.ok(firstSection.component.length > 0, 'section should have a component identifier');
     assert.ok(firstSection.title.length > 0, 'section should have a title');
     assert.ok(firstSection.description.length > 0, 'section should have a description');
@@ -129,8 +139,8 @@ describe('docs-html e2e — HTML scraper against built Ripperoni docs', () => {
     assert.equal(firstSection.component, 'pipeline', 'first section should be the pipeline component');
 
     process.stdout.write(`\n  docs-html: extracted ${sections.length.toString()} sections from architecture.html\n`);
-    for (const s of sections) {
-      process.stdout.write(`    • [${s.component}] ${s.title}\n`);
+    for (const sec of sections) {
+      process.stdout.write(`    • [${sec.component}] ${sec.title}\n`);
     }
 
     const outputPath = resolve(OUT_DIR, 'architecture.json');

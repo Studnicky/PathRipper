@@ -1,0 +1,6 @@
+flowchart TB
+  %% wiki-docs:parse (v2.0)
+  wiki-docs_parse-impl
+  wiki-docs_parse-impl[wiki-docs:parse-impl]
+  wiki-docs_parse-impl -->|success| wiki-docs_parse_done
+  wiki-docs_parse_done(((wiki-docs:parse:done)))

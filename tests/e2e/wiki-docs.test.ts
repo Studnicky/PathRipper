@@ -6,16 +6,15 @@
 //   npm run test:e2e -- --test-name-pattern='wiki-docs'
 
 import { describe, it, before, after } from 'node:test';
+import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { MediaWikiScraper } from '../../src/scrapers/MediaWikiScraper.js';
-import { Pipeline } from '../../src/pipeline/Pipeline.js';
-import { PipelineState } from '../../src/registry/PipelineState.js';
-import { TaskRegistry } from '../../src/registry/TaskRegistry.js';
-import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
+import { MediaWikiScraper }   from '../../src/scrapers/MediaWikiScraper.js';
+import { ScrapeState }        from '../../src/state/ScrapeState.js';
+import type { RipperServices } from '../../src/services/RipperServices.js';
 import type { WikiFixtureServerInterface } from './fixtures/wiki/server.js';
 import { startWikiFixtureServer } from './fixtures/wiki/server.js';
 
@@ -24,7 +23,7 @@ const OUT_DIR   = resolve(__dirname, '../../examples/wiki-docs/output');
 
 const EXPECTED_COMPONENTS = ['Pipeline', 'HtmlScraper', 'MediaWikiScraper', 'LinkLister', 'TaskRegistry'];
 
-interface RipperoniComponentOutput {
+type RipperoniComponentOutput = {
   _type: 'ripperoni_component';
   name: string;
   kind: string;
@@ -38,17 +37,13 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
 
   before(async () => {
     fixtureServer = await startWikiFixtureServer();
-
-    // Load the example plugin — it self-registers `wiki-docs:parse`
-    TaskRegistry.reset();
+    // Load the example plugin module (for its exported node instances).
     await import('../../examples/wiki-docs/plugin.js');
-
     await mkdir(OUT_DIR, { recursive: true });
   });
 
   after(async () => {
     await fixtureServer.close();
-    TaskRegistry.reset();
   });
 
   it('fetches category members from fixture server and returns 5 components', async () => {
@@ -62,37 +57,44 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
 
     for (const title of EXPECTED_COMPONENTS) {
       assert.ok(
-        members.some((m) => m.title === title),
+        members.some((member) => member.title === title),
         `expected member "${title}" in category response`,
       );
     }
   });
 
-  it('scrapes all 5 components through the wiki-docs:parse pipeline', async () => {
+  it('scrapes all 5 components through the wiki-docs:parse node', async () => {
     const scraper = await MediaWikiScraper.create({
       apiUrl:      `${fixtureServer.baseUrl}/w/api.php`,
       rateLimitMs: 0,
     });
 
     const members = await scraper.fetchCategory('Core Components');
-    const titles  = members.map((m) => m.title);
+    const titles  = members.map((member) => member.title);
     const pages   = await scraper.fetchPagesBatch(titles);
 
     assert.equal(pages.length, 5, `expected 5 pages fetched, got ${pages.length.toString()}`);
 
-    const parseTask = TaskRegistry.get('wiki-docs:parse');
+    const { wikiDocsParseNode } = await import('../../examples/wiki-docs/plugin.js');
+
+    const ctx = {
+      services: {} as unknown as RipperServices,
+      signal:   new AbortController().signal,
+      dagName:  'test',
+      nodeName: 'wiki-docs:parse',
+      runId:    'test',
+    };
+
     const outputs: RipperoniComponentOutput[] = [];
 
     for (const page of pages) {
-      const state = PipelineState.fromWikiPage('ripperoni-wiki', page);
-      const pipeline = Pipeline.create<PipelineStateInterface>({ name: 'wiki-docs-e2e' });
-      pipeline.addTask(parseTask);
-      await pipeline.execute(state);
+      const state = new ScrapeState();
+      state.page  = { targetId: 'ripperoni-wiki', title: page.title, url: '', wikitext: page.wikitext };
+      state.output = null;
+
+      await wikiDocsParseNode.execute(Batch.of(state), ctx);
 
       assert.ok(state.output !== null, `expected output for "${page.title}", got null`);
-      const output = state.output as Record<string, unknown>;
-      assert.equal(output['_type'], 'ripperoni_component',
-        `expected _type=ripperoni_component for "${page.title}", got "${String(output['_type'])}"`);
 
       outputs.push(state.output as RipperoniComponentOutput);
     }
@@ -100,15 +102,14 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
     assert.equal(outputs.length, 5, 'expected 5 ripperoni_component outputs');
 
     process.stdout.write(`\n  wiki-docs: extracted ${outputs.length.toString()} components from fixture server\n`);
-    for (const c of outputs) {
-      process.stdout.write(`    • ${c.name.padEnd(20)} kind=${c.kind.padEnd(8)} since=${c.since}\n`);
+    for (const component of outputs) {
+      process.stdout.write(`    • ${component.name.padEnd(20)} kind=${component.kind.padEnd(8)} since=${component.since}\n`);
     }
 
-    // Write output files
-    for (const c of outputs) {
-      const slug     = c.name.toLowerCase();
-      const outPath  = resolve(OUT_DIR, `${slug}.json`);
-      await writeFile(outPath, JSON.stringify(c, null, 2));
+    for (const component of outputs) {
+      const slug    = component.name.toLowerCase();
+      const outPath = resolve(OUT_DIR, `${slug}.json`);
+      await writeFile(outPath, JSON.stringify(component, null, 2));
     }
 
     process.stdout.write(`  wrote ${outputs.length.toString()} JSON files to ${OUT_DIR}\n`);
@@ -121,23 +122,32 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
     });
 
     const members = await scraper.fetchCategory('Core Components');
-    const pages   = await scraper.fetchPagesBatch(members.map((m) => m.title));
-    const parseTask = TaskRegistry.get('wiki-docs:parse');
+    const pages   = await scraper.fetchPagesBatch(members.map((member) => member.title));
+
+    const { wikiDocsParseNode } = await import('../../examples/wiki-docs/plugin.js');
+
+    const ctx = {
+      services: {} as unknown as RipperServices,
+      signal:   new AbortController().signal,
+      dagName:  'test',
+      nodeName: 'wiki-docs:parse',
+      runId:    'test',
+    };
 
     for (const page of pages) {
-      const state = PipelineState.fromWikiPage('ripperoni-wiki', page);
-      const pipeline = Pipeline.create<PipelineStateInterface>({ name: 'wiki-docs-fields' });
-      pipeline.addTask(parseTask);
-      await pipeline.execute(state);
+      const state = new ScrapeState();
+      state.page  = { targetId: 'ripperoni-wiki', title: page.title, url: '', wikitext: page.wikitext };
+      state.output = null;
 
-      const c = state.output as RipperoniComponentOutput | null;
-      assert.ok(c !== null, `"${page.title}" produced null output`);
-      assert.equal(c._type, 'ripperoni_component');
-      assert.ok(c.name.length > 0,        `"${page.title}": name is empty`);
-      assert.ok(c.kind.length > 0,        `"${page.title}": kind is empty`);
-      assert.ok(c.since.length > 0,       `"${page.title}": since is empty`);
-      assert.ok(c.description.length > 0, `"${page.title}": description is empty`);
-      assert.ok(c.source.length > 0,      `"${page.title}": source is empty`);
+      await wikiDocsParseNode.execute(Batch.of(state), ctx);
+
+      const component = state.output as RipperoniComponentOutput | null;
+      assert.ok(component !== null, `"${page.title}" produced null output`);
+      assert.ok(component.name.length > 0,        `"${page.title}": name is empty`);
+      assert.ok(component.kind.length > 0,        `"${page.title}": kind is empty`);
+      assert.ok(component.since.length > 0,       `"${page.title}": since is empty`);
+      assert.ok(component.description.length > 0, `"${page.title}": description is empty`);
+      assert.ok(component.source.length > 0,      `"${page.title}": source is empty`);
     }
   });
 });

@@ -1,0 +1,39 @@
+<!--
+  Secondary-source fixture (non-AON page shape).
+  Hand-crafted to exercise the Layer-1 strategy interfaces:
+    - Plain `<h2>` / `<h3>` section headings (no `.title` class) — exercises
+      the SectionWalkerStrategy.
+    - `<div class="citation" data-source-id=N data-page=N>` source blocks —
+      exercises the SourceRefStrategy.
+    - The literal `<b>Source</b>` line is present only because the AONPRD
+      `findContentSpan` helper requires it. The secondary `extractSources`
+      strategy DOES NOT read from it.
+-->
+<html>
+<head>
+  <title>Sample Article</title>
+  <meta name="description" content="A hand-crafted secondary-source fixture.">
+  <meta name="keywords" content="secondary, fixture, sample">
+</head>
+<body>
+  <div id="content">
+    <span>
+      <h1 class="title">Sample Article</h1>
+      <b>Source</b>
+      <br />
+      <p>A short prose introduction before the first section heading.</p>
+      <hr />
+      <p>Body text after the hr separator.</p>
+      <h2>Overview</h2>
+      <p>This section describes the overview of the sample article.</p>
+      <p>It contains <a href="/Articles/Related">a related link</a>.</p>
+      <h3>Background</h3>
+      <p>A nested subsection inside the overview.</p>
+      <h2>Details</h2>
+      <p>The second top-level section.</p>
+      <div class="citation" data-source-id="42" data-page="13">Field Guide Vol. 1</div>
+      <div class="citation" data-source-id="7"  data-page="120">Field Guide Vol. 2</div>
+    </span>
+  </div>
+</body>
+</html>

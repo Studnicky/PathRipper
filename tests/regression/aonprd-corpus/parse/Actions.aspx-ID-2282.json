@@ -1,0 +1,50 @@
+{
+  "_type": "action",
+  "url": "https://2e.aonprd.com/Actions.aspx?ID=2282",
+  "action_id": 2282,
+  "name": "Fire Breath",
+  "rarity": "common",
+  "action_cost": "two-actions",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 209,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 209,
+      "source_id": 216,
+      "raw": "Player Core pg. 209"
+    }
+  ],
+  "legacy": false,
+  "alt_edition_url": null,
+  "trigger": null,
+  "frequency": "once per hour",
+  "requirements": null,
+  "cost": null,
+  "effect_html": "The riding drake breathes a 30-foot cone of fire, dealing 1d6 fire damage for every 2 levels the drake has to all creatures in the area (<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=329\">basic</a> Reflex save). This uses a trained DC using the drake's Constitution modifier or an expert DC if the drake is specialized.",
+  "effect_text": "The riding drake breathes a 30-foot cone of fire, dealing 1d6 fire damage for every 2 levels the drake has to all creatures in the area (basic Reflex save). This uses a trained DC using the drake's Constitution modifier or an expert DC if the drake is specialized.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "raw_fields": {
+    "Frequency": "once per hour"
+  },
+  "links": [
+    {
+      "href": "Rules.aspx?ID=329",
+      "text": "basic",
+      "kind": "Rules",
+      "id": 329
+    }
+  ],
+  "meta_description": "The riding drake breathes a 30-foot cone of fire, dealing 1d6 fire damage for every 2 levels the drake has to all creatures in the area ( basic Reflex save). This uses a trained DC using the drake's Constitution modifier or an expert DC if the drake is specialized.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Actions, Fire Breath"
+}

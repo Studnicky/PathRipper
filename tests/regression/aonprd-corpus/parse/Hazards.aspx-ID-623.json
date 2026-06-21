@@ -1,0 +1,200 @@
+{
+  "_type": "hazard",
+  "url": "https://2e.aonprd.com/Hazards.aspx?ID=623",
+  "entity_id": 623,
+  "name": "Mirror of Glory",
+  "rarity": "unique",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Unique",
+    "Complex",
+    "Magical",
+    "Mythic",
+    "Trap"
+  ],
+  "trait_ids": {
+    "Unique": 723,
+    "Complex": 30,
+    "Magical": 644,
+    "Mythic": 835,
+    "Trap": 715
+  },
+  "source": {
+    "book": "Pathfinder Adventure Path #219: Lord of the Trinity Star",
+    "page": 57,
+    "source_id": 283
+  },
+  "sources": [
+    {
+      "book": "Pathfinder Adventure Path #219: Lord of the Trinity Star",
+      "page": 57,
+      "source_id": 283,
+      "raw": "Pathfinder Adventure Path #219: Lord of the Trinity Star pg. 57"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {
+    "Complexity": "Complex",
+    "34(master) to notice the reflective field is dangerous; noticing the field has a DC of 0": "34",
+    "Description": "A reflective field of energy fills a large archway in a gatehouse, in which viewers regard themselves dressed in fine clothes, bowing down before Runelord Xanderghul."
+  },
+  "links": [
+    {
+      "href": "Hazards.aspx?ID=623",
+      "text": "Mirror of Glory",
+      "kind": "Hazards",
+      "id": 623
+    },
+    {
+      "href": "/Traits.aspx?ID=723",
+      "text": "Unique",
+      "kind": "Traits",
+      "id": 723
+    },
+    {
+      "href": "/Traits.aspx?ID=30",
+      "text": "Complex",
+      "kind": "Traits",
+      "id": 30
+    },
+    {
+      "href": "/Traits.aspx?ID=644",
+      "text": "Magical",
+      "kind": "Traits",
+      "id": 644
+    },
+    {
+      "href": "/Traits.aspx?ID=835",
+      "text": "Mythic",
+      "kind": "Traits",
+      "id": 835
+    },
+    {
+      "href": "/Traits.aspx?ID=715",
+      "text": "Trap",
+      "kind": "Traits",
+      "id": 715
+    },
+    {
+      "href": "Sources.aspx?ID=283",
+      "text": "Pathfinder Adventure Path #219: Lord of the Trinity Star pg. 57",
+      "kind": "Sources",
+      "id": 283
+    },
+    {
+      "href": "Skills.aspx?ID=50",
+      "text": "Thievery",
+      "kind": "Skills",
+      "id": 50
+    },
+    {
+      "href": "Equipment.aspx?ID=4041",
+      "text": "paradigm cube",
+      "kind": "Equipment",
+      "id": 4041
+    },
+    {
+      "href": "Skills.aspx?ID=35",
+      "text": "Arcana",
+      "kind": "Skills",
+      "id": 35
+    },
+    {
+      "href": "Skills.aspx?ID=40",
+      "text": "Intimidation",
+      "kind": "Skills",
+      "id": 40
+    },
+    {
+      "href": "Spells.aspx?ID=1493",
+      "text": "dispel magic",
+      "kind": "Spells",
+      "id": 1493
+    },
+    {
+      "href": "Conditions.aspx?ID=88",
+      "text": "prone",
+      "kind": "Conditions",
+      "id": 88
+    },
+    {
+      "href": "Conditions.aspx?ID=94",
+      "text": "stupefied",
+      "kind": "Conditions",
+      "id": 94
+    },
+    {
+      "href": "Conditions.aspx?ID=92",
+      "text": "slowed",
+      "kind": "Conditions",
+      "id": 92
+    },
+    {
+      "href": "Conditions.aspx?ID=71",
+      "text": "enfeebled",
+      "kind": "Conditions",
+      "id": 71
+    },
+    {
+      "href": "Conditions.aspx?ID=61",
+      "text": "clumsy",
+      "kind": "Conditions",
+      "id": 61
+    },
+    {
+      "href": "Conditions.aspx?ID=63",
+      "text": "confused",
+      "kind": "Conditions",
+      "id": 63
+    },
+    {
+      "href": "Conditions.aspx?ID=68",
+      "text": "drained",
+      "kind": "Conditions",
+      "id": 68
+    },
+    {
+      "href": "Conditions.aspx?ID=93",
+      "text": "stunned",
+      "kind": "Conditions",
+      "id": 93
+    }
+  ],
+  "body_text": "Disable DC 37 Thievery (master) to disrupt one of the six anchor points that link the paradigm cube to the mirror, DC 34 Arcana (legendary) to use knowledge of magic that opposes pride to unravel the mirror’s power, DC 37 (master) Intimidation to use one’s force of personality to stand against the arrogance amplified by the mirror, or dispel magic (8th-rank; counteract DC 36) to counteract one of the six faces of the paradigm cube; six successes are required to disable the Mirror of Glory AC 39; Fort +30, Ref +33 Archway Hardness 27, HP 106 (BT 53); Immunities critical hits, object immunities, precision damage Bow Before Your God [reaction] Trigger A creature touches the mirror or Seeks the reflection while being adjacent to the mirror; Effect The image of Xanderghul that appears behind the reflected PCs spreads his arms wide in glory, transforming the world presented in the reflection. Each PC reflected in the mirror (regardless of whether they’re looking at the reflection or not) must attempt a DC 37 Will save to avoid being compelled to drop to their knees before Xanderghul’s glory—on a failure, the PC becomes prone, and the feelings of inferiority cause them to become stupefied 1 for 24 hours. The trap then rolls initiative.Routine (6 actions) On its turn, the Mirror of Glory targets random PCs in the area with distortions of their reality, spending an action to target one PC. If it has actions remaining after targeting the PCs, it spends any remaining actions repairing damage done to itself at the rate of 25 HP restored per action spent. If the mirror hasn’t been damaged, then these unused actions are lost. Each time the Mirror of Glory targets a PC with a distortion, roll 1d6 and consult the entries below to determine what the PC experiences and any subsequent effects. The trap loses one action for each successful check made to disable it, but this doesn’t reduce the number of distortions it’s capable of creating. When a PC experiences a distortion, they take 10d6 mental damage (DC 37 basic Will save), but on a failed saving throw, the PC suffers that distortion’s additional effect. 1—Beauty: The PC regards Xanderghul as the most attractive figure they’ve ever seen. Additional effect: slowed 1 for 1 round. 2—Cruelty: The PC sees Xanderghul as a demonic figure capable of unimaginable cruelty, who lashes out at the PC with dozens of blades and poisoned needles meant to carve away their strength. Additional effect: enfeebled 1 for 24 hours. 3—Disappointment: To the PC, Xanderghul suddenly seems to be an intimidating parental figure, commanding officer, or other person with authority whose disapproval induces tremors of nervousness. Additional effect: clumsy 1 for 24 hours. 4—Jealousy: The PC watches as a glorious plume of peacock tail feathers spreads behind Xanderghul, filling them with jealousy and potentially driving them to lash out unpredictably against their allies in hopes of becoming the only one worthy of Xanderghul’s attention. Additional effect: confused for 1 round. 5—Despair: The PC feels their own flesh rotting away as they realize the Xanderghul who stands before them exists outside of the laws of time. Additional effect: drained 1. 6—Worship: The PC is filled with the conviction that Xanderghul is the one true god and feels the urge to pray to him for absolution. Additional effect: stunned 3.Reset The trap deactivates, then resets instantly.",
+  "body_html": "<b>Disable</b> DC 37 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=50\">Thievery</a> (master) to disrupt one of the six anchor points that link the <a style=\"text-decoration:underline\" href=\"Equipment.aspx?ID=4041\"><i>paradigm cube</i></a> to the mirror, DC 34 <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=35\">Arcana</a> (legendary) to use knowledge of magic that opposes pride to unravel the mirror’s power, DC 37 (master) <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=40\">Intimidation</a> to use one’s force of personality to stand against the arrogance amplified by the mirror, or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1493\"><i>dispel magic</i></a> (8th-rank; counteract DC 36) to counteract one of the six faces of the <i>paradigm cube</i>; six successes are required to disable the Mirror of Glory<br><b>AC</b> 39; <b>Fort</b> +30, <b>Ref</b> +33<br><b>Archway Hardness</b> 27, <b>HP</b> 106 (BT 53); <b>Immunities</b> critical hits, object immunities, precision damage<br><b>Bow Before Your God</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  <b>Trigger</b> A creature touches the mirror or Seeks the reflection while being adjacent to the mirror; <b>Effect</b> The image of Xanderghul that appears behind the reflected PCs spreads his arms wide in glory, transforming the world presented in the reflection. Each PC reflected in the mirror (regardless of whether they’re looking at the reflection or not) must attempt a DC 37 Will save to avoid being compelled to drop to their knees before Xanderghul’s glory—on a failure, the PC becomes <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=88\">prone</a>, and the feelings of inferiority cause them to become <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=94\">stupefied</a> 1 for 24 hours. The trap then rolls initiative.<hr><b>Routine</b> (6 actions) On its turn, the Mirror of Glory targets random PCs in the area with distortions of their reality, spending an action to target one PC. If it has actions remaining after targeting the PCs, it spends any remaining actions repairing damage done to itself at the rate of 25 HP restored per action spent. If the mirror hasn’t been damaged, then these unused actions are lost. Each time the Mirror of Glory targets a PC with a distortion, roll 1d6 and consult the entries below to determine what the PC experiences and any subsequent effects. The trap loses one action for each successful check made to disable it, but this doesn’t reduce the number of distortions it’s capable of creating. When a PC experiences a distortion, they take 10d6 mental damage (DC 37 basic Will save), but on a failed saving throw, the PC suffers that distortion’s additional effect.<br><br><b>1—Beauty:</b> The PC regards Xanderghul as the most attractive figure they’ve ever seen. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=92\">slowed</a> 1 for 1 round.<br><br><b>2—Cruelty:</b> The PC sees Xanderghul as a demonic figure capable of unimaginable cruelty, who lashes out at the PC with dozens of blades and poisoned needles meant to carve away their strength. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=71\">enfeebled</a> 1 for 24 hours.<br><br><b>3—Disappointment:</b> To the PC, Xanderghul suddenly seems to be an intimidating parental figure, commanding officer, or other person with authority whose disapproval induces tremors of nervousness. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=61\">clumsy</a> 1 for 24 hours.<br><br><b>4—Jealousy:</b> The PC watches as a glorious plume of peacock tail feathers spreads behind Xanderghul, filling them with jealousy and potentially driving them to lash out unpredictably against their allies in hopes of becoming the only one worthy of Xanderghul’s attention. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=63\">confused</a> for 1 round. <br><br><b>5—Despair:</b> The PC feels their own flesh rotting away as they realize the Xanderghul who stands before them exists outside of the laws of time. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=68\">drained</a> 1.<br><br><b>6—Worship:</b> The PC is filled with the conviction that Xanderghul is the one true god and feels the urge to pray to him for absolution. <b>Additional effect:</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=93\">stunned</a> 3.<hr><b>Reset</b> The trap deactivates, then resets instantly.",
+  "meta_description": "A reflective field of energy fills a large archway in a gatehouse, in which viewers regard themselves dressed in fine clothes, bowing down before Runelord Xanderghul.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Hazard, Mirror of Glory",
+  "level": 16,
+  "complexity": "complex",
+  "stealth": {
+    "dc": null,
+    "notes": null,
+    "raw": null
+  },
+  "description_text": "A reflective field of energy fills a large archway in a gatehouse, in which viewers regard themselves dressed in fine clothes, bowing down before Runelord Xanderghul.",
+  "disable": [],
+  "defenses": {
+    "ac": null,
+    "saves": {
+      "fort": null,
+      "ref": null,
+      "will": null
+    },
+    "hardness": [],
+    "hp": [],
+    "immunities": [],
+    "weaknesses": [],
+    "resistances": []
+  },
+  "routines": [
+    {
+      "name": "34(master) to notice the reflective field is dangerous; noticing the field has a DC of 0",
+      "trigger": null,
+      "effect": "34",
+      "actions": null
+    }
+  ],
+  "reset": null
+}

@@ -1,0 +1,79 @@
+{
+  "_type": "feat",
+  "url": "https://2e.aonprd.com/Feats.aspx?ID=1218",
+  "feat_id": 1218,
+  "name": "Scamper Underfoot",
+  "level": 1,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": true,
+  "alt_edition_url": null,
+  "action_cost": null,
+  "traits": [
+    "Shoony"
+  ],
+  "trait_ids": {
+    "Shoony": 296
+  },
+  "source": {
+    "book": "Pathfinder #153: Life's Long Shadows",
+    "page": 72,
+    "source_id": 29
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #153: Life's Long Shadows",
+      "page": 72,
+      "source_id": 29,
+      "raw": "Pathfinder #153: Life's Long Shadows pg. 72"
+    }
+  ],
+  "archetypes": [],
+  "archetype_footnotes": [],
+  "prerequisites": null,
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "cost": null,
+  "access": null,
+  "is_mythic": false,
+  "description_html": "You are used to ducking under foes and can scurry around the battlefield with ease. You gain a +1 circumstance bonus to <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=1\">Acrobatics</a> checks to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=29\">Tumble Through</a> the spaces of Medium or larger enemies, and the presence of an enemy doesn’t make the squares difficult terrain.",
+  "description_text": "You are used to ducking under foes and can scurry around the battlefield with ease. You gain a +1 circumstance bonus to Acrobatics checks to Tumble Through the spaces of Medium or larger enemies, and the presence of an enemy doesn’t make the squares difficult terrain.",
+  "special": null,
+  "leads_to": [
+    {
+      "name": "Tough Tumbler",
+      "feat_id": 1222
+    }
+  ],
+  "related_feats": [],
+  "trait_glossary": [
+    {
+      "trait": "Shoony",
+      "description": "Note from Nethys: no description was provided for this trait"
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Skills.aspx?ID=1",
+      "text": "Acrobatics",
+      "kind": "Skills",
+      "id": 1
+    },
+    {
+      "href": "Actions.aspx?ID=29",
+      "text": "Tumble Through",
+      "kind": "Actions",
+      "id": 29
+    },
+    {
+      "href": "Feats.aspx?ID=1222",
+      "text": "Tough Tumbler",
+      "kind": "Feats",
+      "id": 1222
+    }
+  ],
+  "meta_description": "You are used to ducking under foes and can scurry around the battlefield with ease. You gain a +1 circumstance bonus to Acrobatics checks to Tumble Through the spaces of Medium or larger enemies, and the presence of an enemy doesn’t make the squares difficult terrain.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, FeatScamper Underfoot"
+}

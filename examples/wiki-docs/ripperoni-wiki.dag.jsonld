@@ -1,0 +1,122 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "name": {
+      "@id": "https://noocodex.dev/ontology/dag/name"
+    },
+    "version": {
+      "@id": "https://noocodex.dev/ontology/dag/version"
+    },
+    "entrypoint": {
+      "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+    },
+    "nodes": {
+      "@id": "https://noocodex.dev/ontology/dag/nodes",
+      "@container": "@set"
+    },
+    "outputs": {
+      "@id": "https://noocodex.dev/ontology/dag/outputs"
+    },
+    "node": {
+      "@id": "https://noocodex.dev/ontology/dag/node"
+    },
+    "dag": {
+      "@id": "https://noocodex.dev/ontology/dag/dag"
+    },
+    "body": {
+      "@id": "https://noocodex.dev/ontology/dag/body"
+    },
+    "source": {
+      "@id": "https://noocodex.dev/ontology/dag/source"
+    },
+    "itemKey": {
+      "@id": "https://noocodex.dev/ontology/dag/itemKey"
+    },
+    "concurrency": {
+      "@id": "https://noocodex.dev/ontology/dag/concurrency"
+    },
+    "gather": {
+      "@id": "https://noocodex.dev/ontology/dag/gather"
+    },
+    "reducer": {
+      "@id": "https://noocodex.dev/ontology/dag/reducer"
+    },
+    "outcome": {
+      "@id": "https://noocodex.dev/ontology/dag/outcome"
+    },
+    "phase": {
+      "@id": "https://noocodex.dev/ontology/dag/phase"
+    },
+    "stateMapping": {
+      "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+    },
+    "container": {
+      "@id": "https://noocodex.dev/ontology/dag/container"
+    },
+    "DAG": {
+      "@id": "https://noocodex.dev/ontology/dag/DAG"
+    },
+    "Placement": {
+      "@id": "https://noocodex.dev/ontology/dag/Placement"
+    },
+    "SingleNode": {
+      "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+    },
+    "ScatterNode": {
+      "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+    },
+    "EmbeddedDAGNode": {
+      "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+    },
+    "TerminalNode": {
+      "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+    },
+    "PhaseNode": {
+      "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+    }
+  },
+  "@id": "urn:noocodex:dag:wiki:scrape",
+  "@type": "DAG",
+  "name": "wiki:scrape",
+  "version": "1.0",
+  "entrypoint": "scatter-titles",
+  "nodes": [
+    {
+      "@id": "urn:noocodex:dag:wiki:scrape/node/scatter-titles",
+      "@type": "ScatterNode",
+      "name": "scatter-titles",
+      "source": "titles",
+      "body": {
+        "dag": "wiki:page"
+      },
+      "itemKey": "currentTitle",
+      "gather": {
+        "strategy": "partition",
+        "partitions": {
+          "success": "succeeded",
+          "error": "failed"
+        }
+      },
+      "reducer": "aggregate",
+      "concurrency": 8,
+      "outputs": {
+        "all-success": "wiki:completed",
+        "partial": "wiki:completed",
+        "all-error": "wiki:failed",
+        "empty": "wiki:completed"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:wiki:scrape/node/wiki:completed",
+      "@type": "TerminalNode",
+      "name": "wiki:completed",
+      "outcome": "completed"
+    },
+    {
+      "@id": "urn:noocodex:dag:wiki:scrape/node/wiki:failed",
+      "@type": "TerminalNode",
+      "name": "wiki:failed",
+      "outcome": "failed"
+    }
+  ]
+}

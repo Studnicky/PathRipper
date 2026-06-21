@@ -1,0 +1,113 @@
+{
+  "_type": "armor",
+  "url": "https://2e.aonprd.com/Shields.aspx?ID=17",
+  "armor_id": 17,
+  "name": "Buckler",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Shields.aspx?ID=1&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 274,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 274,
+      "source_id": 216,
+      "raw": "Player Core pg. 274"
+    }
+  ],
+  "price": {
+    "gp": 1,
+    "sp": null,
+    "cp": null,
+    "raw": "1 gp"
+  },
+  "ac_bonus": 1,
+  "dex_cap": null,
+  "check_penalty": null,
+  "speed_penalty": null,
+  "strength": null,
+  "bulk": "L",
+  "category": null,
+  "group": null,
+  "description_html": "This very small shield is a favorite of duelists and quick, lightly armored warriors. It's typically made of steel and strapped to your forearm. You can <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=98\">Raise a Shield</a> with your buckler as long as you have that hand free or are holding a light object that's not a weapon in that hand.",
+  "description_text": "This very small shield is a favorite of duelists and quick, lightly armored warriors. It's typically made of steel and strapped to your forearm. You can Raise a Shield with your buckler as long as you have that hand free or are holding a light object that's not a weapon in that hand.",
+  "raw_fields": {
+    "Price": "1 gp",
+    "AC Bonus": "+1",
+    "Speed Penalty": "—",
+    "Bulk": "L",
+    "Hardness": "3",
+    "HP (BT)": "6 (3)"
+  },
+  "links": [
+    {
+      "href": "Actions.aspx?ID=98",
+      "text": "Raise a Shield",
+      "kind": "Actions",
+      "id": 98
+    },
+    {
+      "href": "/Equipment.aspx?ID=3826&amp;NoRedirect=1",
+      "text": "Bivouac Targe",
+      "kind": "Equipment",
+      "id": 3826
+    },
+    {
+      "href": "/Equipment.aspx?ID=1239&amp;NoRedirect=1",
+      "text": "Duelist's Beacon",
+      "kind": "Equipment",
+      "id": 1239
+    },
+    {
+      "href": "/Equipment.aspx?ID=3776&amp;NoRedirect=1",
+      "text": "Fan Buckler",
+      "kind": "Equipment",
+      "id": 3776
+    },
+    {
+      "href": "/Equipment.aspx?ID=2819&amp;NoRedirect=1",
+      "text": "Floating Shield",
+      "kind": "Equipment",
+      "id": 2819
+    },
+    {
+      "href": "/Equipment.aspx?ID=3279&amp;NoRedirect=1",
+      "text": "Glamorous Buckler",
+      "kind": "Equipment",
+      "id": 3279
+    },
+    {
+      "href": "/Equipment.aspx?ID=2825&amp;NoRedirect=1",
+      "text": "Reflecting Shield",
+      "kind": "Equipment",
+      "id": 2825
+    },
+    {
+      "href": "/Equipment.aspx?ID=1860&amp;NoRedirect=1",
+      "text": "Sapling Shield",
+      "kind": "Equipment",
+      "id": 1860
+    },
+    {
+      "href": "/Equipment.aspx?ID=1245&amp;NoRedirect=1",
+      "text": "Silkspinner's Shield",
+      "kind": "Equipment",
+      "id": 1245
+    },
+    {
+      "href": "/Equipment.aspx?ID=3836&amp;NoRedirect=1",
+      "text": "War Mage's Buckler",
+      "kind": "Equipment",
+      "id": 3836
+    }
+  ],
+  "meta_description": "This very small shield is a favorite of duelists and quick, lightly armored warriors. It's typically made of steel and strapped to your forearm. You can Raise a Shield with your buckler as long as you have that hand free or are holding a light object that's not a weapon in that hand.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Shield, Equipment, Buckler"
+}

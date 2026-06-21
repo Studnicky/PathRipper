@@ -9,5 +9,8 @@
     "noEmit": false
   },
   "include": ["plugins/**/*.ts", "examples/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "plugins/bulbapedia/**"
+  ]
 }

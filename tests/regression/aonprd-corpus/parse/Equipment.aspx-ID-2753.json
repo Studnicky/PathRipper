@@ -1,0 +1,67 @@
+{
+  "_type": "equipment",
+  "url": "https://2e.aonprd.com/Equipment.aspx?ID=2753",
+  "equipment_id": 2753,
+  "name": "Spellbook (Blank)",
+  "item_level": 0,
+  "tiered_variants": false,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Equipment.aspx?ID=53&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 292,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 292,
+      "source_id": 216,
+      "raw": "Player Core pg. 292"
+    }
+  ],
+  "price": {
+    "gp": 1,
+    "sp": null,
+    "cp": null,
+    "raw": "1 gp"
+  },
+  "bulk": "L",
+  "usage": null,
+  "hands": "1",
+  "activations": [],
+  "frequency": null,
+  "trigger": null,
+  "requirements": null,
+  "effect": null,
+  "onset": null,
+  "duration": null,
+  "craft_requirements": null,
+  "access": null,
+  "benefit": null,
+  "drawback": null,
+  "cost": null,
+  "saving_throw": null,
+  "description_html": "A spellbook holds the written knowledge necessary to learn and prepare various spells, a necessity for <a style=\"text-decoration:underline\" href=\"Classes.aspx?ID=12\">wizards</a> (who typically get one for free) and a useful luxury for other spellcasters looking to learn additional spells. Each spellbook can hold up to 100 spells. The Price listed is for a blank spellbook.",
+  "description_text": "A spellbook holds the written knowledge necessary to learn and prepare various spells, a necessity for wizards (who typically get one for free) and a useful luxury for other spellcasters looking to learn additional spells. Each spellbook can hold up to 100 spells. The Price listed is for a blank spellbook.",
+  "variants": [],
+  "raw_fields": {
+    "Price": "1 gp",
+    "Hands": "1",
+    "Bulk": "L"
+  },
+  "links": [
+    {
+      "href": "Classes.aspx?ID=12",
+      "text": "wizards",
+      "kind": "Classes",
+      "id": 12
+    }
+  ],
+  "meta_description": "A spellbook holds the written knowledge necessary to learn and prepare various spells, a necessity for wizards (who typically get one for free) and a useful luxury for other spellcasters looking to learn additional spells. Each spellbook can hold up to 100 spells. The Price listed is for a blank spellbook.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Treasure, Spellbook (Blank)"
+}

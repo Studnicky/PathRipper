@@ -1,0 +1,615 @@
+{
+  "_type": "monster",
+  "url": "https://2e.aonprd.com/Monsters.aspx?ID=3938",
+  "monster_id": 3938,
+  "name": "Skeleton Mob",
+  "level": 6,
+  "rarity": "common",
+  "size": "Gargantuan",
+  "alignment": null,
+  "traits": [
+    "Mindless",
+    "Skeleton",
+    "Troop",
+    "Undead",
+    "Unholy"
+  ],
+  "trait_ids": {
+    "Gargantuan": 445,
+    "Mindless": 652,
+    "Skeleton": 772,
+    "Troop": 849,
+    "Undead": 722,
+    "Unholy": 521
+  },
+  "source": {
+    "book": "Battlecry!",
+    "page": 191,
+    "source_id": 268
+  },
+  "sources": [
+    {
+      "book": "Battlecry!",
+      "page": 191,
+      "source_id": 268,
+      "raw": "Battlecry! pg. 191"
+    },
+    {
+      "book": "Monster Core",
+      "page": 312,
+      "source_id": 221,
+      "raw": "Monster Core pg. 312"
+    }
+  ],
+  "alt_edition_url": null,
+  "pfs": null,
+  "recall_knowledge": {
+    "dc": null,
+    "lores": [],
+    "raw": null
+  },
+  "perception": {
+    "modifier": 11,
+    "senses": [
+      "darkvision"
+    ],
+    "raw": "+11; darkvision"
+  },
+  "languages": {
+    "languages": [],
+    "special": [],
+    "raw": null
+  },
+  "skills": [
+    {
+      "name": "Athletics",
+      "modifier": 13,
+      "conditionals": []
+    }
+  ],
+  "abilities": {
+    "str": 4,
+    "dex": 2,
+    "con": 1,
+    "int": -5,
+    "wis": 1,
+    "cha": 0
+  },
+  "items": [],
+  "ac": {
+    "value": 23,
+    "conditional": null,
+    "saves_note": null
+  },
+  "saves": {
+    "fort": 17,
+    "ref": 14,
+    "will": 11
+  },
+  "hp": {
+    "value": 90,
+    "special": "4 segments, void healing (page 217"
+  },
+  "hardness": null,
+  "immunities": [
+    "bleed",
+    "death effects",
+    "disease",
+    "mental",
+    "paralyzed",
+    "poison",
+    "unconscious"
+  ],
+  "weaknesses": [
+    {
+      "type": "area damage",
+      "value": 7
+    },
+    {
+      "type": "splash damage",
+      "value": 7
+    }
+  ],
+  "resistances": [
+    {
+      "type": "cold",
+      "value": 7,
+      "exceptions": null
+    },
+    {
+      "type": "electricity",
+      "value": 7,
+      "exceptions": null
+    },
+    {
+      "type": "fire",
+      "value": 7,
+      "exceptions": null
+    },
+    {
+      "type": "piercing",
+      "value": 7,
+      "exceptions": null
+    },
+    {
+      "type": "slashing",
+      "value": 7,
+      "exceptions": null
+    }
+  ],
+  "speed": {
+    "walk": 25,
+    "burrow": null,
+    "climb": null,
+    "fly": null,
+    "swim": null,
+    "special": "troop movement"
+  },
+  "strikes": [],
+  "spell_lists": [],
+  "top_abilities": [],
+  "defensive_abilities": [
+    {
+      "name": "Troop Defenses",
+      "actions": null,
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=86\"><b>Troop Defenses</b></a>",
+      "body_text": "Troop Defenses"
+    }
+  ],
+  "offensive_abilities": [
+    {
+      "name": "Ossuary Storm",
+      "actions": "two-actions",
+      "traits": [],
+      "frequency": null,
+      "trigger": null,
+      "requirements": null,
+      "effect": null,
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Ossuary Storm</b>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>   The skeleton mob hurls skulls and fragments of bone in a 10-foot <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2385\">burst</a> within 30 feet. This attack deals 3d6 piercing damage (DC 21 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save). When the skeleton mob is reduced to 2 segments, this area decreases to a 5-foot burst.",
+      "body_text": "Ossuary Storm [two-actions] The skeleton mob hurls skulls and fragments of bone in a 10-foot burst within 30 feet. This attack deals 3d6 piercing damage (DC 21 basic Reflex save). When the skeleton mob is reduced to 2 segments, this area decreases to a 5-foot burst."
+    },
+    {
+      "name": "Rattling Bones",
+      "actions": "one-action",
+      "traits": [],
+      "frequency": "once per round",
+      "trigger": null,
+      "requirements": null,
+      "effect": "The skeletons engage using their claws and broken bones to attack each enemy in a 5-foot emanation, with a DC 21 basic Reflex save. The damage depends on the number of actions. 1d4+1 piercing or slashing damage 2d4+7 piercing or slashing damage 3d4+10 piercing or slashing damageto 2 segments, this area decreases to a 5-foot burst.",
+      "saving_throw": null,
+      "stages": [],
+      "body_html": "<b>Rattling Bones</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  to  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>   <b>Frequency</b> once per round; <b>Effect</b> The skeletons engage using their claws and broken bones to attack each enemy in a 5-foot <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2387\">emanation</a>, with a DC 21 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save. The damage depends on the number of actions. <br> <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  1d4+1 piercing or slashing damage <br> <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  2d4+7 piercing or slashing damage <br> <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>  3d4+10 piercing or slashing damageto 2 segments, this area decreases to a 5-foot burst.",
+      "body_text": "Rattling Bones [one-action] to [three-actions] Frequency once per round; Effect The skeletons engage using their claws and broken bones to attack each enemy in a 5-foot emanation, with a DC 21 basic Reflex save. The damage depends on the number of actions. [one-action] 1d4+1 piercing or slashing damage [two-actions] 2d4+7 piercing or slashing damage [three-actions] 3d4+10 piercing or slashing damageto 2 segments, this area decreases to a 5-foot burst."
+    }
+  ],
+  "variants": [
+    {
+      "kind": "elite",
+      "url": "Monsters.aspx?ID=3938&Elite=true&NoRedirect=1"
+    },
+    {
+      "kind": "normal",
+      "url": "Monsters.aspx?ID=3938&NoRedirect=1"
+    },
+    {
+      "kind": "weak",
+      "url": "Monsters.aspx?ID=3938&Weak=true&NoRedirect=1"
+    },
+    {
+      "kind": "pwl",
+      "url": "Monsters.aspx?ID=3938&PWL=true&NoRedirect=1"
+    }
+  ],
+  "family_links": [
+    {
+      "name": "Skeleton",
+      "family_id": 472
+    }
+  ],
+  "raw_fields": {
+    "Elite": "|",
+    "Normal": "|",
+    "Proficiency without Level": "Print Stat BlockSkeleton MobCreature 6Gargantuan Mindless Skeleton Troop Undead Unholy",
+    "Perception": "+11; darkvision",
+    "Skills": "Athletics +13",
+    "Str": "+4,",
+    "Dex": "+2,",
+    "Con": "+1,",
+    "Int": "-5,",
+    "Wis": "+1,",
+    "Cha": "+0"
+  },
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=86",
+      "text": "bleed",
+      "kind": "Conditions",
+      "id": 86
+    },
+    {
+      "href": "Traits.aspx?ID=571",
+      "text": "death effects",
+      "kind": "Traits",
+      "id": 571
+    },
+    {
+      "href": "Traits.aspx?ID=578",
+      "text": "disease",
+      "kind": "Traits",
+      "id": 578
+    },
+    {
+      "href": "Traits.aspx?ID=647",
+      "text": "mental",
+      "kind": "Traits",
+      "id": 647
+    },
+    {
+      "href": "Conditions.aspx?ID=85",
+      "text": "paralyzed",
+      "kind": "Conditions",
+      "id": 85
+    },
+    {
+      "href": "Traits.aspx?ID=669",
+      "text": "poison",
+      "kind": "Traits",
+      "id": 669
+    },
+    {
+      "href": "Conditions.aspx?ID=95",
+      "text": "unconscious",
+      "kind": "Conditions",
+      "id": 95
+    },
+    {
+      "href": "Traits.aspx?ID=555",
+      "text": "cold",
+      "kind": "Traits",
+      "id": 555
+    },
+    {
+      "href": "Traits.aspx?ID=586",
+      "text": "electricity",
+      "kind": "Traits",
+      "id": 586
+    },
+    {
+      "href": "Traits.aspx?ID=699",
+      "text": "splash",
+      "kind": "Traits",
+      "id": 699
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=86",
+      "text": "Troop Defenses",
+      "kind": "MonsterAbilities",
+      "id": 86
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=85",
+      "text": "troop movement",
+      "kind": "MonsterAbilities",
+      "id": 85
+    },
+    {
+      "href": "Rules.aspx?ID=2385",
+      "text": "burst",
+      "kind": "Rules",
+      "id": 2385
+    },
+    {
+      "href": "Rules.aspx?ID=2297",
+      "text": "basic",
+      "kind": "Rules",
+      "id": 2297
+    },
+    {
+      "href": "Rules.aspx?ID=2387",
+      "text": "emanation",
+      "kind": "Rules",
+      "id": 2387
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=472",
+      "text": "Skeleton",
+      "kind": "MonsterFamilies",
+      "id": 472
+    },
+    {
+      "href": "Monsters.aspx?ID=4547",
+      "text": "Beetle Carapace",
+      "kind": "Monsters",
+      "id": 4547
+    },
+    {
+      "href": "Monsters.aspx?ID=3980",
+      "text": "Deathless Pirate",
+      "kind": "Monsters",
+      "id": 3980
+    },
+    {
+      "href": "Monsters.aspx?ID=1903",
+      "text": "Drake Skeleton",
+      "kind": "Monsters",
+      "id": 1903
+    },
+    {
+      "href": "Monsters.aspx?ID=1298",
+      "text": "Harpy Skeleton",
+      "kind": "Monsters",
+      "id": 1298
+    },
+    {
+      "href": "Monsters.aspx?ID=3841",
+      "text": "Ossuary Warden",
+      "kind": "Monsters",
+      "id": 3841
+    },
+    {
+      "href": "Monsters.aspx?ID=3194",
+      "text": "Skeletal Champion",
+      "kind": "Monsters",
+      "id": 3194
+    },
+    {
+      "href": "Monsters.aspx?ID=3196",
+      "text": "Skeletal Giant",
+      "kind": "Monsters",
+      "id": 3196
+    },
+    {
+      "href": "Monsters.aspx?ID=3195",
+      "text": "Skeletal Horse",
+      "kind": "Monsters",
+      "id": 3195
+    },
+    {
+      "href": "Monsters.aspx?ID=3197",
+      "text": "Skeletal Hulk",
+      "kind": "Monsters",
+      "id": 3197
+    },
+    {
+      "href": "Monsters.aspx?ID=1901",
+      "text": "Skeletal Mage",
+      "kind": "Monsters",
+      "id": 1901
+    },
+    {
+      "href": "Monsters.aspx?ID=3834",
+      "text": "Skeletal Rat Swarm",
+      "kind": "Monsters",
+      "id": 3834
+    },
+    {
+      "href": "Monsters.aspx?ID=1900",
+      "text": "Skeletal Soldier",
+      "kind": "Monsters",
+      "id": 1900
+    },
+    {
+      "href": "Monsters.aspx?ID=4550",
+      "text": "Skeletal Titan",
+      "kind": "Monsters",
+      "id": 4550
+    },
+    {
+      "href": "Monsters.aspx?ID=3193",
+      "text": "Skeleton Guard",
+      "kind": "Monsters",
+      "id": 3193
+    },
+    {
+      "href": "Monsters.aspx?ID=4549",
+      "text": "Skeleton Infantry",
+      "kind": "Monsters",
+      "id": 4549
+    },
+    {
+      "href": "Monsters.aspx?ID=3938",
+      "text": "Skeleton Mob",
+      "kind": "Monsters",
+      "id": 3938
+    },
+    {
+      "href": "Monsters.aspx?ID=4548",
+      "text": "Tyrannosaurus Skeleton",
+      "kind": "Monsters",
+      "id": 4548
+    },
+    {
+      "href": "Monsters.aspx?ID=3836",
+      "text": "Undead Murder",
+      "kind": "Monsters",
+      "id": 3836
+    },
+    {
+      "href": "Monsters.aspx?ID=4546",
+      "text": "Wolf Skeleton",
+      "kind": "Monsters",
+      "id": 4546
+    },
+    {
+      "href": "Sources.aspx?ID=221",
+      "text": "Monster Core pg. 312",
+      "kind": "Sources",
+      "id": 221
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=51",
+      "text": "Aquatic Ambush",
+      "kind": "MonsterAbilities",
+      "id": 51
+    },
+    {
+      "href": "Conditions.aspx?ID=86",
+      "text": "persistent fire damage",
+      "kind": "Conditions",
+      "id": 86
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=62",
+      "text": "fast healing",
+      "kind": "MonsterAbilities",
+      "id": 62
+    },
+    {
+      "href": "Weapons.aspx?ID=429",
+      "text": "javelin",
+      "kind": "Weapons",
+      "id": 429
+    },
+    {
+      "href": "Conditions.aspx?ID=86",
+      "text": "persistent poison damage",
+      "kind": "Conditions",
+      "id": 86
+    },
+    {
+      "href": "Conditions.aspx?ID=81",
+      "text": "immobilized",
+      "kind": "Conditions",
+      "id": 81
+    },
+    {
+      "href": "Conditions.aspx?ID=58",
+      "text": "off-guard",
+      "kind": "Conditions",
+      "id": 58
+    },
+    {
+      "href": "Rules.aspx?ID=2350",
+      "text": "fly Speed",
+      "kind": "Rules",
+      "id": 2350
+    },
+    {
+      "href": "Rules.aspx?ID=2899",
+      "text": "moderate spell DC for the skeleton's level",
+      "kind": "Rules",
+      "id": 2899
+    },
+    {
+      "href": "Traits.aspx?ID=604",
+      "text": "fire",
+      "kind": "Traits",
+      "id": 604
+    },
+    {
+      "href": "Conditions.aspx?ID=76",
+      "text": "frightened",
+      "kind": "Conditions",
+      "id": 76
+    },
+    {
+      "href": "Traits.aspx?ID=524",
+      "text": "acid",
+      "kind": "Traits",
+      "id": 524
+    },
+    {
+      "href": "Rules.aspx?ID=2349",
+      "text": "climb Speed",
+      "kind": "Rules",
+      "id": 2349
+    },
+    {
+      "href": "Feats.aspx?ID=4916",
+      "text": "Nimble Dodge",
+      "kind": "Feats",
+      "id": 4916
+    },
+    {
+      "href": "Traits.aspx?ID=542",
+      "text": "aura",
+      "kind": "Traits",
+      "id": 542
+    },
+    {
+      "href": "Traits.aspx?ID=664",
+      "text": "olfactory",
+      "kind": "Traits",
+      "id": 664
+    },
+    {
+      "href": "MonsterAbilities.aspx?ID=53",
+      "text": "aura",
+      "kind": "MonsterAbilities",
+      "id": 53
+    },
+    {
+      "href": "Conditions.aspx?ID=91",
+      "text": "sickened",
+      "kind": "Conditions",
+      "id": 91
+    },
+    {
+      "href": "Conditions.aspx?ID=92",
+      "text": "slowed",
+      "kind": "Conditions",
+      "id": 92
+    },
+    {
+      "href": "Traits.aspx?ID=541",
+      "text": "auditory",
+      "kind": "Traits",
+      "id": 541
+    },
+    {
+      "href": "Traits.aspx?ID=590",
+      "text": "emotion",
+      "kind": "Traits",
+      "id": 590
+    },
+    {
+      "href": "Traits.aspx?ID=598",
+      "text": "fear",
+      "kind": "Traits",
+      "id": 598
+    },
+    {
+      "href": "Actions.aspx?ID=2395",
+      "text": "Demoralize",
+      "kind": "Actions",
+      "id": 2395
+    },
+    {
+      "href": "Conditions.aspx?ID=59",
+      "text": "blind",
+      "kind": "Conditions",
+      "id": 59
+    },
+    {
+      "href": "Monsters.aspx?ID=376",
+      "text": "skeletal hulk",
+      "kind": "Monsters",
+      "id": 376
+    },
+    {
+      "href": "Rules.aspx?ID=790",
+      "text": "elite",
+      "kind": "Rules",
+      "id": 790
+    },
+    {
+      "href": "Monsters.aspx?ID=2879",
+      "text": "chimera",
+      "kind": "Monsters",
+      "id": 2879
+    }
+  ],
+  "body_text": "AC 23; Fort +17, Ref +14, Will +11 HP 90 (4 segments, void healing (page 217)); Thresholds 60 (3 segments), 30 (2 segments); Immunities bleed, death effects, disease, mental, paralyzed, poison, unconscious; Resistances cold 7, electricity 7, fire 7, piercing 7, slashing 7; Weaknesses area damage 7, splash damage 7 Troop DefensesSpeed 25 feet, troop movement Ossuary Storm [two-actions] The skeleton mob hurls skulls and fragments of bone in a 10-foot burst within 30 feet. This attack deals 3d6 piercing damage (DC 21 basic Reflex save). When the skeleton mob is reduced to 2 segments, this area decreases to a 5-foot burst.Rattling Bones [one-action] to [three-actions] Frequency once per round; Effect The skeletons engage using their claws and broken bones to attack each enemy in a 5-foot emanation, with a DC 21 basic Reflex save. The damage depends on the number of actions. [one-action] 1d4+1 piercing or slashing damage [two-actions] 2d4+7 piercing or slashing damage [three-actions] 3d4+10 piercing or slashing damageto 2 segments, this area decreases to a 5-foot burst.All Monsters in \"Skeleton\"NameLevelBeetle Carapace6Deathless Pirate7Drake Skeleton8Harpy Skeleton5Ossuary Warden19Skeletal Champion2Skeletal Giant3Skeletal Horse2Skeletal Hulk7Skeletal Mage5Skeletal Rat Swarm2Skeletal Soldier1Skeletal Titan13Skeleton Guard-1Skeleton Infantry11Skeleton Mob6Tyrannosaurus Skeleton9Undead Murder3Wolf Skeleton0SkeletonSource Monster Core pg. 312 Animated skeletons are among the most common types of undead. Skeleton Abilities Most skeletons have one of these abilities. If you give a skeleton more, you might want to increase its level and adjust its statistics. Aquatic Bones The skeleton has bones from aquatic creatures, allowing it to swim using a simple tail, paddles, or similar appendage. The skeleton has a swim Speed of 20 feet and gains the aquatic trait and the Aquatic Ambush ability. Blaze The skeleton is wreathed with fire, which doesn't consume its bones or gear. The skeleton gains immunity to fire and weakness 5 to cold, loses its resistance to cold, and its Strikes deal additional persistent fire damage equal to half the skeleton's level (minimum 1 damage). Bloody A coating of blood gives the skeleton fast healing equal to its level. Bone Missile [two-actions] The skeleton yanks a rib from its ribcage to use as an arrow or javelin. The skeleton loses HP equal to its level (minimum 1), then makes a ranged Strike. This uses the attack bonus of whichever of the skeleton’s other Strikes has the highest attack bonus and deals piercing damage equal to that Strike’s damage plus the skeleton’s level (minimum 1). Bone Powder When the skeleton takes physical damage from a critical hit, one of its bones is pulverized into a fine powder. All creatures in a 5-foot emanation that breathe take 1d6 persistent poison damage (plus an additional 1d6 for every 6 levels the skeleton has). Bone Storm [three-actions] Frequency once per day; Effect The skeleton transforms into a cyclone of bones, taking up the same space, but twice as tall. It then Strides up to double its Speed. It can move through spaces occupied by other creatures, and this movement doesn’t trigger reactions. Creatures the Bone Storm moves through take 1d6 slashing damage for every 2 levels the skeleton has, with a basic Reflex save against the hard DC for the skeleton’s level. A level 1 or lower skeleton only moves; it doesn’t deal damage. A creature attempts this save only once even if the Bone Storm moved through its space multiple times. At the end of the movement, the skeleton reforms. Collapse [reaction] Trigger The skeleton is critically hit; Effect The skeleton collapses into a pile of bones and the attack deals only normal damage. The skeleton can re-form in a standing position as an action, but until it does, it is immobilized and off-guard. Crumbling Bones The skeleton is made from crumbling bones that drift in clouds of dust. The skeleton has a fly Speed of 20, but it must end its turn within no more than 5 feet off the ground, or it falls, taking damage as normal. In addition, the skeleton can move through any space that’s large enough for its skull to fit through. Explosive Death When the skeleton is destroyed, its bones shatter and explode. Adjacent creatures take 1d6 slashing damage per 2 levels (minimum 1d6) with a basic Reflex save against the moderate spell DC for the skeleton's level. Frozen The skeleton’s bones are covered in a thin layer of ice. The skeleton gains immunity to cold and weakness 5 to fire, and loses resistance to fire. The skeleton is surrounded by an aura of cold that deals cold damage equal to half the skeleton’s level to all adjacent creatures at the start of the skeleton’s turn (basic Reflex save with a standard DC for its level). Grave Eruption [two-actions] Requirements The skeleton is undetected and buried in dirt, gravel, or other loose material; Effect The skeleton erupts from the ground, Stands, and makes a melee Strike. The target is off-guard against this Strike. If the Strike hits, the target is frightened 1 (or frightened 2 on a critical hit). Lacquered During the process to create the skeleton, it was covered with several layers of an alchemical lacquer, giving its bones a golden hue and granting additional protection. The skeleton gains acid resistance 5 and a +2 status bonus to saves against effects that age or erode the target. Nimble The skeleton is particularly fast and nimble. Its land Speed increases by 10 feet, and it has a climb Speed of 20 feet. In addition, it gains the Nimble Dodge reaction. Rotten (aura, olfactory); The bones of this skeleton are black and rotten, having spent years in polluted water or some other foul substance. The skeleton loses its resistance to piercing and slashing damage and is surrounded by a horrific stench in a 10-foot aura. A creature entering or starting its turn in the aura must succeed at a Fortitude save against the standard DC of the skeleton’s level or become sickened 1 (plus slowed 1 for as long as it remains sickened on a critical failure). While within the aura, affected creatures take a –2 circumstance penalty to saves against disease and to recover from the sickened condition. A creature that succeeds at its save is temporarily immune for 1 minute. This stench remains for 1 hour after the rotten skeleton has been destroyed. Screaming Skull [two-actions] (auditory, emotion, fear, mental) The skeleton removes its skull and throws it, making a jaws attack with a range of 20 feet. It then attempts to Demoralize each foe within 10 feet of the target. The head bounces, rolls, or even flies back, returning to the skeleton at the start of its next turn. The skeleton is blind until then. Skeleton of Roses Thick briars have grown through the skeleton’s bones, covering it in red roses with inch-long thorns. The skeleton’s unarmed melee Strikes deal additional piercing damage equal to one-third the skeleton’s level (minimum 1 damage). At the end of each of its turns, if the skeleton has caused piercing damage with its thorns, it regains HP equal to its level (minimum 1). Each time the skeleton regains HP in this way, another rose blossoms. Creating SkeletonsStart with a skeleton of the appropriate size. (Gargantuan skeletons can use skeletal hulk with the elite adjustments, Gargantuan size, and 5 feet more reach.) Add Strikes, Speeds, or other abilities it would gain from its shape. For instance, a chimera skeleton might have a horn attack with its goat head and jaw attacks with its dragon and lion heads, but not a fist attack. Patchwork SkeletonsA skeleton’s connection to its mortal remains is tenuous. One that’s damaged can fairly easily replace a broken bone with a similar bone scavenged from another creature. A skeleton can eventually have its entire body replaced, bone by bone. Skeletons don’t have much of an identity, making it unclear whether this is still considered the same creature. Radiant RebirthWhen the powerful lich called the Whispering Tyrant returned from imprisonment, he unleashed the Radiant Fire that laid waste to several towns and cities around his prison of Gallowspire. Most of the fallen were left where they died, slowly steeping in necromantic energy. In the early days after these attacks, zombies commonly roamed the area, but as the years pass, skeletons have become more and more numerous. Skeleton OriginsNecromancers occasionally add a little something extra to skeletons they animate, but sometimes skeletons can pick up aspects of their environment. Skeletons that spend centuries in an underground cavern with a lava lake often end up blazing. Corpses whose graves become overrun with briars and brambles sometimes rise with life-draining thorns, while skeletons in vermin-infested earth often take some of those vermin with them when animated. Unlife Without FleshThe necromantic energies that infuse animated undead skeletons give them the ability to see without eyes and move without muscles. Despite being mindless, skeletons' instinct to do evil comes from their corrupt vital essence, perverting void energy for creation rather than destruction.",
+  "body_html": "<b>AC</b> 23; <b>Fort</b> +17, <b>Ref</b> +14, <b>Will</b> +11<br><b>HP</b> 90 (4 segments, void healing (page 217)); <b>Thresholds</b>  60 (3 segments), 30 (2 segments); <b>Immunities</b> <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=86\">bleed</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=571\">death effects</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=578\">disease</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=647\">mental</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=85\">paralyzed</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=669\">poison</a>, <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=95\">unconscious</a>; <b>Resistances</b> <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=555\">cold</a> 7, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=586\">electricity</a> 7, fire 7, piercing 7, slashing 7; <b>Weaknesses</b> area damage 7, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=699\">splash</a> damage 7<br><span class=\"hanging-indent\"><a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=86\"><b>Troop Defenses</b></a></span><hr><b>Speed</b> 25 feet, <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=85\">troop movement</a><br><span class=\"hanging-indent\"><b>Ossuary Storm</b>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>   The skeleton mob hurls skulls and fragments of bone in a 10-foot <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2385\">burst</a> within 30 feet. This attack deals 3d6 piercing damage (DC 21 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save). When the skeleton mob is reduced to 2 segments, this area decreases to a 5-foot burst.</span><span class=\"hanging-indent\"><b>Rattling Bones</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  to  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>   <b>Frequency</b> once per round; <b>Effect</b> The skeletons engage using their claws and broken bones to attack each enemy in a 5-foot <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2387\">emanation</a>, with a DC 21 <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save. The damage depends on the number of actions. <br> <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  1d4+1 piercing or slashing damage <br> <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  2d4+7 piercing or slashing damage <br> <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>  3d4+10 piercing or slashing damageto 2 segments, this area decreases to a 5-foot burst.</span><div class=\"monster-family hide-on-print\"><h2 class=\"title\">All Monsters in \"<a href=\"MonsterFamilies.aspx?ID=472\">Skeleton</a>\"</h2><table class=\"inner\"><tbody><tr><td><b>Name</b></td><td><b>Level</b></td></tr><tr><td><a href=\"Monsters.aspx?ID=4547\">Beetle Carapace</a></td><td>6</td></tr><tr><td><a href=\"Monsters.aspx?ID=3980\">Deathless Pirate</a></td><td>7</td></tr><tr><td><a href=\"Monsters.aspx?ID=1903\">Drake Skeleton</a></td><td>8</td></tr><tr><td><a href=\"Monsters.aspx?ID=1298\">Harpy Skeleton</a></td><td>5</td></tr><tr><td><a href=\"Monsters.aspx?ID=3841\">Ossuary Warden</a></td><td>19</td></tr><tr><td><a href=\"Monsters.aspx?ID=3194\">Skeletal Champion</a></td><td>2</td></tr><tr><td><a href=\"Monsters.aspx?ID=3196\">Skeletal Giant</a></td><td>3</td></tr><tr><td><a href=\"Monsters.aspx?ID=3195\">Skeletal Horse</a></td><td>2</td></tr><tr><td><a href=\"Monsters.aspx?ID=3197\">Skeletal Hulk</a></td><td>7</td></tr><tr><td><a href=\"Monsters.aspx?ID=1901\">Skeletal Mage</a></td><td>5</td></tr><tr><td><a href=\"Monsters.aspx?ID=3834\">Skeletal Rat Swarm</a></td><td>2</td></tr><tr><td><a href=\"Monsters.aspx?ID=1900\">Skeletal Soldier</a></td><td>1</td></tr><tr><td><a href=\"Monsters.aspx?ID=4550\">Skeletal Titan</a></td><td>13</td></tr><tr><td><a href=\"Monsters.aspx?ID=3193\">Skeleton Guard</a></td><td>-1</td></tr><tr><td><a href=\"Monsters.aspx?ID=4549\">Skeleton Infantry</a></td><td>11</td></tr><tr><td><a href=\"Monsters.aspx?ID=3938\">Skeleton Mob</a></td><td>6</td></tr><tr><td><a href=\"Monsters.aspx?ID=4548\">Tyrannosaurus Skeleton</a></td><td>9</td></tr><tr><td><a href=\"Monsters.aspx?ID=3836\">Undead Murder</a></td><td>3</td></tr><tr><td><a href=\"Monsters.aspx?ID=4546\">Wolf Skeleton</a></td><td>0</td></tr></tbody></table><h1 class=\"title\"><a href=\"MonsterFamilies.aspx?ID=472\">Skeleton</a></h1><b>Source</b> <a href=\"Sources.aspx?ID=221\" target=\"_blank\" class=\"external-link\"><i>Monster Core pg. 312</i></a><br>Animated skeletons are among the most common types of undead. <h2 class=\"title\">Skeleton Abilities</h2> Most skeletons have one of these abilities. If you give a skeleton more, you might want to increase its level and adjust its statistics.<br> <br><b>Aquatic Bones</b> The skeleton has bones from aquatic creatures, allowing it to swim using a simple tail, paddles, or similar appendage. The skeleton has a swim Speed of 20 feet and gains the aquatic trait and the <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=51\">Aquatic Ambush</a> ability.<br><b>Blaze</b> The skeleton is wreathed with fire, which doesn't consume its bones or gear. The skeleton gains immunity to fire and weakness 5 to <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=555\">cold</a>, loses its resistance to cold, and its Strikes deal additional <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=86\">persistent fire damage</a> equal to half the skeleton's level (minimum 1 damage).<br><b>Bloody</b> A coating of blood gives the skeleton <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=62\">fast healing</a> equal to its level.<br> <b>Bone Missile</b>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  The skeleton yanks a rib from its ribcage to use as an arrow or <a style=\"text-decoration:underline\" href=\"Weapons.aspx?ID=429\">javelin</a>. The skeleton loses HP equal to its level (minimum 1), then makes a ranged Strike. This uses the attack bonus of whichever of the skeleton’s other Strikes has the highest attack bonus and deals piercing damage equal to that Strike’s damage plus the skeleton’s level (minimum 1).<br><b>Bone Powder</b> When the skeleton takes physical damage from a critical hit, one of its bones is pulverized into a fine powder. All creatures in a 5-foot <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2387\">emanation</a> that breathe take 1d6 <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=86\">persistent poison damage</a> (plus an additional 1d6 for every 6 levels the skeleton has).<br><b>Bone Storm</b>  <span class=\"action\" title=\"Three Actions\" role=\"img\" aria-label=\"Three Actions\">[three-actions]</span>  <b>Frequency</b> once per day; <b>Effect</b> The skeleton transforms into a cyclone of bones, taking up the same space, but twice as tall. It then Strides up to double its Speed. It can move through spaces occupied by other creatures, and this movement doesn’t trigger reactions. Creatures the Bone Storm moves through take 1d6 slashing damage for every 2 levels the skeleton has, with a <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save against the hard DC for the skeleton’s level. A level 1 or lower skeleton only moves; it doesn’t deal damage. A creature attempts this save only once even if the Bone Storm moved through its space multiple times. At the end of the movement, the skeleton reforms.<br><b>Collapse</b>  <span class=\"action\" title=\"Reaction\" role=\"img\" aria-label=\"Reaction\">[reaction]</span>  <b>Trigger</b> The skeleton is critically hit; <b>Effect</b> The skeleton collapses into a pile of bones and the attack deals only normal damage. The skeleton can re-form in a standing position as an action, but until it does, it is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=81\">immobilized</a> and <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=58\">off-guard</a>.<br><b>Crumbling Bones</b> The skeleton is made from crumbling bones that drift in clouds of dust. The skeleton has a <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2350\">fly Speed</a> of 20, but it must end its turn within no more than 5 feet off the ground, or it falls, taking damage as normal. In addition, the skeleton can move through any space that’s large enough for its skull to fit through.<br><b>Explosive Death</b> When the skeleton is destroyed, its bones shatter and explode. Adjacent creatures take 1d6 slashing damage per 2 levels (minimum 1d6) with a basic Reflex save against the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2899\">moderate spell DC for the skeleton's level</a>.<br><b>Frozen</b> The skeleton’s bones are covered in a thin layer of ice. The skeleton gains immunity to <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=555\">cold</a> and weakness 5 to <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=604\">fire</a>, and loses resistance to fire. The skeleton is surrounded by an aura of cold that deals cold damage equal to half the skeleton’s level to all adjacent creatures at the start of the skeleton’s turn (<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2297\">basic</a> Reflex save with a standard DC for its level).<br><b>Grave Eruption</b>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  <b>Requirements</b> The skeleton is undetected and buried in dirt, gravel, or other loose material; <b>Effect</b> The skeleton erupts from the ground, Stands, and makes a melee Strike. The target is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=58\">off-guard</a> against this Strike. If the Strike hits, the target is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=76\">frightened</a> 1 (or frightened 2 on a critical hit).<br><b>Lacquered</b> During the process to create the skeleton, it was covered with several layers of an alchemical lacquer, giving its bones a golden hue and granting additional protection. The skeleton gains <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=524\">acid</a> resistance 5 and a +2 status bonus to saves against effects that age or erode the target.<br><b>Nimble</b> The skeleton is particularly fast and nimble. Its land Speed increases by 10 feet, and it has a <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=2349\">climb Speed</a> of 20 feet. In addition, it gains the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=4916\">Nimble Dodge</a> reaction.<br><b>Rotten</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=542\">aura</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=664\">olfactory</a>); The bones of this skeleton are black and rotten, having spent years in polluted water or some other foul substance. The skeleton loses its resistance to piercing and slashing damage and is surrounded by a horrific stench in a 10-foot <a style=\"text-decoration:underline\" href=\"MonsterAbilities.aspx?ID=53\">aura</a>. A creature entering or starting its turn in the aura must succeed at a Fortitude save against the standard DC of the skeleton’s level or become <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=91\">sickened</a> 1 (plus <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=92\">slowed</a> 1 for as long as it remains sickened on a critical failure). While within the aura, affected creatures take a –2 circumstance penalty to saves against disease and to recover from the sickened condition. A creature that succeeds at its save is temporarily immune for 1 minute. This stench remains for 1 hour after the rotten skeleton has been destroyed.<br><b>Screaming Skull</b> <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>  (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=541\">auditory</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=590\">emotion</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=598\">fear</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=647\">mental</a>) The skeleton removes its skull and throws it, making a jaws attack with a range of 20 feet. It then attempts to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2395\">Demoralize</a> each foe within 10 feet of the target. The head bounces, rolls, or even flies back, returning to the skeleton at the start of its next turn. The skeleton is <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=59\">blind</a> until then.<br><b>Skeleton of Roses</b> Thick briars have grown through the skeleton’s bones, covering it in red roses with inch-long thorns. The skeleton’s unarmed melee Strikes deal additional piercing damage equal to one-third the skeleton’s level (minimum 1 damage). At the end of each of its turns, if the skeleton has caused piercing damage with its thorns, it regains HP equal to its level (minimum 1). Each time the skeleton regains HP in this way, another rose blossoms.<h3 class=\"title\"><img alt=\"Sidebar - Advice and Rules\" title=\"Sidebar - Advice and Rules\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_1_AdviceAndRules.png\"> Creating Skeletons</h3>Start with a skeleton of the appropriate size. (Gargantuan skeletons can use <a style=\"text-decoration:underline\" href=\"Monsters.aspx?ID=376\">skeletal hulk</a> with the <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=790\">elite</a> adjustments, Gargantuan size, and 5 feet more reach.) Add Strikes, Speeds, or other abilities it would gain from its shape. For instance, a <a style=\"text-decoration:underline\" href=\"Monsters.aspx?ID=2879\">chimera</a> skeleton might have a horn attack with its goat head and jaw attacks with its dragon and lion heads, but not a fist attack.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Patchwork Skeletons</h3>A skeleton’s connection to its mortal remains is tenuous. One that’s damaged can fairly easily replace a broken bone with a similar bone scavenged from another creature. A skeleton can eventually have its entire body replaced, bone by bone. Skeletons don’t have much of an identity, making it unclear whether this is still considered the same creature.<h3 class=\"title\"><img alt=\"Sidebar - Related Creatures\" title=\"Sidebar - Related Creatures\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_4_RelatedCreatures.png\"> Radiant Rebirth</h3>When the powerful lich called the Whispering Tyrant returned from imprisonment, he unleashed the Radiant Fire that laid waste to several towns and cities around his prison of Gallowspire. Most of the fallen were left where they died, slowly steeping in necromantic energy. In the early days after these attacks, zombies commonly roamed the area, but as the years pass, skeletons have become more and more numerous.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Skeleton Origins</h3>Necromancers occasionally add a little something extra to skeletons they animate, but sometimes skeletons can pick up aspects of their environment. Skeletons that spend centuries in an underground cavern with a lava lake often end up blazing. Corpses whose graves become overrun with briars and brambles sometimes rise with life-draining thorns, while skeletons in vermin-infested earth often take some of those vermin with them when animated.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Unlife Without Flesh</h3>The necromantic energies that infuse animated undead skeletons give them the ability to see without eyes and move without muscles. Despite being mindless, skeletons' instinct to do evil comes from their corrupt vital essence, perverting void energy for creation rather than destruction.</div>",
+  "meta_description": "To the morbid, a battlefield is no more than a garden of corpses. Sometimes, either through the magic of a necromancer or through an unfortunate pooling of void energy, these bodies rise up as broken and battered skeletons. While some of these skeletons are far from whole, they can still pose a significant threat.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Monsters, Skeleton Mob"
+}

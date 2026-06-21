@@ -1,0 +1,112 @@
+{
+  "_type": "background",
+  "url": "https://2e.aonprd.com/Backgrounds.aspx?ID=127",
+  "entity_id": 127,
+  "name": "Aiudara Seeker",
+  "rarity": "rare",
+  "pfs": "limited",
+  "legacy": true,
+  "alt_edition_url": null,
+  "traits": [
+    "Rare",
+    "Legacy - Age of Ashes"
+  ],
+  "trait_ids": {
+    "Rare": 137,
+    "Legacy - Age of Ashes": 270
+  },
+  "source": {
+    "book": "Pathfinder #150: Broken Promises",
+    "page": 73,
+    "source_id": 15
+  },
+  "sources": [
+    {
+      "book": "Pathfinder #150: Broken Promises",
+      "page": 73,
+      "source_id": 15,
+      "raw": "Pathfinder #150: Broken Promises pg. 73"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Backgrounds.aspx?ID=127",
+      "text": "Aiudara Seeker",
+      "kind": "Backgrounds",
+      "id": 127
+    },
+    {
+      "href": "/Traits.aspx?ID=137",
+      "text": "Rare",
+      "kind": "Traits",
+      "id": 137
+    },
+    {
+      "href": "/Traits.aspx?ID=270",
+      "text": "Legacy - Age of Ashes",
+      "kind": "Traits",
+      "id": 270
+    },
+    {
+      "href": "Sources.aspx?ID=15",
+      "text": "Pathfinder #150: Broken Promises pg. 73",
+      "kind": "Sources",
+      "id": 15
+    },
+    {
+      "href": "Skills.aspx?ID=2",
+      "text": "Arcana",
+      "kind": "Skills",
+      "id": 2
+    },
+    {
+      "href": "Skills.aspx?ID=8",
+      "text": "Portal Lore",
+      "kind": "Skills",
+      "id": 8
+    },
+    {
+      "href": "Feats.aspx?ID=824",
+      "text": "Quick Identification",
+      "kind": "Feats",
+      "id": 824
+    }
+  ],
+  "body_text": "The aiudara of Alseta’s Ring have become more well known, and you are interested in learning more about them. Choose two attribute boosts. One must be to Intelligence or Wisdom, and one is a free attribute boost. You're trained in the Arcana skill, and the Portal Lore skill. You gain the Quick Identification skill feat.",
+  "body_html": "The <i>aiudara</i> of Alseta’s Ring have become more well known, and you are interested in learning more about them.<br><br>Choose two attribute boosts. One must be to <b>Intelligence</b> or <b>Wisdom</b>, and one is a free attribute boost.<br><br>You're trained in the <u><a href=\"Skills.aspx?ID=2\">Arcana</a></u> skill, and the <u><a href=\"Skills.aspx?ID=8\">Portal Lore</a></u> skill. You gain the <u><a href=\"Feats.aspx?ID=824\">Quick Identification</a></u> skill feat.",
+  "meta_description": "The aiudara of Alseta’s Ring have become more well known, and you are interested in learning more about them.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Backgrounds, Aiudara Seeker",
+  "attribute_boost_choice": {
+    "fixed_options": [
+      "Intelligence",
+      "Wisdom"
+    ],
+    "free": true
+  },
+  "trained_skills": [
+    {
+      "name": "Arcana",
+      "skill_id": 2
+    }
+  ],
+  "lore_skills": [
+    {
+      "name": "Portal Lore",
+      "skill_id": 8
+    }
+  ],
+  "granted_feat": {
+    "name": "Quick Identification",
+    "feat_id": 824
+  },
+  "flavor_text": "The aiudara of Alseta’s Ring have become more well known, and you are interested in learning more about them.",
+  "related_sources": []
+}

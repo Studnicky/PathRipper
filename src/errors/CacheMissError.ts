@@ -1,20 +1,20 @@
 import { BaseError } from './BaseError.js';
-import type { BaseErrorOptionsInterface } from '../types/BaseError.js';
+import type { BaseErrorOptionsType } from '../types/BaseError.js';
 
 /**
- * Construction options for `CacheMissError`, extending `BaseErrorOptionsInterface` with cache context.
+ * Construction options for `CacheMissError`, extending `BaseErrorOptionsType` with cache context.
  *
  * @category Errors
  * @since 2.0.0
- * @see {@link BaseErrorOptionsInterface}
+ * @see {@link BaseErrorOptionsType}
  * @group Types
  */
-export interface CacheMissErrorOptionsInterface extends BaseErrorOptionsInterface {
+export type CacheMissErrorOptionsType = BaseErrorOptionsType & {
   /** Cache key that produced the miss, if available. */
   readonly key?: string | undefined;
   /** Request URL associated with the miss, if available. */
   readonly url?: string | undefined;
-}
+};
 
 /**
  * Thrown by cache-aware scrapers when a `read-only` cache encounters a miss.
@@ -44,7 +44,7 @@ export class CacheMissError extends BaseError {
    * @param message - Human-readable error description.
    * @param options - Optional key, url, cause, and metadata.
    */
-  private constructor(message: string, options: CacheMissErrorOptionsInterface = {}) {
+  private constructor(message: string, options: CacheMissErrorOptionsType = {}) {
     super(message, { retryable: false, ...options });
     this.key = options.key;
     this.url = options.url;
@@ -57,7 +57,7 @@ export class CacheMissError extends BaseError {
    * @param options - Optional key, url, cause, and metadata.
    * @returns A new CacheMissError.
    */
-  public static create(message: string, options: CacheMissErrorOptionsInterface = {}): CacheMissError {
+  public static create(message: string, options: CacheMissErrorOptionsType = {}): CacheMissError {
     return new CacheMissError(message, options);
   }
 }

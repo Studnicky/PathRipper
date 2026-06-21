@@ -1,0 +1,614 @@
+{
+  "_type": "class",
+  "url": "https://2e.aonprd.com/Classes.aspx?ID=5",
+  "entity_id": 5,
+  "name": "Cleric",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Classes.aspx?ID=5&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 108,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 108,
+      "source_id": 216,
+      "raw": "Player Core pg. 108"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "During Combat Encounters...",
+      "level": 2,
+      "body_html": "If you’re a warpriest, you balance between casting spells and attacking with weapons— typically the favored weapon of your deity. If you’re a cloistered cleric, you primarily cast spells. Most of your spells can boost, protect, or heal your allies. Depending on your deity, you get extra spells to heal your allies or harm your enemies.<br>",
+      "body_text": "If you’re a warpriest, you balance between casting spells and attacking with weapons— typically the favored weapon of your deity. If you’re a cloistered cleric, you primarily cast spells. Most of your spells can boost, protect, or heal your allies. Depending on your deity, you get extra spells to heal your allies or harm your enemies.",
+      "links": []
+    },
+    {
+      "heading": "During Social Encounters...",
+      "level": 2,
+      "body_html": "You might make diplomatic overtures or deliver impressive speeches. Because you’re wise, you also pick up on falsehoods others tell.<br>",
+      "body_text": "You might make diplomatic overtures or deliver impressive speeches. Because you’re wise, you also pick up on falsehoods others tell.",
+      "links": []
+    },
+    {
+      "heading": "While Exploring...",
+      "level": 2,
+      "body_html": "You detect nearby magic and interpret any religious writing you come across. You might also concentrate on a protective spell for your allies in case of attack. After a battle or hazard, you might heal anyone who was hurt.<br>",
+      "body_text": "You detect nearby magic and interpret any religious writing you come across. You might also concentrate on a protective spell for your allies in case of attack. After a battle or hazard, you might heal anyone who was hurt.",
+      "links": []
+    },
+    {
+      "heading": "In Downtime...",
+      "level": 2,
+      "body_html": "You might perform services at a temple, travel to spread the word of your deity, research scripture, celebrate holy days, or even found a new temple.<br>",
+      "body_text": "You might perform services at a temple, travel to spread the word of your deity, research scripture, celebrate holy days, or even found a new temple.",
+      "links": []
+    },
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Visit the temples and holy places sacred to your faith, and have an immediate affinity with other worshippers of your deity. </li><li>Know the teachings of your religion’s holy texts and how they apply to a dilemma. </li><li>Cooperate with your allies, provided they don’t ask you to go against divine will.</li></ul>",
+      "body_text": "Visit the temples and holy places sacred to your faith, and have an immediate affinity with other worshippers of your deity. Know the teachings of your religion’s holy texts and how they apply to a dilemma. Cooperate with your allies, provided they don’t ask you to go against divine will.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Find your devotion impressive, even if they don’t understand it. </li><li>Expect you to heal their wounds. </li><li>Rely on you to interact with other religious figures.</li></ul>",
+      "body_text": "Find your devotion impressive, even if they don’t understand it. Expect you to heal their wounds. Rely on you to interact with other religious figures.",
+      "links": []
+    },
+    {
+      "heading": "Perception",
+      "level": 2,
+      "body_html": "Trained in Perception<br>",
+      "body_text": "Trained in Perception",
+      "links": []
+    },
+    {
+      "heading": "Saving Throws",
+      "level": 2,
+      "body_html": "Trained in Fortitude<br>Trained in Reflex<br>Expert in Will<br>",
+      "body_text": "Trained in Fortitude Trained in Reflex Expert in Will",
+      "links": []
+    },
+    {
+      "heading": "Skills",
+      "level": 2,
+      "body_html": "Trained in <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=13\">Religion</a><br> Trained in one skill determined by your choice of deity<br> Trained in a number of additional skills equal to 2 plus your Intelligence modifier<br>",
+      "body_text": "Trained in Religion Trained in one skill determined by your choice of deity Trained in a number of additional skills equal to 2 plus your Intelligence modifier",
+      "links": [
+        {
+          "href": "Skills.aspx?ID=13",
+          "text": "Religion",
+          "kind": "Skills",
+          "id": 13
+        }
+      ]
+    },
+    {
+      "heading": "Attacks",
+      "level": 2,
+      "body_html": "Trained in simple weapons<br> Trained in the favored weapon of your deity. If your deity's favored weapon is uncommon, you also gain access to that weapon.<br> Trained in unarmed attacks<br>",
+      "body_text": "Trained in simple weapons Trained in the favored weapon of your deity. If your deity's favored weapon is uncommon, you also gain access to that weapon. Trained in unarmed attacks",
+      "links": []
+    },
+    {
+      "heading": "Defenses",
+      "level": 2,
+      "body_html": "Untrained in all armor, though your doctrine might alter this<br> Trained in unarmored defense<br>",
+      "body_text": "Untrained in all armor, though your doctrine might alter this Trained in unarmored defense",
+      "links": []
+    },
+    {
+      "heading": "Class DC",
+      "level": 2,
+      "body_html": "Trained in cleric class DC<br>",
+      "body_text": "Trained in cleric class DC",
+      "links": []
+    },
+    {
+      "heading": "Spells",
+      "level": 2,
+      "body_html": "Trained in spell attack modifier<br> Trained in spell DC<br>",
+      "body_text": "Trained in spell attack modifier Trained in spell DC",
+      "links": []
+    },
+    {
+      "heading": "Ancestry and Background",
+      "level": 2,
+      "body_html": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.<br>",
+      "body_text": "In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "In addition to the boost to Wisdom you get from your class at 1st level, you have four free boosts to different attribute modifiers.<br><br>At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost, and must boost that attribute again at a later level to increase it by 1.<br>",
+      "body_text": "In addition to the boost to Wisdom you get from your class at 1st level, you have four free boosts to different attribute modifiers. At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost, and must boost that attribute again at a later level to increase it by 1.",
+      "links": []
+    },
+    {
+      "heading": "Initial Proficiencies",
+      "level": 2,
+      "body_html": "At 1st level you gain a number of proficiencies that represent your basic training. These are noted at the start of this class.<br>",
+      "body_text": "At 1st level you gain a number of proficiencies that represent your basic training. These are noted at the start of this class.",
+      "links": []
+    },
+    {
+      "heading": "Deity",
+      "level": 2,
+      "body_html": "As a cleric, you are a mortal servitor of a deity you revere above all others. The most common <a style=\"text-decoration:underline\" href=\"Deities.aspx\">deities</a> in Pathfinder have edicts, areas of concern, and the benefits you get for being a cleric of that deity. Your deity grants you the trained proficiency rank in one skill and with the deity's favored weapon. If the favored weapon is uncommon, you also get access to that weapon. Your deity also adds spells to your spell list. You can prepare these just like you can any spell on the divine spell list once you can prepare spells of their rank as a cleric. Any of these spells that aren't normally on the divine list are still divine spells if you prepare them this way. ",
+      "body_text": "As a cleric, you are a mortal servitor of a deity you revere above all others. The most common deities in Pathfinder have edicts, areas of concern, and the benefits you get for being a cleric of that deity. Your deity grants you the trained proficiency rank in one skill and with the deity's favored weapon. If the favored weapon is uncommon, you also get access to that weapon. Your deity also adds spells to your spell list. You can prepare these just like you can any spell on the divine spell list once you can prepare spells of their rank as a cleric. Any of these spells that aren't normally on the divine list are still divine spells if you prepare them this way.",
+      "links": [
+        {
+          "href": "Deities.aspx",
+          "text": "deities",
+          "kind": "Deities",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Sanctification",
+      "level": 2,
+      "body_html": " Depending on your deity, their sanctification can make you holy or unholy. This gives you the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=517\">holy</a> or <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=521\">unholy</a> trait, which commits you to one side of a struggle over the souls of the planes and may be referenced in other abilities. If you “can be” holy or unholy according to your deity, you make that choice, and if you “must be” holy or unholy you gain the trait automatically. If you gain the opposing trait in some way, you lose the previous trait until you complete an <a style=\"text-decoration:underline\" href=\"Rituals.aspx?ID=2\"><i>atone</i></a> ritual. ",
+      "body_text": "Depending on your deity, their sanctification can make you holy or unholy. This gives you the holy or unholy trait, which commits you to one side of a struggle over the souls of the planes and may be referenced in other abilities. If you “can be” holy or unholy according to your deity, you make that choice, and if you “must be” holy or unholy you gain the trait automatically. If you gain the opposing trait in some way, you lose the previous trait until you complete an atone ritual.",
+      "links": [
+        {
+          "href": "Traits.aspx?ID=517",
+          "text": "holy",
+          "kind": "Traits",
+          "id": 517
+        },
+        {
+          "href": "Traits.aspx?ID=521",
+          "text": "unholy",
+          "kind": "Traits",
+          "id": 521
+        },
+        {
+          "href": "Rituals.aspx?ID=2",
+          "text": "atone",
+          "kind": "Rituals",
+          "id": 2
+        }
+      ]
+    },
+    {
+      "heading": "Anathema",
+      "level": 2,
+      "body_html": " Acts fundamentally opposed to your deity's ideals are anathema to your faith. Learning or casting spells, committing acts, and using items that are anathema to your deity remove you from your deity's good graces.<br><br> Casting spells with the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=521\">unholy</a> trait is almost always anathema to deities who don't allow unholy sanctification, and casting <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=517\">holy</a> spells is likewise anathema to those who don't allow holy sanctification. Similarly, casting spells that are anathema to the tenets or goals of your faith could interfere with your connection to your deity. For example, casting a spell to create <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=160\">undead</a> would be anathema to <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=14\">Pharasma</a>, the goddess of death. Many actions that are anathema don't appear in any deity's formal list. For borderline cases, you and your GM determine which acts are anathema.<br><br> If you perform enough acts that are anathema to your deity, you lose the magical abilities that come from your connection to your deity. The class features that you lose are determined by the GM, but they likely include your divine font and all cleric spellcasting. These abilities can be regained only if you repent by conducting an <a style=\"text-decoration:underline\" href=\"Rituals.aspx?ID=2\"><i>atone</i></a> ritual.<br>",
+      "body_text": "Acts fundamentally opposed to your deity's ideals are anathema to your faith. Learning or casting spells, committing acts, and using items that are anathema to your deity remove you from your deity's good graces. Casting spells with the unholy trait is almost always anathema to deities who don't allow unholy sanctification, and casting holy spells is likewise anathema to those who don't allow holy sanctification. Similarly, casting spells that are anathema to the tenets or goals of your faith could interfere with your connection to your deity. For example, casting a spell to create undead would be anathema to Pharasma, the goddess of death. Many actions that are anathema don't appear in any deity's formal list. For borderline cases, you and your GM determine which acts are anathema. If you perform enough acts that are anathema to your deity, you lose the magical abilities that come from your connection to your deity. The class features that you lose are determined by the GM, but they likely include your divine font and all cleric spellcasting. These abilities can be regained only if you repent by conducting an atone ritual.",
+      "links": [
+        {
+          "href": "Traits.aspx?ID=521",
+          "text": "unholy",
+          "kind": "Traits",
+          "id": 521
+        },
+        {
+          "href": "Traits.aspx?ID=517",
+          "text": "holy",
+          "kind": "Traits",
+          "id": 517
+        },
+        {
+          "href": "Traits.aspx?ID=160",
+          "text": "undead",
+          "kind": "Traits",
+          "id": 160
+        },
+        {
+          "href": "Deities.aspx?ID=14",
+          "text": "Pharasma",
+          "kind": "Deities",
+          "id": 14
+        },
+        {
+          "href": "Rituals.aspx?ID=2",
+          "text": "atone",
+          "kind": "Rituals",
+          "id": 2
+        }
+      ]
+    },
+    {
+      "heading": "Cleric Spellcasting",
+      "level": 2,
+      "body_html": "Your deity bestows on you the power to cast divine spells. You are a spellcaster, and you can cast spells of the divine tradition using the <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=72\">Cast a Spell</a> activity. As a cleric, your chants generally invoke your deity and their powerful servants by name or title, while your gestures are followed by sacred symbols or other representations of your deity<br><br> At 1st level, you can prepare two 1st-rank spells and five cantrips each morning from the common spells on the <a style=\"text-decoration:underline\" href=\"SpellLists.aspx?Tradition=2\">divine</a> spell list or from other divine spells to which you gain access and learn via <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=25\">Learn a Spell</a>. Prepared spells remain available to you until you cast them or until you prepare your spells again. The number of spells you can prepare each day is called your spell slots. <br><br>As you increase in level as a cleric, the number of spells you can prepare each day increases, as does the highest rank of spell you can cast, as shown in Cleric Spells per Day table above.<br><br> Some of your spells require you to attempt a spell attack to see how effective they are or for your enemies to roll against your spell DC (typically by attempting a saving throw). Since your key attribute is Wisdom, your spell attack modifier and spell DC use your Wisdom modifier. ",
+      "body_text": "Your deity bestows on you the power to cast divine spells. You are a spellcaster, and you can cast spells of the divine tradition using the Cast a Spell activity. As a cleric, your chants generally invoke your deity and their powerful servants by name or title, while your gestures are followed by sacred symbols or other representations of your deity At 1st level, you can prepare two 1st-rank spells and five cantrips each morning from the common spells on the divine spell list or from other divine spells to which you gain access and learn via Learn a Spell. Prepared spells remain available to you until you cast them or until you prepare your spells again. The number of spells you can prepare each day is called your spell slots. As you increase in level as a cleric, the number of spells you can prepare each day increases, as does the highest rank of spell you can cast, as shown in Cleric Spells per Day table above. Some of your spells require you to attempt a spell attack to see how effective they are or for your enemies to roll against your spell DC (typically by attempting a saving throw). Since your key attribute is Wisdom, your spell attack modifier and spell DC use your Wisdom modifier.",
+      "links": [
+        {
+          "href": "Actions.aspx?ID=72",
+          "text": "Cast a Spell",
+          "kind": "Actions",
+          "id": 72
+        },
+        {
+          "href": "SpellLists.aspx?Tradition=2",
+          "text": "divine",
+          "kind": "SpellLists",
+          "id": null
+        },
+        {
+          "href": "Actions.aspx?ID=25",
+          "text": "Learn a Spell",
+          "kind": "Actions",
+          "id": 25
+        }
+      ]
+    },
+    {
+      "heading": "Heightening Spells",
+      "level": 2,
+      "body_html": " When you get spell slots of 2nd rank and higher, you can fill those slots with stronger versions of lower-rank spells. This increases the spell's rank, heightening it to match the spell slot. Many spells have specific improvements when they are heightened to certain ranks. ",
+      "body_text": "When you get spell slots of 2nd rank and higher, you can fill those slots with stronger versions of lower-rank spells. This increases the spell's rank, heightening it to match the spell slot. Many spells have specific improvements when they are heightened to certain ranks.",
+      "links": []
+    },
+    {
+      "heading": "Cantrips",
+      "level": 2,
+      "body_html": " Some of your spells are cantrips. A cantrip is a special type of spell that doesn't use spell slots. You can cast a cantrip at will, any number of times per day. A cantrip is always automatically heightened to half your level rounded up—this is usually equal to the highest rank of cleric spell slot you have. For example, as a 1st-level cleric, your cantrips are 1st-rank spells, and as a 5th-level cleric, your cantrips are 3rd-rank spells.<br>",
+      "body_text": "Some of your spells are cantrips. A cantrip is a special type of spell that doesn't use spell slots. You can cast a cantrip at will, any number of times per day. A cantrip is always automatically heightened to half your level rounded up—this is usually equal to the highest rank of cleric spell slot you have. For example, as a 1st-level cleric, your cantrips are 1st-rank spells, and as a 5th-level cleric, your cantrips are 3rd-rank spells.",
+      "links": []
+    },
+    {
+      "heading": "Divine Font",
+      "level": 2,
+      "body_html": "Through your deity's blessing, you gain additional spells that channel either the life force called vitality or its counterforce, the void. When you prepare your spells each day, you can prepare additional <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=148\"><i>heal</i></a> or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=146\"><i>harm</i></a> spells, depending on your deity. The divine font spell your deity provides is listed in the Divine Font entry for your <a style=\"text-decoration:underline\" href=\"Deities.aspx\">deity</a>; if both are listed, you can choose between heal or harm. Once you choose, you can't change your choice short of divine intervention.<br><br> <b>Healing Font</b>: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1554\"><i>heal</i></a> spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6.<br><br> <b>Harmful Font</b>: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1552\"><i>harm</i></a> spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6.<br>",
+      "body_text": "Through your deity's blessing, you gain additional spells that channel either the life force called vitality or its counterforce, the void. When you prepare your spells each day, you can prepare additional heal or harm spells, depending on your deity. The divine font spell your deity provides is listed in the Divine Font entry for your deity; if both are listed, you can choose between heal or harm. Once you choose, you can't change your choice short of divine intervention. Healing Font: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only heal spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6. Harmful Font: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only harm spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6.",
+      "links": [
+        {
+          "href": "Spells.aspx?ID=148",
+          "text": "heal",
+          "kind": "Spells",
+          "id": 148
+        },
+        {
+          "href": "Spells.aspx?ID=146",
+          "text": "harm",
+          "kind": "Spells",
+          "id": 146
+        },
+        {
+          "href": "Deities.aspx",
+          "text": "deity",
+          "kind": "Deities",
+          "id": null
+        },
+        {
+          "href": "Spells.aspx?ID=1554",
+          "text": "heal",
+          "kind": "Spells",
+          "id": 1554
+        },
+        {
+          "href": "Spells.aspx?ID=1552",
+          "text": "harm",
+          "kind": "Spells",
+          "id": 1552
+        }
+      ]
+    },
+    {
+      "heading": "Doctrine",
+      "level": 2,
+      "body_html": "Even among followers of the same deity, approaches vary. At 1st level, you select cloistered cleric or warpriest and gain the benefits of its first doctrine. At 3rd level and every four levels thereafter, you gain another benefit from your doctrine.<br><br>Doctrines can be found <a style=\"text-decoration:underline\" href=\"Doctrines.aspx?ID=\">here</a>.<br>",
+      "body_text": "Even among followers of the same deity, approaches vary. At 1st level, you select cloistered cleric or warpriest and gain the benefits of its first doctrine. At 3rd level and every four levels thereafter, you gain another benefit from your doctrine. Doctrines can be found here.",
+      "links": [
+        {
+          "href": "Doctrines.aspx?ID=",
+          "text": "here",
+          "kind": "Doctrines",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Cleric FeatsLevel 2",
+      "level": 2,
+      "body_html": "At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=26\">cleric class feat</a> .<br>",
+      "body_text": "At 2nd level and every 2 levels thereafter, you gain a cleric class feat .",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=26",
+          "text": "cleric class feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Skill FeatsLevel 2",
+      "level": 2,
+      "body_html": "At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=144\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br>",
+      "body_text": "At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=144",
+          "text": "skill feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "General FeatsLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=78\">general feat</a>.<br>",
+      "body_text": "At 3rd level and every 4 levels thereafter, you gain a general feat.",
+      "links": [
+        {
+          "href": "Feats.aspx?Traits=78",
+          "text": "general feat",
+          "kind": "Feats",
+          "id": null
+        }
+      ]
+    },
+    {
+      "heading": "Skill IncreasesLevel 3",
+      "level": 2,
+      "body_html": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained.<br><br> You can use any of these skill increases you gain at 7th level or higher to become a master in a skill in which you're already an expert, and any of these skill increases you gain at 15th level or higher to become legendary in a skill in which you're already a master.<br>",
+      "body_text": "At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained. You can use any of these skill increases you gain at 7th level or higher to become a master in a skill in which you're already an expert, and any of these skill increases you gain at 15th level or higher to become legendary in a skill in which you're already a master.",
+      "links": []
+    },
+    {
+      "heading": "Ancestry FeatsLevel 5",
+      "level": 2,
+      "body_html": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.<br>",
+      "body_text": "In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.",
+      "links": []
+    },
+    {
+      "heading": "Perception ExpertiseLevel 5",
+      "level": 2,
+      "body_html": "You remain alert to threats around you. Your proficiency rank for Perception increases to expert.<br>",
+      "body_text": "You remain alert to threats around you. Your proficiency rank for Perception increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Resolute FaithLevel 9",
+      "level": 2,
+      "body_html": "Belief provides a bulwark against insidious thoughts. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.<br>",
+      "body_text": "Belief provides a bulwark against insidious thoughts. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.",
+      "links": []
+    },
+    {
+      "heading": "Reflex ExpertiseLevel 11",
+      "level": 2,
+      "body_html": "You've developed a knack for dodging danger. Your proficiency rank for Reflex saves increases to expert.<br>",
+      "body_text": "You've developed a knack for dodging danger. Your proficiency rank for Reflex saves increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Divine DefenseLevel 13",
+      "level": 2,
+      "body_html": "Your training and your deity protect you from harm. Your proficiency rank in unarmored defense increases to expert.<br>",
+      "body_text": "Your training and your deity protect you from harm. Your proficiency rank in unarmored defense increases to expert.",
+      "links": []
+    },
+    {
+      "heading": "Weapon SpecializationLevel 13",
+      "level": 2,
+      "body_html": "You've learned how to inflict greater injuries with your weapons. You deal 2 additional damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and to 4 if you're legendary.<br>",
+      "body_text": "You've learned how to inflict greater injuries with your weapons. You deal 2 additional damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and to 4 if you're legendary.",
+      "links": []
+    },
+    {
+      "heading": "Miraculous SpellLevel 19",
+      "level": 2,
+      "body_html": "You're exalted by your deity and gain truly incredible spells. You gain a single 10th-rank spell slot and can prepare a spell in that slot using cleric spellcasting. Unlike with other spell slots, you can't use 10-rank slots with abilities that give you more spell slots or that let you cast spells without expending spell slots. You don't gain more 10th-rank spells as you level up, but you can take the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=309\">Maker of Miracles</a> feat to gain a second slot.<br>",
+      "body_text": "You're exalted by your deity and gain truly incredible spells. You gain a single 10th-rank spell slot and can prepare a spell in that slot using cleric spellcasting. Unlike with other spell slots, you can't use 10-rank slots with abilities that give you more spell slots or that let you cast spells without expending spell slots. You don't gain more 10th-rank spells as you level up, but you can take the Maker of Miracles feat to gain a second slot.",
+      "links": [
+        {
+          "href": "Feats.aspx?ID=309",
+          "text": "Maker of Miracles",
+          "kind": "Feats",
+          "id": 309
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Classes.aspx?ID=5&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Classes",
+      "id": 5
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 108",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Traits.aspx?ID=517",
+      "text": "Holy",
+      "kind": "Traits",
+      "id": 517
+    },
+    {
+      "href": "Traits.aspx?ID=521",
+      "text": "Unholy",
+      "kind": "Traits",
+      "id": 521
+    },
+    {
+      "href": "Traits.aspx?ID=551",
+      "text": "celestials",
+      "kind": "Traits",
+      "id": 551
+    },
+    {
+      "href": "Traits.aspx?ID=600",
+      "text": "fiends",
+      "kind": "Traits",
+      "id": 600
+    },
+    {
+      "href": "Traits.aspx?ID=722",
+      "text": "undead",
+      "kind": "Traits",
+      "id": 722
+    },
+    {
+      "href": "Traits.aspx?ID=519",
+      "text": "Sanctified",
+      "kind": "Traits",
+      "id": 519
+    },
+    {
+      "href": "Traits.aspx?ID=513",
+      "text": "Spellshape",
+      "kind": "Traits",
+      "id": 513
+    },
+    {
+      "href": "Skills.aspx?ID=13",
+      "text": "Religion",
+      "kind": "Skills",
+      "id": 13
+    },
+    {
+      "href": "Spells.aspx?ID=148",
+      "text": "heal",
+      "kind": "Spells",
+      "id": 148
+    },
+    {
+      "href": "Spells.aspx?ID=146",
+      "text": "harm",
+      "kind": "Spells",
+      "id": 146
+    },
+    {
+      "href": "Deities.aspx",
+      "text": "deities",
+      "kind": "Deities",
+      "id": null
+    },
+    {
+      "href": "Traits.aspx?ID=517",
+      "text": "holy",
+      "kind": "Traits",
+      "id": 517
+    },
+    {
+      "href": "Traits.aspx?ID=521",
+      "text": "unholy",
+      "kind": "Traits",
+      "id": 521
+    },
+    {
+      "href": "Rituals.aspx?ID=2",
+      "text": "atone",
+      "kind": "Rituals",
+      "id": 2
+    },
+    {
+      "href": "Traits.aspx?ID=160",
+      "text": "undead",
+      "kind": "Traits",
+      "id": 160
+    },
+    {
+      "href": "Deities.aspx?ID=14",
+      "text": "Pharasma",
+      "kind": "Deities",
+      "id": 14
+    },
+    {
+      "href": "Actions.aspx?ID=72",
+      "text": "Cast a Spell",
+      "kind": "Actions",
+      "id": 72
+    },
+    {
+      "href": "SpellLists.aspx?Tradition=2",
+      "text": "divine",
+      "kind": "SpellLists",
+      "id": null
+    },
+    {
+      "href": "Actions.aspx?ID=25",
+      "text": "Learn a Spell",
+      "kind": "Actions",
+      "id": 25
+    },
+    {
+      "href": "Deities.aspx",
+      "text": "deity",
+      "kind": "Deities",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?ID=1554",
+      "text": "heal",
+      "kind": "Spells",
+      "id": 1554
+    },
+    {
+      "href": "Spells.aspx?ID=1552",
+      "text": "harm",
+      "kind": "Spells",
+      "id": 1552
+    },
+    {
+      "href": "Doctrines.aspx?ID=",
+      "text": "here",
+      "kind": "Doctrines",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?Traits=26",
+      "text": "cleric class feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?Traits=144",
+      "text": "skill feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?Traits=78",
+      "text": "general feat",
+      "kind": "Feats",
+      "id": null
+    },
+    {
+      "href": "Feats.aspx?ID=309",
+      "text": "Maker of Miracles",
+      "kind": "Feats",
+      "id": 309
+    }
+  ],
+  "body_text": "Deities work their will upon the world in infinite ways, and you serve as one of their most stalwart mortal servants. Blessed with divine magic, you live the ideals of your faith, adorn yourself with the symbols of your church, and train diligently to wield your deity’s favored weapon. Your spells might protect and heal your allies, or they might punish foes and enemies of your faith, as your deity wills. Yours is a life of devotion, spreading the teachings of your faith through both word and deed. Key Attribute: WISDOM At 1st level, your class gives you an attribute boost to Wisdom. Hit Points: 8 plus your Constitution modifier You increase your maximum number of HP by this number at 1st level and every level thereafter. Key TermsYou'll see the following term in many cleric class features. Holy and Unholy: These traits mark something, like your character or a spell, that belongs to one side of the battle between celestials and fiends. Generally, fiends and undead are susceptible to holy abilities and celestials to unholy ones. Sanctified: If you are holy or unholy, your sanctified actions and spells gain the same trait. Spellshape: These actions tweak your spells. You must use a spellshape action directly before Casting the Spell you want to alter. If you use any action (including free actions and reactions) other than Cast a Spell directly after, you waste the benefits of the spellshape action. Effects added by a spellshape action are part of the spell's effect, not of the spellshape action.Roleplaying the ClericDuring Combat Encounters...If you’re a warpriest, you balance between casting spells and attacking with weapons— typically the favored weapon of your deity. If you’re a cloistered cleric, you primarily cast spells. Most of your spells can boost, protect, or heal your allies. Depending on your deity, you get extra spells to heal your allies or harm your enemies. During Social Encounters...You might make diplomatic overtures or deliver impressive speeches. Because you’re wise, you also pick up on falsehoods others tell. While Exploring...You detect nearby magic and interpret any religious writing you come across. You might also concentrate on a protective spell for your allies in case of attack. After a battle or hazard, you might heal anyone who was hurt. In Downtime...You might perform services at a temple, travel to spread the word of your deity, research scripture, celebrate holy days, or even found a new temple. You Might...Visit the temples and holy places sacred to your faith, and have an immediate affinity with other worshippers of your deity. Know the teachings of your religion’s holy texts and how they apply to a dilemma. Cooperate with your allies, provided they don’t ask you to go against divine will.Others Probably...Find your devotion impressive, even if they don’t understand it. Expect you to heal their wounds. Rely on you to interact with other religious figures.Initial ProficienciesAt 1st level, you gain the listed proficiency ranks in the following statistics. You are untrained in anything not listed unless you gain a better proficiency rank in some other way. PerceptionTrained in Perception Saving ThrowsTrained in Fortitude Trained in Reflex Expert in Will SkillsTrained in Religion Trained in one skill determined by your choice of deity Trained in a number of additional skills equal to 2 plus your Intelligence modifier AttacksTrained in simple weapons Trained in the favored weapon of your deity. If your deity's favored weapon is uncommon, you also gain access to that weapon. Trained in unarmed attacks DefensesUntrained in all armor, though your doctrine might alter this Trained in unarmored defense Class DCTrained in cleric class DC SpellsTrained in spell attack modifier Trained in spell DC Class FeaturesYou gain these features as a Cleric. Abilities gained at higher levels list the levels at which you gain them next to the features' names.Your LevelClass Features1Ancestry and background, attribute boosts, initial proficiencies, deity, cleric spellcasting, divine font, doctrine2Cleric feat, skill feat32nd-rank spells, general feat, second doctrine, skill increase4Cleric feat, skill feat53rd-rank spells, attribute boosts, ancestry feat, perception expertise, skill increase6Cleric feat, skill feat74th-rank spells, general feat, skill increase, third doctrine8Cleric feat, skill feat95th-rank spells, ancestry feat, resolute faith, skill increase10Attribute boosts, cleric feat, skill feat116th-rank spells, fourth doctrine, general feat, reflex expertise, skill increase12Cleric feat, skill feat137th-rank spells, ancestry feat, divine defense, skill increase, weapon specialization14Cleric feat, skill feat158th-rank spells, attribute boosts, fifth doctrine, general feat, skill increase16Cleric feat, skill feat179th-rank spells, ancestry feat, skill increase18Cleric feat, skill feat19Final doctrine, general feat, miraculous spell, skill increase20Attribute boosts, cleric feat, skill featYour LevelCantrips1st2nd3rd4th5th6th7th8th9th10th152*—————————253*—————————3532*————————4533*————————55332*———————65333*———————753332*——————853333*——————9533332*—————10533333*—————115333332*————125333333*————1353333332*———1453333333*———15533333332*——16533333333*——175333333332*—185333333333*—1953333333331* †2053333333331* †* Your divine font gives you additional heal or harm spells of this rank. The number is 4 at 1st level, 5 at 5th level, and 6 at 15th level. † The miraculous spell class feature gives you a 10th-rank spell slot that works a bit differently from other spell slots.Ancestry and BackgroundIn addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background. Attribute BoostsIn addition to the boost to Wisdom you get from your class at 1st level, you have four free boosts to different attribute modifiers. At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost, and must boost that attribute again at a later level to increase it by 1. Initial ProficienciesAt 1st level you gain a number of proficiencies that represent your basic training. These are noted at the start of this class. DeityAs a cleric, you are a mortal servitor of a deity you revere above all others. The most common deities in Pathfinder have edicts, areas of concern, and the benefits you get for being a cleric of that deity. Your deity grants you the trained proficiency rank in one skill and with the deity's favored weapon. If the favored weapon is uncommon, you also get access to that weapon. Your deity also adds spells to your spell list. You can prepare these just like you can any spell on the divine spell list once you can prepare spells of their rank as a cleric. Any of these spells that aren't normally on the divine list are still divine spells if you prepare them this way. Sanctification Depending on your deity, their sanctification can make you holy or unholy. This gives you the holy or unholy trait, which commits you to one side of a struggle over the souls of the planes and may be referenced in other abilities. If you “can be” holy or unholy according to your deity, you make that choice, and if you “must be” holy or unholy you gain the trait automatically. If you gain the opposing trait in some way, you lose the previous trait until you complete an atone ritual. Anathema Acts fundamentally opposed to your deity's ideals are anathema to your faith. Learning or casting spells, committing acts, and using items that are anathema to your deity remove you from your deity's good graces. Casting spells with the unholy trait is almost always anathema to deities who don't allow unholy sanctification, and casting holy spells is likewise anathema to those who don't allow holy sanctification. Similarly, casting spells that are anathema to the tenets or goals of your faith could interfere with your connection to your deity. For example, casting a spell to create undead would be anathema to Pharasma, the goddess of death. Many actions that are anathema don't appear in any deity's formal list. For borderline cases, you and your GM determine which acts are anathema. If you perform enough acts that are anathema to your deity, you lose the magical abilities that come from your connection to your deity. The class features that you lose are determined by the GM, but they likely include your divine font and all cleric spellcasting. These abilities can be regained only if you repent by conducting an atone ritual. Cleric SpellcastingYour deity bestows on you the power to cast divine spells. You are a spellcaster, and you can cast spells of the divine tradition using the Cast a Spell activity. As a cleric, your chants generally invoke your deity and their powerful servants by name or title, while your gestures are followed by sacred symbols or other representations of your deity At 1st level, you can prepare two 1st-rank spells and five cantrips each morning from the common spells on the divine spell list or from other divine spells to which you gain access and learn via Learn a Spell. Prepared spells remain available to you until you cast them or until you prepare your spells again. The number of spells you can prepare each day is called your spell slots. As you increase in level as a cleric, the number of spells you can prepare each day increases, as does the highest rank of spell you can cast, as shown in Cleric Spells per Day table above. Some of your spells require you to attempt a spell attack to see how effective they are or for your enemies to roll against your spell DC (typically by attempting a saving throw). Since your key attribute is Wisdom, your spell attack modifier and spell DC use your Wisdom modifier. Heightening Spells When you get spell slots of 2nd rank and higher, you can fill those slots with stronger versions of lower-rank spells. This increases the spell's rank, heightening it to match the spell slot. Many spells have specific improvements when they are heightened to certain ranks. Cantrips Some of your spells are cantrips. A cantrip is a special type of spell that doesn't use spell slots. You can cast a cantrip at will, any number of times per day. A cantrip is always automatically heightened to half your level rounded up—this is usually equal to the highest rank of cleric spell slot you have. For example, as a 1st-level cleric, your cantrips are 1st-rank spells, and as a 5th-level cleric, your cantrips are 3rd-rank spells. Divine FontThrough your deity's blessing, you gain additional spells that channel either the life force called vitality or its counterforce, the void. When you prepare your spells each day, you can prepare additional heal or harm spells, depending on your deity. The divine font spell your deity provides is listed in the Divine Font entry for your deity; if both are listed, you can choose between heal or harm. Once you choose, you can't change your choice short of divine intervention. Healing Font: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only heal spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6. Harmful Font: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only harm spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6. DoctrineEven among followers of the same deity, approaches vary. At 1st level, you select cloistered cleric or warpriest and gain the benefits of its first doctrine. At 3rd level and every four levels thereafter, you gain another benefit from your doctrine. Doctrines can be found here. Cleric FeatsLevel 2At 2nd level and every 2 levels thereafter, you gain a cleric class feat . Skill FeatsLevel 2At 2nd level and every 2 levels thereafter, you gain a skill feat. You must be trained or better in the corresponding skill to select a skill feat. General FeatsLevel 3At 3rd level and every 4 levels thereafter, you gain a general feat. Skill IncreasesLevel 3At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained. You can use any of these skill increases you gain at 7th level or higher to become a master in a skill in which you're already an expert, and any of these skill increases you gain at 15th level or higher to become legendary in a skill in which you're already a master. Ancestry FeatsLevel 5In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry. Perception ExpertiseLevel 5You remain alert to threats around you. Your proficiency rank for Perception increases to expert. Resolute FaithLevel 9Belief provides a bulwark against insidious thoughts. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead. Reflex ExpertiseLevel 11You've developed a knack for dodging danger. Your proficiency rank for Reflex saves increases to expert. Divine DefenseLevel 13Your training and your deity protect you from harm. Your proficiency rank in unarmored defense increases to expert. Weapon SpecializationLevel 13You've learned how to inflict greater injuries with your weapons. You deal 2 additional damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and to 4 if you're legendary. Miraculous SpellLevel 19You're exalted by your deity and gain truly incredible spells. You gain a single 10th-rank spell slot and can prepare a spell in that slot using cleric spellcasting. Unlike with other spell slots, you can't use 10-rank slots with abilities that give you more spell slots or that let you cast spells without expending spell slots. You don't gain more 10th-rank spells as you level up, but you can take the Maker of Miracles feat to gain a second slot.",
+  "body_html": "<i>Deities work their will upon the world in infinite ways, and you serve as one of their most stalwart mortal servants. Blessed with divine magic, you live the ideals of your faith, adorn yourself with the symbols of your church, and train diligently to wield your deity’s favored weapon. Your spells might protect and heal your allies, or they might punish foes and enemies of your faith, as your deity wills. Yours is a life of devotion, spreading the teachings of your faith through both word and deed.</i><br><br><b>Key Attribute: WISDOM</b><br>At 1st level, your class gives you an attribute boost to Wisdom.<br><br><b>Hit Points: 8 plus your Constitution modifier</b><br>You increase your maximum number of HP by this number at 1st level and every level thereafter.<br><div class=\"sidebar-nofloat\"><h2>Key Terms</h2>You'll see the following term in many cleric class features.<br><br><b><a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=517\">Holy</a> and <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=521\">Unholy</a>:</b> These traits mark something, like your character or a spell, that belongs to one side of the battle between <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=551\">celestials</a> and <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=600\">fiends</a>. Generally, fiends and <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=722\">undead</a> are susceptible to holy abilities and celestials to unholy ones.<br><br><b><a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=519\">Sanctified</a>:</b> If you are holy or unholy, your sanctified actions and spells gain the same trait.<br><br><b><a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=513\">Spellshape</a>:</b> These actions tweak your spells. You must use a spellshape action directly before Casting the Spell you want to alter. If you use any action (including free actions and reactions) other than Cast a Spell directly after, you waste the benefits of the spellshape action. Effects added by a spellshape action are part of the spell's effect, not of the spellshape action.</div><h1 class=\"title\">Roleplaying the Cleric</h1><h2 class=\"title\">During Combat Encounters...</h2>If you’re a warpriest, you balance between casting spells and attacking with weapons— typically the favored weapon of your deity. If you’re a cloistered cleric, you primarily cast spells. Most of your spells can boost, protect, or heal your allies. Depending on your deity, you get extra spells to heal your allies or harm your enemies.<br><h2 class=\"title\">During Social Encounters...</h2>You might make diplomatic overtures or deliver impressive speeches. Because you’re wise, you also pick up on falsehoods others tell.<br><h2 class=\"title\">While Exploring...</h2>You detect nearby magic and interpret any religious writing you come across. You might also concentrate on a protective spell for your allies in case of attack. After a battle or hazard, you might heal anyone who was hurt.<br><h2 class=\"title\">In Downtime...</h2>You might perform services at a temple, travel to spread the word of your deity, research scripture, celebrate holy days, or even found a new temple.<br><h2 class=\"title\">You Might...</h2><ul><li>Visit the temples and holy places sacred to your faith, and have an immediate affinity with other worshippers of your deity. </li><li>Know the teachings of your religion’s holy texts and how they apply to a dilemma. </li><li>Cooperate with your allies, provided they don’t ask you to go against divine will.</li></ul><h2 class=\"title\">Others Probably...</h2><ul><li>Find your devotion impressive, even if they don’t understand it. </li><li>Expect you to heal their wounds. </li><li>Rely on you to interact with other religious figures.</li></ul><h1 class=\"title\">Initial Proficiencies</h1>At 1st level, you gain the listed proficiency ranks in the following statistics. You are untrained in anything not listed unless you gain a better proficiency rank in some other way.<br><h2 class=\"title\">Perception</h2>Trained in Perception<br><h2 class=\"title\">Saving Throws</h2>Trained in Fortitude<br>Trained in Reflex<br>Expert in Will<br><h2 class=\"title\">Skills</h2>Trained in <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=13\">Religion</a><br> Trained in one skill determined by your choice of deity<br> Trained in a number of additional skills equal to 2 plus your Intelligence modifier<br><h2 class=\"title\">Attacks</h2>Trained in simple weapons<br> Trained in the favored weapon of your deity. If your deity's favored weapon is uncommon, you also gain access to that weapon.<br> Trained in unarmed attacks<br><h2 class=\"title\">Defenses</h2>Untrained in all armor, though your doctrine might alter this<br> Trained in unarmored defense<br><h2 class=\"title\">Class DC</h2>Trained in cleric class DC<br><h2 class=\"title\">Spells</h2>Trained in spell attack modifier<br> Trained in spell DC<br><h1 class=\"title\">Class Features</h1>You gain these features as a Cleric. Abilities gained at higher levels list the levels at which you gain them next to the features' names.<table class=\"inner\" style=\"float:left; clear:left; margin:10px 10px 10px 0px; max-width:50%; overflow:hidden\"><tbody><tr><td><b>Your Level</b></td><td><b>Class Features</b></td></tr><tr><td>1</td><td>Ancestry and background, attribute boosts, initial proficiencies, deity, cleric spellcasting, divine font, doctrine</td></tr><tr><td>2</td><td>Cleric feat, skill feat</td></tr><tr><td>3</td><td>2nd-rank spells, general feat, second doctrine, skill increase</td></tr><tr><td>4</td><td>Cleric feat, skill feat</td></tr><tr><td>5</td><td>3rd-rank spells, attribute boosts, ancestry feat, perception expertise, skill increase</td></tr><tr><td>6</td><td>Cleric feat, skill feat</td></tr><tr><td>7</td><td>4th-rank spells, general feat, skill increase, third doctrine</td></tr><tr><td>8</td><td>Cleric feat, skill feat</td></tr><tr><td>9</td><td>5th-rank spells, ancestry feat, resolute faith, skill increase</td></tr><tr><td>10</td><td>Attribute boosts, cleric feat, skill feat</td></tr><tr><td>11</td><td>6th-rank spells, fourth doctrine, general feat, reflex expertise, skill increase</td></tr><tr><td>12</td><td>Cleric feat, skill feat</td></tr><tr><td>13</td><td>7th-rank spells, ancestry feat, divine defense, skill increase, weapon specialization</td></tr><tr><td>14</td><td>Cleric feat, skill feat</td></tr><tr><td>15</td><td>8th-rank spells, attribute boosts, fifth doctrine, general feat, skill increase</td></tr><tr><td>16</td><td>Cleric feat, skill feat</td></tr><tr><td>17</td><td>9th-rank spells, ancestry feat, skill increase</td></tr><tr><td>18</td><td>Cleric feat, skill feat</td></tr><tr><td>19</td><td>Final doctrine, general feat, miraculous spell, skill increase</td></tr><tr><td>20</td><td>Attribute boosts, cleric feat, skill feat</td></tr></tbody></table><table class=\"inner spells-per-day\" style=\"float:left; clear:left; margin:10px 10px 10px 0px; overflow:hidden\"><tbody><tr><td><b>Your Level</b></td><td><b>Cantrips</b></td><td><b>1st</b></td><td><b>2nd</b></td><td><b>3rd</b></td><td><b>4th</b></td><td><b>5th</b></td><td><b>6th</b></td><td><b>7th</b></td><td><b>8th</b></td><td><b>9th</b></td><td><b>10th</b></td></tr><tr><td>1</td><td>5</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>2</td><td>5</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>3</td><td>5</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>4</td><td>5</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>5</td><td>5</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>6</td><td>5</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>7</td><td>5</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>8</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>9</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>10</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>11</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>12</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>13</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td><td>—</td></tr><tr><td>14</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td><td>—</td></tr><tr><td>15</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td><td>—</td></tr><tr><td>16</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td><td>—</td></tr><tr><td>17</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>2*</td><td>—</td></tr><tr><td>18</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3*</td><td>—</td></tr><tr><td>19</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>1* †</td></tr><tr><td>20</td><td>5</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>3</td><td>1* †</td></tr></tbody><tfoot><tr><td colspan=\"12\">* Your divine font gives you additional <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=148\"><i>heal</i></a> or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=146\"><i>harm</i></a> spells of this rank. The number is 4 at 1st level, 5 at 5th level, and 6 at 15th level.<br> † The miraculous spell class feature gives you a 10th-rank spell slot that works a bit differently from other spell slots.</td></tr></tfoot></table><h2 class=\"title\">Ancestry and Background</h2>In addition to what you get from your class at 1st level, you have the benefits of your selected ancestry and background.<br><h2 class=\"title\">Attribute Boosts</h2>In addition to the boost to Wisdom you get from your class at 1st level, you have four free boosts to different attribute modifiers.<br><br>At 5th level and every 5 levels thereafter, you get four free boosts to different attribute modifiers. If an attribute modifier is already +4 or higher, it takes two boosts to increase it; you get a partial boost, and must boost that attribute again at a later level to increase it by 1.<br><h2 class=\"title\">Initial Proficiencies</h2>At 1st level you gain a number of proficiencies that represent your basic training. These are noted at the start of this class.<br><h2 class=\"title\">Deity</h2>As a cleric, you are a mortal servitor of a deity you revere above all others. The most common <a style=\"text-decoration:underline\" href=\"Deities.aspx\">deities</a> in Pathfinder have edicts, areas of concern, and the benefits you get for being a cleric of that deity. Your deity grants you the trained proficiency rank in one skill and with the deity's favored weapon. If the favored weapon is uncommon, you also get access to that weapon. Your deity also adds spells to your spell list. You can prepare these just like you can any spell on the divine spell list once you can prepare spells of their rank as a cleric. Any of these spells that aren't normally on the divine list are still divine spells if you prepare them this way. <h2 class=\"title\">Sanctification</h2> Depending on your deity, their sanctification can make you holy or unholy. This gives you the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=517\">holy</a> or <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=521\">unholy</a> trait, which commits you to one side of a struggle over the souls of the planes and may be referenced in other abilities. If you “can be” holy or unholy according to your deity, you make that choice, and if you “must be” holy or unholy you gain the trait automatically. If you gain the opposing trait in some way, you lose the previous trait until you complete an <a style=\"text-decoration:underline\" href=\"Rituals.aspx?ID=2\"><i>atone</i></a> ritual. <h2 class=\"title\">Anathema</h2> Acts fundamentally opposed to your deity's ideals are anathema to your faith. Learning or casting spells, committing acts, and using items that are anathema to your deity remove you from your deity's good graces.<br><br> Casting spells with the <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=521\">unholy</a> trait is almost always anathema to deities who don't allow unholy sanctification, and casting <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=517\">holy</a> spells is likewise anathema to those who don't allow holy sanctification. Similarly, casting spells that are anathema to the tenets or goals of your faith could interfere with your connection to your deity. For example, casting a spell to create <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=160\">undead</a> would be anathema to <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=14\">Pharasma</a>, the goddess of death. Many actions that are anathema don't appear in any deity's formal list. For borderline cases, you and your GM determine which acts are anathema.<br><br> If you perform enough acts that are anathema to your deity, you lose the magical abilities that come from your connection to your deity. The class features that you lose are determined by the GM, but they likely include your divine font and all cleric spellcasting. These abilities can be regained only if you repent by conducting an <a style=\"text-decoration:underline\" href=\"Rituals.aspx?ID=2\"><i>atone</i></a> ritual.<br><h2 class=\"title\">Cleric Spellcasting</h2>Your deity bestows on you the power to cast divine spells. You are a spellcaster, and you can cast spells of the divine tradition using the <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=72\">Cast a Spell</a> activity. As a cleric, your chants generally invoke your deity and their powerful servants by name or title, while your gestures are followed by sacred symbols or other representations of your deity<br><br> At 1st level, you can prepare two 1st-rank spells and five cantrips each morning from the common spells on the <a style=\"text-decoration:underline\" href=\"SpellLists.aspx?Tradition=2\">divine</a> spell list or from other divine spells to which you gain access and learn via <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=25\">Learn a Spell</a>. Prepared spells remain available to you until you cast them or until you prepare your spells again. The number of spells you can prepare each day is called your spell slots. <br><br>As you increase in level as a cleric, the number of spells you can prepare each day increases, as does the highest rank of spell you can cast, as shown in Cleric Spells per Day table above.<br><br> Some of your spells require you to attempt a spell attack to see how effective they are or for your enemies to roll against your spell DC (typically by attempting a saving throw). Since your key attribute is Wisdom, your spell attack modifier and spell DC use your Wisdom modifier. <h2 class=\"title\">Heightening Spells</h2> When you get spell slots of 2nd rank and higher, you can fill those slots with stronger versions of lower-rank spells. This increases the spell's rank, heightening it to match the spell slot. Many spells have specific improvements when they are heightened to certain ranks. <h2 class=\"title\">Cantrips</h2> Some of your spells are cantrips. A cantrip is a special type of spell that doesn't use spell slots. You can cast a cantrip at will, any number of times per day. A cantrip is always automatically heightened to half your level rounded up—this is usually equal to the highest rank of cleric spell slot you have. For example, as a 1st-level cleric, your cantrips are 1st-rank spells, and as a 5th-level cleric, your cantrips are 3rd-rank spells.<br><h2 class=\"title\">Divine Font</h2>Through your deity's blessing, you gain additional spells that channel either the life force called vitality or its counterforce, the void. When you prepare your spells each day, you can prepare additional <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=148\"><i>heal</i></a> or <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=146\"><i>harm</i></a> spells, depending on your deity. The divine font spell your deity provides is listed in the Divine Font entry for your <a style=\"text-decoration:underline\" href=\"Deities.aspx\">deity</a>; if both are listed, you can choose between heal or harm. Once you choose, you can't change your choice short of divine intervention.<br><br> <b>Healing Font</b>: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1554\"><i>heal</i></a> spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6.<br><br> <b>Harmful Font</b>: You gain 4 additional spell slots each day at your highest rank of cleric spell slots. You can prepare only <a style=\"text-decoration:underline\" href=\"Spells.aspx?ID=1552\"><i>harm</i></a> spells in these slots. At 5th level, the number of additional slots increases to 5, and at 15th level, the total number of additional slots increases to 6.<br><h2 class=\"title\">Doctrine</h2>Even among followers of the same deity, approaches vary. At 1st level, you select cloistered cleric or warpriest and gain the benefits of its first doctrine. At 3rd level and every four levels thereafter, you gain another benefit from your doctrine.<br><br>Doctrines can be found <a style=\"text-decoration:underline\" href=\"Doctrines.aspx?ID=\">here</a>.<br><h2 class=\"title\">Cleric Feats<span style=\"margin-left:auto; margin-right:0\">Level 2</span></h2>At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=26\">cleric class feat</a> .<br><h2 class=\"title\">Skill Feats<span style=\"margin-left:auto; margin-right:0\">Level 2</span></h2>At 2nd level and every 2 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=144\">skill feat</a>. You must be trained or better in the corresponding skill to select a skill feat.<br><h2 class=\"title\">General Feats<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 4 levels thereafter, you gain a <a style=\"text-decoration:underline\" href=\"Feats.aspx?Traits=78\">general feat</a>.<br><h2 class=\"title\">Skill Increases<span style=\"margin-left:auto; margin-right:0\">Level 3</span></h2>At 3rd level and every 2 levels thereafter, you gain a skill increase. You can use this increase to either become trained in one skill you're untrained in, or become an expert in one skill in which you're already trained.<br><br> You can use any of these skill increases you gain at 7th level or higher to become a master in a skill in which you're already an expert, and any of these skill increases you gain at 15th level or higher to become legendary in a skill in which you're already a master.<br><h2 class=\"title\">Ancestry Feats<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>In addition to the ancestry feat you started with, you gain an ancestry feat at 5th level and every 4 levels thereafter. The list of ancestry feats available to you can be found in your ancestry's entry.<br><h2 class=\"title\">Perception Expertise<span style=\"margin-left:auto; margin-right:0\">Level 5</span></h2>You remain alert to threats around you. Your proficiency rank for Perception increases to expert.<br><h2 class=\"title\">Resolute Faith<span style=\"margin-left:auto; margin-right:0\">Level 9</span></h2>Belief provides a bulwark against insidious thoughts. Your proficiency rank for Will saves increases to master. When you roll a success at a Will save, you get a critical success instead.<br><h2 class=\"title\">Reflex Expertise<span style=\"margin-left:auto; margin-right:0\">Level 11</span></h2>You've developed a knack for dodging danger. Your proficiency rank for Reflex saves increases to expert.<br><h2 class=\"title\">Divine Defense<span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>Your training and your deity protect you from harm. Your proficiency rank in unarmored defense increases to expert.<br><h2 class=\"title\">Weapon Specialization<span style=\"margin-left:auto; margin-right:0\">Level 13</span></h2>You've learned how to inflict greater injuries with your weapons. You deal 2 additional damage with weapons and unarmed attacks in which you are an expert. This damage increases to 3 if you're a master, and to 4 if you're legendary.<br><h2 class=\"title\">Miraculous Spell<span style=\"margin-left:auto; margin-right:0\">Level 19</span></h2>You're exalted by your deity and gain truly incredible spells. You gain a single 10th-rank spell slot and can prepare a spell in that slot using cleric spellcasting. Unlike with other spell slots, you can't use 10-rank slots with abilities that give you more spell slots or that let you cast spells without expending spell slots. You don't gain more 10th-rank spells as you level up, but you can take the <a style=\"text-decoration:underline\" href=\"Feats.aspx?ID=309\">Maker of Miracles</a> feat to gain a second slot.<br>",
+  "meta_description": "Deities work their will upon the world in infinite ways, and you serve as one of their most stalwart mortal servants. Blessed with divine magic, you live the ideals of your faith, adorn yourself with the symbols of your church, and train diligently to wield your deity’s favored weapon. Your spells might protect and heal your allies, or they might punish foes and enemies of your faith, as your deity wills. Yours is a life of devotion, spreading the teachings of your faith through both word and deed.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Class, Cleric",
+  "key_attribute": null,
+  "hit_points_text": null,
+  "hp_per_level": null,
+  "initial_proficiencies": {},
+  "class_dc": null,
+  "subclasses": []
+}

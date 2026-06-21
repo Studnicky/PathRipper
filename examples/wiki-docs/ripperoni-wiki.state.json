@@ -1,0 +1,7 @@
+{
+  "output": {
+    "basePath": "./examples/wiki-docs/output"
+  },
+  "apiUrl": "http://localhost:9876/w/api.php",
+  "rateLimitMs": 50
+}

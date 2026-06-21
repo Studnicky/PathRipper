@@ -1,7 +1,7 @@
 import { BaseError } from './BaseError.js';
-import type { HttpErrorOptionsInterface } from '../types/HttpError.js';
+import type { HttpErrorOptionsType } from '../types/HttpError.js';
 
-export type { HttpErrorOptionsInterface };
+export type { HttpErrorOptionsType };
 
 /**
  * Thrown on non-OK HTTP responses; automatically sets `retryable` for 5xx and 429 status codes.
@@ -30,7 +30,7 @@ export class HttpError extends BaseError {
    * @param message - Human-readable error description.
    * @param options - Optional status, url, cause, and metadata.
    */
-  private constructor(message: string, options: HttpErrorOptionsInterface = {}) {
+  private constructor(message: string, options: HttpErrorOptionsType = {}) {
     const status = options.status;
     const retryable = status === undefined ? true : status >= 500 || status === 429;
     super(message, { retryable, ...options });
@@ -45,7 +45,7 @@ export class HttpError extends BaseError {
    * @param options - Optional status, url, cause, and metadata.
    * @returns A new HttpError.
    */
-  public static create(message: string, options: HttpErrorOptionsInterface = {}): HttpError {
+  public static create(message: string, options: HttpErrorOptionsType = {}): HttpError {
     return new HttpError(message, options);
   }
 }

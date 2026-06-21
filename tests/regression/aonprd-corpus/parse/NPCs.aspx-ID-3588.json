@@ -1,0 +1,454 @@
+{
+  "_type": "generic",
+  "url": "https://2e.aonprd.com/NPCs.aspx?ID=3588",
+  "entity_id": 3588,
+  "name": "Obsessive Researcher",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Medium",
+    "Human",
+    "Humanoid"
+  ],
+  "trait_ids": {
+    "Medium": 445,
+    "Human": 627,
+    "Humanoid": 628
+  },
+  "source": {
+    "book": "NPC Core",
+    "page": 138,
+    "source_id": 236
+  },
+  "sources": [
+    {
+      "book": "NPC Core",
+      "page": 138,
+      "source_id": 236,
+      "raw": "NPC Core pg. 138"
+    },
+    {
+      "book": "NPC Core",
+      "page": 138,
+      "source_id": 236,
+      "raw": "NPC Core pg. 138"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "All Monsters in \"Scholar\"",
+      "level": 2,
+      "body_html": "<table class=\"inner\"><tbody><tr><td><b>Name</b></td><td><b>Level</b></td></tr><tr><td><a href=\"NPCs.aspx?ID=3590\">Astronomer</a></td><td>2</td></tr><tr><td><a href=\"NPCs.aspx?ID=3592\">Avuncular Professor</a></td><td>5</td></tr><tr><td><a href=\"NPCs.aspx?ID=3594\">Departmental Chair</a></td><td>7</td></tr><tr><td><a href=\"NPCs.aspx?ID=3596\">Eldritch Emeritus</a></td><td>17</td></tr><tr><td><a href=\"NPCs.aspx?ID=3591\">Exuberant Apprentice</a></td><td>4</td></tr><tr><td><a href=\"NPCs.aspx?ID=3595\">Globetrotting Scholar</a></td><td>13</td></tr><tr><td><a href=\"NPCs.aspx?ID=3587\">Librarian</a></td><td>-1</td></tr><tr><td><a href=\"NPCs.aspx?ID=3588\">Obsessive Researcher</a></td><td>-1</td></tr><tr><td><a href=\"NPCs.aspx?ID=3593\">Sage</a></td><td>6</td></tr><tr><td><a href=\"NPCs.aspx?ID=3589\">Teacher</a></td><td>-1</td></tr></tbody></table>",
+      "body_text": "NameLevelAstronomer2Avuncular Professor5Departmental Chair7Eldritch Emeritus17Exuberant Apprentice4Globetrotting Scholar13Librarian-1Obsessive Researcher-1Sage6Teacher-1",
+      "links": [
+        {
+          "href": "NPCs.aspx?ID=3590",
+          "text": "Astronomer",
+          "kind": "NPCs",
+          "id": 3590
+        },
+        {
+          "href": "NPCs.aspx?ID=3592",
+          "text": "Avuncular Professor",
+          "kind": "NPCs",
+          "id": 3592
+        },
+        {
+          "href": "NPCs.aspx?ID=3594",
+          "text": "Departmental Chair",
+          "kind": "NPCs",
+          "id": 3594
+        },
+        {
+          "href": "NPCs.aspx?ID=3596",
+          "text": "Eldritch Emeritus",
+          "kind": "NPCs",
+          "id": 3596
+        },
+        {
+          "href": "NPCs.aspx?ID=3591",
+          "text": "Exuberant Apprentice",
+          "kind": "NPCs",
+          "id": 3591
+        },
+        {
+          "href": "NPCs.aspx?ID=3595",
+          "text": "Globetrotting Scholar",
+          "kind": "NPCs",
+          "id": 3595
+        },
+        {
+          "href": "NPCs.aspx?ID=3587",
+          "text": "Librarian",
+          "kind": "NPCs",
+          "id": 3587
+        },
+        {
+          "href": "NPCs.aspx?ID=3588",
+          "text": "Obsessive Researcher",
+          "kind": "NPCs",
+          "id": 3588
+        },
+        {
+          "href": "NPCs.aspx?ID=3593",
+          "text": "Sage",
+          "kind": "NPCs",
+          "id": 3593
+        },
+        {
+          "href": "NPCs.aspx?ID=3589",
+          "text": "Teacher",
+          "kind": "NPCs",
+          "id": 3589
+        }
+      ]
+    },
+    {
+      "heading": "Academic Pranks",
+      "level": 3,
+      "body_html": "It is a fond tradition at most universities in the Inner Sea for young scholars to pull strange and off-kilter pranks, all the more so when those young scholars have magic—the more difficult, bizarre, or inexplicable the prank, the better. The wizards of the Arcanamirium still reminisce over the time they transported an entire galleon into a city park in the middle of the night. Similarly, the students at Dacilane Academy have recently started what they have called the First Great Prank War.",
+      "body_text": "It is a fond tradition at most universities in the Inner Sea for young scholars to pull strange and off-kilter pranks, all the more so when those young scholars have magic—the more difficult, bizarre, or inexplicable the prank, the better. The wizards of the Arcanamirium still reminisce over the time they transported an entire galleon into a city park in the middle of the night. Similarly, the students at Dacilane Academy have recently started what they have called the First Great Prank War.",
+      "links": []
+    },
+    {
+      "heading": "Centers Of Learning",
+      "level": 3,
+      "body_html": "<b>The Acadaemae (Varisia)</b>: Premiere wizard's college specializing in the summoning of otherworldly creatures.<br> <b>Almas University (Andoran)</b>: School primarily focusing on law, politics, modern philosophy, and zoology.<br> <b>Kitharodian Academy (Taldor)</b>: Famed bardic college teaching students of all social classes.<br> <b>Magaambya (Nantambu)</b>: Ancient school with some of the world's greatest stores of arcane knowledge.<br> <b>University of Lepidstadt (Ustalav)</b>: School primarily focusing on alchemy, medicine, and scientific study.",
+      "body_text": "The Acadaemae (Varisia): Premiere wizard's college specializing in the summoning of otherworldly creatures. Almas University (Andoran): School primarily focusing on law, politics, modern philosophy, and zoology. Kitharodian Academy (Taldor): Famed bardic college teaching students of all social classes. Magaambya (Nantambu): Ancient school with some of the world's greatest stores of arcane knowledge. University of Lepidstadt (Ustalav): School primarily focusing on alchemy, medicine, and scientific study.",
+      "links": []
+    },
+    {
+      "heading": "Crossover Ancestry NPCs",
+      "level": 3,
+      "body_html": "Several of the NPCs elsewhere in NPC Core can fit well in this group: <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3624\">Catfolk name collector</a> (level 6), <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3664\">dromaar lorekeeper</a> (level 5), <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3635\">gnome philomath</a> (level –1)",
+      "body_text": "Several of the NPCs elsewhere in NPC Core can fit well in this group: Catfolk name collector (level 6), dromaar lorekeeper (level 5), gnome philomath (level –1)",
+      "links": [
+        {
+          "href": "NPCs.aspx?ID=3624",
+          "text": "Catfolk name collector",
+          "kind": "NPCs",
+          "id": 3624
+        },
+        {
+          "href": "NPCs.aspx?ID=3664",
+          "text": "dromaar lorekeeper",
+          "kind": "NPCs",
+          "id": 3664
+        },
+        {
+          "href": "NPCs.aspx?ID=3635",
+          "text": "gnome philomath",
+          "kind": "NPCs",
+          "id": 3635
+        }
+      ]
+    },
+    {
+      "heading": "Fashionable Familiars",
+      "level": 3,
+      "body_html": "Bonding with a familiar is a deeply personal act, unique to each master and familiar. People being people, certain familiars do remain more popular than others. Cats, rats, and ravens are venerable classics, unlikely to be dislodged anytime soon. Monkeys are common in more southerly climates, and the venerable toad is the familiar of choice for wizards who want something a bit lower maintenance.",
+      "body_text": "Bonding with a familiar is a deeply personal act, unique to each master and familiar. People being people, certain familiars do remain more popular than others. Cats, rats, and ravens are venerable classics, unlikely to be dislodged anytime soon. Monkeys are common in more southerly climates, and the venerable toad is the familiar of choice for wizards who want something a bit lower maintenance.",
+      "links": []
+    },
+    {
+      "heading": "Scholarly Titles",
+      "level": 3,
+      "body_html": "University scholars can be just as obsessed with titles as the most hidebound aristocracy, and so all the Inner Sea's universities have a wealth of ranks, titles, degrees, and forms of address. A few of the most common are dean, rector, professor, docent, lecturer, reader, fellow, elder, doctor, master, philosopher, tutor, and don, with a host of vice-, deputy-, senior-, and emeritus-variants on all of them.",
+      "body_text": "University scholars can be just as obsessed with titles as the most hidebound aristocracy, and so all the Inner Sea's universities have a wealth of ranks, titles, degrees, and forms of address. A few of the most common are dean, rector, professor, docent, lecturer, reader, fellow, elder, doctor, master, philosopher, tutor, and don, with a host of vice-, deputy-, senior-, and emeritus-variants on all of them.",
+      "links": []
+    },
+    {
+      "heading": "Uncommon Scholastic Disciplines",
+      "level": 3,
+      "body_html": "Beside the life and natural sciences such as arcana, biology, botany, geology, oceanography, and zoology, demand is increasing in cities for more modern disciplines like anthropology, economics, sociology, urban planning, and even art curation and forensic investigation.",
+      "body_text": "Beside the life and natural sciences such as arcana, biology, botany, geology, oceanography, and zoology, demand is increasing in cities for more modern disciplines like anthropology, economics, sociology, urban planning, and even art curation and forensic investigation.",
+      "links": []
+    },
+    {
+      "heading": "University Uniform",
+      "level": 3,
+      "body_html": "Most universities in the Inner Sea have robes as either their official or ceremonial uniform, usually with a mixture of stoles, cowls, and sashes stolen with varying degrees of subtlety from local religious traditions. Less commonly, one sees staves, capes, or amulets, but occasionally truly odd things appear. Graduates of the Chirographica in Ular Kel receive a silver spear, while the College of Mysteries in Absalom grants supernatural tattoos to its star pupils.",
+      "body_text": "Most universities in the Inner Sea have robes as either their official or ceremonial uniform, usually with a mixture of stoles, cowls, and sashes stolen with varying degrees of subtlety from local religious traditions. Less commonly, one sees staves, capes, or amulets, but occasionally truly odd things appear. Graduates of the Chirographica in Ular Kel receive a silver spear, while the College of Mysteries in Absalom grants supernatural tattoos to its star pupils.",
+      "links": []
+    }
+  ],
+  "raw_fields": {
+    "Elite": "|",
+    "Normal": "|",
+    "Proficiency without Level": "Print Stat BlockObsessive ResearcherCreature -1Medium Human Humanoid",
+    "Perception": "+3",
+    "Languages": "Common; up to 3 additional uncommon languages",
+    "Skills": "Academia Lore +19, Library Lore +23, Narrow Lore +25, Stealth +5",
+    "Str": "+0,",
+    "Dex": "+1,",
+    "Con": "+2,",
+    "Int": "+5,",
+    "Wis": "+0,",
+    "Cha": "-1",
+    "Monomania": "Each obsessive researcher is preoccupied with a hyper-specialized, niche body of knowledge (their Narrow Lore) in which they are the acknowledged world authority. The catch is that when such an expert goes wrong, they go badly wrong— if an obsessive researcher gets a success on a Narrow Lore roll, they get a critical success instead. But if they roll a failure, then they get a critical failure instead.",
+    "World-Class Authority": "In their narrow field of interest, the obsessive researcher is a 10th-level challenge.",
+    "Items": "entirely too many books, writing set"
+  },
+  "links": [
+    {
+      "href": "NPCs.aspx?ID=3588&amp;Elite=true&amp;NoRedirect=1",
+      "text": "Elite",
+      "kind": "NPCs",
+      "id": 3588
+    },
+    {
+      "href": "NPCs.aspx?ID=3588&amp;NoRedirect=1",
+      "text": "Normal",
+      "kind": "NPCs",
+      "id": 3588
+    },
+    {
+      "href": "NPCs.aspx?ID=3588&amp;Weak=true&amp;NoRedirect=1",
+      "text": "Weak",
+      "kind": "NPCs",
+      "id": 3588
+    },
+    {
+      "href": "NPCs.aspx?ID=3588&amp;PWL=true&amp;NoRedirect=1",
+      "text": "Proficiency without Level",
+      "kind": "NPCs",
+      "id": 3588
+    },
+    {
+      "href": "NPCs.aspx?ID=3588",
+      "text": "Obsessive Researcher",
+      "kind": "NPCs",
+      "id": 3588
+    },
+    {
+      "href": "/Rules.aspx?ID=445",
+      "text": "Medium",
+      "kind": "Rules",
+      "id": 445
+    },
+    {
+      "href": "/Traits.aspx?ID=627",
+      "text": "Human",
+      "kind": "Traits",
+      "id": 627
+    },
+    {
+      "href": "/Traits.aspx?ID=628",
+      "text": "Humanoid",
+      "kind": "Traits",
+      "id": 628
+    },
+    {
+      "href": "Sources.aspx?ID=236",
+      "text": "NPC Core pg. 138",
+      "kind": "Sources",
+      "id": 236
+    },
+    {
+      "href": "Rules.aspx?ID=2638",
+      "text": "Recall Knowledge",
+      "kind": "Rules",
+      "id": 2638
+    },
+    {
+      "href": "Skills.aspx?ID=47",
+      "text": "Society",
+      "kind": "Skills",
+      "id": 47
+    },
+    {
+      "href": "Languages.aspx?ID=1",
+      "text": "Common",
+      "kind": "Languages",
+      "id": 1
+    },
+    {
+      "href": "Skills.aspx?ID=41",
+      "text": "Academia Lore",
+      "kind": "Skills",
+      "id": 41
+    },
+    {
+      "href": "Skills.aspx?ID=41",
+      "text": "Library Lore",
+      "kind": "Skills",
+      "id": 41
+    },
+    {
+      "href": "Skills.aspx?ID=41",
+      "text": "Narrow Lore",
+      "kind": "Skills",
+      "id": 41
+    },
+    {
+      "href": "Skills.aspx?ID=48",
+      "text": "Stealth",
+      "kind": "Skills",
+      "id": 48
+    },
+    {
+      "href": "Equipment.aspx?ID=63",
+      "text": "writing set",
+      "kind": "Equipment",
+      "id": 63
+    },
+    {
+      "href": "Rules.aspx?ID=322",
+      "text": "+1/-3",
+      "kind": "Rules",
+      "id": 322
+    },
+    {
+      "href": "Traits.aspx?ID=526",
+      "text": "agile",
+      "kind": "Traits",
+      "id": 526
+    },
+    {
+      "href": "Traits.aspx?ID=602",
+      "text": "finesse",
+      "kind": "Traits",
+      "id": 602
+    },
+    {
+      "href": "Traits.aspx?ID=661",
+      "text": "nonlethal",
+      "kind": "Traits",
+      "id": 661
+    },
+    {
+      "href": "Traits.aspx?ID=719",
+      "text": "unarmed",
+      "kind": "Traits",
+      "id": 719
+    },
+    {
+      "href": "Rules.aspx?ID=322",
+      "text": "+0/-4",
+      "kind": "Rules",
+      "id": 322
+    },
+    {
+      "href": "Traits.aspx?ID=541",
+      "text": "auditory",
+      "kind": "Traits",
+      "id": 541
+    },
+    {
+      "href": "Traits.aspx?ID=590",
+      "text": "emotion",
+      "kind": "Traits",
+      "id": 590
+    },
+    {
+      "href": "Traits.aspx?ID=598",
+      "text": "fear",
+      "kind": "Traits",
+      "id": 598
+    },
+    {
+      "href": "Traits.aspx?ID=647",
+      "text": "mental",
+      "kind": "Traits",
+      "id": 647
+    },
+    {
+      "href": "Conditions.aspx?ID=76",
+      "text": "frightened 2",
+      "kind": "Conditions",
+      "id": 76
+    },
+    {
+      "href": "Conditions.aspx?ID=74",
+      "text": "fleeing",
+      "kind": "Conditions",
+      "id": 74
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=548",
+      "text": "Scholar",
+      "kind": "MonsterFamilies",
+      "id": 548
+    },
+    {
+      "href": "NPCs.aspx?ID=3590",
+      "text": "Astronomer",
+      "kind": "NPCs",
+      "id": 3590
+    },
+    {
+      "href": "NPCs.aspx?ID=3592",
+      "text": "Avuncular Professor",
+      "kind": "NPCs",
+      "id": 3592
+    },
+    {
+      "href": "NPCs.aspx?ID=3594",
+      "text": "Departmental Chair",
+      "kind": "NPCs",
+      "id": 3594
+    },
+    {
+      "href": "NPCs.aspx?ID=3596",
+      "text": "Eldritch Emeritus",
+      "kind": "NPCs",
+      "id": 3596
+    },
+    {
+      "href": "NPCs.aspx?ID=3591",
+      "text": "Exuberant Apprentice",
+      "kind": "NPCs",
+      "id": 3591
+    },
+    {
+      "href": "NPCs.aspx?ID=3595",
+      "text": "Globetrotting Scholar",
+      "kind": "NPCs",
+      "id": 3595
+    },
+    {
+      "href": "NPCs.aspx?ID=3587",
+      "text": "Librarian",
+      "kind": "NPCs",
+      "id": 3587
+    },
+    {
+      "href": "NPCs.aspx?ID=3593",
+      "text": "Sage",
+      "kind": "NPCs",
+      "id": 3593
+    },
+    {
+      "href": "NPCs.aspx?ID=3589",
+      "text": "Teacher",
+      "kind": "NPCs",
+      "id": 3589
+    },
+    {
+      "href": "NPCs.aspx?ID=3624",
+      "text": "Catfolk name collector",
+      "kind": "NPCs",
+      "id": 3624
+    },
+    {
+      "href": "NPCs.aspx?ID=3664",
+      "text": "dromaar lorekeeper",
+      "kind": "NPCs",
+      "id": 3664
+    },
+    {
+      "href": "NPCs.aspx?ID=3635",
+      "text": "gnome philomath",
+      "kind": "NPCs",
+      "id": 3635
+    }
+  ],
+  "body_text": "AC 14; Fort +3, Ref +2, Will +7 HP 7 Idée Fixe Nothing gets between the obsessive researcher and their subject. If the obsessive researcher is targeted by a spell or ability with a Will save that would prompt them to give up, ignore, or divert course from the subject of their Narrow Lore (for example, using a suggestion to get a specialist in Jistkan artificing to give up a construct part), then the obsessive researcher can use their Narrow Lore skill in place of their Will save.Speed 25 feet Melee [one-action] fist +5 [+1/-3] (agile, finesse, nonlethal, unarmed), Damage 1d4 bludgeoningMelee [one-action] pen +4 [+0/-4] (agile, finesse, nonlethal), Damage 1d4 piercingFurious Harangue [two-actions] (auditory, emotion, fear, mental) The researcher starts hectoring an enemy within 30 feet, upbraiding them for daring to interrupt such valuable research. The target must attempt a DC 15 Will save. On a failure, they are frightened 2 (frightened 3 and fleeing for 1 round on a critical failure). Regardless of the result of its save, the target is temporarily immune for 1 hour.All Monsters in \"Scholar\"NameLevelAstronomer2Avuncular Professor5Departmental Chair7Eldritch Emeritus17Exuberant Apprentice4Globetrotting Scholar13Librarian-1Obsessive Researcher-1Sage6Teacher-1ScholarSource NPC Core pg. 138 True power comes from knowledge—the power to shape the growth of kingdoms by mere whispers, stay three steps ahead of adversaries, or even know which flora is best for creating untraceable poisons. Academic PranksIt is a fond tradition at most universities in the Inner Sea for young scholars to pull strange and off-kilter pranks, all the more so when those young scholars have magic—the more difficult, bizarre, or inexplicable the prank, the better. The wizards of the Arcanamirium still reminisce over the time they transported an entire galleon into a city park in the middle of the night. Similarly, the students at Dacilane Academy have recently started what they have called the First Great Prank War. Centers Of LearningThe Acadaemae (Varisia): Premiere wizard's college specializing in the summoning of otherworldly creatures. Almas University (Andoran): School primarily focusing on law, politics, modern philosophy, and zoology. Kitharodian Academy (Taldor): Famed bardic college teaching students of all social classes. Magaambya (Nantambu): Ancient school with some of the world's greatest stores of arcane knowledge. University of Lepidstadt (Ustalav): School primarily focusing on alchemy, medicine, and scientific study. Crossover Ancestry NPCsSeveral of the NPCs elsewhere in NPC Core can fit well in this group: Catfolk name collector (level 6), dromaar lorekeeper (level 5), gnome philomath (level –1) Fashionable FamiliarsBonding with a familiar is a deeply personal act, unique to each master and familiar. People being people, certain familiars do remain more popular than others. Cats, rats, and ravens are venerable classics, unlikely to be dislodged anytime soon. Monkeys are common in more southerly climates, and the venerable toad is the familiar of choice for wizards who want something a bit lower maintenance. Scholarly TitlesUniversity scholars can be just as obsessed with titles as the most hidebound aristocracy, and so all the Inner Sea's universities have a wealth of ranks, titles, degrees, and forms of address. A few of the most common are dean, rector, professor, docent, lecturer, reader, fellow, elder, doctor, master, philosopher, tutor, and don, with a host of vice-, deputy-, senior-, and emeritus-variants on all of them. Uncommon Scholastic DisciplinesBeside the life and natural sciences such as arcana, biology, botany, geology, oceanography, and zoology, demand is increasing in cities for more modern disciplines like anthropology, economics, sociology, urban planning, and even art curation and forensic investigation. University UniformMost universities in the Inner Sea have robes as either their official or ceremonial uniform, usually with a mixture of stoles, cowls, and sashes stolen with varying degrees of subtlety from local religious traditions. Less commonly, one sees staves, capes, or amulets, but occasionally truly odd things appear. Graduates of the Chirographica in Ular Kel receive a silver spear, while the College of Mysteries in Absalom grants supernatural tattoos to its star pupils.",
+  "body_html": "<b>AC</b> 14; <b>Fort</b> +3, <b>Ref</b> +2, <b>Will</b> +7<br><b>HP</b> 7<br><span class=\"hanging-indent\"><b>Idée Fixe</b> Nothing gets between the obsessive researcher and their subject. If the obsessive researcher is targeted by a spell or ability with a Will save that would prompt them to give up, ignore, or divert course from the subject of their <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=41\">Narrow Lore</a> (for example, using a suggestion to get a specialist in Jistkan artificing to give up a construct part), then the obsessive researcher can use their Narrow Lore skill in place of their Will save.</span><hr><b>Speed</b> 25 feet<br><span class=\"hanging-indent\"><b>Melee</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  fist +5 [<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=322\"><u>+1/-3</u></a>] (<a href=\"Traits.aspx?ID=526\"><u>agile</u></a>, <a href=\"Traits.aspx?ID=602\"><u>finesse</u></a>, <a href=\"Traits.aspx?ID=661\"><u>nonlethal</u></a>, <a href=\"Traits.aspx?ID=719\"><u>unarmed</u></a>), <b>Damage</b> 1d4 bludgeoning</span><span class=\"hanging-indent\"><b>Melee</b>  <span class=\"action\" title=\"Single Action\" role=\"img\" aria-label=\"Single Action\">[one-action]</span>  pen +4 [<a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=322\"><u>+0/-4</u></a>] (<a href=\"Traits.aspx?ID=526\"><u>agile</u></a>, <a href=\"Traits.aspx?ID=602\"><u>finesse</u></a>, <a href=\"Traits.aspx?ID=661\"><u>nonlethal</u></a>), <b>Damage</b> 1d4 piercing</span><span class=\"hanging-indent\"><b>Furious Harangue</b>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span>   (<a href=\"Traits.aspx?ID=541\"><u>auditory</u></a>, <a href=\"Traits.aspx?ID=590\"><u>emotion</u></a>, <a href=\"Traits.aspx?ID=598\"><u>fear</u></a>, <a href=\"Traits.aspx?ID=647\"><u>mental</u></a>) The researcher starts hectoring an enemy within 30 feet, upbraiding them for daring to interrupt such valuable research. The target must attempt a DC 15 Will save. On a failure, they are <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=76\">frightened 2</a> (frightened 3 and <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=74\">fleeing</a> for 1 round on a critical failure). Regardless of the result of its save, the target is temporarily immune for 1 hour.</span><div class=\"monster-family hide-on-print\"><h2 class=\"title\">All Monsters in \"<a href=\"MonsterFamilies.aspx?ID=548\">Scholar</a>\"</h2><table class=\"inner\"><tbody><tr><td><b>Name</b></td><td><b>Level</b></td></tr><tr><td><a href=\"NPCs.aspx?ID=3590\">Astronomer</a></td><td>2</td></tr><tr><td><a href=\"NPCs.aspx?ID=3592\">Avuncular Professor</a></td><td>5</td></tr><tr><td><a href=\"NPCs.aspx?ID=3594\">Departmental Chair</a></td><td>7</td></tr><tr><td><a href=\"NPCs.aspx?ID=3596\">Eldritch Emeritus</a></td><td>17</td></tr><tr><td><a href=\"NPCs.aspx?ID=3591\">Exuberant Apprentice</a></td><td>4</td></tr><tr><td><a href=\"NPCs.aspx?ID=3595\">Globetrotting Scholar</a></td><td>13</td></tr><tr><td><a href=\"NPCs.aspx?ID=3587\">Librarian</a></td><td>-1</td></tr><tr><td><a href=\"NPCs.aspx?ID=3588\">Obsessive Researcher</a></td><td>-1</td></tr><tr><td><a href=\"NPCs.aspx?ID=3593\">Sage</a></td><td>6</td></tr><tr><td><a href=\"NPCs.aspx?ID=3589\">Teacher</a></td><td>-1</td></tr></tbody></table><h1 class=\"title\"><a href=\"MonsterFamilies.aspx?ID=548\">Scholar</a></h1><b>Source</b> <a href=\"Sources.aspx?ID=236\" target=\"_blank\" class=\"external-link\"><i>NPC Core pg. 138</i></a><br>True power comes from knowledge—the power to shape the growth of kingdoms by mere whispers, stay three steps ahead of adversaries, or even know which flora is best for creating untraceable poisons.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Academic Pranks</h3>It is a fond tradition at most universities in the Inner Sea for young scholars to pull strange and off-kilter pranks, all the more so when those young scholars have magic—the more difficult, bizarre, or inexplicable the prank, the better. The wizards of the Arcanamirium still reminisce over the time they transported an entire galleon into a city park in the middle of the night. Similarly, the students at Dacilane Academy have recently started what they have called the First Great Prank War.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Centers Of Learning</h3><b>The Acadaemae (Varisia)</b>: Premiere wizard's college specializing in the summoning of otherworldly creatures.<br> <b>Almas University (Andoran)</b>: School primarily focusing on law, politics, modern philosophy, and zoology.<br> <b>Kitharodian Academy (Taldor)</b>: Famed bardic college teaching students of all social classes.<br> <b>Magaambya (Nantambu)</b>: Ancient school with some of the world's greatest stores of arcane knowledge.<br> <b>University of Lepidstadt (Ustalav)</b>: School primarily focusing on alchemy, medicine, and scientific study.<h3 class=\"title\"><img alt=\"Sidebar - Related Creatures\" title=\"Sidebar - Related Creatures\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_4_RelatedCreatures.png\"> Crossover Ancestry NPCs</h3>Several of the NPCs elsewhere in NPC Core can fit well in this group: <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3624\">Catfolk name collector</a> (level 6), <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3664\">dromaar lorekeeper</a> (level 5), <a style=\"text-decoration:underline\" href=\"NPCs.aspx?ID=3635\">gnome philomath</a> (level –1)<h3 class=\"title\"><img alt=\"Sidebar - Related Creatures\" title=\"Sidebar - Related Creatures\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_4_RelatedCreatures.png\"> Fashionable Familiars</h3>Bonding with a familiar is a deeply personal act, unique to each master and familiar. People being people, certain familiars do remain more popular than others. Cats, rats, and ravens are venerable classics, unlikely to be dislodged anytime soon. Monkeys are common in more southerly climates, and the venerable toad is the familiar of choice for wizards who want something a bit lower maintenance.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Scholarly Titles</h3>University scholars can be just as obsessed with titles as the most hidebound aristocracy, and so all the Inner Sea's universities have a wealth of ranks, titles, degrees, and forms of address. A few of the most common are dean, rector, professor, docent, lecturer, reader, fellow, elder, doctor, master, philosopher, tutor, and don, with a host of vice-, deputy-, senior-, and emeritus-variants on all of them.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> Uncommon Scholastic Disciplines</h3>Beside the life and natural sciences such as arcana, biology, botany, geology, oceanography, and zoology, demand is increasing in cities for more modern disciplines like anthropology, economics, sociology, urban planning, and even art curation and forensic investigation.<h3 class=\"title\"><img alt=\"Sidebar - Additional Lore\" title=\"Sidebar - Additional Lore\" style=\"height:18px; padding:2px 10px 0px 2px\" src=\"Images\\Icons\\Sidebar_2_AdditionalLore.png\"> University Uniform</h3>Most universities in the Inner Sea have robes as either their official or ceremonial uniform, usually with a mixture of stoles, cowls, and sashes stolen with varying degrees of subtlety from local religious traditions. Less commonly, one sees staves, capes, or amulets, but occasionally truly odd things appear. Graduates of the Chirographica in Ular Kel receive a silver spear, while the College of Mysteries in Absalom grants supernatural tattoos to its star pupils.</div>",
+  "meta_description": "Academia rewards specialization, and so the universities and athenaeums of the Inner Sea are full to the brim of sunlight-deprived scholars who are the world experts in such obscure topics such as the migratory habits of bogwids or the folklore of pre-Choral Brevoy.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, NPCs, Obsessive Researcher",
+  "level": -1,
+  "level_kind": "Creature"
+}

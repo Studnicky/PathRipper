@@ -1,0 +1,342 @@
+{
+  "_type": "generic",
+  "url": "https://2e.aonprd.com/Familiars.aspx?ID=28&Specific=true",
+  "entity_id": 28,
+  "name": "Elemental Scamp",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [
+    "Elemental",
+    "Arcane"
+  ],
+  "trait_ids": {
+    "Elemental": 57,
+    "Arcane": 11
+  },
+  "source": {
+    "book": "Rage of Elements",
+    "page": 43,
+    "source_id": 205
+  },
+  "sources": [
+    {
+      "book": "Rage of Elements",
+      "page": 43,
+      "source_id": 205,
+      "raw": "Rage of Elements pg. 43"
+    },
+    {
+      "book": "Rage of Elements",
+      "page": 43,
+      "source_id": 205,
+      "raw": "Rage of Elements pg. 43"
+    },
+    {
+      "book": "Rage of Elements",
+      "page": 43,
+      "source_id": 205,
+      "raw": "Rage of Elements pg. 43"
+    },
+    {
+      "book": "Rage of Elements",
+      "page": 43,
+      "source_id": 205,
+      "raw": "Rage of Elements pg. 43"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Elemental Breath [two-actions]",
+      "level": 2,
+      "body_html": " <span class=\"trait\"><a href=\"/Traits.aspx?ID=11\">Arcane</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><br><b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br><b>Frequency</b> once per hour; <b>Effect</b> The scamp breathes elemental matter in a 10-foot cone. Each creature in the area takes 1d6 damage for every 2 levels you have, with a <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=329\">basic</a> Reflex save against your class DC or spell DC, whichever is higher. The damage type depends on the type of scamp.<br>",
+      "body_text": "Arcane Source Rage of Elements pg. 43 Frequency once per hour; Effect The scamp breathes elemental matter in a 10-foot cone. Each creature in the area takes 1d6 damage for every 2 levels you have, with a basic Reflex save against your class DC or spell DC, whichever is higher. The damage type depends on the type of scamp.",
+      "links": [
+        {
+          "href": "/Traits.aspx?ID=11",
+          "text": "Arcane",
+          "kind": "Traits",
+          "id": 11
+        },
+        {
+          "href": "Sources.aspx?ID=205",
+          "text": "Rage of Elements pg. 43",
+          "kind": "Sources",
+          "id": 205
+        },
+        {
+          "href": "Rules.aspx?ID=329",
+          "text": "basic",
+          "kind": "Rules",
+          "id": 329
+        }
+      ]
+    },
+    {
+      "heading": "Elemental Mobility",
+      "level": 2,
+      "body_html": " <b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br>Your scamp gains a familiar ability depending on its element. Air scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=7\">flier</a>, earth scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=2\">burrower</a>, fire scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=94\">jet</a>, metal scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=95\">levitator</a>, water scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=1\">amphibious</a>, and wood scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=3\">climber</a>.<br>",
+      "body_text": "Source Rage of Elements pg. 43 Your scamp gains a familiar ability depending on its element. Air scamps gain flier, earth scamps gain burrower, fire scamps gain jet, metal scamps gain levitator, water scamps gain amphibious, and wood scamps gain climber.",
+      "links": [
+        {
+          "href": "Sources.aspx?ID=205",
+          "text": "Rage of Elements pg. 43",
+          "kind": "Sources",
+          "id": 205
+        },
+        {
+          "href": "Familiars.aspx?ID=7",
+          "text": "flier",
+          "kind": "Familiars",
+          "id": 7
+        },
+        {
+          "href": "Familiars.aspx?ID=2",
+          "text": "burrower",
+          "kind": "Familiars",
+          "id": 2
+        },
+        {
+          "href": "Familiars.aspx?ID=94",
+          "text": "jet",
+          "kind": "Familiars",
+          "id": 94
+        },
+        {
+          "href": "Familiars.aspx?ID=95",
+          "text": "levitator",
+          "kind": "Familiars",
+          "id": 95
+        },
+        {
+          "href": "Familiars.aspx?ID=1",
+          "text": "amphibious",
+          "kind": "Familiars",
+          "id": 1
+        },
+        {
+          "href": "Familiars.aspx?ID=3",
+          "text": "climber",
+          "kind": "Familiars",
+          "id": 3
+        }
+      ]
+    },
+    {
+      "heading": "Scamp Elements",
+      "level": 2,
+      "body_html": " <b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br>An elemental scamp's element or elements are set. You choose a type of scamp and can't change the element each day. This determines the scamp's elemental traits and the damage type of their Elemental Breath. <b>Air</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=5\">air</a>) slashing damage; <b>earth</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=55\">earth</a>) bludgeoning damage; <b>fire</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=72\">fire</a>) fire damage; <b>metal</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=505\">metal</a>) slashing damage; <b>water</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=165\">water</a>) acid damage; <b>wood</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=125\">plant</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=508\">wood</a>) poison damage.<br>",
+      "body_text": "Source Rage of Elements pg. 43 An elemental scamp's element or elements are set. You choose a type of scamp and can't change the element each day. This determines the scamp's elemental traits and the damage type of their Elemental Breath. Air (air) slashing damage; earth (earth) bludgeoning damage; fire (fire) fire damage; metal (metal) slashing damage; water (water) acid damage; wood (plant, wood) poison damage.",
+      "links": [
+        {
+          "href": "Sources.aspx?ID=205",
+          "text": "Rage of Elements pg. 43",
+          "kind": "Sources",
+          "id": 205
+        },
+        {
+          "href": "Traits.aspx?ID=5",
+          "text": "air",
+          "kind": "Traits",
+          "id": 5
+        },
+        {
+          "href": "Traits.aspx?ID=55",
+          "text": "earth",
+          "kind": "Traits",
+          "id": 55
+        },
+        {
+          "href": "Traits.aspx?ID=72",
+          "text": "fire",
+          "kind": "Traits",
+          "id": 72
+        },
+        {
+          "href": "Traits.aspx?ID=505",
+          "text": "metal",
+          "kind": "Traits",
+          "id": 505
+        },
+        {
+          "href": "Traits.aspx?ID=165",
+          "text": "water",
+          "kind": "Traits",
+          "id": 165
+        },
+        {
+          "href": "Traits.aspx?ID=125",
+          "text": "plant",
+          "kind": "Traits",
+          "id": 125
+        },
+        {
+          "href": "Traits.aspx?ID=508",
+          "text": "wood",
+          "kind": "Traits",
+          "id": 508
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Familiars.aspx?ID=28&amp;Specific=true",
+      "text": "Elemental Scamp",
+      "kind": "Familiars",
+      "id": 28
+    },
+    {
+      "href": "/Traits.aspx?ID=57",
+      "text": "Elemental",
+      "kind": "Traits",
+      "id": 57
+    },
+    {
+      "href": "Sources.aspx?ID=205",
+      "text": "Rage of Elements pg. 43",
+      "kind": "Sources",
+      "id": 205
+    },
+    {
+      "href": "Familiars.aspx?ID=93",
+      "text": "elemental",
+      "kind": "Familiars",
+      "id": 93
+    },
+    {
+      "href": "Familiars.aspx?ID=7",
+      "text": "flier",
+      "kind": "Familiars",
+      "id": 7
+    },
+    {
+      "href": "Familiars.aspx?ID=12",
+      "text": "speech",
+      "kind": "Familiars",
+      "id": 12
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=44",
+      "text": "scamps",
+      "kind": "MonsterFamilies",
+      "id": 44
+    },
+    {
+      "href": "Familiars.aspx?ID=103&amp;Abilities=true",
+      "text": "Elemental Breath",
+      "kind": "Familiars",
+      "id": 103
+    },
+    {
+      "href": "/Traits.aspx?ID=11",
+      "text": "Arcane",
+      "kind": "Traits",
+      "id": 11
+    },
+    {
+      "href": "Rules.aspx?ID=329",
+      "text": "basic",
+      "kind": "Rules",
+      "id": 329
+    },
+    {
+      "href": "Familiars.aspx?ID=106&amp;Abilities=true",
+      "text": "Elemental Mobility",
+      "kind": "Familiars",
+      "id": 106
+    },
+    {
+      "href": "Familiars.aspx?ID=2",
+      "text": "burrower",
+      "kind": "Familiars",
+      "id": 2
+    },
+    {
+      "href": "Familiars.aspx?ID=94",
+      "text": "jet",
+      "kind": "Familiars",
+      "id": 94
+    },
+    {
+      "href": "Familiars.aspx?ID=95",
+      "text": "levitator",
+      "kind": "Familiars",
+      "id": 95
+    },
+    {
+      "href": "Familiars.aspx?ID=1",
+      "text": "amphibious",
+      "kind": "Familiars",
+      "id": 1
+    },
+    {
+      "href": "Familiars.aspx?ID=3",
+      "text": "climber",
+      "kind": "Familiars",
+      "id": 3
+    },
+    {
+      "href": "Familiars.aspx?ID=104&amp;Abilities=true",
+      "text": "Scamp Elements",
+      "kind": "Familiars",
+      "id": 104
+    },
+    {
+      "href": "Traits.aspx?ID=5",
+      "text": "air",
+      "kind": "Traits",
+      "id": 5
+    },
+    {
+      "href": "Traits.aspx?ID=55",
+      "text": "earth",
+      "kind": "Traits",
+      "id": 55
+    },
+    {
+      "href": "Traits.aspx?ID=72",
+      "text": "fire",
+      "kind": "Traits",
+      "id": 72
+    },
+    {
+      "href": "Traits.aspx?ID=505",
+      "text": "metal",
+      "kind": "Traits",
+      "id": 505
+    },
+    {
+      "href": "Traits.aspx?ID=165",
+      "text": "water",
+      "kind": "Traits",
+      "id": 165
+    },
+    {
+      "href": "Traits.aspx?ID=125",
+      "text": "plant",
+      "kind": "Traits",
+      "id": 125
+    },
+    {
+      "href": "Traits.aspx?ID=508",
+      "text": "wood",
+      "kind": "Traits",
+      "id": 508
+    }
+  ],
+  "body_text": "Required Number of Abilities 5 Granted Abilities elemental, flier, speech The elementals called scamps look similar to bats, but their bodies are made primarily of elemental matter. They have large, staring eyes and small, curved fangs. . An elemental scamp familiar is a bit smaller than other scamps but makes up for it by being more mischievous. Driven by ego, scamps often take on long names with many titles and insist on being addressed in full.Elemental Breath [two-actions] Arcane Source Rage of Elements pg. 43 Frequency once per hour; Effect The scamp breathes elemental matter in a 10-foot cone. Each creature in the area takes 1d6 damage for every 2 levels you have, with a basic Reflex save against your class DC or spell DC, whichever is higher. The damage type depends on the type of scamp. Elemental Mobility Source Rage of Elements pg. 43 Your scamp gains a familiar ability depending on its element. Air scamps gain flier, earth scamps gain burrower, fire scamps gain jet, metal scamps gain levitator, water scamps gain amphibious, and wood scamps gain climber. Scamp Elements Source Rage of Elements pg. 43 An elemental scamp's element or elements are set. You choose a type of scamp and can't change the element each day. This determines the scamp's elemental traits and the damage type of their Elemental Breath. Air (air) slashing damage; earth (earth) bludgeoning damage; fire (fire) fire damage; metal (metal) slashing damage; water (water) acid damage; wood (plant, wood) poison damage.",
+  "body_html": "<b>Required Number of Abilities</b> 5<br><b>Granted Abilities</b> <u><a href=\"Familiars.aspx?ID=93\">elemental</a></u>, <u><a href=\"Familiars.aspx?ID=7\">flier</a></u>, <u><a href=\"Familiars.aspx?ID=12\">speech</a></u><br><br>The elementals called <a style=\"text-decoration:underline\" href=\"MonsterFamilies.aspx?ID=44\">scamps</a> look similar to bats, but their bodies are made primarily of elemental matter. They have large, staring eyes and small, curved fangs. . An elemental scamp familiar is a bit smaller than other scamps but makes up for it by being more mischievous. Driven by ego, scamps often take on long names with many titles and insist on being addressed in full.<h2 class=\"title\"><a href=\"Familiars.aspx?ID=103&amp;Abilities=true\">Elemental Breath</a>  <span class=\"action\" title=\"Two Actions\" role=\"img\" aria-label=\"Two Actions\">[two-actions]</span> </h2> <span class=\"trait\"><a href=\"/Traits.aspx?ID=11\">Arcane</a></span><span style=\"letter-spacing: -.4em\">&nbsp;</span><br><b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br><b>Frequency</b> once per hour; <b>Effect</b> The scamp breathes elemental matter in a 10-foot cone. Each creature in the area takes 1d6 damage for every 2 levels you have, with a <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=329\">basic</a> Reflex save against your class DC or spell DC, whichever is higher. The damage type depends on the type of scamp.<br><h2 class=\"title\"><a href=\"Familiars.aspx?ID=106&amp;Abilities=true\">Elemental Mobility</a> </h2> <b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br>Your scamp gains a familiar ability depending on its element. Air scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=7\">flier</a>, earth scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=2\">burrower</a>, fire scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=94\">jet</a>, metal scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=95\">levitator</a>, water scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=1\">amphibious</a>, and wood scamps gain <a style=\"text-decoration:underline\" href=\"Familiars.aspx?ID=3\">climber</a>.<br><h2 class=\"title\"><a href=\"Familiars.aspx?ID=104&amp;Abilities=true\">Scamp Elements</a> </h2> <b>Source</b> <a href=\"Sources.aspx?ID=205\" target=\"_blank\" class=\"external-link\"><i>Rage of Elements pg. 43</i></a><br>An elemental scamp's element or elements are set. You choose a type of scamp and can't change the element each day. This determines the scamp's elemental traits and the damage type of their Elemental Breath. <b>Air</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=5\">air</a>) slashing damage; <b>earth</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=55\">earth</a>) bludgeoning damage; <b>fire</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=72\">fire</a>) fire damage; <b>metal</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=505\">metal</a>) slashing damage; <b>water</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=165\">water</a>) acid damage; <b>wood</b> (<a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=125\">plant</a>, <a style=\"text-decoration:underline\" href=\"Traits.aspx?ID=508\">wood</a>) poison damage.<br>",
+  "meta_description": "The elementals called scamps look similar to bats, but their bodies are made primarily of elemental matter. They have large, staring eyes and small, curved fangs. . An elemental scamp familiar is a bit smaller than other scamps but makes up for it by being more mischievous. Driven by ego, scamps often take on long names with many titles and insist on being addressed in full.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Familiar, Elemental Scamp",
+  "level": null,
+  "level_kind": null
+}

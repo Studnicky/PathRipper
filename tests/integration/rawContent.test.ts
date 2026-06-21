@@ -4,49 +4,354 @@
 // Plugin JSON goes to <outDir>/<target>/<pluginTaskName>/<slug>.json  (no _raw embed)
 //
 // Uses a fake fetch to serve a known HTML fixture and the full
-// ScrapeOrchestrator + builtinTasks pipeline.  No network calls.
+// runDag + built-in nodes pipeline.  No network calls.
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, readdir } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import { mkdtemp, readFile, rm, readdir, writeFile, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { ScrapeOrchestrator } from '../../src/orchestrators/ScrapeOrchestrator.js';
-import { TaskRegistry }       from '../../src/registry/TaskRegistry.js';
-import {
-  htmlFetchTask,
-  htmlWriteRawTask,
-  wikiWriteRawTask,
-  wikiFetchTask,
-  jsonWriteTask,
-  jsonlAppendTask,
-  validateSchemaTask,
-  crawlListTargetsTask,
-} from '../../src/registry/builtinTasks.js';
-import type { PipelineStateInterface } from '../../src/types/PipelineState.js';
-import type { TaskFnInterface } from '../../src/types/Pipeline.js';
+import { DAGDocument } from '@studnicky/dagonizer';
+import { runDag }      from '../../src/run/runDag.js';
+import type { RunStateType } from '../../src/types/RunState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Load a real AONPRD fixture HTML so the content is non-trivial.
 const FIXTURE_HTML_PATH = resolve(__dirname, '../e2e/plugins/fixtures/aonprd/condition-blinded.html');
 
-// Minimal plugin: sets state.output to a stub so json:write has something to write.
-const stubParseTask: TaskFnInterface<PipelineStateInterface> = async (next, state) => {
-  state.output = { _type: 'stub', name: 'fixture-page' };
-  await next();
-};
+// ── JSON-LD context (shared by all orchestration + per-page DAGs) ──────────────
+
+const DAG_CONTEXT = {
+  '@version': 1.1,
+  'name':       { '@id': 'https://noocodex.dev/ontology/dag/name' },
+  'version':    { '@id': 'https://noocodex.dev/ontology/dag/version' },
+  'entrypoint': { '@id': 'https://noocodex.dev/ontology/dag/entrypoint' },
+  'nodes':      { '@id': 'https://noocodex.dev/ontology/dag/nodes', '@container': '@set' },
+  'outputs':    { '@id': 'https://noocodex.dev/ontology/dag/outputs' },
+  'node':       { '@id': 'https://noocodex.dev/ontology/dag/node' },
+  'dag':        { '@id': 'https://noocodex.dev/ontology/dag/dag' },
+  'body':       { '@id': 'https://noocodex.dev/ontology/dag/body' },
+  'source':     { '@id': 'https://noocodex.dev/ontology/dag/source' },
+  'itemKey':    { '@id': 'https://noocodex.dev/ontology/dag/itemKey' },
+  'concurrency':{ '@id': 'https://noocodex.dev/ontology/dag/concurrency' },
+  'gather':     { '@id': 'https://noocodex.dev/ontology/dag/gather' },
+  'reducer':    { '@id': 'https://noocodex.dev/ontology/dag/reducer' },
+  'outcome':    { '@id': 'https://noocodex.dev/ontology/dag/outcome' },
+  'phase':      { '@id': 'https://noocodex.dev/ontology/dag/phase' },
+  'stateMapping':{ '@id': 'https://noocodex.dev/ontology/dag/stateMapping' },
+  'container':  { '@id': 'https://noocodex.dev/ontology/dag/container' },
+  'DAG':            { '@id': 'https://noocodex.dev/ontology/dag/DAG' },
+  'Placement':      { '@id': 'https://noocodex.dev/ontology/dag/Placement' },
+  'SingleNode':     { '@id': 'https://noocodex.dev/ontology/dag/SingleNode' },
+  'ScatterNode':    { '@id': 'https://noocodex.dev/ontology/dag/ScatterNode' },
+  'EmbeddedDAGNode':{ '@id': 'https://noocodex.dev/ontology/dag/EmbeddedDAGNode' },
+  'TerminalNode':   { '@id': 'https://noocodex.dev/ontology/dag/TerminalNode' },
+  'PhaseNode':      { '@id': 'https://noocodex.dev/ontology/dag/PhaseNode' },
+} as const;
+
+// ── OrchDag — inline orchestration entry DAG builder ─────────────────────────
+
+/**
+ * Builds a serialised JSON-LD orchestration entry DAG that scatters `urls` over
+ * the given per-page DAG name.  Loaded via `DAGDocument.load(OrchDag.forScenario(...))`.
+ */
+class OrchDag {
+  static forScenario(name: string, pageDagName: string): string {
+    return JSON.stringify({
+      '@context':  DAG_CONTEXT,
+      '@id':       `urn:noocodex:dag:${name}`,
+      '@type':     'DAG',
+      'name':       name,
+      'version':   '1.0',
+      'entrypoint': 'scrape-urls',
+      'nodes': [
+        {
+          '@id':       `urn:noocodex:dag:${name}/node/scrape-urls`,
+          '@type':     'ScatterNode',
+          'name':       'scrape-urls',
+          'source':     'urls',
+          'body':       { 'dag': pageDagName },
+          'gather': {
+            'strategy':   'partition',
+            'partitions': { 'success': 'succeeded', 'error': 'failed' },
+          },
+          'outputs': {
+            'all-success': 'done',
+            'partial':     'done',
+            'all-error':   'done',
+            'empty':       'done',
+          },
+          'itemKey': 'currentUrl',
+          'reducer': 'aggregate',
+        },
+        {
+          '@id':     `urn:noocodex:dag:${name}/node/done`,
+          '@type':   'TerminalNode',
+          'name':     'done',
+          'outcome':  'completed',
+        },
+      ],
+    });
+  }
+
+  /**
+   * Builds a two-scatter orchestration: a `scrape` scatter over `urls` whose
+   * failed items partition into `failed`, then a `retry` scatter over `failed`
+   * whose failures partition into `failedAfterRetry` (which `runDag` writes to
+   * `failures.json`).  Both scatters reference the same per-page DAG.
+   */
+  static scrapeRetry(name: string, pageDagName: string): string {
+    return JSON.stringify({
+      '@context':  DAG_CONTEXT,
+      '@id':       `urn:noocodex:dag:${name}`,
+      '@type':     'DAG',
+      'name':       name,
+      'version':   '1.0',
+      'entrypoint': 'scrape',
+      'nodes': [
+        {
+          '@id':       `urn:noocodex:dag:${name}/node/scrape`,
+          '@type':     'ScatterNode',
+          'name':       'scrape',
+          'source':     'urls',
+          'body':       { 'dag': pageDagName },
+          'gather': {
+            'strategy':   'partition',
+            'partitions': { 'success': 'succeeded', 'error': 'failed' },
+          },
+          'outputs': {
+            'all-success': 'retry',
+            'partial':     'retry',
+            'all-error':   'retry',
+            'empty':       'retry',
+          },
+          'itemKey': 'currentUrl',
+          'reducer': 'aggregate',
+        },
+        {
+          '@id':       `urn:noocodex:dag:${name}/node/retry`,
+          '@type':     'ScatterNode',
+          'name':       'retry',
+          'source':     'failed',
+          'body':       { 'dag': pageDagName },
+          'gather': {
+            'strategy':   'partition',
+            'partitions': { 'success': 'recovered', 'error': 'failedAfterRetry' },
+          },
+          'outputs': {
+            'all-success': 'done',
+            'partial':     'done',
+            'all-error':   'done',
+            'empty':       'done',
+          },
+          'itemKey': 'currentUrl',
+          'reducer': 'aggregate',
+        },
+        {
+          '@id':     `urn:noocodex:dag:${name}/node/done`,
+          '@type':   'TerminalNode',
+          'name':     'done',
+          'outcome':  'completed',
+        },
+      ],
+    });
+  }
+}
+
+// ── Stub plugin per-page DAG JSON-LD content ──────────────────────────────────
+
+/**
+ * Per-page DAG: html:fetch → stub:parse → json:write
+ * pluginTaskName = 'stub:parse' → JSON at <outDir>/<orchName>/stub:parse/<slug>.json
+ */
+const PARSE_PAGE_DAG = JSON.stringify({
+  '@context':  DAG_CONTEXT,
+  '@id':       'urn:noocodex:dag:stub:parse-page',
+  '@type':     'DAG',
+  'name':       'stub:parse-page',
+  'version':   '1.0',
+  'entrypoint': 'html:fetch',
+  'nodes': [
+    {
+      '@id':    'urn:noocodex:dag:stub:parse-page/node/html:fetch',
+      '@type':  'SingleNode',
+      'name':    'html:fetch',
+      'node':    'html:fetch',
+      'outputs': { 'success': 'stub:parse', 'cached': 'stub:parse', 'error': 'stub-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:parse-page/node/stub:parse',
+      '@type':  'SingleNode',
+      'name':    'stub:parse',
+      'node':    'stub:parse',
+      'outputs': { 'success': 'json:write', 'error': 'stub-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:parse-page/node/json:write',
+      '@type':  'SingleNode',
+      'name':    'json:write',
+      'node':    'json:write',
+      'outputs': { 'success': 'stub-page:completed', 'skipped': 'stub-page:completed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:parse-page/node/stub-page:completed',
+      '@type':  'TerminalNode',
+      'name':    'stub-page:completed',
+      'outcome': 'completed',
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:parse-page/node/stub-page:failed',
+      '@type':  'TerminalNode',
+      'name':    'stub-page:failed',
+      'outcome': 'failed',
+    },
+  ],
+});
+
+/**
+ * Per-page DAG: html:fetch → html:write-raw → stub:parse → json:write
+ * Produces both raw HTML and plugin JSON.
+ */
+const RAW_PAGE_DAG = JSON.stringify({
+  '@context':  DAG_CONTEXT,
+  '@id':       'urn:noocodex:dag:stub:raw-page',
+  '@type':     'DAG',
+  'name':       'stub:raw-page',
+  'version':   '1.0',
+  'entrypoint': 'html:fetch',
+  'nodes': [
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/html:fetch',
+      '@type':  'SingleNode',
+      'name':    'html:fetch',
+      'node':    'html:fetch',
+      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'error': 'stub-raw-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/html:write-raw',
+      '@type':  'SingleNode',
+      'name':    'html:write-raw',
+      'node':    'html:write-raw',
+      'outputs': { 'success': 'stub:parse', 'error': 'stub-raw-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/stub:parse',
+      '@type':  'SingleNode',
+      'name':    'stub:parse',
+      'node':    'stub:parse',
+      'outputs': { 'success': 'json:write', 'error': 'stub-raw-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/json:write',
+      '@type':  'SingleNode',
+      'name':    'json:write',
+      'node':    'json:write',
+      'outputs': { 'success': 'stub-raw-page:completed', 'skipped': 'stub-raw-page:completed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/stub-raw-page:completed',
+      '@type':  'TerminalNode',
+      'name':    'stub-raw-page:completed',
+      'outcome': 'completed',
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-page/node/stub-raw-page:failed',
+      '@type':  'TerminalNode',
+      'name':    'stub-raw-page:failed',
+      'outcome': 'failed',
+    },
+  ],
+});
+
+/**
+ * Per-page DAG: html:fetch → html:write-raw only (no plugin parse step).
+ */
+const RAW_ONLY_PAGE_DAG = JSON.stringify({
+  '@context':  DAG_CONTEXT,
+  '@id':       'urn:noocodex:dag:stub:raw-only-page',
+  '@type':     'DAG',
+  'name':       'stub:raw-only-page',
+  'version':   '1.0',
+  'entrypoint': 'html:fetch',
+  'nodes': [
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-only-page/node/html:fetch',
+      '@type':  'SingleNode',
+      'name':    'html:fetch',
+      'node':    'html:fetch',
+      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'error': 'stub-raw-only-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-only-page/node/html:write-raw',
+      '@type':  'SingleNode',
+      'name':    'html:write-raw',
+      'node':    'html:write-raw',
+      'outputs': { 'success': 'stub-raw-only-page:completed', 'error': 'stub-raw-only-page:failed' },
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-only-page/node/stub-raw-only-page:completed',
+      '@type':  'TerminalNode',
+      'name':    'stub-raw-only-page:completed',
+      'outcome': 'completed',
+    },
+    {
+      '@id':    'urn:noocodex:dag:stub:raw-only-page/node/stub-raw-only-page:failed',
+      '@type':  'TerminalNode',
+      'name':    'stub-raw-only-page:failed',
+      'outcome': 'failed',
+    },
+  ],
+});
+
+// ── Test suite ────────────────────────────────────────────────────────────────
 
 describe('rawContent integration (folder-split layout)', () => {
   let outDir:      string;
+  let pluginDir:   string;
   let fixtureHtml: string;
   const realFetch = globalThis.fetch;
 
   beforeEach(async () => {
     outDir      = await mkdtemp(join(tmpdir(), 'ripperoni-raw-content-'));
-    fixtureHtml = await readFile(FIXTURE_HTML_PATH, 'utf8');
+    fixtureHtml = readFileSync(FIXTURE_HTML_PATH, 'utf8');
+
+    // Write the stub plugin into <outDir>/plugins/stub/ so configDir = outDir resolves it.
+    pluginDir = join(outDir, 'plugins', 'stub');
+    await mkdir(pluginDir, { recursive: true });
+
+    const dagonzerIndexPath = resolve(
+      __dirname, '..', '..', 'node_modules', '@studnicky', 'dagonizer', 'dist', 'index.js',
+    );
+
+    // index.js — exports register(dispatcher) that registers stub:parse node.
+    await writeFile(join(pluginDir, 'index.js'), `
+import { RoutedBatchBuilder, Timeout } from ${JSON.stringify(`file://${dagonzerIndexPath}`)};
+
+const stubParseNode = {
+  name:    'stub:parse',
+  outputs: ['success'],
+  timeout: Timeout.none(),
+  async execute(batch) {
+    for (const { state } of batch) {
+      state.output = { name: 'fixture-page' };
+    }
+    return RoutedBatchBuilder.of('success', batch);
+  },
+};
+
+export function register(dispatcher) {
+  dispatcher.registerNode(stubParseNode);
+}
+`);
+
+    // Per-page DAG files — all three variants written so any scenario can reference them.
+    await writeFile(join(pluginDir, 'parse-page.dag.jsonld'), PARSE_PAGE_DAG);
+    await writeFile(join(pluginDir, 'raw-page.dag.jsonld'),   RAW_PAGE_DAG);
+    await writeFile(join(pluginDir, 'raw-only-page.dag.jsonld'), RAW_ONLY_PAGE_DAG);
 
     // Intercept all HTTP requests and return the fixture HTML.
     globalThis.fetch = (async (): Promise<Response> =>
@@ -55,18 +360,6 @@ describe('rawContent integration (folder-split layout)', () => {
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
       })
     ) as typeof fetch;
-
-    // Reset registry and re-register all builtins + the stub plugin.
-    TaskRegistry.reset();
-    TaskRegistry.register('html:fetch',         htmlFetchTask);
-    TaskRegistry.register('wiki:fetch',         wikiFetchTask);
-    TaskRegistry.register('html:write-raw',     htmlWriteRawTask);
-    TaskRegistry.register('wiki:write-raw',     wikiWriteRawTask);
-    TaskRegistry.register('json:write',         jsonWriteTask);
-    TaskRegistry.register('jsonl:append',       jsonlAppendTask);
-    TaskRegistry.register('validate:schema',    validateSchemaTask);
-    TaskRegistry.register('crawl:list-targets', crawlListTargetsTask);
-    TaskRegistry.register('stub:parse', stubParseTask);
   });
 
   afterEach(async () => {
@@ -75,173 +368,178 @@ describe('rawContent integration (folder-split layout)', () => {
   });
 
   it('plugin pipeline writes JSON to <target>/<pluginTaskName>/ and does NOT embed _raw', async () => {
-    // Pipeline: html:fetch -> stub:parse -> json:write
-    // stub:parse is the pluginTaskName; orchestrator injects it into context.
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-default': {
-          baseUrl:  'https://fixture.test',
-          pipeline: ['html:fetch', 'stub:parse', 'json:write'],
-        },
-      },
-    };
+    // Entry DAG name 'raw-default' scatters over stub:parse-page.
+    // pluginTaskName is the orchestration's first non-builtin ScatterNode.body.dag
+    // ref — 'stub:parse-page'. With splitByTaskName: true JSON lands in the
+    // per-plugin subfolder <outDir>/raw-default/stub:parse-page/<slug>.json.
+    const entryDag = DAGDocument.load(OrchDag.forScenario('raw-default', 'stub:parse-page'));
+    const state = {
+      output:  { basePath: outDir, splitByTaskName: true },
+      baseUrl: 'https://fixture.test',
+      urls:    ['https://fixture.test/condition-blinded'],
+    } satisfies RunStateType;
 
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-default',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    // Plugin JSON should be in <target>/stub:parse/ subfolder
-    const pluginDir = join(outDir, 'raw-default', 'stub:parse');
-    const files     = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const targetDir = join(outDir, 'raw-default', 'stub:parse-page');
+    const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(files.length === 1, `expected 1 plugin JSON file, got ${files.length.toString()}`);
 
     const parsed = JSON.parse(
-      await readFile(join(pluginDir, files[0]!), 'utf8'),
-    ) as { _type: string; name: string; _raw?: unknown };
+      await readFile(join(targetDir, files[0]!), 'utf8'),
+    ) as { name: string; _raw?: unknown };
 
-    assert.equal(parsed._type, 'stub');
     assert.equal(parsed.name, 'fixture-page');
     assert.equal(parsed._raw, undefined, '_raw must NOT be embedded in plugin JSON');
   });
 
   it('raw HTML is written to <target>/raw/<slug>.html when html:write-raw is in pipeline', async () => {
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-html': {
-          baseUrl:  'https://fixture.test',
-          pipeline: ['html:fetch', 'html:write-raw', 'stub:parse', 'json:write'],
-        },
-      },
-    };
+    // Entry DAG 'raw-html' scatters over stub:raw-page (fetch → write-raw → parse → json:write).
+    // Raw HTML lands in <outDir>/raw-html/raw/; with splitByTaskName: true JSON
+    // lands in the per-plugin subfolder <outDir>/raw-html/stub:raw-page/.
+    const entryDag = DAGDocument.load(OrchDag.forScenario('raw-html', 'stub:raw-page'));
+    const state = {
+      output:  { basePath: outDir, splitByTaskName: true },
+      baseUrl: 'https://fixture.test',
+      urls:    ['https://fixture.test/condition-blinded'],
+    } satisfies RunStateType;
 
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-html',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    // Raw HTML should be in <target>/raw/ subfolder
-    const rawDir  = join(outDir, 'raw-html', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawDir   = join(outDir, 'raw-html', 'raw');
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
+    assert.equal(await readFile(join(rawDir, rawFiles[0]!), 'utf8'), fixtureHtml, 'raw HTML must match fixture byte-for-byte');
 
-    const rawContent = await readFile(join(rawDir, rawFiles[0]!), 'utf8');
-    assert.equal(rawContent, fixtureHtml, 'raw HTML must match fixture byte-for-byte');
-
-    // Plugin JSON in stub:parse subfolder
-    const pluginDir  = join(outDir, 'raw-html', 'stub:parse');
-    const jsonFiles  = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json'));
-    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in stub:parse/, got ${jsonFiles.length.toString()}`);
+    // pluginTaskName = 'stub:raw-page' (the ScatterNode.body.dag ref)
+    // → JSON at <outDir>/raw-html/stub:raw-page/<slug>.json
+    const targetDir = join(outDir, 'raw-html', 'stub:raw-page');
+    const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
+    assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file in raw-html/stub:raw-page/, got ${jsonFiles.length.toString()}`);
   });
 
-  it('no-plugin pipeline (raw-only): only raw/ folder is populated, no plugin subfolder', async () => {
-    // Pipeline: html:fetch -> html:write-raw (no json:write or plugin)
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-only': {
-          baseUrl:  'https://fixture.test',
-          pipeline: ['html:fetch', 'html:write-raw'],
-        },
-      },
-    };
+  it('no-plugin pipeline (raw-only): only raw/ folder is populated', async () => {
+    // Entry DAG 'raw-only' scatters over stub:raw-only-page (fetch → write-raw, no
+    // parse, no json:write). The 'stub' namespace is discovered from
+    // ScatterNode.body.dag = 'stub:raw-only-page', but the per-page DAG emits no
+    // JSON, so no plugin output lands regardless of splitByTaskName.
+    const entryDag = DAGDocument.load(OrchDag.forScenario('raw-only', 'stub:raw-only-page'));
+    const state = {
+      output:  { basePath: outDir },
+      baseUrl: 'https://fixture.test',
+      urls:    ['https://fixture.test/condition-blinded'],
+    } satisfies RunStateType;
 
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-only',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    // Raw HTML should exist
     const rawDir   = join(outDir, 'raw-only', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
 
-    // No plugin JSON should exist at the target root
-    const targetDir   = join(outDir, 'raw-only');
-    const targetFiles = await readdir(targetDir);
-    const jsonFiles   = targetFiles.filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    const targetFiles = await readdir(join(outDir, 'raw-only'));
+    const jsonFiles   = targetFiles.filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.equal(jsonFiles.length, 0, 'no JSON output expected without a plugin step');
   });
 
-  it('includeRawContent: false — no raw embed and _raw absent from state.page', async () => {
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'raw-off': {
-          baseUrl:           'https://fixture.test',
-          pipeline:          ['html:fetch', 'stub:parse', 'json:write'],
-          includeRawContent: false,
-        },
-      },
-    };
+  it('includeRawContent: false — _raw absent from plugin JSON', async () => {
+    const entryDag = DAGDocument.load(OrchDag.forScenario('raw-off', 'stub:parse-page'));
+    const state = {
+      output:           { basePath: outDir, splitByTaskName: true },
+      baseUrl:          'https://fixture.test',
+      urls:             ['https://fixture.test/condition-blinded'],
+      includeRawContent: false,
+    } satisfies RunStateType;
 
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'raw-off',
-      paths:     ['https://fixture.test/condition-blinded'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
 
-    const pluginDir = join(outDir, 'raw-off', 'stub:parse');
-    const names     = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json') && f !== 'failures.json');
+    // pluginTaskName = 'stub:parse-page' → JSON at
+    // <outDir>/raw-off/stub:parse-page/<slug>.json
+    const targetDir = join(outDir, 'raw-off', 'stub:parse-page');
+    const names = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(names.length === 1, `expected 1 JSON file, got ${names.length.toString()}`);
 
     const parsed = JSON.parse(
-      await readFile(join(pluginDir, names[0]!), 'utf8'),
-    ) as { _type: string; _raw?: unknown };
+      await readFile(join(targetDir, names[0]!), 'utf8'),
+    ) as { _raw?: unknown };
 
-    assert.equal(parsed._type, 'stub');
-    assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false is set');
+    assert.equal(parsed._raw, undefined, '_raw must be absent when includeRawContent: false');
   });
 
-  it('AONPRD-like full pipeline produces raw/ and stub:parse/ sibling folders', async () => {
-    // Simulates: output/aonprd/raw/Conditions.aspx-ID-1.html + output/aonprd/stub:parse/Conditions.aspx-ID-1.json
-    const config = {
-      output: { basePath: outDir },
-      targets: {
-        'aonprd': {
-          baseUrl:  'https://2e.aonprd.com',
-          pipeline: ['html:fetch', 'html:write-raw', 'stub:parse', 'json:write'],
-        },
-      },
+  it('scrape + retry: deliberately-failing URL surfaces in failures.json', async () => {
+    const FAILING_URL = 'https://fixture.test/will-fail';
+    const PASSING_URL = 'https://fixture.test/condition-blinded';
+
+    globalThis.fetch = (async (input: Request | URL | string): Promise<Response> => {
+      const url = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+      if (url.endsWith('/will-fail')) {
+        return new Response('not found', { status: 404 });
+      }
+      return new Response(fixtureHtml, {
+        status:  200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+    }) as typeof fetch;
+
+    // Two-scatter orchestration: scrape → retry. The 404 URL fails html:fetch,
+    // routes to the page DAG's FAILED terminal, partitions into `failed`, gets
+    // re-scattered by the retry scatter, fails again, and partitions into
+    // `failedAfterRetry` — which runDag writes to failures.json.
+    const entryDag = DAGDocument.load(OrchDag.scrapeRetry('retry-flow', 'stub:parse-page'));
+    const state = {
+      output:           { basePath: outDir, splitByTaskName: true },
+      baseUrl:          'https://fixture.test',
+      urls:             [PASSING_URL, FAILING_URL],
+      includeRawContent: false,
+      cache:             { mode: 'off' as const, dir: join(outDir, '.cache') },
+    } satisfies RunStateType;
+
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
+
+    // runDag writes the failures manifest at <outDir>/failures.json (the run-level
+    // outDir root), not under the per-target subdir — see runDag's failures step.
+    const failuresPath = join(outDir, 'failures.json');
+    const manifest = JSON.parse(await readFile(failuresPath, 'utf8')) as {
+      timestamp: string; count: number; titles: string[];
     };
+    assert.equal(manifest.count, 1, 'expected exactly one item in failures.json');
+    assert.equal(manifest.titles.length, 1);
+    assert.equal(manifest.titles[0], FAILING_URL, 'failing URL must be present after retry exhaustion');
 
-    await ScrapeOrchestrator.scrapeHtml({
-      target:    'aonprd',
-      paths:     ['https://2e.aonprd.com/Conditions.aspx?ID=1'],
-      outDir,
-      configDir: __dirname,
-      config:    config as Parameters<typeof ScrapeOrchestrator.scrapeHtml>[0]['config'],
-    });
+    // pluginTaskName = 'stub:parse-page' → JSON at
+    // <outDir>/retry-flow/stub:parse-page/<slug>.json.
+    // The passing URL still produces exactly one JSON output.
+    const targetDir = join(outDir, 'retry-flow', 'stub:parse-page');
+    const files = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
+    assert.equal(files.length, 1, 'expected exactly one JSON output for the passing URL');
+  });
 
-    // raw/ folder: Conditions.aspx-ID-1.html
+  it('AONPRD-like full pipeline produces raw/ and per-plugin JSON output', async () => {
+    // Entry DAG 'aonprd' scatters over stub:raw-page (fetch → write-raw → parse → json:write).
+    // pluginTaskName = 'stub:raw-page' (the ScatterNode.body.dag ref), splitByTaskName on
+    // → raw HTML at <outDir>/aonprd/raw/<slug>.html
+    // → JSON at <outDir>/aonprd/stub:raw-page/<slug>.json
+    const entryDag = DAGDocument.load(OrchDag.forScenario('aonprd', 'stub:raw-page'));
+    const state = {
+      output:  { basePath: outDir, splitByTaskName: true },
+      baseUrl: 'https://2e.aonprd.com',
+      urls:    ['https://2e.aonprd.com/Conditions.aspx?ID=1'],
+    } satisfies RunStateType;
+
+    await runDag({ dag: entryDag, state, outDir, configDir: outDir });
+
     const rawDir   = join(outDir, 'aonprd', 'raw');
-    const rawFiles = (await readdir(rawDir)).filter((f: string) => f.endsWith('.html'));
+    const rawFiles = (await readdir(rawDir)).filter((file) => file.endsWith('.html'));
     assert.ok(rawFiles.length === 1, `expected 1 raw HTML file, got ${rawFiles.length.toString()}`);
-    assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html', `expected Conditions.aspx-ID-1.html, got ${rawFiles[0] ?? '?'}`);
+    assert.equal(rawFiles[0], 'Conditions.aspx-ID-1.html');
 
-    // stub:parse/ folder: Conditions.aspx-ID-1.json
-    const pluginDir  = join(outDir, 'aonprd', 'stub:parse');
-    const jsonFiles  = (await readdir(pluginDir)).filter((f: string) => f.endsWith('.json'));
+    const targetDir = join(outDir, 'aonprd', 'stub:raw-page');
+    const jsonFiles = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
     assert.ok(jsonFiles.length === 1, `expected 1 plugin JSON file, got ${jsonFiles.length.toString()}`);
-    assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json', `expected Conditions.aspx-ID-1.json, got ${jsonFiles[0] ?? '?'}`);
+    assert.equal(jsonFiles[0], 'Conditions.aspx-ID-1.json');
 
     const parsed = JSON.parse(
-      await readFile(join(pluginDir, jsonFiles[0]!), 'utf8'),
-    ) as { _type: string; _raw?: unknown };
-    assert.equal(parsed._type, 'stub');
+      await readFile(join(targetDir, jsonFiles[0]!), 'utf8'),
+    ) as { _raw?: unknown };
     assert.equal(parsed._raw, undefined, '_raw must NOT appear in plugin JSON');
   });
 });

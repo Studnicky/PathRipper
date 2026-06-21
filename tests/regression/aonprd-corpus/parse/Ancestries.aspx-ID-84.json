@@ -1,0 +1,449 @@
+{
+  "_type": "ancestry",
+  "url": "https://2e.aonprd.com/Ancestries.aspx?ID=84",
+  "entity_id": 84,
+  "name": "Tripkee",
+  "rarity": "uncommon",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Ancestries.aspx?ID=46&NoRedirect=1",
+  "traits": [
+    "Uncommon",
+    "Humanoid",
+    "Tripkee"
+  ],
+  "trait_ids": {
+    "Uncommon": 721,
+    "Humanoid": 628,
+    "Tripkee": 793
+  },
+  "source": {
+    "book": "Player Core 2",
+    "page": 37,
+    "source_id": 227
+  },
+  "sources": [
+    {
+      "book": "Player Core 2",
+      "page": 37,
+      "source_id": 227,
+      "raw": "Player Core 2 pg. 37"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "You Might...",
+      "level": 2,
+      "body_html": "<ul><li>Seek out clever ways to exploit your environment when overcoming challenges.</li><li>Make friends slowly, concerned by cautionary tales of exploitative strangers.</li></ul>",
+      "body_text": "Seek out clever ways to exploit your environment when overcoming challenges.Make friends slowly, concerned by cautionary tales of exploitative strangers.",
+      "links": []
+    },
+    {
+      "heading": "Others Probably...",
+      "level": 2,
+      "body_html": "<ul><li>Trust in your impartial, measured approach to understanding situations and solving problems.</li><li>Give you space, fearing that touching you would prove toxic.</li></ul>",
+      "body_text": "Trust in your impartial, measured approach to understanding situations and solving problems.Give you space, fearing that touching you would prove toxic.",
+      "links": []
+    },
+    {
+      "heading": "Physical Description",
+      "level": 2,
+      "body_html": "Tripkees resemble humanoid tree frogs, with oversized eyes, wide mouths, and gangly physiques. Their slight frames and large toes can afford excellent grip while climbing, while their colorful skin provides reliable camouflage that varies by their home environment—green and brown for jungle-dwelling groups, blue and orange for riparian communities, and many other colors between. A tripkee grows quickly, reaching their adult size of approximately 2 feet in height about 3 years after hatching, though they're only considered adults around age 12. Tripkees rarely live beyond 60 years, though exceptional individuals occasionally live as long as a century.<br>",
+      "body_text": "Tripkees resemble humanoid tree frogs, with oversized eyes, wide mouths, and gangly physiques. Their slight frames and large toes can afford excellent grip while climbing, while their colorful skin provides reliable camouflage that varies by their home environment—green and brown for jungle-dwelling groups, blue and orange for riparian communities, and many other colors between. A tripkee grows quickly, reaching their adult size of approximately 2 feet in height about 3 years after hatching, though they're only considered adults around age 12. Tripkees rarely live beyond 60 years, though exceptional individuals occasionally live as long as a century.",
+      "links": []
+    },
+    {
+      "heading": "Society",
+      "level": 2,
+      "body_html": "Tripkees lead a sophisticated hunter-gatherer lifestyle within which they reshape the landscape to suit their needs: building spillways to trap fish, seeding fruit-bearing trees, sowing cover-granting foliage for future hunts, and more techniques that often escape an agriculturist's eye. These strategies rely on community cooperation as well as dispersed populations, so tripkees commonly live in small villages, each part of a complex web of alliances and relationships. Reclusiveness has preserved tripkee lives and lifestyles for millennia, yet they increasingly find themselves threatened by ancient evils and new explorers alike.<br>",
+      "body_text": "Tripkees lead a sophisticated hunter-gatherer lifestyle within which they reshape the landscape to suit their needs: building spillways to trap fish, seeding fruit-bearing trees, sowing cover-granting foliage for future hunts, and more techniques that often escape an agriculturist's eye. These strategies rely on community cooperation as well as dispersed populations, so tripkees commonly live in small villages, each part of a complex web of alliances and relationships. Reclusiveness has preserved tripkee lives and lifestyles for millennia, yet they increasingly find themselves threatened by ancient evils and new explorers alike.",
+      "links": []
+    },
+    {
+      "heading": "Beliefs",
+      "level": 2,
+      "body_html": " Taught to wait, observe, and respect natural processes of life and death, many tripkees adopt patient attitudes. Those who take a more active role suppressing cruelty may join organizations that blend religion and philosophy, such as the tripkee fiend-keepers who absorb an unholy being into their soul to contain and eventually transform its villainy through their own virtuous acts. Nature deities like <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=284\">Gozreh</a> or <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=282\">Erastil</a> often earn tripkees' respect, yet communities usually prefer less prominent, more intimate divinities such as <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=10\">empyreal lords</a>, <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=12\">psychopomp ushers</a>, or the fey <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=7\">Eldest</a>.<br><br> <b>Popular Edicts</b> improve your part of the world without causing harm to others, practice patience whenever possible<br><b>Popular Anathema</b> create architecture that supplants the natural world, take rash action that brings risk to your community<br>",
+      "body_text": "Taught to wait, observe, and respect natural processes of life and death, many tripkees adopt patient attitudes. Those who take a more active role suppressing cruelty may join organizations that blend religion and philosophy, such as the tripkee fiend-keepers who absorb an unholy being into their soul to contain and eventually transform its villainy through their own virtuous acts. Nature deities like Gozreh or Erastil often earn tripkees' respect, yet communities usually prefer less prominent, more intimate divinities such as empyreal lords, psychopomp ushers, or the fey Eldest. Popular Edicts improve your part of the world without causing harm to others, practice patience whenever possible Popular Anathema create architecture that supplants the natural world, take rash action that brings risk to your community",
+      "links": [
+        {
+          "href": "Deities.aspx?ID=284",
+          "text": "Gozreh",
+          "kind": "Deities",
+          "id": 284
+        },
+        {
+          "href": "Deities.aspx?ID=282",
+          "text": "Erastil",
+          "kind": "Deities",
+          "id": 282
+        },
+        {
+          "href": "DeityCategories.aspx?ID=10",
+          "text": "empyreal lords",
+          "kind": "DeityCategories",
+          "id": 10
+        },
+        {
+          "href": "DeityCategories.aspx?ID=12",
+          "text": "psychopomp ushers",
+          "kind": "DeityCategories",
+          "id": 12
+        },
+        {
+          "href": "DeityCategories.aspx?ID=7",
+          "text": "Eldest",
+          "kind": "DeityCategories",
+          "id": 7
+        }
+      ]
+    },
+    {
+      "heading": "Names",
+      "level": 2,
+      "body_html": "Tripkee names often include resonant vowels and chirped consonants that remain difficult for non-tripkees to vocalize properly. Tripkees that travel widely often adopt one or more names more easily replicated by their associates.<br>",
+      "body_text": "Tripkee names often include resonant vowels and chirped consonants that remain difficult for non-tripkees to vocalize properly. Tripkees that travel widely often adopt one or more names more easily replicated by their associates.",
+      "links": []
+    },
+    {
+      "heading": "Sample Names",
+      "level": 3,
+      "body_html": "Aalpo'ol, Bogwynne, Ctaprak, Eegru, Gpoun, Gruoksh, Hrrauti, Iopo, Iykiki, Kyrsiik, Mhruugu, Oplugo, Quaasol, Yolkuu, Ztaal",
+      "body_text": "Aalpo'ol, Bogwynne, Ctaprak, Eegru, Gpoun, Gruoksh, Hrrauti, Iopo, Iykiki, Kyrsiik, Mhruugu, Oplugo, Quaasol, Yolkuu, Ztaal",
+      "links": []
+    },
+    {
+      "heading": "Hit Points",
+      "level": 2,
+      "body_html": "6<br>",
+      "body_text": "6",
+      "links": []
+    },
+    {
+      "heading": "Size",
+      "level": 2,
+      "body_html": "Small<br>",
+      "body_text": "Small",
+      "links": []
+    },
+    {
+      "heading": "Speed",
+      "level": 2,
+      "body_html": "25 feet<br>",
+      "body_text": "25 feet",
+      "links": []
+    },
+    {
+      "heading": "Attribute Boosts",
+      "level": 2,
+      "body_html": "Dexterity<br>Wisdom<br>Free<br>",
+      "body_text": "Dexterity Wisdom Free",
+      "links": []
+    },
+    {
+      "heading": "Attribute Flaw",
+      "level": 2,
+      "body_html": "Strength<br>",
+      "body_text": "Strength",
+      "links": []
+    },
+    {
+      "heading": "Languages",
+      "level": 2,
+      "body_html": "<a href=\"Languages.aspx?ID=155\">Common</a><br><a href=\"Languages.aspx?ID=178\">Tripkee</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=27\">Boggard</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=114\">Chthonian</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=156\">Draconic</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=158\">Elven</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=32\">Iruxi</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=113\">Thalassic</a>, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "body_text": "Common Tripkee Additional languages equal to your Intelligence modifier (if it's positive). Choose from Boggard, Chthonian, Draconic, Elven, Fey, Iruxi, Thalassic, and any other languages to which you have access (such as the languages prevalent in your region).",
+      "links": [
+        {
+          "href": "Languages.aspx?ID=155",
+          "text": "Common",
+          "kind": "Languages",
+          "id": 155
+        },
+        {
+          "href": "Languages.aspx?ID=178",
+          "text": "Tripkee",
+          "kind": "Languages",
+          "id": 178
+        },
+        {
+          "href": "Languages.aspx?ID=27",
+          "text": "Boggard",
+          "kind": "Languages",
+          "id": 27
+        },
+        {
+          "href": "Languages.aspx?ID=114",
+          "text": "Chthonian",
+          "kind": "Languages",
+          "id": 114
+        },
+        {
+          "href": "Languages.aspx?ID=156",
+          "text": "Draconic",
+          "kind": "Languages",
+          "id": 156
+        },
+        {
+          "href": "Languages.aspx?ID=158",
+          "text": "Elven",
+          "kind": "Languages",
+          "id": 158
+        },
+        {
+          "href": "Languages.aspx?ID=119",
+          "text": "Fey",
+          "kind": "Languages",
+          "id": 119
+        },
+        {
+          "href": "Languages.aspx?ID=32",
+          "text": "Iruxi",
+          "kind": "Languages",
+          "id": 32
+        },
+        {
+          "href": "Languages.aspx?ID=113",
+          "text": "Thalassic",
+          "kind": "Languages",
+          "id": 113
+        }
+      ]
+    },
+    {
+      "heading": "Low-Light Vision",
+      "level": 2,
+      "body_html": "You can see in <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=408\">dim light</a> as though it were <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=407\">bright light</a>, so you ignore the <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=62\">concealed</a> condition due to dim light.",
+      "body_text": "You can see in dim light as though it were bright light, so you ignore the concealed condition due to dim light.",
+      "links": [
+        {
+          "href": "Rules.aspx?ID=408",
+          "text": "dim light",
+          "kind": "Rules",
+          "id": 408
+        },
+        {
+          "href": "Rules.aspx?ID=407",
+          "text": "bright light",
+          "kind": "Rules",
+          "id": 407
+        },
+        {
+          "href": "Conditions.aspx?ID=62",
+          "text": "concealed",
+          "kind": "Conditions",
+          "id": 62
+        }
+      ]
+    },
+    {
+      "heading": "Natural Climber",
+      "level": 2,
+      "body_html": "You gain a +2 circumstance bonus to <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=36\">Athletics</a> checks to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2374\">Climb</a>.",
+      "body_text": "You gain a +2 circumstance bonus to Athletics checks to Climb.",
+      "links": [
+        {
+          "href": "Skills.aspx?ID=36",
+          "text": "Athletics",
+          "kind": "Skills",
+          "id": 36
+        },
+        {
+          "href": "Actions.aspx?ID=2374",
+          "text": "Climb",
+          "kind": "Actions",
+          "id": 2374
+        }
+      ]
+    }
+  ],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Ancestries.aspx?ID=46&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Ancestries",
+      "id": 46
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Ancestries.aspx?ID=84",
+      "text": "Tripkee",
+      "kind": "Ancestries",
+      "id": 84
+    },
+    {
+      "href": "/Traits.aspx?ID=721",
+      "text": "Uncommon",
+      "kind": "Traits",
+      "id": 721
+    },
+    {
+      "href": "/Traits.aspx?ID=628",
+      "text": "Humanoid",
+      "kind": "Traits",
+      "id": 628
+    },
+    {
+      "href": "/Traits.aspx?ID=793",
+      "text": "Tripkee",
+      "kind": "Traits",
+      "id": 793
+    },
+    {
+      "href": "Sources.aspx?ID=227",
+      "text": "Player Core 2 pg. 37",
+      "kind": "Sources",
+      "id": 227
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "PFS Note",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "Deities.aspx?ID=284",
+      "text": "Gozreh",
+      "kind": "Deities",
+      "id": 284
+    },
+    {
+      "href": "Deities.aspx?ID=282",
+      "text": "Erastil",
+      "kind": "Deities",
+      "id": 282
+    },
+    {
+      "href": "DeityCategories.aspx?ID=10",
+      "text": "empyreal lords",
+      "kind": "DeityCategories",
+      "id": 10
+    },
+    {
+      "href": "DeityCategories.aspx?ID=12",
+      "text": "psychopomp ushers",
+      "kind": "DeityCategories",
+      "id": 12
+    },
+    {
+      "href": "DeityCategories.aspx?ID=7",
+      "text": "Eldest",
+      "kind": "DeityCategories",
+      "id": 7
+    },
+    {
+      "href": "Languages.aspx?ID=155",
+      "text": "Common",
+      "kind": "Languages",
+      "id": 155
+    },
+    {
+      "href": "Languages.aspx?ID=178",
+      "text": "Tripkee",
+      "kind": "Languages",
+      "id": 178
+    },
+    {
+      "href": "Languages.aspx?ID=27",
+      "text": "Boggard",
+      "kind": "Languages",
+      "id": 27
+    },
+    {
+      "href": "Languages.aspx?ID=114",
+      "text": "Chthonian",
+      "kind": "Languages",
+      "id": 114
+    },
+    {
+      "href": "Languages.aspx?ID=156",
+      "text": "Draconic",
+      "kind": "Languages",
+      "id": 156
+    },
+    {
+      "href": "Languages.aspx?ID=158",
+      "text": "Elven",
+      "kind": "Languages",
+      "id": 158
+    },
+    {
+      "href": "Languages.aspx?ID=119",
+      "text": "Fey",
+      "kind": "Languages",
+      "id": 119
+    },
+    {
+      "href": "Languages.aspx?ID=32",
+      "text": "Iruxi",
+      "kind": "Languages",
+      "id": 32
+    },
+    {
+      "href": "Languages.aspx?ID=113",
+      "text": "Thalassic",
+      "kind": "Languages",
+      "id": 113
+    },
+    {
+      "href": "Rules.aspx?ID=416",
+      "text": "Low-Light Vision",
+      "kind": "Rules",
+      "id": 416
+    },
+    {
+      "href": "Rules.aspx?ID=408",
+      "text": "dim light",
+      "kind": "Rules",
+      "id": 408
+    },
+    {
+      "href": "Rules.aspx?ID=407",
+      "text": "bright light",
+      "kind": "Rules",
+      "id": 407
+    },
+    {
+      "href": "Conditions.aspx?ID=62",
+      "text": "concealed",
+      "kind": "Conditions",
+      "id": 62
+    },
+    {
+      "href": "Skills.aspx?ID=36",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 36
+    },
+    {
+      "href": "Actions.aspx?ID=2374",
+      "text": "Climb",
+      "kind": "Actions",
+      "id": 2374
+    }
+  ],
+  "body_text": "PFS Note All Pathfinder agents have access to the tripkee ancestry. The “tripkee\" and “grippli” traits are considered interchangeable; tripkee characters have access to grippli options and vice versa. Tripkees are froglike humanoids whose spirit often exceeds their stature. Tripkees are a shy and cautious people who generally seek to avoid being drawn into the affairs of others. Despite their cautious outlook and small stature, adventurous tripkees still take bold and noble action when the situation demands it. Tripkees are reclusive treetop survivalists who harvest their homes' bounty, utilizing their canopy homes as natural fortifications against the threats posed by larger predators. Their reliance on cunning and simple tools has led to tripkees often being mischaracterized as rudimentary, though this does poor justice to their skill in the cultivation of hidden orchards and camouflaged causeways tucked away in treetop nations. Tripkees are most likely to emerge from their forest homes to trade, explore, and combat threats that would despoil the world. If you want a character who is small in stature but large in spirit, and possesses qualities of a tree frog, you should play a tripkee.You Might...Seek out clever ways to exploit your environment when overcoming challenges.Make friends slowly, concerned by cautionary tales of exploitative strangers.Others Probably...Trust in your impartial, measured approach to understanding situations and solving problems.Give you space, fearing that touching you would prove toxic.Physical DescriptionTripkees resemble humanoid tree frogs, with oversized eyes, wide mouths, and gangly physiques. Their slight frames and large toes can afford excellent grip while climbing, while their colorful skin provides reliable camouflage that varies by their home environment—green and brown for jungle-dwelling groups, blue and orange for riparian communities, and many other colors between. A tripkee grows quickly, reaching their adult size of approximately 2 feet in height about 3 years after hatching, though they're only considered adults around age 12. Tripkees rarely live beyond 60 years, though exceptional individuals occasionally live as long as a century. SocietyTripkees lead a sophisticated hunter-gatherer lifestyle within which they reshape the landscape to suit their needs: building spillways to trap fish, seeding fruit-bearing trees, sowing cover-granting foliage for future hunts, and more techniques that often escape an agriculturist's eye. These strategies rely on community cooperation as well as dispersed populations, so tripkees commonly live in small villages, each part of a complex web of alliances and relationships. Reclusiveness has preserved tripkee lives and lifestyles for millennia, yet they increasingly find themselves threatened by ancient evils and new explorers alike. Beliefs Taught to wait, observe, and respect natural processes of life and death, many tripkees adopt patient attitudes. Those who take a more active role suppressing cruelty may join organizations that blend religion and philosophy, such as the tripkee fiend-keepers who absorb an unholy being into their soul to contain and eventually transform its villainy through their own virtuous acts. Nature deities like Gozreh or Erastil often earn tripkees' respect, yet communities usually prefer less prominent, more intimate divinities such as empyreal lords, psychopomp ushers, or the fey Eldest. Popular Edicts improve your part of the world without causing harm to others, practice patience whenever possible Popular Anathema create architecture that supplants the natural world, take rash action that brings risk to your community NamesTripkee names often include resonant vowels and chirped consonants that remain difficult for non-tripkees to vocalize properly. Tripkees that travel widely often adopt one or more names more easily replicated by their associates. Sample NamesAalpo'ol, Bogwynne, Ctaprak, Eegru, Gpoun, Gruoksh, Hrrauti, Iopo, Iykiki, Kyrsiik, Mhruugu, Oplugo, Quaasol, Yolkuu, ZtaalTripkee MechanicsHit Points6 SizeSmall Speed25 feet Attribute BoostsDexterity Wisdom Free Attribute FlawStrength LanguagesCommon Tripkee Additional languages equal to your Intelligence modifier (if it's positive). Choose from Boggard, Chthonian, Draconic, Elven, Fey, Iruxi, Thalassic, and any other languages to which you have access (such as the languages prevalent in your region).Low-Light VisionYou can see in dim light as though it were bright light, so you ignore the concealed condition due to dim light.Natural ClimberYou gain a +2 circumstance bonus to Athletics checks to Climb.",
+  "body_html": "<u><a href=\"PFS.aspx\"><b><i>PFS Note</i></b></a></u><i> All Pathfinder agents have access to the tripkee ancestry. The “tripkee\" and “grippli” traits are considered interchangeable; tripkee characters have access to grippli options and vice versa.</i><br><br><i>Tripkees are froglike humanoids whose spirit often exceeds their stature.</i><br><br>Tripkees are a shy and cautious people who generally seek to avoid being drawn into the affairs of others. Despite their cautious outlook and small stature, adventurous tripkees still take bold and noble action when the situation demands it.<br><br> Tripkees are reclusive treetop survivalists who harvest their homes' bounty, utilizing their canopy homes as natural fortifications against the threats posed by larger predators. Their reliance on cunning and simple tools has led to tripkees often being mischaracterized as rudimentary, though this does poor justice to their skill in the cultivation of hidden orchards and camouflaged causeways tucked away in treetop nations. Tripkees are most likely to emerge from their forest homes to trade, explore, and combat threats that would despoil the world.<br><br> If you want a character who is small in stature but large in spirit, and possesses qualities of a tree frog, you should play a tripkee.<h2 class=\"title\">You Might...</h2><ul><li>Seek out clever ways to exploit your environment when overcoming challenges.</li><li>Make friends slowly, concerned by cautionary tales of exploitative strangers.</li></ul><h2 class=\"title\">Others Probably...</h2><ul><li>Trust in your impartial, measured approach to understanding situations and solving problems.</li><li>Give you space, fearing that touching you would prove toxic.</li></ul><h2 class=\"title\">Physical Description</h2>Tripkees resemble humanoid tree frogs, with oversized eyes, wide mouths, and gangly physiques. Their slight frames and large toes can afford excellent grip while climbing, while their colorful skin provides reliable camouflage that varies by their home environment—green and brown for jungle-dwelling groups, blue and orange for riparian communities, and many other colors between. A tripkee grows quickly, reaching their adult size of approximately 2 feet in height about 3 years after hatching, though they're only considered adults around age 12. Tripkees rarely live beyond 60 years, though exceptional individuals occasionally live as long as a century.<br><h2 class=\"title\">Society</h2>Tripkees lead a sophisticated hunter-gatherer lifestyle within which they reshape the landscape to suit their needs: building spillways to trap fish, seeding fruit-bearing trees, sowing cover-granting foliage for future hunts, and more techniques that often escape an agriculturist's eye. These strategies rely on community cooperation as well as dispersed populations, so tripkees commonly live in small villages, each part of a complex web of alliances and relationships. Reclusiveness has preserved tripkee lives and lifestyles for millennia, yet they increasingly find themselves threatened by ancient evils and new explorers alike.<br><h2 class=\"title\">Beliefs</h2> Taught to wait, observe, and respect natural processes of life and death, many tripkees adopt patient attitudes. Those who take a more active role suppressing cruelty may join organizations that blend religion and philosophy, such as the tripkee fiend-keepers who absorb an unholy being into their soul to contain and eventually transform its villainy through their own virtuous acts. Nature deities like <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=284\">Gozreh</a> or <a style=\"text-decoration:underline\" href=\"Deities.aspx?ID=282\">Erastil</a> often earn tripkees' respect, yet communities usually prefer less prominent, more intimate divinities such as <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=10\">empyreal lords</a>, <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=12\">psychopomp ushers</a>, or the fey <a style=\"text-decoration:underline\" href=\"DeityCategories.aspx?ID=7\">Eldest</a>.<br><br> <b>Popular Edicts</b> improve your part of the world without causing harm to others, practice patience whenever possible<br><b>Popular Anathema</b> create architecture that supplants the natural world, take rash action that brings risk to your community<br><h2 class=\"title\">Names</h2>Tripkee names often include resonant vowels and chirped consonants that remain difficult for non-tripkees to vocalize properly. Tripkees that travel widely often adopt one or more names more easily replicated by their associates.<br><h3 class=\"title\">Sample Names</h3>Aalpo'ol, Bogwynne, Ctaprak, Eegru, Gpoun, Gruoksh, Hrrauti, Iopo, Iykiki, Kyrsiik, Mhruugu, Oplugo, Quaasol, Yolkuu, Ztaal<h1 class=\"title\">Tripkee Mechanics</h1><h2 class=\"title\">Hit Points</h2>6<br><h2 class=\"title\">Size</h2>Small<br><h2 class=\"title\">Speed</h2>25 feet<br><h2 class=\"title\">Attribute Boosts</h2>Dexterity<br>Wisdom<br>Free<br><h2 class=\"title\">Attribute Flaw</h2>Strength<br><h2 class=\"title\">Languages</h2><a href=\"Languages.aspx?ID=155\">Common</a><br><a href=\"Languages.aspx?ID=178\">Tripkee</a><br>Additional languages equal to your Intelligence modifier (if it's positive). Choose from <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=27\">Boggard</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=114\">Chthonian</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=156\">Draconic</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=158\">Elven</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=119\">Fey</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=32\">Iruxi</a>, <a style=\"text-decoration:underline\" href=\"Languages.aspx?ID=113\">Thalassic</a>, and any other languages to which you have access (such as the languages prevalent in your region).<h2 class=\"title\"><a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=416\">Low-Light Vision</a></h2>You can see in <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=408\">dim light</a> as though it were <a style=\"text-decoration:underline\" href=\"Rules.aspx?ID=407\">bright light</a>, so you ignore the <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=62\">concealed</a> condition due to dim light.<h2 class=\"title\">Natural Climber</h2>You gain a +2 circumstance bonus to <a style=\"text-decoration:underline\" href=\"Skills.aspx?ID=36\">Athletics</a> checks to <a style=\"text-decoration:underline\" href=\"Actions.aspx?ID=2374\">Climb</a>.",
+  "meta_description": "Tripkees are a shy and cautious people who generally seek to avoid being drawn into the affairs of others. Despite their cautious outlook and small stature, adventurous tripkees still take bold and noble action when the situation demands it. Tripkees are reclusive treetop survivalists who harvest their homes' bounty, utilizing their canopy homes as natural fortifications against the threats posed by larger predators. Their reliance on cunning and simple tools has led to tripkees often being mischaracterized as rudimentary, though this does poor justice to their skill in the cultivation of hidden orchards and camouflaged causeways tucked away in treetop nations. Tripkees are most likely to emerge from their forest homes to trade, explore, and combat threats that would despoil the world. If you want a character who is small in stature but large in spirit, and possesses qualities of a tree frog, you should play a tripkee.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Ancestries, Ancestry, Tripkee",
+  "mechanics": {
+    "hit_points": null,
+    "size": null,
+    "speed": null,
+    "attribute_boosts": [],
+    "attribute_flaws": [],
+    "languages": {
+      "fixed": [],
+      "bonus_choice": [],
+      "raw": null
+    },
+    "vision": "Low-Light Vision",
+    "granted": []
+  },
+  "popular_edicts": "improve your part of the world without causing harm to others, practice patience whenever possible",
+  "popular_anathema": "create architecture that supplants the natural world, take rash action that brings risk to your community"
+}

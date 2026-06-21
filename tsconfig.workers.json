@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-workers",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "noEmit": false
+  },
+  "include": ["src/**/*.ts", "plugins/**/*.ts", "workers/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "plugins/bulbapedia/**",
+    "tests",
+    "**/*.test.ts"
+  ]
+}

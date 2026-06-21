@@ -27,7 +27,7 @@ export type ScraperCacheModeType = 'read-write' | 'read-only' | 'write-only' | '
  * @see {@link ScraperCacheModeType}
  * @group Types
  */
-export interface ScraperCacheConfigInterface {
+export type ScraperCacheConfigType = {
   /** Filesystem root directory for the sharded meta JSON store. */
   readonly dir:        string;
   /** Cache mode controlling read/write behavior. */
@@ -38,7 +38,7 @@ export interface ScraperCacheConfigInterface {
   readonly maxEntries?: number | undefined;
   /** Default directory for cache-managed body files when `meta.bodyPath` is unset on write. Defaults to `<dir>/bodies`. */
   readonly bodyDir?:   string | undefined;
-}
+};
 
 /**
  * Metadata persisted alongside a cached body.
@@ -52,7 +52,7 @@ export interface ScraperCacheConfigInterface {
  * @since 2.0.0
  * @group Types
  */
-export interface CacheMetaInterface {
+export type CacheMetaType = {
   /** Original request URL. */
   readonly url:       string;
   /** HTTP method (e.g. `"GET"`). */
@@ -67,22 +67,22 @@ export interface CacheMetaInterface {
   readonly size:      number;
   /** Optional response headers. */
   readonly headers?:  Record<string, string> | undefined;
-}
+};
 
 /**
  * Cached body plus its metadata, as returned by `ScraperCache.read`.
  *
  * @category Cache
  * @since 2.0.0
- * @see {@link CacheMetaInterface}
+ * @see {@link CacheMetaType}
  * @group Types
  */
-export interface CacheEntryInterface {
+export type CacheEntryType = {
   /** Response body (UTF-8 string). */
   readonly body: string;
   /** Sidecar metadata for the entry. */
-  readonly meta: CacheMetaInterface;
-}
+  readonly meta: CacheMetaType;
+};
 
 /**
  * Minimal request shape used for deriving a stable cache key.
@@ -94,14 +94,14 @@ export interface CacheEntryInterface {
  *
  * @category Cache
  * @since 2.0.0
- * @see {@link CacheMetaInterface}
+ * @see {@link CacheMetaType}
  * @group Types
  */
-export interface CacheKeyRequestInterface {
+export type CacheKeyRequestType = {
   /** HTTP method (e.g. `"GET"`). */
   readonly method:   string;
   /** Request URL. */
   readonly url:      string;
   /** Optional headers; sorted by key before hashing. */
   readonly headers?: Record<string, string> | undefined;
-}
+};

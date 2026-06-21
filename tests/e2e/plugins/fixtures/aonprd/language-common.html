@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script type="text/javascript" async src="https://www.googletagmanager.com/gtag/js?id=UA-137805785-3"></script>
+    <script type="text/javascript">
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-137805785-3');
+    </script>
+    <title>
+        Common - Languages - Setting - Archives of Nethys: Pathfinder 2nd Edition Database
+    </title>
+    
+
+    <link href="/Styles/Layout.css?v=eMY9bieGgcneWq7LIJnH8DTSorZ2kogN9ZnZUzfWpCs" rel="stylesheet" type="text/css" />
+    <link href="/Styles/rpg-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/Typography.css?v=3et3D84VeOgcsPaSRyGH6nF1FfjjYgVpcGBq4HyG5vg" rel="stylesheet" type="text/css" />
+    <link href="/themes" rel="stylesheet" type="text/css" />
+    <link href="/Styles/SitePrint.css?v=8wGbZVsBHNUZjW78tbaeVtZ_Jlm0ss-wjdlzy_jKlOY" rel="stylesheet" type="text/css" media="print" />
+
+    <link href="https://fonts.googleapis.com/css?family=Julee" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Andika" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="search" type="application/opensearchdescription+xml" title="Search the Archives of Nethys" href="https://2e.aonprd.com/opensearch.xml" />
+
+
+    <script type="text/javascript">
+        window.elasticUrl = 'https://elasticsearch.aonprd.com/aon';
+    </script>
+
+        <script src="https://elasticsearch.aonprd.com/js/nethys-search-9f2620f2bfdf2014fd0b0c157f03248921d02563.js"></script>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js" integrity="sha512-5cguXwRllb+6bcc2pogwIeQmQPXEzn2ddsqAexIBhh7FO1z5Hkek1J9mrK2+rmZCTU6b6pERxI7acnp1MpAg4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/search.min.css" integrity="sha512-1xyHOORqcJ80bareQ2TWmQE+WZ/TlsqjqILbLHeM3Urtw720aiFXE/N+Xm4MAJpcn42e3k4Z8ZpqZfsA2VVyNw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/transition.min.css" integrity="sha512-zsEyDFFD+yPxc7Kq8c3byp2H3tfx4GgT4wvCDzDGiOlkk2hl454XOHzHfN/OsPilopfPEbRzVJ0wxlIa/9BOyg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/transition.min.js" integrity="sha512-zPx44KLp+BP6OKcCIPQibTiLz0WAc2s9syi+7wOT+Ql2D1/kAX8y7K1rz8vuTtrhRS2dMZ7zVS5dQoHTvkXJCA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/icon.min.css" integrity="sha512-cKaYuptKrUbQ4/r0qmxhpQDjPWb7/SYN6gQRYMOQqPJ2+S4Bmb1zZ1/SAuszp+E6yoakjQFpM+rAzuw+EwR+xw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/input.min.css" integrity="sha512-6+BQOwPqqk5AianROXkI3LKgnLcjZbEV3KbhO++sKXemybg0FugrODki+nBsg9FipqlKSMd4ppnpkqC6VEpFiA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/button.min.css" integrity="sha512-XMrByQiBPJwH350YvTKR/XTY1fOQX4lSQqeft++WcyY39l0eKoPXOgx1OJHEODhHCW1FfvVl/Bdr90QE08FG+Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/dropdown.min.css" integrity="sha512-hDsG55Tp5IgyWKbBbNhOo0+bLTdIVVAGW09a7IFvgIkKg/xrjOdOA2lEPFkkgJQ3NuB7DxDFlSHX7/JYvFLYfA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/dropdown.min.js" integrity="sha512-1SzBIESNYM3Y8JkQrS1Mu2dPnPaAqeQkCV9KfDA2eYXBEzdkhHWyqTP6P0OAsh1RSC4cDvr8DmYVTmb/YWGYpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="/Scripts/modernMenu.js"></script>
+
+    <script type="text/javascript" src="/Scripts/tableState.js"></script>
+    <script type="text/javascript" src="/Scripts/drawerHandlers.js"></script>
+    <script type="text/javascript" src="/Scripts/hideFilter.js"></script>
+    <script type="text/javascript" src="/Scripts/searchBar.js"></script>
+
+    <script type="text/javascript" src="/Scripts/previewModal.js"></script>
+    
+    
+        <meta name="keywords" content="Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Languages, Common" />
+
+
+    <meta charset="utf-8"/>
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="darkreader-lock" />
+    <style type="text/css">        
+        .nav-parent > * {
+            display: block;
+        }
+        .mobile-menu-toggle{
+            display:none;
+        }
+        #main-menu .nav-parent > .brand > .title{
+            display: none;
+        }
+    </style>
+</head>
+<body class="dark aon_dark_theme classic_feel">
+    <div id="wrapper" class="clearfix">
+
+
+        <script type="text/javascript" src="/Scripts/toggle.js"></script>
+
+
+        <div class="page clearfix" id="page">
+            <div class="header">
+                <div class="clear hideSkiplink" id="main-menu" >
+                    <a class="mobile-menu-toggle" id="mobile-menu-toggle" href="javascript:void(0);" data-toggle="mobile">|||</a>
+                    <div class="splash"></div>
+                    <div class="nav-parent" id="nav-parent">
+                        <a href="/" style="font-size:larger" class="brand">
+                            <span class="home">
+                                Home
+                            </span>
+                        </a>
+                        <a href="/Actions.aspx">Actions/Activities</a>
+                        <a href="/Afflictions.aspx">Afflictions</a>
+                        <a href="/Ancestries.aspx">Ancestries</a>
+                        <a href="/Archetypes.aspx">Archetypes</a>
+                        <a href="/Backgrounds.aspx">Backgrounds</a>
+                        <a href="/Classes.aspx">Classes</a>
+                        <a href="/Conditions.aspx">Conditions</a>
+                        <a href="/Creatures.aspx">Creatures</a>
+                        <a href="/Equipment.aspx">Equipment</a>
+                        <a href="/Feats.aspx">Feats</a>
+                        <a href="/Hazards.aspx">Hazards</a>
+                        <a href="/MythicCallings.aspx">Mythic</a>
+                        <a href="/Rules.aspx">Rules</a>
+                        <a href="/Setting.aspx">Setting</a>
+                        <a href="/Skills.aspx">Skills</a>
+                        <a href="/Spells.aspx">Spells/Rituals</a>
+                        <a href="/Traits.aspx">Traits</a>
+                        <img src="/Images/heading_flourish.png" alt="flourish" class="flourish" />
+                        <a href="/Licenses.aspx">Licenses</a>
+                        <a href="/Sources.aspx">Sources</a>
+                        <img src="/Images/heading_flourish.png" alt="flourish" class="flourish" />
+                        <a href="/ContactUs.aspx">Contact Us</a>
+                        <a href="/Contributors.aspx">Contributors</a>
+                        <a href="/Support.aspx">Support the Archives</a>
+                        <div id="classic-search" class="search">
+                            <input type="text" class="search-input" placeholder="Search" />
+                            <button type="button" class="search-button">
+                                <svg class="Icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; fill: "><path d="M0 0h512v512H0z" fill="transparent" fill-opacity="0"></path><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M333.78 20.188c-39.97 0-79.96 15.212-110.405 45.656-58.667 58.667-60.796 152.72-6.406 213.97l-15.782 15.748 13.25 13.25 15.75-15.78c61.248 54.39 155.3 52.26 213.968-6.407 60.887-60.886 60.888-159.894 0-220.78C413.713 35.4 373.753 20.187 333.78 20.187zm0 18.562c35.15 0 70.285 13.44 97.158 40.313 53.745 53.745 53.744 140.6 0 194.343-51.526 51.526-133.46 53.643-187.5 6.375l.218-.217c-2.35-2.05-4.668-4.17-6.906-6.407-2.207-2.206-4.288-4.496-6.313-6.812l-.218.22c-47.27-54.04-45.152-135.976 6.374-187.502C263.467 52.19 298.63 38.75 333.78 38.75zm0 18.813c-30.31 0-60.63 11.6-83.81 34.78-46.362 46.362-46.362 121.234 0 167.594 10.14 10.142 21.632 18.077 33.905 23.782-24.91-19.087-40.97-49.133-40.97-82.94 0-15.323 3.292-29.888 9.22-43-4.165 20.485.44 40.88 14.47 54.907 24.583 24.585 68.744 20.318 98.624-9.562 29.88-29.88 34.146-74.04 9.56-98.625-2.375-2.376-4.943-4.473-7.655-6.313 45.13 8.648 79.954 46.345 84.25 92.876 4.44-35.07-6.82-71.726-33.813-98.72-23.18-23.18-53.47-34.78-83.78-34.78zM176.907 297.688L42.094 432.5l34.562 34.563L211.47 332.25l-34.564-34.563zM40 456.813L24 472.78 37.22 486l15.968-16L40 456.812z" fill-opacity="1"></path></g></svg>
+                            </button>
+                        </div>       
+                            <a id="minMaxMenu" onclick='setMenuState("min")'>Maximize Menu</a>
+                    </div>
+                    
+                    <div class="nav-parent expand-collapse" id="mobile-nav-parent" data-target="mobile">
+                        <a href="/" style="font-size:larger" class="brand">
+                            <span class="title">
+                                Archives of Nethys
+                            </span>
+                        </a>
+                        <a href="/Afflictions.aspx">Afflictions</a>
+                        <a href="javascript:void(0);" data-toggle="cc">Character Creation +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed expanded" data-target="cc" data-group="menus">
+                            <a href="/Ancestries.aspx">Ancestries</a>
+                            <a href="/Archetypes.aspx">Archetypes</a>
+                            <a href="/Backgrounds.aspx">Backgrounds</a>
+                            <a href="/Classes.aspx">Classes</a>
+                            <a href="/Feats.aspx">Feats</a>
+                            <a href="/Skills.aspx">Skills</a>
+                        </div>
+                        <a href="/Creatures.aspx">Creatures</a>
+                        <a href="/Equipment.aspx">Equipment</a>
+                        <a href="/Setting.aspx">Setting</a>
+                        <a href="/Spells.aspx">Spells/Rituals</a>
+                        <a href="javascript:void(0);" data-toggle="rules">Rules +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="rules" data-group="menus">
+                            <a href="/Actions.aspx">Actions/Activities</a>
+                            <a href="/Conditions.aspx">Conditions</a>
+                            <a href="/Rules.aspx">Rules</a>
+                            <a href="/Traits.aspx">Traits</a>
+                        </div>
+                        <a href="/Hazards.aspx">Hazards</a>
+                        <a href="javascript:void(0);" data-toggle="mythic" data-group="">Mythic +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="mythic" data-group="menus">
+                            <a href="/Rules.aspx?ID=3320">Mythic Rules</a>
+                            <a href="/MythicCallings.aspx">Callings</a>
+                            <a href="/MythicFeats.aspx">Mythic Feats</a>
+                            <a href="/MythicDestinies.aspx">Destinies</a>
+                            <a href="/MythicSpells.aspx">Mythic Spells</a>
+                            <a href="/MythicRituals.aspx">Mythic Rituals</a>
+                        </div>
+                        <a href="/Sources.aspx">Sources</a>
+                        <a href="javascript:void(0);" data-toggle="about" data-group="">About the Archives +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="about" data-group="menus">
+                            <a href="/Licenses.aspx">Licenses</a>
+                            <a href="/ContactUs.aspx">Contact Us</a>
+                            <a href="/Contributors.aspx">Contributors</a>
+                            <a href="/Support.aspx">Support the Archives</a>
+                        </div>
+                        <div id="mobileSearch" class="ui fluid search">
+                            <div class="ui action icon input" style="width:90%;height:100%">
+                                <input class="prompt" type="text" placeholder="Search..."/>
+                                <button class="ui icon button" onclick="jumpToSearch('#mobileSearch')">
+                                    <i class="search icon"></i>
+                                </button>
+                            </div>
+                            <div class="results"></div>
+                        </div>
+                        <a href="https://2e.aonprd.com">
+                                <img src="/Images/PF2Logo_Nethys_400_Selected.png" alt="Pathfinder RPG (2nd Edition)" />
+                            </a>
+                        <a href="https://www.aonprd.com" >
+                            <img src="/Images/PF1Logo_Nethys_200.png" alt="Pathfinder RPG (1st Edition)" />
+                        </a> 
+                        <a href="https://www.aonsrd.com">
+                            <img src="/Images/SFLogo_Nethys_200.png" alt="Starfinder RPG (1st Edition)" />
+                        </a>
+                        <a href="https://2e.aonsrd.com">
+                            <img src="/Images/starfinder_2_logo_200.webp" alt="Starfinder RPG (2nd Edition)" />
+                        </a>
+                    </div>
+                </div>
+                <div class="theme-toggle-wrapper" title="Toggle Theme">
+                    <div class="theme-open" title="Change Theme"><i class="ra ra-flowers"></i></div>
+                </div>
+            </div>
+
+            <div class="new-navbar">
+                <div class="drawer-toggle" title="Expand Sidebar" onclick="switchDrawer()">
+                    <img src="/Images/NethysMask.png" alt="&#xe030" /></div>
+                    <a class="title" href="/">Archives of Nethys</a>
+                    <div class="searchBar">
+                        <div id="desktopSearch" class="ui fluid search">
+                            <div class="ui action icon input" style="width:100%;height:100%">
+                                <input class="prompt" type="text" placeholder="Search..."/>
+                                <button class="ui icon button" onclick="jumpToSearch('#desktopSearch')">
+                                        <i class="search icon"></i>
+                                    </button>
+                            </div>
+                            <div class="results"></div>
+                        </div>                   
+                    </div>
+                    <div class="game-selector">
+                        <div class="game-selector-options">
+                            <a class="game-selector-option" href="https://aonprd.com">
+                                <img src="/Images/PF1Logo_Nethys.png" alt="Pathfinder 1e" />
+                            </a>
+                            <a class="game-selector-option" href="https://aonsrd.com">
+                                <img src="/Images/SFLogo_Nethys.png" alt="Starfinder 1e" />
+                            </a>
+                            <a class="game-selector-option" href="https://2e.aonsrd.com">
+                                <img src="/Images/starfinder_2_logo.webp" alt="Starfinder 2e" />
+                            </a>
+                        </div>
+                        <img class="game-selector-current" src="/Images/PF2Logo_Nethys.png" alt="Pathfinder 2e" />
+                    </div>
+                    <div class="theme-open" title="Change Theme"><i class="ra ra-flowers"></i></div>
+            </div>
+
+            <div class="main-wrapper" id="main-wrapper">
+                <div class="menutitle">
+                    <h1>
+                        Archives of Nethys
+                    </h1>
+                    <h2 class="game-titles">
+                        <a href="https://www.aonprd.com" >
+                            <img src="/Images/PF1Logo_Nethys.png" alt="Pathfinder RPG (1st Edition)" />
+                        </a> 
+                        <a href="https://2e.aonprd.com" class="selected">
+                            <img src="/Images/PF2Logo_Nethys-Selected.png" alt="Pathfinder RPG (2nd Edition)" />
+                        </a>
+                        <a href="https://www.aonsrd.com">
+                            <img src="/Images/SFLogo_Nethys.png" alt="Starfinder RPG (1st Edition)" />
+                        </a>
+                        <a href="https://2e.aonsrd.com">
+                            <img src="/Images/starfinder_2_logo.webp" alt="Starfinder RPG (2nd Edition)" />
+                        </a>
+                    </h2>
+                </div>
+                <div class="main" id="main">
+                    
+
+<span class="hide-on-print"><h1 style="text-align:center"><a href="Setting.aspx?Adventure=true">Adventures</a> | <a href="Articles.aspx">Articles</a> | <a href="Deities.aspx">Deities</a> | <a href="Domains.aspx">Domains</a> | <u><a href="Languages.aspx">Languages</a></u> | <a href="Planes.aspx">Planes</a> | <a href="Setting.aspx?Group=40">Scenarios</a> </h1></span>
+<span class="hide-on-print"></span>
+
+    <hr class="hide-on-print" />
+
+<span></span>
+<span></span>
+<span><div class="siderbarlook hide-on-print">There is a Remastered version <a href="Languages.aspx?ID=155&NoRedirect=1" style="text-decoration:underline">here</a>.</div><h1 class="title">Common</h1><h3 class="title legacy-content-warning">Legacy Content</h3><b>Source</b> <a href="Sources.aspx?ID=1" target="_blank" class="external-link"><i>Core Rulebook pg. 65</i></a><br />The below entries contain speakers of Common.<h2 class="title">Ancestries (48)</h2><a href="Ancestries.aspx?ID=27"><u>Android</u></a>, <a href="Ancestries.aspx?ID=71"><u>Athamaru</u></a>, <a href="Ancestries.aspx?ID=98"><u>Automaton</u></a>, <a href="Ancestries.aspx?ID=72"><u>Awakened Animal</u></a>, <a href="Ancestries.aspx?ID=41"><u>Azarketi</u></a>, <a href="Ancestries.aspx?ID=17"><u>Catfolk</u></a>, <a href="Ancestries.aspx?ID=73"><u>Centaur</u></a>, <a href="Ancestries.aspx?ID=96"><u>Dragonet</u></a>, <a href="Ancestries.aspx?ID=1"><u>Dwarf</u></a>, <a href="Ancestries.aspx?ID=2"><u>Elf</u></a>, <a href="Ancestries.aspx?ID=30"><u>Fetchling</u></a>, <a href="Ancestries.aspx?ID=31"><u>Fleshwarp</u></a>, <a href="Ancestries.aspx?ID=52"><u>Ghoran</u></a>, <a href="Ancestries.aspx?ID=44"><u>Gnoll</u></a>, <a href="Ancestries.aspx?ID=3"><u>Gnome</u></a>, <a href="Ancestries.aspx?ID=4"><u>Goblin</u></a>, <a href="Ancestries.aspx?ID=46"><u>Grippli</u></a>, <a href="Ancestries.aspx?ID=7"><u>Half-Elf</u></a>, <a href="Ancestries.aspx?ID=8"><u>Half-Orc</u></a>, <a href="Ancestries.aspx?ID=5"><u>Halfling</u></a>, <a href="Ancestries.aspx?ID=13"><u>Hobgoblin</u></a>, <a href="Ancestries.aspx?ID=6"><u>Human</u></a>, <a href="Ancestries.aspx?ID=95"><u>Jotunborn</u></a>, <a href="Ancestries.aspx?ID=53"><u>Kashrishi</u></a>, <a href="Ancestries.aspx?ID=38"><u>Kitsune</u></a>, <a href="Ancestries.aspx?ID=18"><u>Kobold</u></a>, <a href="Ancestries.aspx?ID=14"><u>Leshy</u></a>, <a href="Ancestries.aspx?ID=15"><u>Lizardfolk</u></a>, <a href="Ancestries.aspx?ID=74"><u>Merfolk</u></a>, <a href="Ancestries.aspx?ID=75"><u>Minotaur</u></a>, <a href="Ancestries.aspx?ID=54"><u>Nagaji</u></a>, <a href="Ancestries.aspx?ID=19"><u>Orc</u></a>, <a href="Ancestries.aspx?ID=49"><u>Poppet</u></a>, <a href="Ancestries.aspx?ID=20"><u>Ratfolk</u></a>, <a href="Ancestries.aspx?ID=88"><u>Samsaran</u></a>, <a href="Ancestries.aspx?ID=89"><u>Sarangay</u></a>, <a href="Ancestries.aspx?ID=16"><u>Shoony</u></a>, <a href="Ancestries.aspx?ID=50"><u>Skeleton</u></a>, <a href="Ancestries.aspx?ID=39"><u>Sprite</u></a>, <a href="Ancestries.aspx?ID=40"><u>Strix</u></a>, <a href="Ancestries.aspx?ID=76"><u>Surki</u></a>, <a href="Ancestries.aspx?ID=90"><u>Tanuki</u></a>, <a href="Ancestries.aspx?ID=21"><u>Tengu</u></a>, <a href="Ancestries.aspx?ID=55"><u>Vanara</u></a>, <a href="Ancestries.aspx?ID=56"><u>Vishkanya</u></a>, <a href="Ancestries.aspx?ID=91"><u>Wayang</u></a>, <a href="Ancestries.aspx?ID=92"><u>Yaksha</u></a>, <a href="Ancestries.aspx?ID=93"><u>Yaoguai</u></a><h2 class="title">Creatures (2187)</h2><a href="NPCs.aspx?ID=1966"><u>"Lucky" Lanks</u></a>, <a href="Monsters.aspx?ID=333"><u>Aasimar Redeemer</u></a>, <a href="Monsters.aspx?ID=1033"><u>Abandoned Zealot</u></a>, <a href="NPCs.aspx?ID=1995"><u>Abberton Ruffian</u></a>, <a href="NPCs.aspx?ID=3439"><u>Abbot of Abadar</u></a>, <a href="NPCs.aspx?ID=1686"><u>Abendego Brute</u></a>, <a href="NPCs.aspx?ID=1687"><u>Abendego Jailer</u></a>, <a href="NPCs.aspx?ID=1689"><u>Abendego Priest</u></a>, <a href="NPCs.aspx?ID=1956"><u>Abridan Ashau</u></a>, <a href="Monsters.aspx?ID=3329"><u>Abstalar Zantus</u></a>, <a href="Monsters.aspx?ID=1568"><u>Accursed Forge-Spurned</u></a>, <a href="NPCs.aspx?ID=3565"><u>Accuser Agent</u></a>, <a href="NPCs.aspx?ID=3440"><u>Acolyte of Iomedae</u></a>, <a href="NPCs.aspx?ID=893"><u>Acolyte of Nethys</u></a>, <a href="NPCs.aspx?ID=1960"><u>Acolyte Of Pharasma</u></a>, <a href="NPCs.aspx?ID=940"><u>Acrobat</u></a>, <a href="Monsters.aspx?ID=1149"><u>Adachros</u></a>, <a href="Monsters.aspx?ID=4097"><u>Adamantine Archdragon</u></a>, <a href="NPCs.aspx?ID=925"><u>Adept</u></a>, <a href="Monsters.aspx?ID=1070"><u>Adhukait</u></a>, <a href="Monsters.aspx?ID=3353"><u>Adimar Scarnetti</u></a>, <a href="Monsters.aspx?ID=4721"><u>Adiutor</u></a>, <a href="Monsters.aspx?ID=4704"><u>Adjutant Hellknight Armiger</u></a>, <a href="Monsters.aspx?ID=1054"><u>Adlet</u></a>, <a href="Monsters.aspx?ID=2021"><u>Adrivallo</u></a>, <a href="Monsters.aspx?ID=2933"><u>Adult Adamantine Dragon</u></a>, <a href="Monsters.aspx?ID=4112"><u>Adult Barrage Dragon</u></a>, <a href="Monsters.aspx?ID=128"><u>Adult Black Dragon</u></a>, <a href="Monsters.aspx?ID=131"><u>Adult Blue Dragon</u></a>, <a href="Monsters.aspx?ID=143"><u>Adult Brass Dragon</u></a>, <a href="Monsters.aspx?ID=622"><u>Adult Brine Dragon</u></a>, <a href="Monsters.aspx?ID=146"><u>Adult Bronze Dragon</u></a>, <a href="Monsters.aspx?ID=625"><u>Adult Cloud Dragon</u></a>, <a href="Monsters.aspx?ID=2936"><u>Adult Conspirator Dragon</u></a>, <a href="Monsters.aspx?ID=149"><u>Adult Copper Dragon</u></a>, <a href="Monsters.aspx?ID=4349"><u>Adult Coral Dragon</u></a>, <a href="Monsters.aspx?ID=628"><u>Adult Crystal Dragon</u></a>, <a href="Monsters.aspx?ID=4132"><u>Adult Delight Dragon</u></a>, <a href="Monsters.aspx?ID=4352"><u>Adult Despair Dragon</u></a>, <a href="Monsters.aspx?ID=2939"><u>Adult Diabolic Dragon</u></a>, <a href="Monsters.aspx?ID=2942"><u>Adult Empyreal Dragon</u></a>, <a href="Monsters.aspx?ID=4139"><u>Adult Executor Dragon</u></a>, <a href="Monsters.aspx?ID=1123"><u>Adult Forest Dragon</u></a>, <a href="Monsters.aspx?ID=2945"><u>Adult Fortune Dragon</u></a>, <a href="Monsters.aspx?ID=152"><u>Adult Gold Dragon</u></a>, <a href="Monsters.aspx?ID=134"><u>Adult Green Dragon</u></a>, <a href="Monsters.aspx?ID=470"><u>Adult Magma Dragon</u></a>, <a href="Monsters.aspx?ID=632"><u>Adult Magma Dragon</u></a>, <a href="Monsters.aspx?ID=2951"><u>Adult Mirage Dragon</u></a>, <a href="Monsters.aspx?ID=2954"><u>Adult Omen Dragon</u></a>, <a href="Monsters.aspx?ID=4355"><u>Adult Phase Dragon</u></a>, <a href="Monsters.aspx?ID=137"><u>Adult Red Dragon</u></a>, <a href="Monsters.aspx?ID=4358"><u>Adult Requiem Dragon</u></a>, <a href="Monsters.aspx?ID=4361"><u>Adult Resurrection Dragon</u></a>, <a href="Monsters.aspx?ID=4364"><u>Adult Rune Dragon</u></a>, <a href="Monsters.aspx?ID=1126"><u>Adult Sea Dragon</u></a>, <a href="Monsters.aspx?ID=155"><u>Adult Silver Dragon</u></a>, <a href="Monsters.aspx?ID=1129"><u>Adult Sky Dragon</u></a>, <a href="Monsters.aspx?ID=1132"><u>Adult Sovereign Dragon</u></a>, <a href="Monsters.aspx?ID=4183"><u>Adult Time Dragon</u></a>, <a href="Monsters.aspx?ID=635"><u>Adult Umbral Dragon</u></a>, <a href="Monsters.aspx?ID=1135"><u>Adult Underworld Dragon</u></a>, <a href="Monsters.aspx?ID=4199"><u>Adult Vorpal Dragon</u></a>, <a href="Monsters.aspx?ID=4203"><u>Adult Wailing Dragon</u></a>, <a href="Monsters.aspx?ID=140"><u>Adult White Dragon</u></a>, <a href="Monsters.aspx?ID=4207"><u>Adult Wish Dragon</u></a>, <a href="NPCs.aspx?ID=884"><u>Advisor</u></a>, <a href="NPCs.aspx?ID=2303"><u>Aecora Silverfire</u></a>, <a href="Monsters.aspx?ID=3744"><u>Agadaz</u></a>, <a href="Monsters.aspx?ID=2301"><u>Agai</u></a>, <a href="Monsters.aspx?ID=1118"><u>Aghash</u></a>, <a href="NPCs.aspx?ID=1450"><u>Agile Warrior</u></a>, <a href="Monsters.aspx?ID=1018"><u>Agradaemon</u></a>, <a href="Monsters.aspx?ID=540"><u>Ahuizotl</u></a>, <a href="Monsters.aspx?ID=983"><u>Ahvothian</u></a>, <a href="Monsters.aspx?ID=4023"><u>Aigamuxa</u></a>, <a href="Monsters.aspx?ID=2514"><u>Ainamuuren (Corrupted)</u></a>, <a href="Monsters.aspx?ID=488"><u>Aiudara Wraith</u></a>, <a href="NPCs.aspx?ID=2996"><u>Aiuvarin Elementalist</u></a>, <a href="NPCs.aspx?ID=3630"><u>Aiuvarin Translator</u></a>, <a href="NPCs.aspx?ID=2014"><u>Aives The Smoke Dragon</u></a>, <a href="NPCs.aspx?ID=1692"><u>Ajbal Kimon </u></a>, <a href="Monsters.aspx?ID=2790"><u>Akashti</u></a>, <a href="NPCs.aspx?ID=1497"><u>Akila Stormheel </u></a>, <a href="NPCs.aspx?ID=2284"><u>Akiros Ismort</u></a>, <a href="NPCs.aspx?ID=3987"><u>Akki</u></a>, <a href="NPCs.aspx?ID=1531"><u>Alak Stagram</u></a>, <a href="Monsters.aspx?ID=1794"><u>Alapolo</u></a>, <a href="Monsters.aspx?ID=2332"><u>Alasen</u></a>, <a href="Monsters.aspx?ID=1837"><u>Alate Ant</u></a>, <a href="NPCs.aspx?ID=4739"><u>Alceo Demetrias</u></a>, <a href="Monsters.aspx?ID=4763"><u>Alendreu</u></a>, <a href="Monsters.aspx?ID=2"><u>Alghollthu Master</u></a>, <a href="Monsters.aspx?ID=2800"><u>Algriever</u></a>, <a href="Monsters.aspx?ID=3320"><u>Alicorn</u></a>, <a href="Monsters.aspx?ID=1962"><u>Aliriel</u></a>, <a href="Monsters.aspx?ID=3344"><u>Aliver "Pillbug" Podiker</u></a>, <a href="Monsters.aspx?ID=2573"><u>All-Seeing Hajeck</u></a>, <a href="NPCs.aspx?ID=4037"><u>Aller Rosk</u></a>, <a href="NPCs.aspx?ID=3699"><u>Alyce Quinley</u></a>, <a href="Monsters.aspx?ID=3857"><u>Alzira Mustanir</u></a>, <a href="Monsters.aspx?ID=1059"><u>Amalgamite</u></a>, <a href="NPCs.aspx?ID=1977"><u>Ambrost Mugland</u></a>, <a href="Monsters.aspx?ID=4026"><u>Ambush Copse</u></a>, <a href="NPCs.aspx?ID=2307"><u>Ameon Trask</u></a>, <a href="NPCs.aspx?ID=2388"><u>Amiri (Level 1)</u></a>, <a href="NPCs.aspx?ID=2389"><u>Amiri (Level 11)</u></a>, <a href="NPCs.aspx?ID=3964"><u>Amnerion</u></a>, <a href="Monsters.aspx?ID=432"><u>Anadi Elder</u></a>, <a href="Monsters.aspx?ID=1608"><u>Anadi Fateweaver</u></a>, <a href="Monsters.aspx?ID=430"><u>Anadi Hunter</u></a>, <a href="Monsters.aspx?ID=1607"><u>Anadi Lurker</u></a>, <a href="Monsters.aspx?ID=431"><u>Anadi Sage</u></a>, <a href="Monsters.aspx?ID=1606"><u>Anadi Seeker</u></a>, <a href="Monsters.aspx?ID=2934"><u>Ancient Adamantine Dragon</u></a>, <a href="Monsters.aspx?ID=4113"><u>Ancient Barrage Dragon</u></a>, <a href="Monsters.aspx?ID=129"><u>Ancient Black Dragon</u></a>, <a href="Monsters.aspx?ID=132"><u>Ancient Blue Dragon</u></a>, <a href="Monsters.aspx?ID=144"><u>Ancient Brass Dragon</u></a>, <a href="Monsters.aspx?ID=623"><u>Ancient Brine Dragon</u></a>, <a href="Monsters.aspx?ID=147"><u>Ancient Bronze Dragon</u></a>, <a href="Monsters.aspx?ID=626"><u>Ancient Cloud Dragon</u></a>, <a href="Monsters.aspx?ID=2937"><u>Ancient Conspirator Dragon</u></a>, <a href="Monsters.aspx?ID=150"><u>Ancient Copper Dragon</u></a>, <a href="Monsters.aspx?ID=4350"><u>Ancient Coral Dragon</u></a>, <a href="Monsters.aspx?ID=629"><u>Ancient Crystal Dragon</u></a>, <a href="Monsters.aspx?ID=4133"><u>Ancient Delight Dragon</u></a>, <a href="Monsters.aspx?ID=4353"><u>Ancient Despair Dragon</u></a>, <a href="Monsters.aspx?ID=2940"><u>Ancient Diabolic Dragon</u></a>, <a href="Monsters.aspx?ID=2943"><u>Ancient Empyreal Dragon</u></a>, <a href="Monsters.aspx?ID=4140"><u>Ancient Executor Dragon</u></a>, <a href="Monsters.aspx?ID=1124"><u>Ancient Forest Dragon</u></a>, <a href="Monsters.aspx?ID=2946"><u>Ancient Fortune Dragon</u></a>, <a href="Monsters.aspx?ID=153"><u>Ancient Gold Dragon</u></a>, <a href="Monsters.aspx?ID=135"><u>Ancient Green Dragon</u></a>, <a href="Monsters.aspx?ID=471"><u>Ancient Magma Dragon</u></a>, <a href="Monsters.aspx?ID=633"><u>Ancient Magma Dragon</u></a>, <a href="Monsters.aspx?ID=2952"><u>Ancient Mirage Dragon</u></a>, <a href="Monsters.aspx?ID=2955"><u>Ancient Omen Dragon</u></a>, <a href="Monsters.aspx?ID=4356"><u>Ancient Phase Dragon</u></a>, <a href="Monsters.aspx?ID=138"><u>Ancient Red Dragon</u></a>, <a href="Monsters.aspx?ID=4359"><u>Ancient Requiem Dragon</u></a>, <a href="Monsters.aspx?ID=4362"><u>Ancient Resurrection Dragon</u></a>, <a href="Monsters.aspx?ID=4365"><u>Ancient Rune Dragon</u></a>, <a href="Monsters.aspx?ID=1127"><u>Ancient Sea Dragon</u></a>, <a href="Monsters.aspx?ID=156"><u>Ancient Silver Dragon</u></a>, <a href="Monsters.aspx?ID=1130"><u>Ancient Sky Dragon</u></a>, <a href="Monsters.aspx?ID=1133"><u>Ancient Sovereign Dragon</u></a>, <a href="Monsters.aspx?ID=4184"><u>Ancient Time Dragon</u></a>, <a href="Monsters.aspx?ID=636"><u>Ancient Umbral Dragon</u></a>, <a href="Monsters.aspx?ID=1136"><u>Ancient Underworld Dragon</u></a>, <a href="Monsters.aspx?ID=4200"><u>Ancient Vorpal Dragon</u></a>, <a href="Monsters.aspx?ID=4204"><u>Ancient Wailing Dragon</u></a>, <a href="Monsters.aspx?ID=141"><u>Ancient White Dragon</u></a>, <a href="Monsters.aspx?ID=4208"><u>Ancient Wish Dragon</u></a>, <a href="Monsters.aspx?ID=2327"><u>Ancient Wisp</u></a>, <a href="NPCs.aspx?ID=2024"><u>Andera Paldreen</u></a>, <a href="Monsters.aspx?ID=1061"><u>Android Infiltrator</u></a>, <a href="Monsters.aspx?ID=2614"><u>Anemos</u></a>, <a href="Monsters.aspx?ID=1062"><u>Angazhani</u></a>, <a href="Monsters.aspx?ID=1234"><u>Angheuvore Flesh-Gnawer</u></a>, <a href="NPCs.aspx?ID=1992"><u>Anjelique Loveless</u></a>, <a href="Monsters.aspx?ID=547"><u>Ankou</u></a>, <a href="Monsters.aspx?ID=2368"><u>Ankou Assassin</u></a>, <a href="NPCs.aspx?ID=2293"><u>Annamede Belavarah</u></a>, <a href="Monsters.aspx?ID=256"><u>Annis Hag</u></a>, <a href="NPCs.aspx?ID=2470"><u>Antaro Boldblade</u></a>, <a href="NPCs.aspx?ID=961"><u>Antipaladin</u></a>, <a href="Monsters.aspx?ID=1392"><u>Anugobu Apprentice</u></a>, <a href="Monsters.aspx?ID=1393"><u>Anugobu Wondercrafter</u></a>, <a href="Monsters.aspx?ID=1265"><u>Aphorite Sharpshooter</u></a>, <a href="NPCs.aspx?ID=908"><u>Apothecary</u></a>, <a href="NPCs.aspx?ID=955"><u>Apprentice</u></a>, <a href="Monsters.aspx?ID=3900"><u>Apprentice Magician Clique</u></a>, <a href="Monsters.aspx?ID=4024"><u>Aqudel</u></a>, <a href="Monsters.aspx?ID=6"><u>Arbiter</u></a>, <a href="Monsters.aspx?ID=1068"><u>Arboreal Archive</u></a>, <a href="Monsters.aspx?ID=3901"><u>Arboreal Copse</u></a>, <a href="Monsters.aspx?ID=1067"><u>Arboreal Reaper</u></a>, <a href="Monsters.aspx?ID=29"><u>Arboreal Regent</u></a>, <a href="Monsters.aspx?ID=3690"><u>Arboreal Sapling</u></a>, <a href="Monsters.aspx?ID=3692"><u>Arboreal Sapstriker</u></a>, <a href="Monsters.aspx?ID=3691"><u>Arboreal Shepherd</u></a>, <a href="Monsters.aspx?ID=1825"><u>Arboreal Tar Tree</u></a>, <a href="Monsters.aspx?ID=27"><u>Arboreal Warden</u></a>, <a href="Monsters.aspx?ID=3902"><u>Archer Regiment</u></a>, <a href="NPCs.aspx?ID=934"><u>Archer Sentry</u></a>, <a href="NPCs.aspx?ID=1452"><u>Archery Specialist</u></a>, <a href="Monsters.aspx?ID=2686"><u>Ardande Gardener</u></a>, <a href="NPCs.aspx?ID=1766"><u>Ardissa Prendergant</u></a>, <a href="NPCs.aspx?ID=1765"><u>Ardissa's Porters</u></a>, <a href="Monsters.aspx?ID=2803"><u>Argyrzei</u></a>, <a href="Monsters.aspx?ID=3350"><u>Arika Avertin</u></a>, <a href="NPCs.aspx?ID=3506"><u>Arms Dealer</u></a>, <a href="NPCs.aspx?ID=1487"><u>Arms Of Balance</u></a>, <a href="NPCs.aspx?ID=2555"><u>Arodeth</u></a>, <a href="NPCs.aspx?ID=3564"><u>Arrester Squadron</u></a>, <a href="NPCs.aspx?ID=3459"><u>Artillerist</u></a>, <a href="Monsters.aspx?ID=2566"><u>Arzuu</u></a>, <a href="Monsters.aspx?ID=3345"><u>Ascended Disciple</u></a>, <a href="Monsters.aspx?ID=4410"><u>Ash Giant</u></a>, <a href="NPCs.aspx?ID=1791"><u>Ashen Swale</u></a>, <a href="Monsters.aspx?ID=3340"><u>Asmerelli</u></a>, <a href="Monsters.aspx?ID=2640"><u>Asp Of Grief</u></a>, <a href="NPCs.aspx?ID=892"><u>Assassin</u></a>, <a href="Monsters.aspx?ID=4084"><u>Assault Alloy</u></a>, <a href="Monsters.aspx?ID=91"><u>Astradaemon</u></a>, <a href="NPCs.aspx?ID=949"><u>Astronomer</u></a>, <a href="Monsters.aspx?ID=4089"><u>Atrixyl</u></a>, <a href="Monsters.aspx?ID=557"><u>Attic Whisperer</u></a>, <a href="NPCs.aspx?ID=2282"><u>Auchs</u></a>, <a href="NPCs.aspx?ID=4034"><u>Augrael</u></a>, <a href="Monsters.aspx?ID=460"><u>Augur</u></a>, <a href="Monsters.aspx?ID=3798"><u>Aurosrath</u></a>, <a href="Monsters.aspx?ID=998"><u>Avarek</u></a>, <a href="Monsters.aspx?ID=2196"><u>Avatar of the Lantern King</u></a>, <a href="Monsters.aspx?ID=1707"><u>Avatar Of Walkena</u></a>, <a href="Monsters.aspx?ID=3713"><u>Avathrael Realmshaper</u></a>, <a href="NPCs.aspx?ID=3592"><u>Avuncular Professor</u></a>, <a href="Monsters.aspx?ID=7"><u>Axiomite</u></a>, <a href="NPCs.aspx?ID=4272"><u>Ayavah</u></a>, <a href="Monsters.aspx?ID=4329"><u>Ayngavhaul</u></a>, <a href="NPCs.aspx?ID=1747"><u>Azarketi Crab Catcher</u></a>, <a href="Monsters.aspx?ID=1073"><u>Azarketi Explorer</u></a>, <a href="NPCs.aspx?ID=1748"><u>Azarketi Sailor</u></a>, <a href="NPCs.aspx?ID=1749"><u>Azarketi Tide Tamer</u></a>, <a href="Monsters.aspx?ID=3738"><u>Azarpal</u></a>, <a href="Monsters.aspx?ID=1074"><u>Azer</u></a>, <a href="Monsters.aspx?ID=3693"><u>Azhana</u></a>, <a href="NPCs.aspx?ID=1787"><u>Azi</u></a>, <a href="Monsters.aspx?ID=2051"><u>Azmakian Effigy</u></a>, <a href="Monsters.aspx?ID=2753"><u>Bakeneko</u></a>, <a href="NPCs.aspx?ID=2735"><u>Ban-Niang "Granny" Hu</u></a>, <a href="NPCs.aspx?ID=887"><u>Bandit</u></a>, <a href="NPCs.aspx?ID=3432"><u>Bandit Gang</u></a>, <a href="Monsters.aspx?ID=39"><u>Banshee</u></a>, <a href="Monsters.aspx?ID=563"><u>Baobhan Sith</u></a>, <a href="Monsters.aspx?ID=110"><u>Barbazu</u></a>, <a href="Monsters.aspx?ID=3300"><u>Barded Manticore</u></a>, <a href="Monsters.aspx?ID=41"><u>Barghest</u></a>, <a href="Monsters.aspx?ID=1780"><u>Bargott</u></a>, <a href="NPCs.aspx?ID=944"><u>Barkeep</u></a>, <a href="Monsters.aspx?ID=1001"><u>Barnacle Ghoul</u></a>, <a href="Monsters.aspx?ID=4114"><u>Barrage Archdragon</u></a>, <a href="NPCs.aspx?ID=932"><u>Barrister</u></a>, <a href="NPCs.aspx?ID=1555"><u>Barushak Il-Varashma</u></a>, <a href="Monsters.aspx?ID=2432"><u>Basiri, Wellspring Keeper</u></a>, <a href="Monsters.aspx?ID=3850"><u>Batkin Guard</u></a>, <a href="Monsters.aspx?ID=1075"><u>Bauble Beast</u></a>, <a href="Monsters.aspx?ID=1076"><u>Baykok</u></a>, <a href="NPCs.aspx?ID=942"><u>Beast Tamer</u></a>, <a href="NPCs.aspx?ID=897"><u>Beggar</u></a>, <a href="NPCs.aspx?ID=4078"><u>Belcorra Haruvex</u></a>, <a href="NPCs.aspx?ID=2433"><u>Bellator Mortus Soldier</u></a>, <a href="Monsters.aspx?ID=1546"><u>Belmazog</u></a>, <a href="Monsters.aspx?ID=2403"><u>Benthic Reaver</u></a>, <a href="Monsters.aspx?ID=1394"><u>Berberoka</u></a>, <a href="NPCs.aspx?ID=3686"><u>Besieged Logging Crew</u></a>, <a href="Monsters.aspx?ID=1079"><u>Betobeto-San</u></a>, <a href="Monsters.aspx?ID=1683"><u>Bharlen Sajor</u></a>, <a href="NPCs.aspx?ID=4073"><u>Bhazrade And Klanthor</u></a>, <a href="Monsters.aspx?ID=1842"><u>Bhuta</u></a>, <a href="Monsters.aspx?ID=3810"><u>Bibliodaemon</u></a>, <a href="Monsters.aspx?ID=440"><u>Bida</u></a>, <a href="NPCs.aspx?ID=3643"><u>Big Boss Goblin</u></a>, <a href="Monsters.aspx?ID=4088"><u>Bikkhasura</u></a>, <a href="NPCs.aspx?ID=3645"><u>Bill-Band</u></a>, <a href="Monsters.aspx?ID=1700"><u>Biloko Reaver</u></a>, <a href="Monsters.aspx?ID=985"><u>Binumir</u></a>, <a href="Monsters.aspx?ID=1957"><u>Bishop Keppira D'bear</u></a>, <a href="NPCs.aspx?ID=2102"><u>Bitter Truth Bandit</u></a>, <a href="NPCs.aspx?ID=3504"><u>Black Belt</u></a>, <a href="NPCs.aspx?ID=2217"><u>Black Tear Cutthroat</u></a>, <a href="Monsters.aspx?ID=2612"><u>Blacknoon Apprentice</u></a>, <a href="NPCs.aspx?ID=2554"><u>Blade Magus</u></a>, <a href="NPCs.aspx?ID=2551"><u>Blade Mercenary</u></a>, <a href="NPCs.aspx?ID=3441"><u>Blasphemer of Zon-Kuthon</u></a>, <a href="NPCs.aspx?ID=3636"><u>Bleachling Survivor</u></a>, <a href="Monsters.aspx?ID=3762"><u>Blisterwell Oathrisen</u></a>, <a href="Monsters.aspx?ID=572"><u>Blodeuwedd</u></a>, <a href="Monsters.aspx?ID=1188"><u>Blood Hag</u></a>, <a href="Monsters.aspx?ID=1081"><u>Blood Painter</u></a>, <a href="Monsters.aspx?ID=2152"><u>Bloodshroud</u></a>, <a href="NPCs.aspx?ID=1535"><u>Bloody Blade Mercenary</u></a>, <a href="Monsters.aspx?ID=2296"><u>Bloom Cultist</u></a>, <a href="NPCs.aspx?ID=1474"><u>Blue Viper</u></a>, <a href="NPCs.aspx?ID=1493"><u>Blue Viper (Level 16)</u></a>, <a href="NPCs.aspx?ID=1528"><u>Blue Viper (Level 20)</u></a>, <a href="Monsters.aspx?ID=4285"><u>Bodach</u></a>, <a href="Monsters.aspx?ID=573"><u>Bodak</u></a>, <a href="NPCs.aspx?ID=921"><u>Bodyguard</u></a>, <a href="Monsters.aspx?ID=4118"><u>Bog Archdragon</u></a>, <a href="Monsters.aspx?ID=735"><u>Bog Mummy</u></a>, <a href="Monsters.aspx?ID=1681"><u>Bog Mummy Amalgamation</u></a>, <a href="Monsters.aspx?ID=2242"><u>Bog Mummy Cultist</u></a>, <a href="Monsters.aspx?ID=509"><u>Bogeyman</u></a>, <a href="Monsters.aspx?ID=2237"><u>Boggard Cultist</u></a>, <a href="Monsters.aspx?ID=3904"><u>Boggard Dreadknot</u></a>, <a href="Monsters.aspx?ID=4006"><u>Boggard Guard</u></a>, <a href="Monsters.aspx?ID=54"><u>Boggard Scout</u></a>, <a href="Monsters.aspx?ID=3905"><u>Boggard Scouting Party</u></a>, <a href="Monsters.aspx?ID=56"><u>Boggard Swampseer</u></a>, <a href="NPCs.aspx?ID=2449"><u>Bolan Nogasso</u></a>, <a href="NPCs.aspx?ID=2469"><u>Bolar Of Stonemoor</u></a>, <a href="Monsters.aspx?ID=2587"><u>Bolti Sorrinson</u></a>, <a href="Monsters.aspx?ID=498"><u>Bone Croupier</u></a>, <a href="Monsters.aspx?ID=1843"><u>Bone Croupier</u></a>, <a href="NPCs.aspx?ID=3669"><u>Bone Mother</u></a>, <a href="Monsters.aspx?ID=801"><u>Bone Prophet</u></a>, <a href="NPCs.aspx?ID=3651"><u>Bone Scavenger</u></a>, <a href="NPCs.aspx?ID=2043"><u>Bone Shard Toughs</u></a>, <a href="Monsters.aspx?ID=1082"><u>Bone Ship</u></a>, <a href="Monsters.aspx?ID=1781"><u>Bone Warrior</u></a>, <a href="Monsters.aspx?ID=3725"><u>Bonebleacher Bugbear</u></a>, <a href="NPCs.aspx?ID=4032"><u>Boss Skrawng</u></a>, <a href="NPCs.aspx?ID=953"><u>Bosun</u></a>, <a href="NPCs.aspx?ID=923"><u>Bounty Hunter</u></a>, <a href="Monsters.aspx?ID=57"><u>Brain Collector</u></a>, <a href="NPCs.aspx?ID=4735"><u>Brakknap</u></a>, <a href="Monsters.aspx?ID=4745"><u>Brastlewark Sapper Squad</u></a>, <a href="Monsters.aspx?ID=3783"><u>Briargeist</u></a>, <a href="Monsters.aspx?ID=4122"><u>Brine Archdragon</u></a>, <a href="Monsters.aspx?ID=2632"><u>Brochmaw</u></a>, <a href="Monsters.aspx?ID=2715"><u>Bronwyl Holloward</u></a>, <a href="Monsters.aspx?ID=575"><u>Brownie</u></a>, <a href="Monsters.aspx?ID=528"><u>Brughadatch</u></a>, <a href="Monsters.aspx?ID=508"><u>Bugaboo</u></a>, <a href="Monsters.aspx?ID=58"><u>Bugbear Thug</u></a>, <a href="Monsters.aspx?ID=59"><u>Bugbear Tormentor</u></a>, <a href="Monsters.aspx?ID=516"><u>Bugul Noz</u></a>, <a href="Monsters.aspx?ID=1411"><u>Bul-Gae</u></a>, <a href="NPCs.aspx?ID=890"><u>Burglar</u></a>, <a href="NPCs.aspx?ID=1472"><u>Butterfly Blade Warrior</u></a>, <a href="Monsters.aspx?ID=88"><u>Cacodaemon</u></a>, <a href="Monsters.aspx?ID=1219"><u>Cactus Leshy</u></a>, <a href="Monsters.aspx?ID=1844"><u>Cadaverous Rake</u></a>, <a href="NPCs.aspx?ID=4736"><u>Caeto Vulaunex</u></a>, <a href="Monsters.aspx?ID=859"><u>Cairn Wight</u></a>, <a href="Monsters.aspx?ID=478"><u>Calikang</u></a>, <a href="Monsters.aspx?ID=1089"><u>Calikang</u></a>, <a href="NPCs.aspx?ID=1532"><u>Calmont</u></a>, <a href="Monsters.aspx?ID=3856"><u>Camazotz Cultist</u></a>, <a href="Monsters.aspx?ID=4036"><u>Canker Cultist</u></a>, <a href="Monsters.aspx?ID=1410"><u>Canopy Elder</u></a>, <a href="Monsters.aspx?ID=4697"><u>Captain Lamperia Bane</u></a>, <a href="NPCs.aspx?ID=937"><u>Captain of the Guard</u></a>, <a href="NPCs.aspx?ID=4248"><u>Captain Salah</u></a>, <a href="Monsters.aspx?ID=4762"><u>Carexilia</u></a>, <a href="NPCs.aspx?ID=4048"><u>Carman Rajani</u></a>, <a href="Monsters.aspx?ID=13"><u>Cassisian</u></a>, <a href="NPCs.aspx?ID=3602"><u>Castaway</u></a>, <a href="NPCs.aspx?ID=2189"><u>Castruccio Irovetti</u></a>, <a href="Monsters.aspx?ID=1809"><u>Cataclysm Beetle</u></a>, <a href="NPCs.aspx?ID=3624"><u>Catfolk Name Collector</u></a>, <a href="Monsters.aspx?ID=71"><u>Catfolk Pouncer</u></a>, <a href="Monsters.aspx?ID=1148"><u>Caulborn</u></a>, <a href="Monsters.aspx?ID=3718"><u>Caustic Wraith</u></a>, <a href="Monsters.aspx?ID=4408"><u>Cave Giant</u></a>, <a href="Monsters.aspx?ID=2011"><u>Cavnakash</u></a>, <a href="Monsters.aspx?ID=1092"><u>Cecaelia Trapper</u></a>, <a href="NPCs.aspx?ID=2020"><u>Celestial Menagerie Bruiser</u></a>, <a href="Monsters.aspx?ID=76"><u>Centaur</u></a>, <a href="NPCs.aspx?ID=2874"><u>Centaur Herbalist</u></a>, <a href="Monsters.aspx?ID=2302"><u>Centaur Scout</u></a>, <a href="Monsters.aspx?ID=2306"><u>Cephal Lorentus</u></a>, <a href="Monsters.aspx?ID=89"><u>Ceustodaemon</u></a>, <a href="NPCs.aspx?ID=4049"><u>Chafkhem</u></a>, <a href="Monsters.aspx?ID=3849"><u>Chained Norn</u></a>, <a href="Monsters.aspx?ID=4092"><u>Champion Automaton</u></a>, <a href="NPCs.aspx?ID=3446"><u>Champion of Shelyn</u></a>, <a href="Monsters.aspx?ID=2441"><u>Chancellor Kemnebi</u></a>, <a href="NPCs.aspx?ID=4039"><u>Chandriu Invisar</u></a>, <a href="Monsters.aspx?ID=79"><u>Changeling Exile</u></a>, <a href="Monsters.aspx?ID=3270"><u>Chaos Falcon</u></a>, <a href="Monsters.aspx?ID=2031"><u>Charghar</u></a>, <a href="NPCs.aspx?ID=889"><u>Charlatan</u></a>, <a href="NPCs.aspx?ID=965"><u>Charming Scoundrel</u></a>, <a href="NPCs.aspx?ID=1053"><u>Chea</u></a>, <a href="Monsters.aspx?ID=4693"><u>Chelaxian Loyalist</u></a>, <a href="Monsters.aspx?ID=4695"><u>Chelaxian Loyalist Leader</u></a>, <a href="Monsters.aspx?ID=4696"><u>Chelaxian Recruit</u></a>, <a href="Monsters.aspx?ID=3838"><u>Chernasardo Ranger</u></a>, <a href="Monsters.aspx?ID=3351"><u>Chertus Jheed</u></a>, <a href="NPCs.aspx?ID=2269"><u>Chief Sootscale</u></a>, <a href="Monsters.aspx?ID=1845"><u>Child of Urgathoa</u></a>, <a href="Monsters.aspx?ID=1968"><u>Chimeric Manticore</u></a>, <a href="Monsters.aspx?ID=1351"><u>Chouchin-Obake</u></a>, <a href="NPCs.aspx?ID=902"><u>Chronicler</u></a>, <a href="Monsters.aspx?ID=81"><u>Chuul</u></a>, <a href="Monsters.aspx?ID=1093"><u>Chyzaedu</u></a>, <a href="Monsters.aspx?ID=4098"><u>Cinder Archdragon</u></a>, <a href="Monsters.aspx?ID=1094"><u>City Guard Squadron</u></a>, <a href="Monsters.aspx?ID=2383"><u>Cleansed Cultist</u></a>, <a href="Monsters.aspx?ID=4126"><u>Cloud Archdragon</u></a>, <a href="Monsters.aspx?ID=224"><u>Cloud Giant</u></a>, <a href="Monsters.aspx?ID=2907"><u>Coarti</u></a>, <a href="Monsters.aspx?ID=4712"><u>Coarti Spy</u></a>, <a href="Monsters.aspx?ID=2072"><u>Cocoon Of Lucid Potential</u></a>, <a href="Monsters.aspx?ID=800"><u>Coil Spy</u></a>, <a href="Monsters.aspx?ID=3363"><u>Coloxus</u></a>, <a href="NPCs.aspx?ID=3521"><u>Combat Engineer</u></a>, <a href="Monsters.aspx?ID=1846"><u>Combusted</u></a>, <a href="NPCs.aspx?ID=3831"><u>Commander Arsiella Dei</u></a>, <a href="NPCs.aspx?ID=898"><u>Commoner</u></a>, <a href="Monsters.aspx?ID=3895"><u>Conductor</u></a>, <a href="Monsters.aspx?ID=1642"><u>Conqueror Worm</u></a>, <a href="NPCs.aspx?ID=3523"><u>Conscript Squad</u></a>, <a href="NPCs.aspx?ID=3606"><u>Conspiracist</u></a>, <a href="Monsters.aspx?ID=4212"><u>Conspirator Archdragon</u></a>, <a href="NPCs.aspx?ID=3498"><u>Construction Worker</u></a>, <a href="NPCs.aspx?ID=2141"><u>Convergent Kendley Nathrael </u></a>, <a href="NPCs.aspx?ID=2137"><u>Convergent Soldier</u></a>, <a href="NPCs.aspx?ID=2487"><u>Copper Hand Illusionist</u></a>, <a href="NPCs.aspx?ID=2485"><u>Copper Hand Rogue</u></a>, <a href="Monsters.aspx?ID=4099"><u>Coral Archdragon</u></a>, <a href="Monsters.aspx?ID=1102"><u>Coral Capuchin</u></a>, <a href="NPCs.aspx?ID=2228"><u>Corax</u></a>, <a href="Monsters.aspx?ID=3822"><u>Corbayrant</u></a>, <a href="NPCs.aspx?ID=3658"><u>Corn Leshy Throng</u></a>, <a href="Monsters.aspx?ID=611"><u>Cornugon</u></a>, <a href="Monsters.aspx?ID=482"><u>Cornugon</u></a>, <a href="Monsters.aspx?ID=1035"><u>Corpselight</u></a>, <a href="NPCs.aspx?ID=1565"><u>Corrupt Guards</u></a>, <a href="NPCs.aspx?ID=1986"><u>Corrupt Shieldmarshal</u></a>, <a href="NPCs.aspx?ID=2006"><u>Corrupted Priest </u></a>, <a href="Monsters.aspx?ID=1103"><u>Corrupted Relic</u></a>, <a href="NPCs.aspx?ID=2004"><u>Corrupted Retainer</u></a>, <a href="NPCs.aspx?ID=3415"><u>Court Historian</u></a>, <a href="NPCs.aspx?ID=3578"><u>Court Jester</u></a>, <a href="NPCs.aspx?ID=3417"><u>Courtesan</u></a>, <a href="NPCs.aspx?ID=3535"><u>Coven Aspirant</u></a>, <a href="Monsters.aspx?ID=1982"><u>Cranium Preserver</u></a>, <a href="Monsters.aspx?ID=589"><u>Crawling Hand</u></a>, <a href="Monsters.aspx?ID=1783"><u>Crawling Hand Swarm</u></a>, <a href="Monsters.aspx?ID=2052"><u>Creeping Crone</u></a>, <a href="NPCs.aspx?ID=3435"><u>Crime Kingpin</u></a>, <a href="NPCs.aspx?ID=1719"><u>Crimson Acolyte</u></a>, <a href="NPCs.aspx?ID=2047"><u>Crooked Coffin Brewer</u></a>, <a href="Monsters.aspx?ID=3787"><u>Crowded Veil</u></a>, <a href="Monsters.aspx?ID=4130"><u>Crystal Archdragon</u></a>, <a href="Monsters.aspx?ID=2565"><u>Crystalline Sentinel</u></a>, <a href="Monsters.aspx?ID=3043"><u>Cuckoo Hag</u></a>, <a href="Monsters.aspx?ID=591"><u>Culdewen</u></a>, <a href="NPCs.aspx?ID=930"><u>Cult Leader</u></a>, <a href="NPCs.aspx?ID=927"><u>Cultist</u></a>, <a href="Monsters.aspx?ID=1319"><u>Cunning Fox</u></a>, <a href="NPCs.aspx?ID=3544"><u>Curse Monger</u></a>, <a href="Monsters.aspx?ID=2225"><u>Cursed Guardian</u></a>, <a href="Monsters.aspx?ID=86"><u>Cyclops</u></a>, <a href="Monsters.aspx?ID=1690"><u>Cyclops Bully</u></a>, <a href="Monsters.aspx?ID=3968"><u>Cyclops Seeker</u></a>, <a href="Monsters.aspx?ID=1949"><u>Daelum</u></a>, <a href="Monsters.aspx?ID=2754"><u>Dalgyal Gwishin</u></a>, <a href="Monsters.aspx?ID=4759"><u>Damarys</u></a>, <a href="Monsters.aspx?ID=4583"><u>Danava Titan</u></a>, <a href="NPCs.aspx?ID=939"><u>Dancer</u></a>, <a href="Monsters.aspx?ID=344"><u>Dandasuka</u></a>, <a href="Monsters.aspx?ID=1841"><u>Daqqanoenyent</u></a>, <a href="Monsters.aspx?ID=2260"><u>Darg</u></a>, <a href="NPCs.aspx?ID=2190"><u>Darivan</u></a>, <a href="Monsters.aspx?ID=306"><u>Dark Naga</u></a>, <a href="NPCs.aspx?ID=2168"><u>Dark Talon Kobold</u></a>, <a href="NPCs.aspx?ID=2023"><u>Darricus Stallit</u></a>, <a href="Monsters.aspx?ID=2226"><u>Davik Nettles</u></a>, <a href="NPCs.aspx?ID=2437"><u>Dead Faine</u></a>, <a href="Monsters.aspx?ID=1852"><u>Death Coach</u></a>, <a href="Monsters.aspx?ID=1853"><u>Deathless Acolyte of Urgathoa</u></a>, <a href="Monsters.aspx?ID=4707"><u>Deathless Acolyte Of Urgathoa</u></a>, <a href="Monsters.aspx?ID=1854"><u>Deathless Hierophant of Urgathoa</u></a>, <a href="Monsters.aspx?ID=3767"><u>Deathless Zealot of Zagresh</u></a>, <a href="Monsters.aspx?ID=3978"><u>Deck Crew</u></a>, <a href="NPCs.aspx?ID=3583"><u>Dedicated Druid</u></a>, <a href="Monsters.aspx?ID=4314"><u>Deep One</u></a>, <a href="Monsters.aspx?ID=4316"><u>Deep One Elder</u></a>, <a href="Monsters.aspx?ID=4315"><u>Deep One Hybrid</u></a>, <a href="NPCs.aspx?ID=3896"><u>Deg</u></a>, <a href="NPCs.aspx?ID=3981"><u>Deianire</u></a>, <a href="NPCs.aspx?ID=3450"><u>Deific Champion of Iomedae</u></a>, <a href="NPCs.aspx?ID=3451"><u>Deific Vessel of Urgathoa</u></a>, <a href="Monsters.aspx?ID=1116"><u>Deimavigga</u></a>, <a href="NPCs.aspx?ID=2015"><u>Delamar Gianvin</u></a>, <a href="Monsters.aspx?ID=4134"><u>Delight Archdragon</u></a>, <a href="NPCs.aspx?ID=3611"><u>Deluded Mob</u></a>, <a href="Monsters.aspx?ID=283"><u>Demilich</u></a>, <a href="NPCs.aspx?ID=3461"><u>Demolitionist</u></a>, <a href="NPCs.aspx?ID=3632"><u>Demonbane Warrior</u></a>, <a href="NPCs.aspx?ID=931"><u>Demonologist</u></a>, <a href="NPCs.aspx?ID=4244"><u>Deniigi</u></a>, <a href="NPCs.aspx?ID=3594"><u>Departmental Chair</u></a>, <a href="Monsters.aspx?ID=594"><u>Derghodaemon</u></a>, <a href="Monsters.aspx?ID=2527"><u>Derhii</u></a>, <a href="Monsters.aspx?ID=1167"><u>Desert Giant</u></a>, <a href="Monsters.aspx?ID=3299"><u>Desert Manticore</u></a>, <a href="NPCs.aspx?ID=1786"><u>Desiak</u></a>, <a href="Monsters.aspx?ID=4100"><u>Despair Archdragon</u></a>, <a href="NPCs.aspx?ID=962"><u>Despot</u></a>, <a href="Monsters.aspx?ID=4749"><u>Devastation Cavalry Brigade</u></a>, <a href="Monsters.aspx?ID=3338"><u>Devil's Disciple</u></a>, <a href="Monsters.aspx?ID=612"><u>Devourer</u></a>, <a href="Monsters.aspx?ID=467"><u>Devourer</u></a>, <a href="NPCs.aspx?ID=1938"><u>Dewey Daystar</u></a>, <a href="Monsters.aspx?ID=116"><u>Dhampir Wizard</u></a>, <a href="Monsters.aspx?ID=4101"><u>Diabolic Archdragon</u></a>, <a href="Monsters.aspx?ID=4331"><u>Dibrasgorth</u></a>, <a href="Monsters.aspx?ID=1708"><u>Dimari-Diji</u></a>, <a href="Monsters.aspx?ID=2036"><u>Dirge Piper</u></a>, <a href="NPCs.aspx?ID=3601"><u>Diver</u></a>, <a href="Monsters.aspx?ID=4343"><u>Divoynik</u></a>, <a href="Monsters.aspx?ID=212"><u>Djinni</u></a>, <a href="NPCs.aspx?ID=1536"><u>Dmiri Yoltosha</u></a>, <a href="Monsters.aspx?ID=529"><u>Doblagub</u></a>, <a href="NPCs.aspx?ID=913"><u>Dockhand</u></a>, <a href="Monsters.aspx?ID=1194"><u>Domovoi</u></a>, <a href="Monsters.aspx?ID=433"><u>Doorwarden</u></a>, <a href="Monsters.aspx?ID=126"><u>Doppelganger</u></a>, <a href="Monsters.aspx?ID=620"><u>Doprillu</u></a>, <a href="Monsters.aspx?ID=1117"><u>Doru</u></a>, <a href="NPCs.aspx?ID=2283"><u>Dovan From Nisroch</u></a>, <a href="Monsters.aspx?ID=4728"><u>Draconic Fumercrux</u></a>, <a href="Monsters.aspx?ID=157"><u>Dragon Turtle</u></a>, <a href="Monsters.aspx?ID=4369"><u>Dragonblood Occultist</u></a>, <a href="Monsters.aspx?ID=472"><u>Dragonscarred Dead</u></a>, <a href="Monsters.aspx?ID=1587"><u>Dragonstorm Fire Giant</u></a>, <a href="Monsters.aspx?ID=639"><u>Drainberry Bush</u></a>, <a href="Monsters.aspx?ID=642"><u>Draugr</u></a>, <a href="Monsters.aspx?ID=1323"><u>Draxie</u></a>, <a href="Monsters.aspx?ID=2174"><u>Drazmorg the Damned</u></a>, <a href="Monsters.aspx?ID=1384"><u>Dread Wisp</u></a>, <a href="Monsters.aspx?ID=865"><u>Dread Wraith</u></a>, <a href="Monsters.aspx?ID=991"><u>Dreadsong Dancer</u></a>, <a href="Monsters.aspx?ID=2308"><u>Drelev Guard</u></a>, <a href="Monsters.aspx?ID=1662"><u>Drenchdead</u></a>, <a href="NPCs.aspx?ID=3529"><u>Drill Sergeant</u></a>, <a href="NPCs.aspx?ID=3458"><u>Driver</u></a>, <a href="Monsters.aspx?ID=3912"><u>Dromaar Company</u></a>, <a href="NPCs.aspx?ID=3664"><u>Dromaar Lorekeeper</u></a>, <a href="NPCs.aspx?ID=3131"><u>Dromaar Mountaineer</u></a>, <a href="NPCs.aspx?ID=3386"><u>Dronuk</u></a>, <a href="NPCs.aspx?ID=3491"><u>Drover</u></a>, <a href="Monsters.aspx?ID=4730"><u>Drude</u></a>, <a href="Monsters.aspx?ID=3913"><u>Druid Circle</u></a>, <a href="NPCs.aspx?ID=3580"><u>Druid Initiate</u></a>, <a href="NPCs.aspx?ID=946"><u>Drunkard</u></a>, <a href="Monsters.aspx?ID=4701"><u>Drunken Isgeri Slayer</u></a>, <a href="Monsters.aspx?ID=2058"><u>Drusilla</u></a>, <a href="NPCs.aspx?ID=2556"><u>Drustan</u></a>, <a href="Monsters.aspx?ID=3719"><u>Druulbach</u></a>, <a href="Monsters.aspx?ID=312"><u>Dryad</u></a>, <a href="Monsters.aspx?ID=314"><u>Dryad Queen</u></a>, <a href="Monsters.aspx?ID=169"><u>Duergar Bombardier</u></a>, <a href="Monsters.aspx?ID=168"><u>Duergar Sharpshooter</u></a>, <a href="NPCs.aspx?ID=1574"><u>Duergar Slave Lord</u></a>, <a href="Monsters.aspx?ID=170"><u>Duergar Taskmaster</u></a>, <a href="NPCs.aspx?ID=1028"><u>Duhgik</u></a>, <a href="Monsters.aspx?ID=171"><u>Dullahan</u></a>, <a href="Monsters.aspx?ID=4771"><u>Durtik</u></a>, <a href="Monsters.aspx?ID=332"><u>Duskwalker Ghost Hunter</u></a>, <a href="Monsters.aspx?ID=1195"><u>Dvorovoi</u></a>, <a href="Monsters.aspx?ID=1716"><u>Dwandek</u></a>, <a href="NPCs.aspx?ID=3628"><u>Dwarf Battalion</u></a>, <a href="NPCs.aspx?ID=3629"><u>Dwarf General</u></a>, <a href="Monsters.aspx?ID=3914"><u>Dwarf Longshot Squad</u></a>, <a href="NPCs.aspx?ID=3626"><u>Dwarf Smith</u></a>, <a href="NPCs.aspx?ID=2966"><u>Dwarf Stonecaster</u></a>, <a href="NPCs.aspx?ID=2965"><u>Dwarf Warrior</u></a>, <a href="Monsters.aspx?ID=643"><u>Dweomercat</u></a>, <a href="Monsters.aspx?ID=1140"><u>Dybbuk</u></a>, <a href="NPCs.aspx?ID=3464"><u>Dynamo</u></a>, <a href="Monsters.aspx?ID=2133"><u>Dyzallin Shraen</u></a>, <a href="Monsters.aspx?ID=1000"><u>Eberark</u></a>, <a href="Monsters.aspx?ID=4764"><u>Ecaterina Tache</u></a>, <a href="Monsters.aspx?ID=3750"><u>Echosyvne</u></a>, <a href="Monsters.aspx?ID=1855"><u>Ecorche</u></a>, <a href="NPCs.aspx?ID=2165"><u>Edgrin Galesong</u></a>, <a href="NPCs.aspx?ID=1161"><u>Edolpho Phinelli</u></a>, <a href="Monsters.aspx?ID=214"><u>Efreeti</u></a>, <a href="Monsters.aspx?ID=1141"><u>Einherji</u></a>, <a href="Monsters.aspx?ID=3390"><u>Einherji Host</u></a>, <a href="NPCs.aspx?ID=1750"><u>Ekene</u></a>, <a href="NPCs.aspx?ID=2390"><u>Ekundayo (Level 1)</u></a>, <a href="NPCs.aspx?ID=2391"><u>Ekundayo (Level 6)</u></a>, <a href="Monsters.aspx?ID=4071"><u>Elder Child Of Belcorra</u></a>, <a href="Monsters.aspx?ID=2626"><u>Elder Outcrop</u></a>, <a href="Monsters.aspx?ID=1318"><u>Elder Sphinx</u></a>, <a href="Monsters.aspx?ID=2501"><u>Elder Thing</u></a>, <a href="Monsters.aspx?ID=2502"><u>Elder Thing Researcher</u></a>, <a href="Monsters.aspx?ID=497"><u>Elder Wyrmwraith</u></a>, <a href="Monsters.aspx?ID=1371"><u>Elder Wyrmwraith</u></a>, <a href="NPCs.aspx?ID=3596"><u>Eldritch Emeritus</u></a>, <a href="Monsters.aspx?ID=1009"><u>Elemental Vessel, Water</u></a>, <a href="NPCs.aspx?ID=1034"><u>Eleukas</u></a>, <a href="NPCs.aspx?ID=2995"><u>Elf Ranger</u></a>, <a href="NPCs.aspx?ID=2232"><u>Elga Verniex</u></a>, <a href="NPCs.aspx?ID=3634"><u>Elven Court Guard</u></a>, <a href="Monsters.aspx?ID=979"><u>Elysian Titan</u></a>, <a href="Monsters.aspx?ID=1339"><u>Elysian Titan</u></a>, <a href="NPCs.aspx?ID=1597"><u>Emaliza Zandivar</u></a>, <a href="NPCs.aspx?ID=3700"><u>Emorga All-Seer</u></a>, <a href="Monsters.aspx?ID=4213"><u>Empyreal Archdragon</u></a>, <a href="NPCs.aspx?ID=3545"><u>Enchanting Ritualist</u></a>, <a href="Monsters.aspx?ID=3990"><u>Encymion</u></a>, <a href="NPCs.aspx?ID=2550"><u>Endlo Kiver</u></a>, <a href="Monsters.aspx?ID=2335"><u>Engelidis</u></a>, <a href="Monsters.aspx?ID=3823"><u>Engerra</u></a>, <a href="NPCs.aspx?ID=3536"><u>Enigmatic Conspiracist</u></a>, <a href="NPCs.aspx?ID=3416"><u>Envoy</u></a>, <a href="NPCs.aspx?ID=2379"><u>Eobald</u></a>, <a href="Monsters.aspx?ID=2529"><u>Ephialtes</u></a>, <a href="Monsters.aspx?ID=2511"><u>Equendia</u></a>, <a href="NPCs.aspx?ID=3557"><u>Equestrian Constable</u></a>, <a href="Monsters.aspx?ID=852"><u>Eremite</u></a>, <a href="Monsters.aspx?ID=111"><u>Erinys</u></a>, <a href="Monsters.aspx?ID=1237"><u>Etioling Blightmage</u></a>, <a href="NPCs.aspx?ID=2515"><u>Etward Ritalson</u></a>, <a href="Monsters.aspx?ID=3962"><u>Eumenid</u></a>, <a href="Monsters.aspx?ID=1150"><u>Eunemvro</u></a>, <a href="NPCs.aspx?ID=2472"><u>Eunice</u></a>, <a href="Monsters.aspx?ID=461"><u>Evangelist</u></a>, <a href="Monsters.aspx?ID=1829"><u>Everburning Mammoths</u></a>, <a href="Monsters.aspx?ID=2328"><u>Evindra</u></a>, <a href="NPCs.aspx?ID=2022"><u>Evora Yarket</u></a>, <a href="NPCs.aspx?ID=938"><u>Executioner</u></a>, <a href="Monsters.aspx?ID=4141"><u>Executor Archdragon</u></a>, <a href="NPCs.aspx?ID=3519"><u>Exiled Revolutionary</u></a>, <a href="Monsters.aspx?ID=2787"><u>Exorcist</u></a>, <a href="NPCs.aspx?ID=3478"><u>Expedition Leader</u></a>, <a href="NPCs.aspx?ID=3982"><u>Exthenios</u></a>, <a href="NPCs.aspx?ID=3591"><u>Exuberant Apprentice</u></a>, <a href="Monsters.aspx?ID=3706"><u>Eyelet</u></a>, <a href="Monsters.aspx?ID=3707"><u>Eyelet Swarm</u></a>, <a href="NPCs.aspx?ID=3992"><u>Eylthia</u></a>, <a href="NPCs.aspx?ID=4737"><u>Ezio Gaeta</u></a>, <a href="Monsters.aspx?ID=2581"><u>Fabled Harrowkin</u></a>, <a href="Monsters.aspx?ID=530"><u>Faceless Butcher</u></a>, <a href="Monsters.aspx?ID=4"><u>Faceless Stalker</u></a>, <a href="Monsters.aspx?ID=2363"><u>Facetbound Cascader</u></a>, <a href="Monsters.aspx?ID=2362"><u>Facetbound Nullifier</u></a>, <a href="Monsters.aspx?ID=205"><u>Faerie Dragon</u></a>, <a href="Monsters.aspx?ID=1725"><u>Fafnheir</u></a>, <a href="Monsters.aspx?ID=3811"><u>Failed Prophet</u></a>, <a href="Monsters.aspx?ID=1870"><u>Faithless Ecclesiarch</u></a>, <a href="NPCs.aspx?ID=2738"><u>Fallen Acolyte</u></a>, <a href="Monsters.aspx?ID=1871"><u>Fallen Champion</u></a>, <a href="Monsters.aspx?ID=2808"><u>False Governor</u></a>, <a href="NPCs.aspx?ID=928"><u>False Priest</u></a>, <a href="Monsters.aspx?ID=2386"><u>False Priestess</u></a>, <a href="Monsters.aspx?ID=4748"><u>Fangwood Sentinel Corps</u></a>, <a href="NPCs.aspx?ID=914"><u>Farmer</u></a>, <a href="Monsters.aspx?ID=2557"><u>Fate's Prophet</u></a>, <a href="Monsters.aspx?ID=3882"><u>Favored Thrall</u></a>, <a href="NPCs.aspx?ID=2488"><u>Fayati Alummur</u></a>, <a href="Monsters.aspx?ID=2662"><u>Faydhaan Shuyookh</u></a>, <a href="Monsters.aspx?ID=1320"><u>Feathered Bear</u></a>, <a href="NPCs.aspx?ID=891"><u>Fence</u></a>, <a href="Monsters.aspx?ID=2519"><u>Ferrugon</u></a>, <a href="Monsters.aspx?ID=1153"><u>Festrog</u></a>, <a href="Monsters.aspx?ID=2208"><u>Fetch Behemoth</u></a>, <a href="Monsters.aspx?ID=2207"><u>Fetch Stalker</u></a>, <a href="Monsters.aspx?ID=669"><u>Fetchling Scout</u></a>, <a href="Monsters.aspx?ID=1857"><u>Fiddling Bones</u></a>, <a href="NPCs.aspx?ID=3609"><u>Fiend Caller</u></a>, <a href="Monsters.aspx?ID=4715"><u>Fiendish Viro Ahala</u></a>, <a href="Monsters.aspx?ID=2376"><u>Fionn</u></a>, <a href="Monsters.aspx?ID=223"><u>Fire Giant</u></a>, <a href="Monsters.aspx?ID=748"><u>Fire Yai</u></a>, <a href="NPCs.aspx?ID=1638"><u>Fire-Pot Ubanu</u></a>, <a href="NPCs.aspx?ID=2439"><u>Firebrand Bastion</u></a>, <a href="Monsters.aspx?ID=3961"><u>Firehoof Minotaur</u></a>, <a href="Monsters.aspx?ID=3915"><u>First-Class Infantry</u></a>, <a href="NPCs.aspx?ID=3493"><u>Fisher</u></a>, <a href="NPCs.aspx?ID=3436"><u>Flamboyant Thief</u></a>, <a href="Monsters.aspx?ID=1078"><u>Flaming Skull</u></a>, <a href="Monsters.aspx?ID=2406"><u>Fleshforged Conformer</u></a>, <a href="Monsters.aspx?ID=3916"><u>Fleshwarp Amalgam</u></a>, <a href="NPCs.aspx?ID=3617"><u>Fleshwarper</u></a>, <a href="Monsters.aspx?ID=1036"><u>Flickerwisp</u></a>, <a href="Monsters.aspx?ID=3755"><u>Floodslain Orc</u></a>, <a href="Monsters.aspx?ID=1156"><u>Flumph</u></a>, <a href="Monsters.aspx?ID=1858"><u>Fluxwraith</u></a>, <a href="Monsters.aspx?ID=717"><u>Flytrap Leshy</u></a>, <a href="Monsters.aspx?ID=1935"><u>Follower Of Shumfallow</u></a>, <a href="NPCs.aspx?ID=2161"><u>Foolish Hunters</u></a>, <a href="NPCs.aspx?ID=3467"><u>Forager</u></a>, <a href="Monsters.aspx?ID=4145"><u>Forest Archdragon</u></a>, <a href="Monsters.aspx?ID=473"><u>Forge-Spurned</u></a>, <a href="Monsters.aspx?ID=2181"><u>Forge-Spurned</u></a>, <a href="Monsters.aspx?ID=3955"><u>Forgotten Dead</u></a>, <a href="NPCs.aspx?ID=3631"><u>Forlorn Artist</u></a>, <a href="Monsters.aspx?ID=4102"><u>Fortune Archdragon</u></a>, <a href="Monsters.aspx?ID=2713"><u>Four-Tooth</u></a>, <a href="Monsters.aspx?ID=2489"><u>Frefferth</u></a>, <a href="NPCs.aspx?ID=1639"><u>Froglegs</u></a>, <a href="Monsters.aspx?ID=222"><u>Frost Giant</u></a>, <a href="Monsters.aspx?ID=831"><u>Frost Troll</u></a>, <a href="Monsters.aspx?ID=3375"><u>Frostripper</u></a>, <a href="Monsters.aspx?ID=3870"><u>Fulthrethu</u></a>, <a href="Monsters.aspx?ID=281"><u>Fungus Leshy</u></a>, <a href="Monsters.aspx?ID=3364"><u>Fungus Tyrant</u></a>, <a href="NPCs.aspx?ID=3462"><u>Gadgeteer</u></a>, <a href="Monsters.aspx?ID=2324"><u>Gaetane</u></a>, <a href="Monsters.aspx?ID=3969"><u>Gale Frenzy</u></a>, <a href="Monsters.aspx?ID=1859"><u>Gallowdead</u></a>, <a href="NPCs.aspx?ID=4075"><u>Galudu</u></a>, <a href="NPCs.aspx?ID=3670"><u>Gambling Companion</u></a>, <a href="Monsters.aspx?ID=1701"><u>Gambulami</u></a>, <a href="NPCs.aspx?ID=3475"><u>Gamekeeper</u></a>, <a href="NPCs.aspx?ID=964"><u>Gang Leader</u></a>, <a href="Monsters.aspx?ID=1266"><u>Ganzi Martial Artist</u></a>, <a href="Monsters.aspx?ID=4087"><u>Garadasura</u></a>, <a href="Monsters.aspx?ID=210"><u>Gargoyle</u></a>, <a href="Monsters.aspx?ID=3917"><u>Gargoyle Wing</u></a>, <a href="Monsters.aspx?ID=1162"><u>Garuda</u></a>, <a href="Monsters.aspx?ID=474"><u>Gashadokuro</u></a>, <a href="Monsters.aspx?ID=1860"><u>Gashadokuro</u></a>, <a href="Monsters.aspx?ID=1163"><u>Gathlain Wanderer</u></a>, <a href="Monsters.aspx?ID=2333"><u>Gedovius</u></a>, <a href="Monsters.aspx?ID=2591"><u>Gegnir</u></a>, <a href="Monsters.aspx?ID=1861"><u>Geist</u></a>, <a href="Monsters.aspx?ID=113"><u>Gelugon</u></a>, <a href="NPCs.aspx?ID=3563"><u>Gendarme</u></a>, <a href="Monsters.aspx?ID=2330"><u>General Avinash Jurrg</u></a>, <a href="Monsters.aspx?ID=2687"><u>Gennayn</u></a>, <a href="NPCs.aspx?ID=1543"><u>Gerhard Pendergrast</u></a>, <a href="Monsters.aspx?ID=219"><u>Ghast</u></a>, <a href="Monsters.aspx?ID=3356"><u>Ghast Cultists</u></a>, <a href="Monsters.aspx?ID=2091"><u>Ghast Outlaw</u></a>, <a href="Monsters.aspx?ID=2417"><u>Ghiasi The Unraveler</u></a>, <a href="Monsters.aspx?ID=2440"><u>Ghiono</u></a>, <a href="NPCs.aspx?ID=2466"><u>Ghodrak The Quick</u></a>, <a href="Monsters.aspx?ID=1164"><u>Ghoran Manipulator</u></a>, <a href="Monsters.aspx?ID=216"><u>Ghost Commoner</u></a>, <a href="Monsters.aspx?ID=217"><u>Ghost Mage</u></a>, <a href="Monsters.aspx?ID=1864"><u>Ghost Pirate Captain</u></a>, <a href="Monsters.aspx?ID=2053"><u>Ghostly Mob</u></a>, <a href="Monsters.aspx?ID=218"><u>Ghoul</u></a>, <a href="Monsters.aspx?ID=2154"><u>Ghoul Antipaladin</u></a>, <a href="Monsters.aspx?ID=2144"><u>Ghoul Gnawer</u></a>, <a href="Monsters.aspx?ID=2155"><u>Ghoul Razorclaw</u></a>, <a href="Monsters.aspx?ID=3010"><u>Ghoul Soldier</u></a>, <a href="Monsters.aspx?ID=1867"><u>Ghul</u></a>, <a href="Monsters.aspx?ID=590"><u>Giant Crawling Hand</u></a>, <a href="NPCs.aspx?ID=1965"><u>Gilded Gunner Goon</u></a>, <a href="Monsters.aspx?ID=228"><u>Gimmerling</u></a>, <a href="Monsters.aspx?ID=2109"><u>Ginjana Mindkeeper</u></a>, <a href="Monsters.aspx?ID=1171"><u>Girtablilu Seer</u></a>, <a href="Monsters.aspx?ID=1170"><u>Girtablilu Sentry</u></a>, <a href="NPCs.aspx?ID=1940"><u>Glaz “Brick Blaster” Nixbrix</u></a>, <a href="NPCs.aspx?ID=3595"><u>Globetrotting Scholar</u></a>, <a href="Monsters.aspx?ID=3330"><u>Glorkus</u></a>, <a href="Monsters.aspx?ID=2747"><u>Glutu</u></a>, <a href="Monsters.aspx?ID=230"><u>Gnoll Cultist</u></a>, <a href="Monsters.aspx?ID=231"><u>Gnoll Sergeant</u></a>, <a href="NPCs.aspx?ID=3020"><u>Gnome Bard</u></a>, <a href="Monsters.aspx?ID=3919"><u>Gnome Cannon Corps</u></a>, <a href="NPCs.aspx?ID=3639"><u>Gnome Conservationist</u></a>, <a href="NPCs.aspx?ID=3637"><u>Gnome Daredevil</u></a>, <a href="NPCs.aspx?ID=3635"><u>Gnome Philomath</u></a>, <a href="NPCs.aspx?ID=3640"><u>Goblin Chef</u></a>, <a href="Monsters.aspx?ID=233"><u>Goblin Commando</u></a>, <a href="NPCs.aspx?ID=3642"><u>Goblin Get Gang</u></a>, <a href="Monsters.aspx?ID=234"><u>Goblin Pyro</u></a>, <a href="Monsters.aspx?ID=3920"><u>Goblin Rabble</u></a>, <a href="NPCs.aspx?ID=3641"><u>Goblin Scavenger</u></a>, <a href="Monsters.aspx?ID=4415"><u>Goblin Snake</u></a>, <a href="Monsters.aspx?ID=235"><u>Goblin War Chanter</u></a>, <a href="NPCs.aspx?ID=3024"><u>Goblin Warrior</u></a>, <a href="Monsters.aspx?ID=4416"><u>Gobmob Snake</u></a>, <a href="NPCs.aspx?ID=3542"><u>God Caller</u></a>, <a href="Monsters.aspx?ID=4731"><u>Godclaw Hellcrown</u></a>, <a href="NPCs.aspx?ID=1932"><u>Gold Tank Investor</u></a>, <a href="Monsters.aspx?ID=4751"><u>Golden Erinys Novitiate Circle</u></a>, <a href="Monsters.aspx?ID=3816"><u>Goldpebble</u></a>, <a href="Monsters.aspx?ID=4417"><u>Golem</u></a>, <a href="NPCs.aspx?ID=1466"><u>Gomwai</u></a>, <a href="Monsters.aspx?ID=3339"><u>Gorlak</u></a>, <a href="Monsters.aspx?ID=3376"><u>Gorumite Infantry</u></a>, <a href="Monsters.aspx?ID=3373"><u>Gorumite Veteran</u></a>, <a href="Monsters.aspx?ID=3374"><u>Gorumite Warpriest</u></a>, <a href="Monsters.aspx?ID=687"><u>Gosreg</u></a>, <a href="Monsters.aspx?ID=280"><u>Gourd Leshy</u></a>, <a href="NPCs.aspx?ID=3659"><u>Gourd Leshy Witch</u></a>, <a href="Monsters.aspx?ID=2268"><u>Grabbles</u></a>, <a href="NPCs.aspx?ID=2082"><u>Grace “The Rhino” Owano</u></a>, <a href="Monsters.aspx?ID=2599"><u>Grand Defender</u></a>, <a href="NPCs.aspx?ID=3568"><u>Grand Inquisitor</u></a>, <a href="NPCs.aspx?ID=3503"><u>Grandmaster</u></a>, <a href="Monsters.aspx?ID=2046"><u>Granite Vulture</u></a>, <a href="Monsters.aspx?ID=1868"><u>Grappling Spirit</u></a>, <a href="Monsters.aspx?ID=2055"><u>Grave Hag</u></a>, <a href="Monsters.aspx?ID=1699"><u>Grave Karina</u></a>, <a href="NPCs.aspx?ID=886"><u>Grave Robber</u></a>, <a href="NPCs.aspx?ID=916"><u>Gravedigger</u></a>, <a href="Monsters.aspx?ID=244"><u>Graveknight</u></a>, <a href="Monsters.aspx?ID=1663"><u>Graveknight Captain</u></a>, <a href="Monsters.aspx?ID=1664"><u>Graveknight Champion</u></a>, <a href="Monsters.aspx?ID=1869"><u>Graveknight Warmaster</u></a>, <a href="Monsters.aspx?ID=436"><u>Graveshell</u></a>, <a href="Monsters.aspx?ID=4667"><u>Gray Butcher</u></a>, <a href="Monsters.aspx?ID=1641"><u>Gray Death</u></a>, <a href="NPCs.aspx?ID=1648"><u>Gray Gardener Assassin</u></a>, <a href="NPCs.aspx?ID=1649"><u>Gray Gardener Director General</u></a>, <a href="NPCs.aspx?ID=1647"><u>Gray Gardener Enforcer</u></a>, <a href="Monsters.aspx?ID=1824"><u>Graylok Ambusher</u></a>, <a href="Monsters.aspx?ID=1822"><u>Graylok Artillerist</u></a>, <a href="Monsters.aspx?ID=1823"><u>Graylok Gatebreaker</u></a>, <a href="Monsters.aspx?ID=87"><u>Great Cyclops</u></a>, <a href="Monsters.aspx?ID=1637"><u>Great Grodair</u></a>, <a href="Monsters.aspx?ID=43"><u>Greater Barghest</u></a>, <a href="Monsters.aspx?ID=4714"><u>Gredress Tilnanos</u></a>, <a href="Monsters.aspx?ID=255"><u>Green Hag</u></a>, <a href="Monsters.aspx?ID=2463"><u>Green Monkey</u></a>, <a href="NPCs.aspx?ID=2476"><u>Gref</u></a>, <a href="Monsters.aspx?ID=690"><u>Grendel</u></a>, <a href="Monsters.aspx?ID=390"><u>Grig</u></a>, <a href="NPCs.aspx?ID=2192"><u>Grigori</u></a>, <a href="Monsters.aspx?ID=250"><u>Grim Reaper</u></a>, <a href="Monsters.aspx?ID=2171"><u>Grimbal</u></a>, <a href="Monsters.aspx?ID=691"><u>Grimstalker</u></a>, <a href="Monsters.aspx?ID=448"><u>Grippli Archer</u></a>, <a href="Monsters.aspx?ID=449"><u>Grippli Greenspeaker</u></a>, <a href="Monsters.aspx?ID=1624"><u>Grippli Jinxer</u></a>, <a href="Monsters.aspx?ID=693"><u>Grippli Scout</u></a>, <a href="Monsters.aspx?ID=447"><u>Grippli Scout</u></a>, <a href="Monsters.aspx?ID=1623"><u>Grippli Skirmisher</u></a>, <a href="Monsters.aspx?ID=1728"><u>Grisantian Lion </u></a>, <a href="NPCs.aspx?ID=1477"><u>Gristleburst</u></a>, <a href="Monsters.aspx?ID=1727"><u>Grogrisant</u></a>, <a href="Monsters.aspx?ID=2218"><u>Gromog</u></a>, <a href="NPCs.aspx?ID=933"><u>Guard</u></a>, <a href="Monsters.aspx?ID=307"><u>Guardian Naga</u></a>, <a href="Monsters.aspx?ID=1184"><u>Guecubu</u></a>, <a href="Monsters.aspx?ID=2757"><u>Guhdggi</u></a>, <a href="NPCs.aspx?ID=903"><u>Guide</u></a>, <a href="NPCs.aspx?ID=958"><u>Guildmaster</u></a>, <a href="Monsters.aspx?ID=2078"><u>Guloval</u></a>, <a href="NPCs.aspx?ID=4051"><u>Gulzash</u></a>, <a href="Monsters.aspx?ID=1413"><u>Gumiho</u></a>, <a href="NPCs.aspx?ID=1939"><u>Gunmarshal</u></a>, <a href="NPCs.aspx?ID=3456"><u>Gunsmith</u></a>, <a href="NPCs.aspx?ID=3510"><u>Gunwitch</u></a>, <a href="Monsters.aspx?ID=1235"><u>Gurgist Mauler</u></a>, <a href="Monsters.aspx?ID=2810"><u>Gurglegut</u></a>, <a href="Monsters.aspx?ID=4665"><u>Gurglegut</u></a>, <a href="Monsters.aspx?ID=2290"><u>Gurija</u></a>, <a href="Monsters.aspx?ID=3335"><u>Gurlunk</u></a>, <a href="Monsters.aspx?ID=610"><u>Gylou</u></a>, <a href="Monsters.aspx?ID=2528"><u>Hadi Mob</u></a>, <a href="Monsters.aspx?ID=2697"><u>Hagegraf Royal Guard</u></a>, <a href="Monsters.aspx?ID=1693"><u>Halbrux Far-Sight</u></a>, <a href="NPCs.aspx?ID=3644"><u>Halfling Head Chef</u></a>, <a href="Monsters.aspx?ID=3921"><u>Halfling Lucky Draw</u></a>, <a href="NPCs.aspx?ID=3646"><u>Halfling Smuggler</u></a>, <a href="Monsters.aspx?ID=3044"><u>Halfling Street Watcher</u></a>, <a href="Monsters.aspx?ID=3045"><u>Halfling Troublemaker</u></a>, <a href="NPCs.aspx?ID=3647"><u>Halfling Yarnspinner</u></a>, <a href="NPCs.aspx?ID=1504"><u>Halspin the Stung</u></a>, <a href="NPCs.aspx?ID=1468"><u>Hana's Hundreds</u></a>, <a href="Monsters.aspx?ID=1178"><u>Haniver</u></a>, <a href="NPCs.aspx?ID=2193"><u>Hannis Drelev</u></a>, <a href="Monsters.aspx?ID=1397"><u>Hantu Belian</u></a>, <a href="Monsters.aspx?ID=1396"><u>Hantu Denai</u></a>, <a href="NPCs.aspx?ID=2278"><u>Happs Bydon</u></a>, <a href="Monsters.aspx?ID=4086"><u>Hārakasura</u></a>, <a href="NPCs.aspx?ID=919"><u>Harbormaster</u></a>, <a href="Monsters.aspx?ID=2194"><u>Hargulka</u></a>, <a href="Monsters.aspx?ID=2150"><u>Harmony In Agony</u></a>, <a href="Monsters.aspx?ID=258"><u>Harpy</u></a>, <a href="Monsters.aspx?ID=2552"><u>Harpy Warbird</u></a>, <a href="Monsters.aspx?ID=531"><u>Harrow Doll</u></a>, <a href="NPCs.aspx?ID=926"><u>Harrow Reader</u></a>, <a href="NPCs.aspx?ID=2231"><u>Hateful Hermit</u></a>, <a href="NPCs.aspx?ID=3688"><u>Hateful Loggers</u></a>, <a href="Monsters.aspx?ID=2751"><u>Heart-Eating Vulture</u></a>, <a href="NPCs.aspx?ID=3528"><u>Heavy Cavalry</u></a>, <a href="Monsters.aspx?ID=4706"><u>Hedvend Vi</u></a>, <a href="Monsters.aspx?ID=1831"><u>Hegremon</u></a>, <a href="NPCs.aspx?ID=2797"><u>Heh Shan-Bao</u></a>, <a href="Monsters.aspx?ID=1342"><u>Hekatonkheires Titan</u></a>, <a href="Monsters.aspx?ID=2608"><u>Heldin Ulgincamp</u></a>, <a href="Monsters.aspx?ID=2125"><u>Helg Eats-The-Eaters</u></a>, <a href="Monsters.aspx?ID=1113"><u>Hellbound Attorney</u></a>, <a href="Monsters.aspx?ID=4746"><u>Hellbound Honor Guard</u></a>, <a href="Monsters.aspx?ID=437"><u>Hellcrown</u></a>, <a href="NPCs.aspx?ID=967"><u>Hellknight Armiger</u></a>, <a href="Monsters.aspx?ID=1091"><u>Hellknight Cavalry Brigade</u></a>, <a href="Monsters.aspx?ID=4713"><u>Hellknight Field-Maralictors</u></a>, <a href="NPCs.aspx?ID=968"><u>Hellknight Paravicar</u></a>, <a href="Monsters.aspx?ID=4742"><u>Hellknight Retrieval Unit</u></a>, <a href="Monsters.aspx?ID=3740"><u>Hellshadow</u></a>, <a href="NPCs.aspx?ID=2483"><u>Hendrid Pratchett</u></a>, <a href="Monsters.aspx?ID=520"><u>Herecite of Zevgavizeb</u></a>, <a href="Monsters.aspx?ID=1192"><u>Herexen</u></a>, <a href="NPCs.aspx?ID=3621"><u>Hero Hunter</u></a>, <a href="Monsters.aspx?ID=1250"><u>Hesperid</u></a>, <a href="Monsters.aspx?ID=1252"><u>Hesperid Queen</u></a>, <a href="NPCs.aspx?ID=1548"><u>Heuberk Thropp</u></a>, <a href="NPCs.aspx?ID=1544"><u>Hezle</u></a>, <a href="NPCs.aspx?ID=3447"><u>High Priest of Pharasma</u></a>, <a href="NPCs.aspx?ID=3511"><u>High Roller</u></a>, <a href="Monsters.aspx?ID=220"><u>Hill Giant</u></a>, <a href="Monsters.aspx?ID=2262"><u>Hill Giant Butcher</u></a>, <a href="Monsters.aspx?ID=2264"><u>Hillstomper</u></a>, <a href="Monsters.aspx?ID=262"><u>Hobgoblin Archer</u></a>, <a href="NPCs.aspx?ID=3649"><u>Hobgoblin Battalion</u></a>, <a href="Monsters.aspx?ID=263"><u>Hobgoblin General</u></a>, <a href="Monsters.aspx?ID=261"><u>Hobgoblin Soldier</u></a>, <a href="NPCs.aspx?ID=3648"><u>Hobgoblin Spellbreaker</u></a>, <a href="NPCs.aspx?ID=3650"><u>Hobgoblin Vanguard</u></a>, <a href="Monsters.aspx?ID=3923"><u>Hobgoblin Veteran Regiment</u></a>, <a href="Monsters.aspx?ID=701"><u>Hodag</u></a>, <a href="Monsters.aspx?ID=264"><u>Homunculus</u></a>, <a href="Monsters.aspx?ID=2809"><u>Hong Meigui</u></a>, <a href="Monsters.aspx?ID=1876"><u>Horde Lich</u></a>, <a href="Monsters.aspx?ID=4103"><u>Horned Archdragon</u></a>, <a href="Monsters.aspx?ID=1193"><u>House Drake</u></a>, <a href="Monsters.aspx?ID=2707"><u>Hryngar Assassin</u></a>, <a href="NPCs.aspx?ID=2717"><u>Hryngar Battlepriest</u></a>, <a href="Monsters.aspx?ID=2708"><u>Hryngar Breccia Squad</u></a>, <a href="Monsters.aspx?ID=2699"><u>Hryngar Forgepriest</u></a>, <a href="Monsters.aspx?ID=2698"><u>Hryngar King's Agent</u></a>, <a href="Monsters.aspx?ID=1197"><u>Huldra</u></a>, <a href="NPCs.aspx?ID=1507"><u>Huldrin Skolsdottir </u></a>, <a href="NPCs.aspx?ID=3486"><u>Humanitarian Hermit</u></a>, <a href="NPCs.aspx?ID=1498"><u>Hummingbird</u></a>, <a href="Monsters.aspx?ID=1863"><u>Hungry Ghost</u></a>, <a href="NPCs.aspx?ID=907"><u>Hunter</u></a>, <a href="Monsters.aspx?ID=1915"><u>Hunter Wight</u></a>, <a href="Monsters.aspx?ID=2521"><u>Hurlilu</u></a>, <a href="Monsters.aspx?ID=1919"><u>Husk Zombie</u></a>, <a href="Monsters.aspx?ID=1198"><u>Hyakume</u></a>, <a href="Monsters.aspx?ID=2172"><u>Hymmir Urath</u></a>, <a href="Monsters.aspx?ID=2602"><u>Hyphae Tyrant</u></a>, <a href="Monsters.aspx?ID=2160"><u>Hyrune Loxenna</u></a>, <a href="Monsters.aspx?ID=1969"><u>I</u></a>, <a href="Monsters.aspx?ID=1625"><u>I'iko Dragon</u></a>, <a href="NPCs.aspx?ID=3976"><u>Iapholi (NPC)</u></a>, <a href="Monsters.aspx?ID=1961"><u>Ibrique</u></a>, <a href="NPCs.aspx?ID=1993"><u>Ibrium</u></a>, <a href="Monsters.aspx?ID=1885"><u>Ice Mummy</u></a>, <a href="Monsters.aspx?ID=747"><u>Ice Yai</u></a>, <a href="Monsters.aspx?ID=1873"><u>Ichor Slinger</u></a>, <a href="Monsters.aspx?ID=2183"><u>Id Ooze</u></a>, <a href="NPCs.aspx?ID=1792"><u>Idovik</u></a>, <a href="Monsters.aspx?ID=759"><u>Ifrit Pyrochemist</u></a>, <a href="Monsters.aspx?ID=2636"><u>Ifrit Shuyookh</u></a>, <a href="Monsters.aspx?ID=2758"><u>Ijda</u></a>, <a href="Monsters.aspx?ID=2510"><u>Ilakni</u></a>, <a href="Monsters.aspx?ID=1963"><u>Ileosa's Shell</u></a>, <a href="NPCs.aspx?ID=1595"><u>Ilgreth</u></a>, <a href="NPCs.aspx?ID=4738"><u>Illcayuna Alonnor</u></a>, <a href="NPCs.aspx?ID=2263"><u>Ilora Nuski</u></a>, <a href="NPCs.aspx?ID=1576"><u>Ilssrah Embermead</u></a>, <a href="Monsters.aspx?ID=2357"><u>Ilthuliak</u></a>, <a href="NPCs.aspx?ID=2508"><u>Ilverani Sentry</u></a>, <a href="NPCs.aspx?ID=2311"><u>Imeckus Stroon</u></a>, <a href="Monsters.aspx?ID=3405"><u>Immortal Trickster</u></a>, <a href="Monsters.aspx?ID=109"><u>Imp</u></a>, <a href="Monsters.aspx?ID=1746"><u>Imperfect Automaton</u></a>, <a href="Monsters.aspx?ID=2802"><u>Imprecasia</u></a>, <a href="Monsters.aspx?ID=3788"><u>Imvath</u></a>, <a href="NPCs.aspx?ID=3522"><u>Infantry Soldier</u></a>, <a href="NPCs.aspx?ID=3566"><u>Infernal Registrar</u></a>, <a href="NPCs.aspx?ID=1591"><u>Ingnovim</u></a>, <a href="NPCs.aspx?ID=1592"><u>Ingnovim's Assistants</u></a>, <a href="NPCs.aspx?ID=3852"><u>Inizkar</u></a>, <a href="NPCs.aspx?ID=1598"><u>Inizra Arumelo</u></a>, <a href="Monsters.aspx?ID=1414"><u>Inmyeonjo</u></a>, <a href="NPCs.aspx?ID=945"><u>Innkeeper</u></a>, <a href="NPCs.aspx?ID=4245"><u>Innumma</u></a>, <a href="Monsters.aspx?ID=4723"><u>Insidiator</u></a>, <a href="NPCs.aspx?ID=3554"><u>Inspector</u></a>, <a href="Monsters.aspx?ID=4724"><u>Instillo</u></a>, <a href="Monsters.aspx?ID=2419"><u>Intellect Assemblage</u></a>, <a href="Monsters.aspx?ID=703"><u>Intellect Devourer</u></a>, <a href="Monsters.aspx?ID=462"><u>Interlocutor</u></a>, <a href="NPCs.aspx?ID=3615"><u>Interrogator</u></a>, <a href="Monsters.aspx?ID=599"><u>Invidiak</u></a>, <a href="NPCs.aspx?ID=1712"><u>Iobane Magi</u></a>, <a href="Monsters.aspx?ID=2238"><u>Irahkatu</u></a>, <a href="Monsters.aspx?ID=4754"><u>Iriatykian Outrider Band</u></a>, <a href="NPCs.aspx?ID=1933"><u>Irkem Dresh</u></a>, <a href="Monsters.aspx?ID=704"><u>Irlgaunt</u></a>, <a href="Monsters.aspx?ID=2069"><u>Iron Taviah</u></a>, <a href="Monsters.aspx?ID=2374"><u>Irovetti's Fetch</u></a>, <a href="NPCs.aspx?ID=3661"><u>Iruxi Masked Mummer</u></a>, <a href="Monsters.aspx?ID=4702"><u>Isgeri Slayer</u></a>, <a href="Monsters.aspx?ID=1349"><u>Ittan-Momen</u></a>, <a href="NPCs.aspx?ID=1832"><u>Ivarsa</u></a>, <a href="Monsters.aspx?ID=1682"><u>Ixamè </u></a>, <a href="NPCs.aspx?ID=3701"><u>Izurran</u></a>, <a href="Monsters.aspx?ID=2620"><u>Jaathoom Shuyookh</u></a>, <a href="Monsters.aspx?ID=2627"><u>Jabali Shuyookh</u></a>, <a href="Monsters.aspx?ID=652"><u>Jabberwock</u></a>, <a href="NPCs.aspx?ID=1695"><u>Jackal Guard</u></a>, <a href="NPCs.aspx?ID=4066"><u>Jafaki</u></a>, <a href="Monsters.aspx?ID=1557"><u>Jaggaki</u></a>, <a href="Monsters.aspx?ID=2380"><u>Jaggedbriar Hag</u></a>, <a href="NPCs.aspx?ID=1541"><u>Jahsi</u></a>, <a href="NPCs.aspx?ID=935"><u>Jailer</u></a>, <a href="NPCs.aspx?ID=1996"><u>Jaleen</u></a>, <a href="NPCs.aspx?ID=2195"><u>Jamandi Aldori</u></a>, <a href="Monsters.aspx?ID=2688"><u>Jann Shuyookh</u></a>, <a href="Monsters.aspx?ID=211"><u>Janni</u></a>, <a href="Monsters.aspx?ID=1071"><u>Japalisura</u></a>, <a href="NPCs.aspx?ID=4035"><u>Jarelle Kaldrian</u></a>, <a href="NPCs.aspx?ID=4043"><u>Jaul Mezmin</u></a>, <a href="NPCs.aspx?ID=2170"><u>Jekkajak</u></a>, <a href="Monsters.aspx?ID=3354"><u>Jervis Stoot</u></a>, <a href="NPCs.aspx?ID=1828"><u>Jesseri The Hailstorm</u></a>, <a href="NPCs.aspx?ID=1522"><u>Ji-Yook (Gumiho Form)</u></a>, <a href="NPCs.aspx?ID=1484"><u>Ji-yook (Level 13)</u></a>, <a href="NPCs.aspx?ID=1446"><u>Ji-yook (Level 9)</u></a>, <a href="Monsters.aspx?ID=4689"><u>Jiang-Shi</u></a>, <a href="Monsters.aspx?ID=2297"><u>Jin Durwhimmer</u></a>, <a href="NPCs.aspx?ID=1516"><u>Jin-Hae</u></a>, <a href="NPCs.aspx?ID=3671"><u>Jinx Eater</u></a>, <a href="Monsters.aspx?ID=1881"><u>Jitterbone Contortionist</u></a>, <a href="Monsters.aspx?ID=3346"><u>Jordus Munt</u></a>, <a href="Monsters.aspx?ID=4711"><u>Joris Serelli</u></a>, <a href="Monsters.aspx?ID=1005"><u>Jorogumo</u></a>, <a href="Monsters.aspx?ID=1200"><u>Jorogumo</u></a>, <a href="Monsters.aspx?ID=4451"><u>Jotunborn Sage</u></a>, <a href="NPCs.aspx?ID=2393"><u>Jubilost Narthropple (Level 1)</u></a>, <a href="NPCs.aspx?ID=2394"><u>Jubilost Narthropple (Level 8)</u></a>, <a href="NPCs.aspx?ID=917"><u>Judge</u></a>, <a href="NPCs.aspx?ID=3465"><u>Juggernaut</u></a>, <a href="NPCs.aspx?ID=3572"><u>Juggler</u></a>, <a href="Monsters.aspx?ID=2219"><u>Jurgrindor</u></a>, <a href="NPCs.aspx?ID=1508"><u>Juspix Rammel</u></a>, <a href="Monsters.aspx?ID=708"><u>Jyoti</u></a>, <a href="Monsters.aspx?ID=2039"><u>K.H.W.'s Echo</u></a>, <a href="Monsters.aspx?ID=1757"><u>Kadlaka</u></a>, <a href="Monsters.aspx?ID=2793"><u>Kagekuma</u></a>, <a href="NPCs.aspx?ID=1751"><u>Kalaggi Nakutu</u></a>, <a href="Monsters.aspx?ID=3872"><u>Kalakaigh</u></a>, <a href="Monsters.aspx?ID=3358"><u>Kaleb Valdemar's Body</u></a>, <a href="Monsters.aspx?ID=4677"><u>Kalen Bray</u></a>, <a href="Monsters.aspx?ID=1729"><u>Kallas Devil</u></a>, <a href="Monsters.aspx?ID=4269"><u>Kandirvek</u></a>, <a href="Monsters.aspx?ID=2450"><u>Kaneepo The Slim</u></a>, <a href="NPCs.aspx?ID=3370"><u>Kanker</u></a>, <a href="Monsters.aspx?ID=2548"><u>Kannijo</u></a>, <a href="Monsters.aspx?ID=2060"><u>Kapoacinth</u></a>, <a href="Monsters.aspx?ID=1206"><u>Kappa</u></a>, <a href="Monsters.aspx?ID=2347"><u>Kargstaad's Giant</u></a>, <a href="Monsters.aspx?ID=3318"><u>Karkadann</u></a>, <a href="Monsters.aspx?ID=1654"><u>Karumzek</u></a>, <a href="NPCs.aspx?ID=1481"><u>Kas Xi Rai</u></a>, <a href="Monsters.aspx?ID=1350"><u>Kasa-Obake</u></a>, <a href="Monsters.aspx?ID=2409"><u>Kasesh</u></a>, <a href="Monsters.aspx?ID=2410"><u>Kashrishi Evaluator</u></a>, <a href="Monsters.aspx?ID=2524"><u>Katpaskir</u></a>, <a href="NPCs.aspx?ID=2475"><u>Kekker</u></a>, <a href="NPCs.aspx?ID=1575"><u>Kelda Halrig</u></a>, <a href="Monsters.aspx?ID=709"><u>Kelpie</u></a>, <a href="NPCs.aspx?ID=2479"><u>Kemeneles</u></a>, <a href="NPCs.aspx?ID=2436"><u>Kemnebi's Puppets </u></a>, <a href="NPCs.aspx?ID=2049"><u>Kepgeda the Hag-Nailed</u></a>, <a href="NPCs.aspx?ID=2287"><u>Kereek</u></a>, <a href="Monsters.aspx?ID=3963"><u>Keribos</u></a>, <a href="NPCs.aspx?ID=3984"><u>Kerinelopas</u></a>, <a href="Monsters.aspx?ID=2083"><u>Kerinza</u></a>, <a href="NPCs.aspx?ID=1646"><u>Keznin Nevarmo</u></a>, <a href="Monsters.aspx?ID=3714"><u>Khasprickle</u></a>, <a href="Monsters.aspx?ID=3069"><u>Kholo Hunter</u></a>, <a href="NPCs.aspx?ID=3653"><u>Kholo Outrider</u></a>, <a href="NPCs.aspx?ID=3652"><u>Kholo Pragmatist</u></a>, <a href="NPCs.aspx?ID=1451"><u>Ki Adept</u></a>, <a href="Monsters.aspx?ID=2176"><u>Kieragan Skross</u></a>, <a href="Monsters.aspx?ID=2138"><u>Kimilekki</u></a>, <a href="Monsters.aspx?ID=2179"><u>King Merlokrep</u></a>, <a href="NPCs.aspx?ID=2272"><u>King Vesket</u></a>, <a href="Monsters.aspx?ID=2646"><u>Kinzaruk</u></a>, <a href="Monsters.aspx?ID=1207"><u>Kirin</u></a>, <a href="Monsters.aspx?ID=2142"><u>Kirosthrek</u></a>, <a href="NPCs.aspx?ID=1630"><u>Kiru</u></a>, <a href="Monsters.aspx?ID=1208"><u>Kishi</u></a>, <a href="Monsters.aspx?ID=450"><u>Kishi</u></a>, <a href="Monsters.aspx?ID=1209"><u>Kitsune Trickster</u></a>, <a href="Monsters.aspx?ID=2681"><u>Kizidhar</u></a>, <a href="Monsters.aspx?ID=2682"><u>Kizidhar Shuyookh</u></a>, <a href="NPCs.aspx?ID=3423"><u>Knight</u></a>, <a href="Monsters.aspx?ID=3839"><u>Knight Reclaimant</u></a>, <a href="NPCs.aspx?ID=2743"><u>Knurr Ragnulf</u></a>, <a href="Monsters.aspx?ID=2323"><u>Kob Moleg</u></a>, <a href="Monsters.aspx?ID=274"><u>Kobold Dragon Mage</u></a>, <a href="NPCs.aspx?ID=3680"><u>Kobold Earth Diver</u></a>, <a href="NPCs.aspx?ID=3655"><u>Kobold Egg Guardian</u></a>, <a href="Monsters.aspx?ID=273"><u>Kobold Scout</u></a>, <a href="Monsters.aspx?ID=3924"><u>Kobold Trap Squad</u></a>, <a href="NPCs.aspx?ID=3654"><u>Kobold Trapper</u></a>, <a href="NPCs.aspx?ID=3072"><u>Kobold Warrior</u></a>, <a href="Monsters.aspx?ID=1202"><u>Kodama</u></a>, <a href="Monsters.aspx?ID=1210"><u>Kokogiak</u></a>, <a href="NPCs.aspx?ID=1635"><u>Kolbo</u></a>, <a href="NPCs.aspx?ID=2486"><u>Kolo Harvan</u></a>, <a href="Monsters.aspx?ID=710"><u>Korred</u></a>, <a href="Monsters.aspx?ID=1212"><u>Kovintus Geomancer</u></a>, <a href="NPCs.aspx?ID=4052"><u>Kragala</u></a>, <a href="Monsters.aspx?ID=275"><u>Kraken</u></a>, <a href="NPCs.aspx?ID=1566"><u>Kralgurn</u></a>, <a href="Monsters.aspx?ID=1213"><u>Krampus</u></a>, <a href="Monsters.aspx?ID=1732"><u>Krampus Celebrant</u></a>, <a href="Monsters.aspx?ID=1636"><u>Kreekoss</u></a>, <a href="Monsters.aspx?ID=1971"><u>Kreeth-Ni</u></a>, <a href="NPCs.aspx?ID=2280"><u>Kressle</u></a>, <a href="Monsters.aspx?ID=4761"><u>Krethark</u></a>, <a href="NPCs.aspx?ID=2607"><u>Krohan Veldollow</u></a>, <a href="Monsters.aspx?ID=1214"><u>Kuchisake-Onna</u></a>, <a href="Monsters.aspx?ID=4680"><u>Kugaptee's Centipede</u></a>, <a href="Monsters.aspx?ID=4685"><u>Kugaptee's Drakauthix</u></a>, <a href="Monsters.aspx?ID=2286"><u>Kundal</u></a>, <a href="Monsters.aspx?ID=1024"><u>Kurnugian Jackal</u></a>, <a href="Monsters.aspx?ID=1215"><u>Kurobozu</u></a>, <a href="Monsters.aspx?ID=1617"><u>Kurshkin</u></a>, <a href="Monsters.aspx?ID=1216"><u>Kushtaka</u></a>, <a href="Monsters.aspx?ID=2459"><u>Kvernknurr</u></a>, <a href="Monsters.aspx?ID=2539"><u>Kyem and Daleesha</u></a>, <a href="Monsters.aspx?ID=4725"><u>Kylix</u></a>, <a href="Monsters.aspx?ID=1865"><u>Lacedon</u></a>, <a href="Monsters.aspx?ID=4304"><u>Lacridaemon</u></a>, <a href="NPCs.aspx?ID=3847"><u>Lady Siccale</u></a>, <a href="NPCs.aspx?ID=4076"><u>Lady's Whisper</u></a>, <a href="Monsters.aspx?ID=277"><u>Lamia</u></a>, <a href="Monsters.aspx?ID=278"><u>Lamia Matriarch</u></a>, <a href="Monsters.aspx?ID=3817"><u>Lamp Blighter</u></a>, <a href="Monsters.aspx?ID=1249"><u>Lampad</u></a>, <a href="Monsters.aspx?ID=1251"><u>Lampad Queen</u></a>, <a href="Monsters.aspx?ID=4460"><u>Larabay</u></a>, <a href="Monsters.aspx?ID=3116"><u>Larval Ofalth</u></a>, <a href="NPCs.aspx?ID=2099"><u>Lasheeli Aminda</u></a>, <a href="NPCs.aspx?ID=1560"><u>Laslunn</u></a>, <a href="Monsters.aspx?ID=1875"><u>Last Guard</u></a>, <a href="NPCs.aspx?ID=3141"><u>Lawbringer Warpriest</u></a>, <a href="NPCs.aspx?ID=1987"><u>Leadsmith</u></a>, <a href="Monsters.aspx?ID=279"><u>Leaf Leshy</u></a>, <a href="NPCs.aspx?ID=3623"><u>Leaping Thief</u></a>, <a href="Monsters.aspx?ID=4003"><u>Leather Cap</u></a>, <a href="NPCs.aspx?ID=2126"><u>Ledorick Banyan</u></a>, <a href="Monsters.aspx?ID=4705"><u>Lefranek Meyal</u></a>, <a href="NPCs.aspx?ID=3431"><u>Legbreaker</u></a>, <a href="Monsters.aspx?ID=2452"><u>Leiko</u></a>, <a href="NPCs.aspx?ID=2167"><u>Lekmek</u></a>, <a href="Monsters.aspx?ID=1165"><u>Leng Ghoul</u></a>, <a href="Monsters.aspx?ID=714"><u>Leprechaun</u></a>, <a href="Monsters.aspx?ID=715"><u>Lerritan</u></a>, <a href="Monsters.aspx?ID=3730"><u>Leshy Mob</u></a>, <a href="Monsters.aspx?ID=251"><u>Lesser Death</u></a>, <a href="Monsters.aspx?ID=2350"><u>Lesser Jabberwock</u></a>, <a href="Monsters.aspx?ID=1588"><u>Lesser Manifestation Of Dahak</u></a>, <a href="Monsters.aspx?ID=718"><u>Leucrotta</u></a>, <a href="Monsters.aspx?ID=90"><u>Leukodaemon</u></a>, <a href="NPCs.aspx?ID=947"><u>Librarian</u></a>, <a href="Monsters.aspx?ID=282"><u>Lich</u></a>, <a href="Monsters.aspx?ID=3926"><u>Lich Legion</u></a>, <a href="Monsters.aspx?ID=2381"><u>Lickweed</u></a>, <a href="Monsters.aspx?ID=1236"><u>Lifeleecher Brawler</u></a>, <a href="NPCs.aspx?ID=3526"><u>Line Infantry</u></a>, <a href="Monsters.aspx?ID=2310"><u>Lintwerth</u></a>, <a href="NPCs.aspx?ID=2395"><u>Linzi (Level 1)</u></a>, <a href="NPCs.aspx?ID=2396"><u>Linzi (Level 7)</u></a>, <a href="NPCs.aspx?ID=1042"><u>Lisavet</u></a>, <a href="Monsters.aspx?ID=1878"><u>Little Man in the Woods</u></a>, <a href="NPCs.aspx?ID=3090"><u>Lizardfolk Defender</u></a>, <a href="Monsters.aspx?ID=292"><u>Lizardfolk Scout</u></a>, <a href="NPCs.aspx?ID=3092"><u>Lizardfolk Stargazer</u></a>, <a href="Monsters.aspx?ID=1879"><u>Llorona</u></a>, <a href="Monsters.aspx?ID=3689"><u>Lloyd The Leaper</u></a>, <a href="NPCs.aspx?ID=1631"><u>Loakan</u></a>, <a href="NPCs.aspx?ID=3426"><u>Loan Shark</u></a>, <a href="Monsters.aspx?ID=1758"><u>Loblobi</u></a>, <a href="NPCs.aspx?ID=3481"><u>Local Herbalist</u></a>, <a href="Monsters.aspx?ID=1223"><u>Locathah Hunter</u></a>, <a href="NPCs.aspx?ID=2229"><u>Logger</u></a>, <a href="Monsters.aspx?ID=1942"><u>Loreavor</u></a>, <a href="Monsters.aspx?ID=1945"><u>Lorthact</u></a>, <a href="Monsters.aspx?ID=1224"><u>Lovelorn</u></a>, <a href="NPCs.aspx?ID=3625"><u>Lucky Courser</u></a>, <a href="Monsters.aspx?ID=736"><u>Lunar Naga</u></a>, <a href="Monsters.aspx?ID=726"><u>Lurker In Light</u></a>, <a href="Monsters.aspx?ID=1010"><u>Lusca</u></a>, <a href="Monsters.aspx?ID=34"><u>Lyrakien</u></a>, <a href="NPCs.aspx?ID=2480"><u>Lyrma Swampwalker</u></a>, <a href="Monsters.aspx?ID=2119"><u>Lyrt Cozurn </u></a>, <a href="NPCs.aspx?ID=3579"><u>Maestro</u></a>, <a href="NPCs.aspx?ID=1496"><u>Mafika Ayuwari</u></a>, <a href="Monsters.aspx?ID=1225"><u>Maftet Guardian</u></a>, <a href="NPCs.aspx?ID=922"><u>Mage for Hire</u></a>, <a href="NPCs.aspx?ID=3517"><u>Mage Killer</u></a>, <a href="NPCs.aspx?ID=3531"><u>Mage Knight</u></a>, <a href="NPCs.aspx?ID=1453"><u>Mage of Many Styles</u></a>, <a href="Monsters.aspx?ID=4149"><u>Magma Archdragon</u></a>, <a href="NPCs.aspx?ID=2798"><u>Mago Kai</u></a>, <a href="Monsters.aspx?ID=1272"><u>Maharaja</u></a>, <a href="NPCs.aspx?ID=2289"><u>Malgorzata Niska</u></a>, <a href="Monsters.aspx?ID=1438"><u>Maliadi</u></a>, <a href="Monsters.aspx?ID=1399"><u>Manananggal</u></a>, <a href="Monsters.aspx?ID=727"><u>Mandragora</u></a>, <a href="Monsters.aspx?ID=2345"><u>Mandragora Swarm</u></a>, <a href="Monsters.aspx?ID=1596"><u>Manifestation Of Dahak</u></a>, <a href="Monsters.aspx?ID=294"><u>Manticore</u></a>, <a href="Monsters.aspx?ID=1259"><u>Manticore Paaridar</u></a>, <a href="NPCs.aspx?ID=3382"><u>Mantis Keeper</u></a>, <a href="Monsters.aspx?ID=1027"><u>Mari Lwyd</u></a>, <a href="Monsters.aspx?ID=215"><u>Marid</u></a>, <a href="Monsters.aspx?ID=2563"><u>Markish Aghayarea</u></a>, <a href="Monsters.aspx?ID=3301"><u>Marp</u></a>, <a href="Monsters.aspx?ID=728"><u>Marrmora</u></a>, <a href="Monsters.aspx?ID=679"><u>Marsh Giant</u></a>, <a href="NPCs.aspx?ID=3500"><u>Martial Student</u></a>, <a href="NPCs.aspx?ID=1629"><u>Mashkudu The Bully </u></a>, <a href="Monsters.aspx?ID=3748"><u>Mask of Norgorber</u></a>, <a href="NPCs.aspx?ID=3433"><u>Master Of Disguise</u></a>, <a href="NPCs.aspx?ID=960"><u>Mastermind</u></a>, <a href="NPCs.aspx?ID=3549"><u>Mayor</u></a>, <a href="Monsters.aspx?ID=505"><u>Mechanical Carny</u></a>, <a href="Monsters.aspx?ID=297"><u>Medusa</u></a>, <a href="NPCs.aspx?ID=2749"><u>Meitremar</u></a>, <a href="Monsters.aspx?ID=593"><u>Meladaemon</u></a>, <a href="Monsters.aspx?ID=2230"><u>Melianse</u></a>, <a href="Monsters.aspx?ID=1322"><u>Melixie</u></a>, <a href="Monsters.aspx?ID=1599"><u>Mengkare</u></a>, <a href="Monsters.aspx?ID=2755"><u>Meokdan</u></a>, <a href="NPCs.aspx?ID=2543"><u>Mercenary Assassin</u></a>, <a href="NPCs.aspx?ID=3518"><u>Mercenary Band</u></a>, <a href="Monsters.aspx?ID=4682"><u>Mercenary Enforcer</u></a>, <a href="NPCs.aspx?ID=1552"><u>Mercenary Sailor</u></a>, <a href="NPCs.aspx?ID=956"><u>Merchant</u></a>, <a href="Monsters.aspx?ID=2645"><u>Mercurial</u></a>, <a href="Monsters.aspx?ID=3979"><u>Merfolk Storm Singer</u></a>, <a href="Monsters.aspx?ID=298"><u>Merfolk Warrior</u></a>, <a href="Monsters.aspx?ID=299"><u>Merfolk Wavecaller</u></a>, <a href="NPCs.aspx?ID=3497"><u>Messenger</u></a>, <a href="NPCs.aspx?ID=1833"><u>Metuak</u></a>, <a href="Monsters.aspx?ID=1227"><u>Mi-Go</u></a>, <a href="NPCs.aspx?ID=1561"><u>Mialari Docur</u></a>, <a href="Monsters.aspx?ID=3785"><u>Miastrilek</u></a>, <a href="Monsters.aspx?ID=2585"><u>Mighty Bul-Gae</u></a>, <a href="Monsters.aspx?ID=1228"><u>Millindemalion</u></a>, <a href="NPCs.aspx?ID=3573"><u>Mime</u></a>, <a href="Monsters.aspx?ID=300"><u>Mimic</u></a>, <a href="Monsters.aspx?ID=1011"><u>Minchgorm</u></a>, <a href="Monsters.aspx?ID=2503"><u>Mindmoppet</u></a>, <a href="NPCs.aspx?ID=915"><u>Miner</u></a>, <a href="Monsters.aspx?ID=1910"><u>Minister Of Tumult</u></a>, <a href="Monsters.aspx?ID=1409"><u>Minister Of Tumult</u></a>, <a href="Monsters.aspx?ID=2266"><u>Minognos-Ushad</u></a>, <a href="NPCs.aspx?ID=3099"><u>Minotaur Hunter</u></a>, <a href="Monsters.aspx?ID=4104"><u>Mirage Archdragon</u></a>, <a href="NPCs.aspx?ID=2468"><u>Miriel Grayleaf</u></a>, <a href="Monsters.aspx?ID=3825"><u>Mirmicette</u></a>, <a href="NPCs.aspx?ID=3541"><u>Mirror Seer</u></a>, <a href="Monsters.aspx?ID=3312"><u>Mirror Wolf</u></a>, <a href="NPCs.aspx?ID=4047"><u>Mister Beak</u></a>, <a href="NPCs.aspx?ID=2025"><u>Mistress Dusklight</u></a>, <a href="Monsters.aspx?ID=1104"><u>Mix Couatl</u></a>, <a href="NPCs.aspx?ID=3502"><u>Mixed Martial Artist</u></a>, <a href="NPCs.aspx?ID=4669"><u>Mo Douqiu The Hedonist</u></a>, <a href="Monsters.aspx?ID=4153"><u>Mocking Archdragon</u></a>, <a href="Monsters.aspx?ID=729"><u>Mohrg</u></a>, <a href="Monsters.aspx?ID=3928"><u>Monk Cadre</u></a>, <a href="Monsters.aspx?ID=4676"><u>Monk Of Kugaptee</u></a>, <a href="NPCs.aspx?ID=924"><u>Monster Hunter</u></a>, <a href="Monsters.aspx?ID=1189"><u>Moon Hag</u></a>, <a href="Monsters.aspx?ID=3764"><u>Moonstalker</u></a>, <a href="NPCs.aspx?ID=1030"><u>Morlibint</u></a>, <a href="Monsters.aspx?ID=1735"><u>Mosquito Witch</u></a>, <a href="NPCs.aspx?ID=2037"><u>Mother Mitera</u></a>, <a href="Monsters.aspx?ID=1240"><u>Mothman</u></a>, <a href="NPCs.aspx?ID=3582"><u>Mountain Guardian</u></a>, <a href="Monsters.aspx?ID=3121"><u>Mountain Oni</u></a>, <a href="NPCs.aspx?ID=3473"><u>Mountaineer</u></a>, <a href="NPCs.aspx?ID=1711"><u>Mpondo</u></a>, <a href="Monsters.aspx?ID=302"><u>Mu Spore</u></a>, <a href="Monsters.aspx?ID=1400"><u>Muckish Creep</u></a>, <a href="Monsters.aspx?ID=1115"><u>Munagola</u></a>, <a href="Monsters.aspx?ID=4484"><u>Munsahir</u></a>, <a href="Monsters.aspx?ID=2637"><u>Munsahir Gatecrasher</u></a>, <a href="Monsters.aspx?ID=2638"><u>Munsahir Trooper</u></a>, <a href="Monsters.aspx?ID=2663"><u>Murajau</u></a>, <a href="NPCs.aspx?ID=4055"><u>Murschen</u></a>, <a href="NPCs.aspx?ID=1752"><u>Muruwa</u></a>, <a href="Monsters.aspx?ID=511"><u>Muse Phantom</u></a>, <a href="NPCs.aspx?ID=3507"><u>Musketeer</u></a>, <a href="Monsters.aspx?ID=2411"><u>Mutant Gnoll Hulk</u></a>, <a href="Monsters.aspx?ID=3983"><u>Mutated Centaur</u></a>, <a href="Monsters.aspx?ID=1012"><u>Myrucarx</u></a>, <a href="Monsters.aspx?ID=3402"><u>Mythic Lich</u></a>, <a href="Monsters.aspx?ID=3401"><u>Mythic Ogre Boss</u></a>, <a href="Monsters.aspx?ID=4507"><u>Naari Pyrochemist</u></a>, <a href="Monsters.aspx?ID=1243"><u>Nagaji Soldier</u></a>, <a href="NPCs.aspx?ID=1478"><u>Nai Yan Fei</u></a>, <a href="Monsters.aspx?ID=311"><u>Naiad</u></a>, <a href="Monsters.aspx?ID=313"><u>Naiad Queen</u></a>, <a href="Monsters.aspx?ID=3360"><u>Narlo Nyrell</u></a>, <a href="Monsters.aspx?ID=2177"><u>Narlynark</u></a>, <a href="NPCs.aspx?ID=2719"><u>Narseigus Wormcaller</u></a>, <a href="Monsters.aspx?ID=1851"><u>Nasurgeth</u></a>, <a href="NPCs.aspx?ID=3468"><u>Natural Scientist</u></a>, <a href="NPCs.aspx?ID=951"><u>Navigator</u></a>, <a href="Monsters.aspx?ID=4716"><u>Nayren Allurajix</u></a>, <a href="Monsters.aspx?ID=2364"><u>Necrohulk Flailer</u></a>, <a href="Monsters.aspx?ID=1778"><u>Necrohusk</u></a>, <a href="NPCs.aspx?ID=929"><u>Necromancer</u></a>, <a href="Monsters.aspx?ID=2434"><u>Necromancer Troop</u></a>, <a href="Monsters.aspx?ID=1246"><u>Nemhaith</u></a>, <a href="NPCs.aspx?ID=2012"><u>Nemmia Bramblecloak</u></a>, <a href="Monsters.aspx?ID=740"><u>Nereid</u></a>, <a href="NPCs.aspx?ID=3965"><u>Neshkefru</u></a>, <a href="Monsters.aspx?ID=2241"><u>Ngara</u></a>, <a href="NPCs.aspx?ID=4038"><u>Nhakazarin</u></a>, <a href="Monsters.aspx?ID=257"><u>Night Hag</u></a>, <a href="Monsters.aspx?ID=1248"><u>Nightmarchers</u></a>, <a href="Monsters.aspx?ID=2353"><u>Nightmare Rook</u></a>, <a href="Monsters.aspx?ID=1072"><u>Nikaramsa</u></a>, <a href="NPCs.aspx?ID=2375"><u>Nilak</u></a>, <a href="Monsters.aspx?ID=310"><u>Nilith</u></a>, <a href="Monsters.aspx?ID=4031"><u>Ninkonda</u></a>, <a href="NPCs.aspx?ID=2220"><u>Nishkiv The Knife</u></a>, <a href="NPCs.aspx?ID=3897"><u>Nizca Iricol</u></a>, <a href="NPCs.aspx?ID=1547"><u>Nketiah</u></a>, <a href="Monsters.aspx?ID=1709"><u>Nkiruka</u></a>, <a href="NPCs.aspx?ID=882"><u>Noble</u></a>, <a href="NPCs.aspx?ID=2397"><u>Nok-Nok (Level 1)</u></a>, <a href="NPCs.aspx?ID=2398"><u>Nok-Nok (Level 5)</u></a>, <a href="NPCs.aspx?ID=1562"><u>Nolly Peltry</u></a>, <a href="Monsters.aspx?ID=2720"><u>Noppera-Bo Grunt</u></a>, <a href="Monsters.aspx?ID=2794"><u>Noppera-Bo Impersonator</u></a>, <a href="Monsters.aspx?ID=2722"><u>Noppera-Bo Occultist</u></a>, <a href="Monsters.aspx?ID=2721"><u>Noppera-Bo Trickster</u></a>, <a href="NPCs.aspx?ID=1691"><u>Norgorberite Spy</u></a>, <a href="Monsters.aspx?ID=742"><u>Norn</u></a>, <a href="Monsters.aspx?ID=2582"><u>Nornhound</u></a>, <a href="Monsters.aspx?ID=1357"><u>Nosferatu Malefactor</u></a>, <a href="Monsters.aspx?ID=1358"><u>Nosferatu Overlord</u></a>, <a href="Monsters.aspx?ID=1356"><u>Nosferatu Thrall</u></a>, <a href="Monsters.aspx?ID=4703"><u>Novice Hellknight Armiger</u></a>, <a href="Monsters.aspx?ID=4698"><u>Novitiate Of The Golden Erinys</u></a>, <a href="NPCs.aspx?ID=4053"><u>Nox</u></a>, <a href="NPCs.aspx?ID=2377"><u>Ntavi</u></a>, <a href="Monsters.aspx?ID=743"><u>Nuckelavee</u></a>, <a href="NPCs.aspx?ID=2285"><u>Nugrah</u></a>, <a href="Monsters.aspx?ID=1321"><u>Nyktera</u></a>, <a href="Monsters.aspx?ID=4025"><u>Nymolus</u></a>, <a href="Monsters.aspx?ID=2197"><u>Nyrissa</u></a>, <a href="Monsters.aspx?ID=2451"><u>Oaksteward Enforcer</u></a>, <a href="Monsters.aspx?ID=4157"><u>Oath Archdragon</u></a>, <a href="Monsters.aspx?ID=2577"><u>Obcisidaemon</u></a>, <a href="Monsters.aspx?ID=1013"><u>Obrousian</u></a>, <a href="Monsters.aspx?ID=1888"><u>Obrousian</u></a>, <a href="NPCs.aspx?ID=3588"><u>Obsessive Researcher</u></a>, <a href="NPCs.aspx?ID=3605"><u>Ocean Nomad</u></a>, <a href="Monsters.aspx?ID=3741"><u>Ockomlire</u></a>, <a href="Monsters.aspx?ID=2446"><u>Ocluai</u></a>, <a href="Monsters.aspx?ID=4726"><u>Odvolos</u></a>, <a href="Monsters.aspx?ID=316"><u>Ofalth</u></a>, <a href="Monsters.aspx?ID=3929"><u>Ofalth Stampede</u></a>, <a href="Monsters.aspx?ID=2506"><u>Ogmunzorius</u></a>, <a href="Monsters.aspx?ID=319"><u>Ogre Boss</u></a>, <a href="Monsters.aspx?ID=3702"><u>Ogre Bully</u></a>, <a href="Monsters.aspx?ID=3697"><u>Ohancanu</u></a>, <a href="Monsters.aspx?ID=503"><u>Oil Living Graffiti</u></a>, <a href="Monsters.aspx?ID=1221"><u>Oil Living Graffiti</u></a>, <a href="NPCs.aspx?ID=3888"><u>Okoa</u></a>, <a href="Monsters.aspx?ID=3722"><u>Old Thornbarker</u></a>, <a href="NPCs.aspx?ID=2222"><u>Oleg</u></a>, <a href="Monsters.aspx?ID=597"><u>Olethrodaemon</u></a>, <a href="NPCs.aspx?ID=3837"><u>Omelia</u></a>, <a href="Monsters.aspx?ID=4105"><u>Omen Archdragon</u></a>, <a href="NPCs.aspx?ID=3967"><u>Omorphos</u></a>, <a href="Monsters.aspx?ID=3763"><u>One Eye Phantom</u></a>, <a href="Monsters.aspx?ID=746"><u>Onidoshi</u></a>, <a href="Monsters.aspx?ID=1889"><u>Onryo</u></a>, <a href="NPCs.aspx?ID=1680"><u>Onyiji</u></a>, <a href="Monsters.aspx?ID=2045"><u>Opkherab</u></a>, <a href="Monsters.aspx?ID=4750"><u>Oprak Firestorm Battalion</u></a>, <a href="NPCs.aspx?ID=3662"><u>Orc Agriculturalist</u></a>, <a href="NPCs.aspx?ID=3758"><u>Orc Doomsayer</u></a>, <a href="NPCs.aspx?ID=3663"><u>Orc Gamekeeper</u></a>, <a href="NPCs.aspx?ID=3775"><u>Orc Hunter</u></a>, <a href="NPCs.aspx?ID=3774"><u>Orc Raider</u></a>, <a href="Monsters.aspx?ID=3931"><u>Orc Raiding Party</u></a>, <a href="NPCs.aspx?ID=3757"><u>Orc Rampager</u></a>, <a href="NPCs.aspx?ID=3129"><u>Orc Scrapper</u></a>, <a href="NPCs.aspx?ID=3665"><u>Orc Skullcrushers</u></a>, <a href="NPCs.aspx?ID=3773"><u>Orc Spinecracker</u></a>, <a href="NPCs.aspx?ID=3756"><u>Orc Vagabond</u></a>, <a href="NPCs.aspx?ID=3130"><u>Orc Veteran</u></a>, <a href="NPCs.aspx?ID=3666"><u>Orc Veteran Master</u></a>, <a href="Monsters.aspx?ID=326"><u>Orc Warchief</u></a>, <a href="Monsters.aspx?ID=3377"><u>Ordulf Bladecaller</u></a>, <a href="NPCs.aspx?ID=2737"><u>Ordwi</u></a>, <a href="Monsters.aspx?ID=760"><u>Oread Guard</u></a>, <a href="Monsters.aspx?ID=1416"><u>Orochi</u></a>, <a href="Monsters.aspx?ID=848"><u>Ostiarius</u></a>, <a href="NPCs.aspx?ID=4045"><u>Otari Ilvashti</u></a>, <a href="Monsters.aspx?ID=327"><u>Otyugh</u></a>, <a href="Monsters.aspx?ID=1196"><u>Ovinnik</u></a>, <a href="Monsters.aspx?ID=1258"><u>Owb Prophet</u></a>, <a href="NPCs.aspx?ID=3581"><u>Pack Leader</u></a>, <a href="Monsters.aspx?ID=1119"><u>Pairaka</u></a>, <a href="NPCs.aspx?ID=883"><u>Palace Guard</u></a>, <a href="Monsters.aspx?ID=1303"><u>Palace Skelm</u></a>, <a href="Monsters.aspx?ID=3319"><u>Pale Horse</u></a>, <a href="Monsters.aspx?ID=1890"><u>Pale Sovereign</u></a>, <a href="NPCs.aspx?ID=1994"><u>Parsus</u></a>, <a href="Monsters.aspx?ID=2805"><u>Path Maiden</u></a>, <a href="NPCs.aspx?ID=973"><u>Pathfinder Field Agent</u></a>, <a href="NPCs.aspx?ID=974"><u>Pathfinder Venture-Captain</u></a>, <a href="NPCs.aspx?ID=2312"><u>Pavetta Stroon-Drelev</u></a>, <a href="Monsters.aspx?ID=4135"><u>Pearl Dragonet</u></a>, <a href="NPCs.aspx?ID=3512"><u>Peerless Duelist</u></a>, <a href="NPCs.aspx?ID=3487"><u>Peerless Healer</u></a>, <a href="Monsters.aspx?ID=329"><u>Pegasus</u></a>, <a href="Monsters.aspx?ID=1261"><u>Penanggalan</u></a>, <a href="NPCs.aspx?ID=3995"><u>Pendidia</u></a>, <a href="Monsters.aspx?ID=1406"><u>Peng</u></a>, <a href="NPCs.aspx?ID=3438"><u>Penitent Of Calistria </u></a>, <a href="Monsters.aspx?ID=1262"><u>Peri</u></a>, <a href="Monsters.aspx?ID=757"><u>Peryton</u></a>, <a href="Monsters.aspx?ID=2048"><u>Pesgahi the Poisoner</u></a>, <a href="NPCs.aspx?ID=3527"><u>Phalanx Formation</u></a>, <a href="Monsters.aspx?ID=2729"><u>Phantom Boar</u></a>, <a href="Monsters.aspx?ID=4664"><u>Phantom Gecko</u></a>, <a href="Monsters.aspx?ID=1263"><u>Phantom Knight</u></a>, <a href="Monsters.aspx?ID=2730"><u>Phantom Raven</u></a>, <a href="Monsters.aspx?ID=2731"><u>Phantom Wolf</u></a>, <a href="Monsters.aspx?ID=4106"><u>Phase Archdragon</u></a>, <a href="Monsters.aspx?ID=2578"><u>Phasmadaemon</u></a>, <a href="NPCs.aspx?ID=4740"><u>Pheobe Demetrias</u></a>, <a href="Monsters.aspx?ID=112"><u>Phistophilus</u></a>, <a href="Monsters.aspx?ID=330"><u>Phoenix</u></a>, <a href="Monsters.aspx?ID=2372"><u>Phomandala</u></a>, <a href="NPCs.aspx?ID=1499"><u>Phuthi</u></a>, <a href="NPCs.aspx?ID=909"><u>Physician</u></a>, <a href="Monsters.aspx?ID=2481"><u>Pickled Punk</u></a>, <a href="NPCs.aspx?ID=3437"><u>Pilgrim of Irori</u></a>, <a href="NPCs.aspx?ID=2103"><u>Pin Tingwheely</u></a>, <a href="Monsters.aspx?ID=3138"><u>Pipefox</u></a>, <a href="NPCs.aspx?ID=952"><u>Pirate</u></a>, <a href="Monsters.aspx?ID=592"><u>Piscodaemon</u></a>, <a href="Monsters.aspx?ID=114"><u>Pit Fiend</u></a>, <a href="Monsters.aspx?ID=2322"><u>Pitax Warden</u></a>, <a href="Monsters.aspx?ID=391"><u>Pixie</u></a>, <a href="NPCs.aspx?ID=911"><u>Plague Doctor</u></a>, <a href="Monsters.aspx?ID=1169"><u>Plague Giant</u></a>, <a href="Monsters.aspx?ID=2811"><u>Pleroma</u></a>, <a href="NPCs.aspx?ID=905"><u>Poacher</u></a>, <a href="Monsters.aspx?ID=2418"><u>Pokmit Bloody-Pike</u></a>, <a href="NPCs.aspx?ID=3505"><u>Political Upstart</u></a>, <a href="Monsters.aspx?ID=334"><u>Poltergeist</u></a>, <a href="Monsters.aspx?ID=1267"><u>Popobawa</u></a>, <a href="Monsters.aspx?ID=4514"><u>Poppet Attendant</u></a>, <a href="Monsters.aspx?ID=4515"><u>Poppet Mage</u></a>, <a href="Monsters.aspx?ID=335"><u>Poracha</u></a>, <a href="NPCs.aspx?ID=1936"><u>Powderkeg Punk Bombardier</u></a>, <a href="NPCs.aspx?ID=1937"><u>Powderkeg Punk Gunner</u></a>, <a href="NPCs.aspx?ID=1029"><u>Pr'rall</u></a>, <a href="Monsters.aspx?ID=2093"><u>Prachalla</u></a>, <a href="NPCs.aspx?ID=2288"><u>Prazil</u></a>, <a href="Monsters.aspx?ID=463"><u>Precentor</u></a>, <a href="Monsters.aspx?ID=1866"><u>Priest of Kabriri</u></a>, <a href="NPCs.aspx?ID=896"><u>Priest of Pharasma</u></a>, <a href="NPCs.aspx?ID=3445"><u>Priest of Sarenrae</u></a>, <a href="Monsters.aspx?ID=3840"><u>Priests Of Iomedae</u></a>, <a href="NPCs.aspx?ID=3550"><u>Prime Minister</u></a>, <a href="NPCs.aspx?ID=900"><u>Prisoner</u></a>, <a href="NPCs.aspx?ID=966"><u>Privateer Captain</u></a>, <a href="Monsters.aspx?ID=1057"><u>Procyal</u></a>, <a href="Monsters.aspx?ID=1958"><u>Profane Ghoul</u></a>, <a href="NPCs.aspx?ID=1590"><u>Promise Guard </u></a>, <a href="NPCs.aspx?ID=3610"><u>Propagandist</u></a>, <a href="NPCs.aspx?ID=894"><u>Prophet</u></a>, <a href="Monsters.aspx?ID=1909"><u>Provincial Jiang-Shi</u></a>, <a href="Monsters.aspx?ID=1408"><u>Provincial Jiang-Shi</u></a>, <a href="Monsters.aspx?ID=1916"><u>Prowler Wight</u></a>, <a href="NPCs.aspx?ID=1999"><u>Pruana Two-Punch</u></a>, <a href="NPCs.aspx?ID=3977"><u>Pteios</u></a>, <a href="Monsters.aspx?ID=1269"><u>Pukwudgie</u></a>, <a href="NPCs.aspx?ID=3577"><u>Puppeteer</u></a>, <a href="Monsters.aspx?ID=4743"><u>Pure Legion Regiment</u></a>, <a href="Monsters.aspx?ID=596"><u>Purrodaemon</u></a>, <a href="Monsters.aspx?ID=3709"><u>Putrifer</u></a>, <a href="Monsters.aspx?ID=3954"><u>Pyrkaion</u></a>, <a href="Monsters.aspx?ID=4268"><u>Pyroclastic Mukradi</u></a>, <a href="Monsters.aspx?ID=2156"><u>Pyrogeist</u></a>, <a href="Monsters.aspx?ID=3933"><u>Qadiran Camel Corps</u></a>, <a href="Monsters.aspx?ID=2135"><u>Qormintur</u></a>, <a href="NPCs.aspx?ID=4080"><u>Quara Orshendiel</u></a>, <a href="Monsters.aspx?ID=97"><u>Quasit</u></a>, <a href="Monsters.aspx?ID=198"><u>Quatoid</u></a>, <a href="Monsters.aspx?ID=2553"><u>Queen Kawlinawk</u></a>, <a href="Monsters.aspx?ID=1906"><u>Queen Sluagh</u></a>, <a href="Monsters.aspx?ID=587"><u>Quetz Couatl</u></a>, <a href="Monsters.aspx?ID=778"><u>Quickling</u></a>, <a href="NPCs.aspx?ID=2314"><u>Quintessa Maray</u></a>, <a href="Monsters.aspx?ID=1270"><u>Quintessivore</u></a>, <a href="Monsters.aspx?ID=4094"><u>Raelis</u></a>, <a href="Monsters.aspx?ID=3371"><u>Rage Rider</u></a>, <a href="NPCs.aspx?ID=1514"><u>Rai Sho Disciple</u></a>, <a href="NPCs.aspx?ID=1513"><u>Rai Sho Postulant</u></a>, <a href="NPCs.aspx?ID=971"><u>Rain-Scribe</u></a>, <a href="Monsters.aspx?ID=3827"><u>Raised Cavalry</u></a>, <a href="Monsters.aspx?ID=345"><u>Raja Rakshasa</u></a>, <a href="Monsters.aspx?ID=1271"><u>Raktavarna</u></a>, <a href="NPCs.aspx?ID=2484"><u>Ralso</u></a>, <a href="NPCs.aspx?ID=1476"><u>Ran-to</u></a>, <a href="NPCs.aspx?ID=1495"><u>Ran-to (Level 16)</u></a>, <a href="NPCs.aspx?ID=1527"><u>Ran-To (Level 20)</u></a>, <a href="Monsters.aspx?ID=1275"><u>Rancorous Priesthood</u></a>, <a href="Monsters.aspx?ID=2414"><u>Ratajin Mastermind</u></a>, <a href="Monsters.aspx?ID=348"><u>Ratfolk Grenadier</u></a>, <a href="Monsters.aspx?ID=3934"><u>Ratfolk Shank Squad</u></a>, <a href="NPCs.aspx?ID=2594"><u>Raven Nicoletta</u></a>, <a href="Monsters.aspx?ID=783"><u>Ravener</u></a>, <a href="Monsters.aspx?ID=1002"><u>Ravenile</u></a>, <a href="Monsters.aspx?ID=1892"><u>Raw Nerve</u></a>, <a href="NPCs.aspx?ID=1512"><u>Razu</u></a>, <a href="NPCs.aspx?ID=3638"><u>Razzle Dazzler</u></a>, <a href="Monsters.aspx?ID=1696"><u>Reborn Sun Hunter</u></a>, <a href="Monsters.aspx?ID=1697"><u>Reborn Sun Mage</u></a>, <a href="Monsters.aspx?ID=1698"><u>Reborn Sun Warrior</u></a>, <a href="NPCs.aspx?ID=963"><u>Reckless Scientist</u></a>, <a href="Monsters.aspx?ID=1838"><u>Red Commander Ant</u></a>, <a href="Monsters.aspx?ID=1836"><u>Red Guard Ant</u></a>, <a href="NPCs.aspx?ID=3379"><u>Red Mantis Assassin</u></a>, <a href="NPCs.aspx?ID=3380"><u>Red Mantis Conspirator</u></a>, <a href="Monsters.aspx?ID=1810"><u>Red Queen</u></a>, <a href="Monsters.aspx?ID=2726"><u>Red-Hooded Thatchling</u></a>, <a href="Monsters.aspx?ID=2071"><u>Redacted, The Weaver In Dreams</u></a>, <a href="Monsters.aspx?ID=349"><u>Redcap</u></a>, <a href="Monsters.aspx?ID=3935"><u>Redcap Brigade</u></a>, <a href="Monsters.aspx?ID=2700"><u>Redcap Cavalry</u></a>, <a href="Monsters.aspx?ID=3731"><u>Redwood Leshy</u></a>, <a href="Monsters.aspx?ID=350"><u>Reefclaw</u></a>, <a href="Monsters.aspx?ID=1882"><u>Relictner Eroder</u></a>, <a href="Monsters.aspx?ID=458"><u>Remnant of Barzillai</u></a>, <a href="NPCs.aspx?ID=2807"><u>Ren Mei Li</u></a>, <a href="NPCs.aspx?ID=1600"><u>Renali</u></a>, <a href="Monsters.aspx?ID=4107"><u>Requiem Archdragon</u></a>, <a href="Monsters.aspx?ID=4108"><u>Resurrection Archdragon</u></a>, <a href="NPCs.aspx?ID=1632"><u>Reth</u></a>, <a href="Monsters.aspx?ID=3167"><u>Revenant</u></a>, <a href="NPCs.aspx?ID=1997"><u>Rhovo</u></a>, <a href="NPCs.aspx?ID=3387"><u>Rhysaphine</u></a>, <a href="Monsters.aspx?ID=1643"><u>Riekanoy</u></a>, <a href="Monsters.aspx?ID=2274"><u>Rigg Gargadilly</u></a>, <a href="NPCs.aspx?ID=3597"><u>Rigger</u></a>, <a href="Monsters.aspx?ID=4161"><u>Rime Archdragon</u></a>, <a href="Monsters.aspx?ID=2786"><u>Rin</u></a>, <a href="NPCs.aspx?ID=1589"><u>Rinnarv Bontimar</u></a>, <a href="Monsters.aspx?ID=3337"><u>Ripnugget</u></a>, <a href="Monsters.aspx?ID=2209"><u>Risen Fetch</u></a>, <a href="Monsters.aspx?ID=4271"><u>Risen Runelord</u></a>, <a href="NPCs.aspx?ID=2428"><u>Rival Corpsekiller</u></a>, <a href="NPCs.aspx?ID=2429"><u>Rival Necromancer</u></a>, <a href="Monsters.aspx?ID=1407"><u>Rivka</u></a>, <a href="Monsters.aspx?ID=3372"><u>Roc Rider</u></a>, <a href="NPCs.aspx?ID=3463"><u>Rocketeer</u></a>, <a href="Monsters.aspx?ID=1278"><u>Rokurokubi</u></a>, <a href="NPCs.aspx?ID=3853"><u>Romi Bracken</u></a>, <a href="NPCs.aspx?ID=3656"><u>Root Leshy Groundskeeper</u></a>, <a href="Monsters.aspx?ID=3779"><u>Root Rotter</u></a>, <a href="Monsters.aspx?ID=3717"><u>Rootridden</u></a>, <a href="Monsters.aspx?ID=3682"><u>Rt5rrmn</u></a>, <a href="NPCs.aspx?ID=2016"><u>Ruanna Nyamma</u></a>, <a href="NPCs.aspx?ID=2438"><u>Ruby</u></a>, <a href="NPCs.aspx?ID=888"><u>Ruffian</u></a>, <a href="NPCs.aspx?ID=3889"><u>Rukh</u></a>, <a href="NPCs.aspx?ID=2148"><u>Rumin Purgo</u></a>, <a href="NPCs.aspx?ID=3508"><u>Runaway Blueblood</u></a>, <a href="Monsters.aspx?ID=4109"><u>Rune Archdragon</u></a>, <a href="Monsters.aspx?ID=226"><u>Rune Giant</u></a>, <a href="Monsters.aspx?ID=1877"><u>Runecarved Lich</u></a>, <a href="Monsters.aspx?ID=790"><u>Rusalka</u></a>, <a href="Monsters.aspx?ID=459"><u>Rusalka</u></a>, <a href="Monsters.aspx?ID=2054"><u>Rust Hag</u></a>, <a href="NPCs.aspx?ID=2742"><u>Rustsworn Initiate</u></a>, <a href="Monsters.aspx?ID=1550"><u>Rusty Mae</u></a>, <a href="Monsters.aspx?ID=3736"><u>Ruzadoya Swiftmane</u></a>, <a href="Monsters.aspx?ID=3710"><u>Ruzadoya's Chosen</u></a>, <a href="NPCs.aspx?ID=4054"><u>Ryta</u></a>, <a href="NPCs.aspx?ID=1978"><u>Sabora Sharkosa</u></a>, <a href="NPCs.aspx?ID=959"><u>Saboteur</u></a>, <a href="Monsters.aspx?ID=850"><u>Sacristan</u></a>, <a href="Monsters.aspx?ID=4755"><u>Sacristan Scourge</u></a>, <a href="NPCs.aspx?ID=4056"><u>Sacuishu</u></a>, <a href="NPCs.aspx?ID=950"><u>Sage</u></a>, <a href="Monsters.aspx?ID=4165"><u>Sage Archdragon</u></a>, <a href="Monsters.aspx?ID=2070"><u>Sahni Bride-Of-The-Sea</u></a>, <a href="NPCs.aspx?ID=2044"><u>Sahreg the Dirge Screamer</u></a>, <a href="Monsters.aspx?ID=3394"><u>Saint Fang</u></a>, <a href="NPCs.aspx?ID=2467"><u>Sakuachi</u></a>, <a href="Monsters.aspx?ID=189"><u>Salamander</u></a>, <a href="NPCs.aspx?ID=1640"><u>Salathiss</u></a>, <a href="NPCs.aspx?ID=2061"><u>Sallowdrudge</u></a>, <a href="Monsters.aspx?ID=1286"><u>Samsaran Anchorite</u></a>, <a href="Monsters.aspx?ID=4774"><u>Sangrist</u></a>, <a href="Monsters.aspx?ID=1417"><u>Sanzuwu</u></a>, <a href="Monsters.aspx?ID=792"><u>Sard</u></a>, <a href="Monsters.aspx?ID=2143"><u>Sarvel Ever-Hunger</u></a>, <a href="NPCs.aspx?ID=2309"><u>Satinder Morne</u></a>, <a href="Monsters.aspx?ID=355"><u>Satyr</u></a>, <a href="Monsters.aspx?ID=977"><u>Saurian Warmonger</u></a>, <a href="Monsters.aspx?ID=978"><u>Saurian Worldwatcher</u></a>, <a href="NPCs.aspx?ID=3399"><u>Saviya</u></a>, <a href="Monsters.aspx?ID=1288"><u>Scalescribe</u></a>, <a href="Monsters.aspx?ID=1025"><u>Scalliwing</u></a>, <a href="Monsters.aspx?ID=1953"><u>Scarecophagus</u></a>, <a href="Monsters.aspx?ID=3359"><u>Scarhorn</u></a>, <a href="NPCs.aspx?ID=1567"><u>Scarlet Triad Agent</u></a>, <a href="NPCs.aspx?ID=1582"><u>Scarlet Triad Boss</u></a>, <a href="NPCs.aspx?ID=1553"><u>Scarlet Triad Bruiser</u></a>, <a href="NPCs.aspx?ID=1579"><u>Scarlet Triad Enforcer</u></a>, <a href="NPCs.aspx?ID=1583"><u>Scarlet Triad Mage</u></a>, <a href="NPCs.aspx?ID=1554"><u>Scarlet Triad Poisoner</u></a>, <a href="NPCs.aspx?ID=1549"><u>Scarlet Triad Sneak</u></a>, <a href="NPCs.aspx?ID=1559"><u>Scarlet Triad Sniper</u></a>, <a href="NPCs.aspx?ID=1551"><u>Scarlet Triad Thug</u></a>, <a href="NPCs.aspx?ID=2533"><u>Scorching Sun Cultist</u></a>, <a href="Monsters.aspx?ID=2532"><u>Scrapborn</u></a>, <a href="Monsters.aspx?ID=1659"><u>Screaming Sulfur</u></a>, <a href="Monsters.aspx?ID=4169"><u>Sea Archdragon</u></a>, <a href="Monsters.aspx?ID=254"><u>Sea Hag</u></a>, <a href="Monsters.aspx?ID=1220"><u>Seaweed Leshy</u></a>, <a href="Monsters.aspx?ID=1290"><u>Seething Spirit</u></a>, <a href="NPCs.aspx?ID=3832"><u>Seldeg Bhedlis (Claws of the Tyrant)</u></a>, <a href="Monsters.aspx?ID=2431"><u>Seldeg Bheldis (Ghost King's Rage)</u></a>, <a href="Monsters.aspx?ID=1120"><u>Sepid</u></a>, <a href="Monsters.aspx?ID=1627"><u>Serpentfolk Granitescale</u></a>, <a href="Monsters.aspx?ID=1628"><u>Serpentfolk Venom Caller</u></a>, <a href="NPCs.aspx?ID=912"><u>Servant</u></a>, <a href="NPCs.aspx?ID=943"><u>Server</u></a>, <a href="Monsters.aspx?ID=1291"><u>Shabti Redeemer</u></a>, <a href="Monsters.aspx?ID=2423"><u>Shabti Slayer</u></a>, <a href="Monsters.aspx?ID=2424"><u>Shabti Votary</u></a>, <a href="Monsters.aspx?ID=4744"><u>Shackles Pirate Crew</u></a>, <a href="NPCs.aspx?ID=3704"><u>Shadebound Pixie Guard</u></a>, <a href="Monsters.aspx?ID=1880"><u>Shadern Immolator</u></a>, <a href="Monsters.aspx?ID=681"><u>Shadow Giant</u></a>, <a href="NPCs.aspx?ID=3705"><u>Shadow Sage</u></a>, <a href="Monsters.aspx?ID=1404"><u>Shadow Yai</u></a>, <a href="Monsters.aspx?ID=1292"><u>Shae</u></a>, <a href="Monsters.aspx?ID=213"><u>Shaitan</u></a>, <a href="NPCs.aspx?ID=2549"><u>Shaldar Falls-Far</u></a>, <a href="Monsters.aspx?ID=364"><u>Shambler</u></a>, <a href="Monsters.aspx?ID=3746"><u>Shanty Chanter</u></a>, <a href="Monsters.aspx?ID=1069"><u>Shaukeen</u></a>, <a href="Monsters.aspx?ID=1806"><u>Shianshi Waymaker</u></a>, <a href="Monsters.aspx?ID=1201"><u>Shikigami</u></a>, <a href="Monsters.aspx?ID=2723"><u>Shinigami</u></a>, <a href="NPCs.aspx?ID=1475"><u>Shino Hakusa</u></a>, <a href="NPCs.aspx?ID=1494"><u>Shino Hakusa (Level 16)</u></a>, <a href="NPCs.aspx?ID=1526"><u>Shino Hakusa (Level 20)</u></a>, <a href="NPCs.aspx?ID=954"><u>Ship Captain</u></a>, <a href="NPCs.aspx?ID=3383"><u>Shirota</u></a>, <a href="Monsters.aspx?ID=2804"><u>Shisagishin</u></a>, <a href="Monsters.aspx?ID=4756"><u>Shiverscale Kobold</u></a>, <a href="Monsters.aspx?ID=4085"><u>Shokasura</u></a>, <a href="NPCs.aspx?ID=1941"><u>Shoma Lyzerius</u></a>, <a href="Monsters.aspx?ID=523"><u>Shoony Hierarch</u></a>, <a href="Monsters.aspx?ID=522"><u>Shoony Militia Member</u></a>, <a href="Monsters.aspx?ID=521"><u>Shoony Tiller</u></a>, <a href="NPCs.aspx?ID=2736"><u>Shou "Old" Matsuki</u></a>, <a href="Monsters.aspx?ID=1897"><u>Shredskin</u></a>, <a href="Monsters.aspx?ID=2482"><u>Shredskin</u></a>, <a href="Monsters.aspx?ID=4673"><u>Shrine Caretaker</u></a>, <a href="Monsters.aspx?ID=2788"><u>Shrine Maiden</u></a>, <a href="Monsters.aspx?ID=1302"><u>Shrine Skelm</u></a>, <a href="NPCs.aspx?ID=2495"><u>Shristi Melipdra</u></a>, <a href="Monsters.aspx?ID=3818"><u>Shroudwing</u></a>, <a href="Monsters.aspx?ID=1147"><u>Shulsaga</u></a>, <a href="Monsters.aspx?ID=1898"><u>Siabrae</u></a>, <a href="NPCs.aspx?ID=3443"><u>Sibyl</u></a>, <a href="Monsters.aspx?ID=2584"><u>Sickened Doprillu</u></a>, <a href="NPCs.aspx?ID=3520"><u>Siegebreaker</u></a>, <a href="Monsters.aspx?ID=1401"><u>Sigbin</u></a>, <a href="Monsters.aspx?ID=2796"><u>Silsyche</u></a>, <a href="Monsters.aspx?ID=1055"><u>Silvanshee</u></a>, <a href="Monsters.aspx?ID=3396"><u>Silver Saber</u></a>, <a href="Monsters.aspx?ID=2579"><u>Simple Harrowkin</u></a>, <a href="Monsters.aspx?ID=370"><u>Simurgh</u></a>, <a href="NPCs.aspx?ID=2385"><u>Sir Fredero Sinnet</u></a>, <a href="Monsters.aspx?ID=4700"><u>Sister Endreah</u></a>, <a href="NPCs.aspx?ID=3381"><u>Sister Maeri</u></a>, <a href="Monsters.aspx?ID=2318"><u>Sister Of The Bloodshot Eye</u></a>, <a href="Monsters.aspx?ID=4699"><u>Sister Of The Golden Erinys</u></a>, <a href="Monsters.aspx?ID=2110"><u>Skarja</u></a>, <a href="NPCs.aspx?ID=2471"><u>Skebs</u></a>, <a href="Monsters.aspx?ID=373"><u>Skeletal Champion</u></a>, <a href="Monsters.aspx?ID=1534"><u>Skeletal Hellknight</u></a>, <a href="Monsters.aspx?ID=4732"><u>Skeletal Hellknight Bonesinger</u></a>, <a href="NPCs.aspx?ID=3584"><u>Skin Shifter</u></a>, <a href="NPCs.aspx?ID=2492"><u>Skinsaw Murderer</u></a>, <a href="NPCs.aspx?ID=2493"><u>Skinsaw Seamer</u></a>, <a href="Monsters.aspx?ID=3759"><u>Skinslough</u></a>, <a href="Monsters.aspx?ID=4571"><u>Skittering Slayer</u></a>, <a href="Monsters.aspx?ID=805"><u>Skulk</u></a>, <a href="Monsters.aspx?ID=4173"><u>Sky Archdragon</u></a>, <a href="Monsters.aspx?ID=1798"><u>Slana</u></a>, <a href="Monsters.aspx?ID=2691"><u>Slime Puppeteer</u></a>, <a href="Monsters.aspx?ID=1905"><u>Sluagh Reaper</u></a>, <a href="Monsters.aspx?ID=1934"><u>Sludgespine Killers</u></a>, <a href="Monsters.aspx?ID=3103"><u>Smaranava</u></a>, <a href="Monsters.aspx?ID=2005"><u>Smiler</u></a>, <a href="NPCs.aspx?ID=957"><u>Smith</u></a>, <a href="Monsters.aspx?ID=1950"><u>Smog Giant</u></a>, <a href="Monsters.aspx?ID=1984"><u>Smog Wraith</u></a>, <a href="Monsters.aspx?ID=2677"><u>Snapdrake</u></a>, <a href="NPCs.aspx?ID=3525"><u>Sniper</u></a>, <a href="NPCs.aspx?ID=2505"><u>Snowy Owl</u></a>, <a href="Monsters.aspx?ID=2756"><u>Sojiruh</u></a>, <a href="Monsters.aspx?ID=2571"><u>Sonnorae</u></a>, <a href="Monsters.aspx?ID=1017"><u>Sordesdaemon</u></a>, <a href="Monsters.aspx?ID=1304"><u>Soul Skelm</u></a>, <a href="Monsters.aspx?ID=1702"><u>Soul Swarm</u></a>, <a href="Monsters.aspx?ID=3204"><u>Soulbound Doll</u></a>, <a href="Monsters.aspx?ID=475"><u>Soulbound Ruin</u></a>, <a href="Monsters.aspx?ID=4177"><u>Sovereign Archdragon</u></a>, <a href="Monsters.aspx?ID=1714"><u>Spawn Of Taon</u></a>, <a href="Monsters.aspx?ID=2592"><u>Speaker Of Svarýr</u></a>, <a href="Monsters.aspx?ID=812"><u>Specter</u></a>, <a href="Monsters.aspx?ID=2415"><u>Spellscar Fext</u></a>, <a href="Monsters.aspx?ID=1967"><u>Spellscar Sky Marauder</u></a>, <a href="Monsters.aspx?ID=1616"><u>Spellskein</u></a>, <a href="Monsters.aspx?ID=384"><u>Sphinx</u></a>, <a href="NPCs.aspx?ID=1529"><u>Spinel Leviathan Syndara</u></a>, <a href="NPCs.aspx?ID=3543"><u>Spirit Binder</u></a>, <a href="Monsters.aspx?ID=737"><u>Spirit Naga</u></a>, <a href="Monsters.aspx?ID=2273"><u>Spirit Of Stisshak</u></a>, <a href="NPCs.aspx?ID=3627"><u>Spirit Priest</u></a>, <a href="Monsters.aspx?ID=1418"><u>Spirit Turtle</u></a>, <a href="Monsters.aspx?ID=3828"><u>Splinter Officer</u></a>, <a href="Monsters.aspx?ID=3685"><u>Splintershank</u></a>, <a href="Monsters.aspx?ID=817"><u>Spriggan Bully</u></a>, <a href="Monsters.aspx?ID=818"><u>Spriggan Warlord</u></a>, <a href="Monsters.aspx?ID=3221"><u>Sprigjack</u></a>, <a href="Monsters.aspx?ID=1739"><u>Spring-Heeled Jack</u></a>, <a href="Monsters.aspx?ID=4710"><u>Spring's Crown</u></a>, <a href="Monsters.aspx?ID=389"><u>Sprite</u></a>, <a href="NPCs.aspx?ID=885"><u>Spy</u></a>, <a href="Monsters.aspx?ID=1660"><u>Ssumzili</u></a>, <a href="Monsters.aspx?ID=2281"><u>Stag Lord Bandit</u></a>, <a href="Monsters.aspx?ID=4091"><u>Stalker Automaton</u></a>, <a href="NPCs.aspx?ID=3524"><u>Standard Bearer</u></a>, <a href="Monsters.aspx?ID=2113"><u>Starved Staff</u></a>, <a href="Monsters.aspx?ID=3829"><u>Stelemora</u></a>, <a href="Monsters.aspx?ID=1327"><u>Stheno Harpist</u></a>, <a href="Monsters.aspx?ID=1419"><u>Sthira</u></a>, <a href="NPCs.aspx?ID=2117"><u>Stirvyn Banyan</u></a>, <a href="Monsters.aspx?ID=1618"><u>Stone Ghost</u></a>, <a href="Monsters.aspx?ID=221"><u>Stone Giant</u></a>, <a href="Monsters.aspx?ID=1183"><u>Stone Lion</u></a>, <a href="Monsters.aspx?ID=1182"><u>Stone Lion Cub</u></a>, <a href="Monsters.aspx?ID=2724"><u>Stone Spider</u></a>, <a href="Monsters.aspx?ID=2464"><u>Stone-Breasted Owl</u></a>, <a href="Monsters.aspx?ID=2580"><u>Storied Harrowkin</u></a>, <a href="Monsters.aspx?ID=225"><u>Storm Giant</u></a>, <a href="Monsters.aspx?ID=1186"><u>Storm Hag</u></a>, <a href="Monsters.aspx?ID=3760"><u>Stormblood Tiger</u></a>, <a href="Monsters.aspx?ID=4181"><u>Stormcrown Archdragon</u></a>, <a href="Monsters.aspx?ID=3683"><u>Stormdrinker</u></a>, <a href="NPCs.aspx?ID=3571"><u>Street Musician</u></a>, <a href="Monsters.aspx?ID=1301"><u>Street Skelm</u></a>, <a href="Monsters.aspx?ID=1944"><u>Strigoi Progenitor</u></a>, <a href="Monsters.aspx?ID=1955"><u>Strigoi Servant</u></a>, <a href="Monsters.aspx?ID=4568"><u>Strix Aerialist</u></a>, <a href="Monsters.aspx?ID=1328"><u>Strix Kinmate</u></a>, <a href="Monsters.aspx?ID=4717"><u>Stumpfield War Chanter Choir</u></a>, <a href="Monsters.aspx?ID=4718"><u>Stumpfield War Saboteurs</u></a>, <a href="NPCs.aspx?ID=3603"><u>Subaquatic Marauder</u></a>, <a href="Monsters.aspx?ID=3408"><u>Sublime Breath</u></a>, <a href="Monsters.aspx?ID=98"><u>Succubus</u></a>, <a href="Monsters.aspx?ID=761"><u>Suli Dune Dancer</u></a>, <a href="Monsters.aspx?ID=2067"><u>Sulvik</u></a>, <a href="Monsters.aspx?ID=1813"><u>Summer Hora</u></a>, <a href="Monsters.aspx?ID=1814"><u>Summer Hora Queen</u></a>, <a href="NPCs.aspx?ID=1705"><u>Sun Warrior Brigade</u></a>, <a href="Monsters.aspx?ID=1666"><u>Sunburst Corpse</u></a>, <a href="Monsters.aspx?ID=716"><u>Sunflower Leshy</u></a>, <a href="Monsters.aspx?ID=3311"><u>Sunscale Serpent</u></a>, <a href="NPCs.aspx?ID=910"><u>Surgeon</u></a>, <a href="NPCs.aspx?ID=1500"><u>Surjit Hamelan</u></a>, <a href="Monsters.aspx?ID=2583"><u>Suvarden</u></a>, <a href="Monsters.aspx?ID=1003"><u>Svartalfar Killer</u></a>, <a href="Monsters.aspx?ID=2590"><u>Svarýr Commander</u></a>, <a href="Monsters.aspx?ID=2589"><u>Svarýr Soldier</u></a>, <a href="NPCs.aspx?ID=2223"><u>Svetlana</u></a>, <a href="Monsters.aspx?ID=3782"><u>Swamp Blight</u></a>, <a href="NPCs.aspx?ID=2100"><u>Swardlands Delinquent</u></a>, <a href="NPCs.aspx?ID=3668"><u>Swarm Voice</u></a>, <a href="Monsters.aspx?ID=4719"><u>Swiftrun Clergy</u></a>, <a href="Monsters.aspx?ID=1330"><u>Swordkeeper</u></a>, <a href="Monsters.aspx?ID=1849"><u>Sykever</u></a>, <a href="Monsters.aspx?ID=3996"><u>Sylirican Phalanx</u></a>, <a href="Monsters.aspx?ID=762"><u>Sylph Sneak</u></a>, <a href="NPCs.aspx?ID=3703"><u>Sylvarindarian</u></a>, <a href="NPCs.aspx?ID=1530"><u>Syndara The Sculptor</u></a>, <a href="NPCs.aspx?ID=1473"><u>Syu Tak-nwa</u></a>, <a href="NPCs.aspx?ID=1492"><u>Syu Tak-nwa (Level 16)</u></a>, <a href="NPCs.aspx?ID=1525"><u>Syu Tak-Nwa (Level 20)</u></a>, <a href="Monsters.aspx?ID=1799"><u>Ta'apundo</u></a>, <a href="Monsters.aspx?ID=680"><u>Taiga Giant</u></a>, <a href="Monsters.aspx?ID=1405"><u>Taiga Yai</u></a>, <a href="NPCs.aspx?ID=1523"><u>Takatorra (Daitengu Form)</u></a>, <a href="NPCs.aspx?ID=1485"><u>Takatorra (Level 13)</u></a>, <a href="NPCs.aspx?ID=1447"><u>Takatorra (Level 9)</u></a>, <a href="Monsters.aspx?ID=1619"><u>Takulu Ot</u></a>, <a href="NPCs.aspx?ID=3378"><u>Talaro</u></a>, <a href="Monsters.aspx?ID=2658"><u>Talos Gadgeteer</u></a>, <a href="NPCs.aspx?ID=2101"><u>Tanesse Fleer</u></a>, <a href="Monsters.aspx?ID=4575"><u>Tanuki Village Hero</u></a>, <a href="Monsters.aspx?ID=1715"><u>Taon</u></a>, <a href="NPCs.aspx?ID=2199"><u>Tartuccio</u></a>, <a href="NPCs.aspx?ID=2118"><u>Tashlock Banyan</u></a>, <a href="Monsters.aspx?ID=1834"><u>Tatterthread</u></a>, <a href="Monsters.aspx?ID=4674"><u>Taunting Monk's Skull</u></a>, <a href="Monsters.aspx?ID=1840"><u>Taunting Skull</u></a>, <a href="NPCs.aspx?ID=918"><u>Tax Collector</u></a>, <a href="NPCs.aspx?ID=948"><u>Teacher</u></a>, <a href="NPCs.aspx?ID=2068"><u>Teaching Assistant</u></a>, <a href="Monsters.aspx?ID=3395"><u>Temperbrand</u></a>, <a href="NPCs.aspx?ID=3586"><u>Tempest Incarnate</u></a>, <a href="NPCs.aspx?ID=972"><u>Tempest-Sun Mage</u></a>, <a href="Monsters.aspx?ID=2366"><u>Tenebric Giant</u></a>, <a href="NPCs.aspx?ID=3672"><u>Tengu Bladesmith</u></a>, <a href="Monsters.aspx?ID=392"><u>Tengu Sneak</u></a>, <a href="Monsters.aspx?ID=995"><u>Tenome</u></a>, <a href="Monsters.aspx?ID=1333"><u>Terra-Cotta Garrison</u></a>, <a href="Monsters.aspx?ID=1332"><u>Terra-Cotta Soldier</u></a>, <a href="NPCs.aspx?ID=2315"><u>Terrion Numesti</u></a>, <a href="Monsters.aspx?ID=1658"><u>Terwa Chosen</u></a>, <a href="Monsters.aspx?ID=1656"><u>Terwa Prodigy</u></a>, <a href="Monsters.aspx?ID=1657"><u>Terwa Star Reader</u></a>, <a href="Monsters.aspx?ID=595"><u>Thanadaemon</u></a>, <a href="Monsters.aspx?ID=980"><u>Thanatotic Titan</u></a>, <a href="Monsters.aspx?ID=1340"><u>Thanatotic Titan</u></a>, <a href="Monsters.aspx?ID=2725"><u>Thatchling</u></a>, <a href="Monsters.aspx?ID=3694"><u>The Bee-Man Of Bellis</u></a>, <a href="Monsters.aspx?ID=2593"><u>The Betrayal</u></a>, <a href="Monsters.aspx?ID=4769"><u>The Count Of Petals</u></a>, <a href="Monsters.aspx?ID=2275"><u>The Dancing Lady</u></a>, <a href="Monsters.aspx?ID=3391"><u>The First Blade</u></a>, <a href="NPCs.aspx?ID=2384"><u>The First Faithful</u></a>, <a href="Monsters.aspx?ID=2326"><u>The Gardener</u></a>, <a href="Monsters.aspx?ID=2346"><u>The Horned Hunter</u></a>, <a href="Monsters.aspx?ID=2588"><u>The Keeper</u></a>, <a href="Monsters.aspx?ID=1720"><u>The King of Biting Ants</u></a>, <a href="Monsters.aspx?ID=2356"><u>The Knurly Witch</u></a>, <a href="Monsters.aspx?ID=2270"><u>The Lonely Warrior</u></a>, <a href="Monsters.aspx?ID=2453"><u>The Looksee Man</u></a>, <a href="NPCs.aspx?ID=2574"><u>The Prince Of Wolves</u></a>, <a href="NPCs.aspx?ID=3369"><u>The Red Bishop</u></a>, <a href="Monsters.aspx?ID=1007"><u>The Stabbing Beast</u></a>, <a href="NPCs.aspx?ID=2198"><u>The Stag Lord</u></a>, <a href="Monsters.aspx?ID=2121"><u>The Vanish Man</u></a>, <a href="Monsters.aspx?ID=2369"><u>The Wriggling Man</u></a>, <a href="Monsters.aspx?ID=2367"><u>Theater Phantasm</u></a>, <a href="NPCs.aspx?ID=3485"><u>Therapeutic Healer</u></a>, <a href="Monsters.aspx?ID=2111"><u>Thessekka</u></a>, <a href="NPCs.aspx?ID=1694"><u>Thiarvo The Quick</u></a>, <a href="Monsters.aspx?ID=2279"><u>Thorn River Bandit</u></a>, <a href="Monsters.aspx?ID=4573"><u>Thousand Thieves</u></a>, <a href="Monsters.aspx?ID=4752"><u>Thrune Champion Army</u></a>, <a href="Monsters.aspx?ID=3266"><u>Thruneosaurus Rex</u></a>, <a href="Monsters.aspx?ID=825"><u>Thunderbird</u></a>, <a href="Monsters.aspx?ID=2569"><u>Ticktock</u></a>, <a href="Monsters.aspx?ID=1336"><u>Tiddalik</u></a>, <a href="Monsters.aspx?ID=4412"><u>Tide Giant</u></a>, <a href="Monsters.aspx?ID=1337"><u>Tidehawk</u></a>, <a href="Monsters.aspx?ID=4136"><u>Tidepool Dragonet</u></a>, <a href="NPCs.aspx?ID=3660"><u>Tidewater Guard</u></a>, <a href="Monsters.aspx?ID=331"><u>Tiefling Adept</u></a>, <a href="Monsters.aspx?ID=2317"><u>Tiger Lord</u></a>, <a href="Monsters.aspx?ID=1338"><u>Tikbalang</u></a>, <a href="Monsters.aspx?ID=3357"><u>Tiluatchek</u></a>, <a href="Monsters.aspx?ID=4185"><u>Time Archdragon</u></a>, <a href="NPCs.aspx?ID=1445"><u>Tino (Level 9)</u></a>, <a href="NPCs.aspx?ID=1521"><u>Tino (Oni Form)</u></a>, <a href="NPCs.aspx?ID=1483"><u>Tino Tung (Level 13)</u></a>, <a href="Monsters.aspx?ID=438"><u>Tixitog</u></a>, <a href="NPCs.aspx?ID=3607"><u>Toady</u></a>, <a href="Monsters.aspx?ID=3881"><u>Tokainen's Chosen</u></a>, <a href="Monsters.aspx?ID=1713"><u>Tollvych</u></a>, <a href="Monsters.aspx?ID=1168"><u>Tomb Giant</u></a>, <a href="NPCs.aspx?ID=904"><u>Tomb Raider</u></a>, <a href="NPCs.aspx?ID=3483"><u>Tonic Merchant</u></a>, <a href="NPCs.aspx?ID=901"><u>Torchbearer</u></a>, <a href="Monsters.aspx?ID=3953"><u>Torcheater</u></a>, <a href="Monsters.aspx?ID=1907"><u>Tormented</u></a>, <a href="Monsters.aspx?ID=3819"><u>Torn Quartet</u></a>, <a href="Monsters.aspx?ID=1204"><u>Toshigami</u></a>, <a href="Monsters.aspx?ID=829"><u>Totenmaske</u></a>, <a href="NPCs.aspx?ID=3501"><u>Tournament Combatant</u></a>, <a href="NPCs.aspx?ID=3460"><u>Toymaker</u></a>, <a href="NPCs.aspx?ID=906"><u>Tracker</u></a>, <a href="Monsters.aspx?ID=1346"><u>Trailgaunt</u></a>, <a href="NPCs.aspx?ID=3574"><u>Traveling Actor</u></a>, <a href="NPCs.aspx?ID=3448"><u>Traveling Priest of Desna</u></a>, <a href="NPCs.aspx?ID=3585"><u>Tree Singer</u></a>, <a href="Monsters.aspx?ID=394"><u>Treerazer</u></a>, <a href="Monsters.aspx?ID=2561"><u>Trexima Butoi</u></a>, <a href="Monsters.aspx?ID=3765"><u>Trighoul</u></a>, <a href="Monsters.aspx?ID=4267"><u>Trinity Initiates</u></a>, <a href="NPCs.aspx?ID=3674"><u>Tripkee Camoufleur</u></a>, <a href="NPCs.aspx?ID=3675"><u>Tripkee Fiend Keeper</u></a>, <a href="Monsters.aspx?ID=4590"><u>Tripkee Rain-Caller</u></a>, <a href="NPCs.aspx?ID=2399"><u>Tristian (Level 1)</u></a>, <a href="NPCs.aspx?ID=2400"><u>Tristian (Level 10)</u></a>, <a href="Monsters.aspx?ID=830"><u>Triton</u></a>, <a href="NPCs.aspx?ID=1509"><u>Troff Frostknuckles</u></a>, <a href="Monsters.aspx?ID=2329"><u>Troll Guard</u></a>, <a href="NPCs.aspx?ID=941"><u>Troubadour</u></a>, <a href="NPCs.aspx?ID=2739"><u>Trygve</u></a>, <a href="NPCs.aspx?ID=3988"><u>Tsemone</u></a>, <a href="Monsters.aspx?ID=2387"><u>Tulvak</u></a>, <a href="NPCs.aspx?ID=3657"><u>Tumbleweed Leshy Courier</u></a>, <a href="Monsters.aspx?ID=3334"><u>Tunch</u></a>, <a href="NPCs.aspx?ID=3667"><u>Tunnel Viper</u></a>, <a href="Monsters.aspx?ID=2613"><u>Tuom Molgrade</u></a>, <a href="NPCs.aspx?ID=1784"><u>Turkek</u></a>, <a href="Monsters.aspx?ID=838"><u>Twigjack</u></a>, <a href="Monsters.aspx?ID=4753"><u>Twilight Talon Infiltrator Team</u></a>, <a href="Monsters.aspx?ID=2680"><u>Twins of Rowan</u></a>, <a href="Monsters.aspx?ID=492"><u>Tzitzimitl</u></a>, <a href="Monsters.aspx?ID=1353"><u>Tzitzimitl</u></a>, <a href="NPCs.aspx?ID=1753"><u>Ufi</u></a>, <a href="NPCs.aspx?ID=4246"><u>Ulikuq</u></a>, <a href="Monsters.aspx?ID=1745"><u>Ulistul</u></a>, <a href="NPCs.aspx?ID=3989"><u>Ulshuk</u></a>, <a href="Monsters.aspx?ID=2026"><u>Ulthadar</u></a>, <a href="Monsters.aspx?ID=1354"><u>Umasi</u></a>, <a href="NPCs.aspx?ID=1501"><u>Umbasi</u></a>, <a href="Monsters.aspx?ID=2361"><u>Umbraex</u></a>, <a href="Monsters.aspx?ID=4189"><u>Umbral Archdragon</u></a>, <a href="Monsters.aspx?ID=4720"><u>Umok Beastspeaker Circle</u></a>, <a href="NPCs.aspx?ID=3715"><u>Unaasi</u></a>, <a href="Monsters.aspx?ID=4193"><u>Underworld Archdragon</u></a>, <a href="Monsters.aspx?ID=763"><u>Undine Hydromancer</u></a>, <a href="Monsters.aspx?ID=3994"><u>Ungkore Bounty Hunter</u></a>, <a href="Monsters.aspx?ID=397"><u>Unicorn</u></a>, <a href="Monsters.aspx?ID=2520"><u>Uniila</u></a>, <a href="Monsters.aspx?ID=1908"><u>Unrisen</u></a>, <a href="NPCs.aspx?ID=3509"><u>Unsanctioned Sheriff</u></a>, <a href="NPCs.aspx?ID=1807"><u>Unshadowed Anchor Root</u></a>, <a href="NPCs.aspx?ID=1808"><u>Unshadowed Haibram</u></a>, <a href="NPCs.aspx?ID=1835"><u>Unshadowed Koride</u></a>, <a href="NPCs.aspx?ID=1805"><u>Unshadowed Mariama</u></a>, <a href="NPCs.aspx?ID=1803"><u>Unshadowed Okoro</u></a>, <a href="NPCs.aspx?ID=899"><u>Urchin</u></a>, <a href="NPCs.aspx?ID=4067"><u>Urevian</u></a>, <a href="Monsters.aspx?ID=2153"><u>Urglid</u></a>, <a href="NPCs.aspx?ID=1585"><u>Uri Zandivar</u></a>, <a href="NPCs.aspx?ID=1506"><u>Urnak Lostwind</u></a>, <a href="NPCs.aspx?ID=1052"><u>Urok</u></a>, <a href="Monsters.aspx?ID=1850"><u>Urveth</u></a>, <a href="NPCs.aspx?ID=2536"><u>Usij Cultist</u></a>, <a href="Monsters.aspx?ID=2575"><u>Usilket</u></a>, <a href="Monsters.aspx?ID=1558"><u>Vaklish</u></a>, <a href="NPCs.aspx?ID=2401"><u>Valerie (Level 1)</u></a>, <a href="NPCs.aspx?ID=2402"><u>Valerie (Level 9)</u></a>, <a href="Monsters.aspx?ID=1355"><u>Valkyrie</u></a>, <a href="Monsters.aspx?ID=3397"><u>Valkyrie Tempest</u></a>, <a href="Monsters.aspx?ID=400"><u>Vampire Count</u></a>, <a href="Monsters.aspx?ID=2149"><u>Vampire Guardian</u></a>, <a href="Monsters.aspx?ID=401"><u>Vampire Mastermind</u></a>, <a href="Monsters.aspx?ID=3858"><u>Vampire Servant</u></a>, <a href="Monsters.aspx?ID=399"><u>Vampire Spawn</u></a>, <a href="Monsters.aspx?ID=2097"><u>Vampire Taviah</u></a>, <a href="Monsters.aspx?ID=1359"><u>Vanara Disciple</u></a>, <a href="NPCs.aspx?ID=2740"><u>Vanda</u></a>, <a href="Monsters.aspx?ID=1848"><u>Vanyver</u></a>, <a href="NPCs.aspx?ID=1785"><u>Varilyn "Vare" Eridge</u></a>, <a href="Monsters.aspx?ID=4708"><u>Varlario Demicci</u></a>, <a href="Monsters.aspx?ID=3398"><u>Vatumledor</u></a>, <a href="Monsters.aspx?ID=2711"><u>Veavieve</u></a>, <a href="Monsters.aspx?ID=2567"><u>Vehanezhad</u></a>, <a href="Monsters.aspx?ID=5"><u>Veiled Master</u></a>, <a href="Monsters.aspx?ID=4727"><u>Velavi</u></a>, <a href="Monsters.aspx?ID=4014"><u>Venator</u></a>, <a href="Monsters.aspx?ID=2892"><u>Venedaemon</u></a>, <a href="Monsters.aspx?ID=1793"><u>Venexus</u></a>, <a href="NPCs.aspx?ID=1788"><u>Venexus's Chosen</u></a>, <a href="Monsters.aspx?ID=1790"><u>Venexus's Wyrmlings</u></a>, <a href="Monsters.aspx?ID=3986"><u>Vengeful Shade</u></a>, <a href="Monsters.aspx?ID=3751"><u>Venomfist</u></a>, <a href="Monsters.aspx?ID=3409"><u>Verex-That-Was</u></a>, <a href="NPCs.aspx?ID=3499"><u>Vermin Catcher</u></a>, <a href="Monsters.aspx?ID=2733"><u>Very Drunk Jinkin</u></a>, <a href="Monsters.aspx?ID=1577"><u>Veshumirix</u></a>, <a href="Monsters.aspx?ID=4274"><u>Vesinra</u></a>, <a href="Monsters.aspx?ID=1911"><u>Vetalarana Emergent</u></a>, <a href="Monsters.aspx?ID=1912"><u>Vetalarana Manipulator</u></a>, <a href="NPCs.aspx?ID=3422"><u>Veteran Noble</u></a>, <a href="NPCs.aspx?ID=970"><u>Veteran Reclaimer</u></a>, <a href="NPCs.aspx?ID=2544"><u>Vharnev The Butcher</u></a>, <a href="Monsters.aspx?ID=2435"><u>Vice-Chancellor Vikroti Stroh </u></a>, <a href="Monsters.aspx?ID=1988"><u>Viewslog</u></a>, <a href="Monsters.aspx?ID=4013"><u>Vigilia</u></a>, <a href="Monsters.aspx?ID=3940"><u>Viking Guard</u></a>, <a href="Monsters.aspx?ID=1360"><u>Vilderavn</u></a>, <a href="Monsters.aspx?ID=2210"><u>Vilderavn Herald</u></a>, <a href="NPCs.aspx?ID=2331"><u>Villamor Koth</u></a>, <a href="Monsters.aspx?ID=2530"><u>Vincuvicar</u></a>, <a href="Monsters.aspx?ID=1218"><u>Vine Leshy</u></a>, <a href="Monsters.aspx?ID=3875"><u>Viper Bat</u></a>, <a href="NPCs.aspx?ID=4741"><u>Viro Ahala</u></a>, <a href="Monsters.aspx?ID=2295"><u>Virthad</u></a>, <a href="NPCs.aspx?ID=969"><u>Virtuous Defender</u></a>, <a href="Monsters.aspx?ID=2057"><u>Virulak Necromancer</u></a>, <a href="Monsters.aspx?ID=2056"><u>Virulak Villager</u></a>, <a href="Monsters.aspx?ID=1361"><u>Vishkanya Infiltrator</u></a>, <a href="Monsters.aspx?ID=4197"><u>Vizier Archdragon</u></a>, <a href="Monsters.aspx?ID=3352"><u>Vizmivool</u></a>, <a href="Monsters.aspx?ID=2727"><u>Vloriak</u></a>, <a href="Monsters.aspx?ID=1041"><u>Voidglutton</u></a>, <a href="NPCs.aspx?ID=4042"><u>Volluk Azrinae</u></a>, <a href="NPCs.aspx?ID=2221"><u>Volodmyra</u></a>, <a href="Monsters.aspx?ID=3941"><u>Vordine Legion</u></a>, <a href="Monsters.aspx?ID=2568"><u>Voricose</u></a>, <a href="NPCs.aspx?ID=3966"><u>Vornen</u></a>, <a href="Monsters.aspx?ID=4201"><u>Vorpal Archdragon</u></a>, <a href="Monsters.aspx?ID=3820"><u>Vorvorak</u></a>, <a href="NPCs.aspx?ID=1538"><u>Voz Lirayne</u></a>, <a href="Monsters.aspx?ID=844"><u>Vrykolakas Ancient</u></a>, <a href="Monsters.aspx?ID=843"><u>Vrykolakas Master</u></a>, <a href="Monsters.aspx?ID=842"><u>Vrykolakas Spawn</u></a>, <a href="Monsters.aspx?ID=3404"><u>Vulot</u></a>, <a href="Monsters.aspx?ID=1056"><u>Vulpinal</u></a>, <a href="Monsters.aspx?ID=4205"><u>Wailing Archdragon</u></a>, <a href="Monsters.aspx?ID=3821"><u>Walcofinde</u></a>, <a href="Monsters.aspx?ID=1913"><u>Waldgeist</u></a>, <a href="Monsters.aspx?ID=2134"><u>War Champion Kharostan</u></a>, <a href="NPCs.aspx?ID=1539"><u>Warbal Bumblebrasher</u></a>, <a href="NPCs.aspx?ID=920"><u>Warden</u></a>, <a href="Monsters.aspx?ID=402"><u>Warg</u></a>, <a href="NPCs.aspx?ID=3620"><u>Warmonger</u></a>, <a href="Monsters.aspx?ID=4709"><u>Warshard Wight</u></a>, <a href="Monsters.aspx?ID=404"><u>Warsworn</u></a>, <a href="NPCs.aspx?ID=936"><u>Watch Officer</u></a>, <a href="NPCs.aspx?ID=3559"><u>Watchmage</u></a>, <a href="NPCs.aspx?ID=3567"><u>Watchmage Squadron</u></a>, <a href="Monsters.aspx?ID=749"><u>Water Yai</u></a>, <a href="Monsters.aspx?ID=1363"><u>Wayang Whisperblade</u></a>, <a href="NPCs.aspx?ID=3619"><u>Wealthy Vigilante</u></a>, <a href="NPCs.aspx?ID=1449"><u>Weapon Master</u></a>, <a href="Monsters.aspx?ID=3410"><u>Weaver Of Webs</u></a>, <a href="Monsters.aspx?ID=2187"><u>Weeping Jack</u></a>, <a href="Monsters.aspx?ID=409"><u>Wendigo</u></a>, <a href="NPCs.aspx?ID=1444"><u>Wendlyn</u></a>, <a href="Monsters.aspx?ID=1800"><u>Wereant Disciple</u></a>, <a href="Monsters.aspx?ID=1801"><u>Wereant Poisoner</u></a>, <a href="Monsters.aspx?ID=1812"><u>Wereant Sentinel</u></a>, <a href="Monsters.aspx?ID=1366"><u>Werebat</u></a>, <a href="Monsters.aspx?ID=3851"><u>Werebat Warrior</u></a>, <a href="Monsters.aspx?ID=412"><u>Werebear</u></a>, <a href="Monsters.aspx?ID=857"><u>Wereboar</u></a>, <a href="Monsters.aspx?ID=1367"><u>Werecrocodile</u></a>, <a href="Monsters.aspx?ID=3323"><u>Weremoose</u></a>, <a href="Monsters.aspx?ID=2373"><u>Werendegar</u></a>, <a href="Monsters.aspx?ID=410"><u>Wererat</u></a>, <a href="Monsters.aspx?ID=3324"><u>Wereshark</u></a>, <a href="Monsters.aspx?ID=858"><u>Weretiger</u></a>, <a href="Monsters.aspx?ID=411"><u>Werewolf</u></a>, <a href="Monsters.aspx?ID=2211"><u>Whimwyrm</u></a>, <a href="Monsters.aspx?ID=4110"><u>Whisper Archdragon</u></a>, <a href="Monsters.aspx?ID=413"><u>Wight</u></a>, <a href="Monsters.aspx?ID=3942"><u>Wight Battalion</u></a>, <a href="Monsters.aspx?ID=1917"><u>Wight Commander</u></a>, <a href="Monsters.aspx?ID=2116"><u>Wight Cultist</u></a>, <a href="Monsters.aspx?ID=2214"><u>Wild Hunt Archer</u></a>, <a href="Monsters.aspx?ID=2213"><u>Wild Hunt Horse</u></a>, <a href="Monsters.aspx?ID=2212"><u>Wild Hunt Hound</u></a>, <a href="Monsters.aspx?ID=2216"><u>Wild Hunt Monarch</u></a>, <a href="Monsters.aspx?ID=2215"><u>Wild Hunt Scout</u></a>, <a href="NPCs.aspx?ID=3716"><u>Wildwood Sentry</u></a>, <a href="Monsters.aspx?ID=414"><u>Will-o’-Wisp</u></a>, <a href="Monsters.aspx?ID=4678"><u>Willowshore Waldgeist</u></a>, <a href="Monsters.aspx?ID=2259"><u>Windchaser</u></a>, <a href="Monsters.aspx?ID=1187"><u>Winter Hag</u></a>, <a href="Monsters.aspx?ID=403"><u>Winter Wolf</u></a>, <a href="Monsters.aspx?ID=4209"><u>Wish Archdragon</u></a>, <a href="Monsters.aspx?ID=860"><u>Witchfire</u></a>, <a href="Monsters.aspx?ID=486"><u>Witchwyrd</u></a>, <a href="Monsters.aspx?ID=861"><u>Witchwyrd</u></a>, <a href="Monsters.aspx?ID=1922"><u>Withered</u></a>, <a href="Monsters.aspx?ID=3333"><u>Wolgur Wrabs</u></a>, <a href="Monsters.aspx?ID=678"><u>Wood Giant</u></a>, <a href="NPCs.aspx?ID=3633"><u>Woodland Scouts</u></a>, <a href="NPCs.aspx?ID=3477"><u>Wooly Wrangler</u></a>, <a href="NPCs.aspx?ID=1710"><u>Worknesh</u></a>, <a href="NPCs.aspx?ID=3622"><u>World Ender</u></a>, <a href="NPCs.aspx?ID=1651"><u>Worm Prophet</u></a>, <a href="Monsters.aspx?ID=4572"><u>Worm Prophet</u></a>, <a href="Monsters.aspx?ID=864"><u>Worm That Walks Cultist</u></a>, <a href="Monsters.aspx?ID=417"><u>Wraith</u></a>, <a href="NPCs.aspx?ID=2494"><u>Wrent Dicaspiron</u></a>, <a href="NPCs.aspx?ID=4046"><u>Wrin Sivinxi</u></a>, <a href="Monsters.aspx?ID=496"><u>Wyrmwraith</u></a>, <a href="Monsters.aspx?ID=1370"><u>Wyrmwraith</u></a>, <a href="Monsters.aspx?ID=1372"><u>Wyrwood Sneak</u></a>, <a href="Monsters.aspx?ID=2378"><u>Xae</u></a>, <a href="NPCs.aspx?ID=2759"><u>Xin Yue</u></a>, <a href="Monsters.aspx?ID=1105"><u>Xiuh Couatl</u></a>, <a href="Monsters.aspx?ID=184"><u>Xorn</u></a>, <a href="Monsters.aspx?ID=2019"><u>Xulgath Mage</u></a>, <a href="NPCs.aspx?ID=1486"><u>Yabin the Just (Level 13)</u></a>, <a href="NPCs.aspx?ID=1448"><u>Yabin the Just (Level 9)</u></a>, <a href="NPCs.aspx?ID=1524"><u>Yabin The Just (White Serpent Form)</u></a>, <a href="Monsters.aspx?ID=525"><u>Yaganty</u></a>, <a href="NPCs.aspx?ID=1820"><u>Yana No-Trail</u></a>, <a href="NPCs.aspx?ID=1488"><u>Yarrika</u></a>, <a href="NPCs.aspx?ID=2164"><u>Ygrik</u></a>, <a href="Monsters.aspx?ID=1373"><u>Yithian</u></a>, <a href="NPCs.aspx?ID=1959"><u>Yniesse Zenderholm</u></a>, <a href="NPCs.aspx?ID=1688"><u>Yonsuu</u></a>, <a href="Monsters.aspx?ID=2932"><u>Young Adamantine Dragon</u></a>, <a href="Monsters.aspx?ID=4111"><u>Young Barrage Dragon</u></a>, <a href="Monsters.aspx?ID=130"><u>Young Blue Dragon</u></a>, <a href="Monsters.aspx?ID=4115"><u>Young Bog Dragon</u></a>, <a href="Monsters.aspx?ID=142"><u>Young Brass Dragon</u></a>, <a href="Monsters.aspx?ID=621"><u>Young Brine Dragon</u></a>, <a href="Monsters.aspx?ID=145"><u>Young Bronze Dragon</u></a>, <a href="Monsters.aspx?ID=624"><u>Young Cloud Dragon</u></a>, <a href="Monsters.aspx?ID=2935"><u>Young Conspirator Dragon</u></a>, <a href="Monsters.aspx?ID=148"><u>Young Copper Dragon</u></a>, <a href="Monsters.aspx?ID=4348"><u>Young Coral Dragon</u></a>, <a href="Monsters.aspx?ID=627"><u>Young Crystal Dragon</u></a>, <a href="Monsters.aspx?ID=4131"><u>Young Delight Dragon</u></a>, <a href="Monsters.aspx?ID=4351"><u>Young Despair Dragon</u></a>, <a href="Monsters.aspx?ID=2938"><u>Young Diabolic Dragon</u></a>, <a href="Monsters.aspx?ID=2941"><u>Young Empyreal Dragon</u></a>, <a href="Monsters.aspx?ID=4138"><u>Young Executor Dragon</u></a>, <a href="Monsters.aspx?ID=1122"><u>Young Forest Dragon</u></a>, <a href="Monsters.aspx?ID=2944"><u>Young Fortune Dragon</u></a>, <a href="Monsters.aspx?ID=151"><u>Young Gold Dragon</u></a>, <a href="Monsters.aspx?ID=133"><u>Young Green Dragon</u></a>, <a href="Monsters.aspx?ID=631"><u>Young Magma Dragon</u></a>, <a href="Monsters.aspx?ID=469"><u>Young Magma Dragon</u></a>, <a href="Monsters.aspx?ID=2950"><u>Young Mirage Dragon</u></a>, <a href="Monsters.aspx?ID=2953"><u>Young Omen Dragon</u></a>, <a href="Monsters.aspx?ID=4354"><u>Young Phase Dragon</u></a>, <a href="Monsters.aspx?ID=136"><u>Young Red Dragon</u></a>, <a href="Monsters.aspx?ID=4357"><u>Young Requiem Dragon</u></a>, <a href="Monsters.aspx?ID=4360"><u>Young Resurrection Dragon</u></a>, <a href="Monsters.aspx?ID=4158"><u>Young Rime Dragon</u></a>, <a href="Monsters.aspx?ID=4363"><u>Young Rune Dragon</u></a>, <a href="Monsters.aspx?ID=1125"><u>Young Sea Dragon</u></a>, <a href="Monsters.aspx?ID=154"><u>Young Silver Dragon</u></a>, <a href="Monsters.aspx?ID=1128"><u>Young Sky Dragon</u></a>, <a href="Monsters.aspx?ID=1131"><u>Young Sovereign Dragon</u></a>, <a href="Monsters.aspx?ID=4182"><u>Young Time Dragon</u></a>, <a href="Monsters.aspx?ID=634"><u>Young Umbral Dragon</u></a>, <a href="Monsters.aspx?ID=1134"><u>Young Underworld Dragon</u></a>, <a href="Monsters.aspx?ID=4198"><u>Young Vorpal Dragon</u></a>, <a href="Monsters.aspx?ID=4202"><u>Young Wailing Dragon</u></a>, <a href="Monsters.aspx?ID=4206"><u>Young Wish Dragon</u></a>, <a href="Monsters.aspx?ID=2085"><u>Yshula</u></a>, <a href="Monsters.aspx?ID=2092"><u>Yulthruk</u></a>, <a href="Monsters.aspx?ID=2752"><u>Yuni</u></a>, <a href="Monsters.aspx?ID=2146"><u>Yurgak</u></a>, <a href="NPCs.aspx?ID=3384"><u>Zaiho</u></a>, <a href="NPCs.aspx?ID=1754"><u>Zane Ikundi</u></a>, <a href="Monsters.aspx?ID=2127"><u>Zashathal Head-Taker</u></a>, <a href="Monsters.aspx?ID=1014"><u>Zealborn</u></a>, <a href="NPCs.aspx?ID=895"><u>Zealot of Asmodeus</u></a>, <a href="NPCs.aspx?ID=2595"><u>Zellara Esmeranda</u></a>, <a href="NPCs.aspx?ID=1391"><u>Zhang Yong</u></a>, <a href="NPCs.aspx?ID=2760"><u>Zhi Hui</u></a>, <a href="Monsters.aspx?ID=4095"><u>Zhuraita</u></a>, <a href="Monsters.aspx?ID=3752"><u>Zimiezek</u></a>, <a href="Monsters.aspx?ID=3343"><u>Ziradini</u></a>, <a href="Monsters.aspx?ID=1921"><u>Zombie Lord</u></a>, <a href="Monsters.aspx?ID=871"><u>Zomok</u></a>, <a href="Monsters.aspx?ID=3367"><u>Zoog</u></a>, <a href="Monsters.aspx?ID=3368"><u>Zoog Swarm</u></a>, <a href="Monsters.aspx?ID=4757"><u>Zoti</u></a>, <a href="Monsters.aspx?ID=2734"><u>Zoudou the Zealous</u></a>, <a href="Monsters.aspx?ID=988"><u>Zrukbat</u></a>, <a href="NPCs.aspx?ID=1569"><u>Zuferian</u></a>, <a href="Monsters.aspx?ID=2655"><u>Zuhra</u></a>, <a href="Monsters.aspx?ID=2656"><u>Zuhra Shuyookh</u></a>, <a href="Monsters.aspx?ID=515"><u>Zuipnyrn</u></a>, <a href="Monsters.aspx?ID=1203"><u>Zuishin</u></a>, <a href="NPCs.aspx?ID=4009"><u>Zungur</u></a>, <a href="Monsters.aspx?ID=4758"><u>Zurkurk</u></a>, <a href="Monsters.aspx?ID=798"><u>Zyss Serpentfolk</u></a><h2 class="title">Regions (9)</h2>Broken Lands, Eye of Dread, Golden Road, High Seas, Impossible Lands, Mwangi Expanse, Old Cheliax, Saga Lands, Shining Kingdoms</span>
+
+                </div>
+                <div class="clear">
+            </div>
+
+            <div class="footer" id="footer" >
+				<div id="et-al" >
+                    <a href="mailto:nethys@archivesofnethys.com">Site Owner: Rose-Winds LLC (Blake Davis)</a>
+                    <div id="footer-social"><a href="https://twitter.com/NethysArchives" target="_blank"><span class="k-icon k-i-twitter" style="font-size:2.5rem"></span></a></div>
+				</div>
+                <div style="text-align:center"><script type="text/javascript" async="true" src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- Main Archives Page -->
+                    <ins class="adsbygoogle"
+                        style="display:inline-block;width:728px;height:90px"
+                        data-ad-client="ca-pub-4953734518316037"
+                        data-ad-slot="7738185508"></ins>
+                    <script type="text/javascript">
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                </script></div>
+			</div>
+            <nethys-search no-ui="true"></nethys-search>
+        </div>
+    </div>
+
+    <div class="modern-menu-container">
+        <div class="modern-menu">
+            <div class="modern-menu-nethys-logo"></div>
+            <div class="modern-menu-items">
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-player"></i></span>
+                    <span class="modern-menu-item-text">Character Creation +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Ancestries.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hood"></i></span>
+                        <span class="modern-menu-item-text">Ancestries</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Archetypes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-nodular"></i></span>
+                        <span class="modern-menu-item-text">Archetypes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Backgrounds.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-guarded-tower"></i></span>
+                        <span class="modern-menu-item-text">Backgrounds</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Classes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-lift"></i></span>
+                        <span class="modern-menu-item-text">Classes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Skills.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Skills</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-torch"></i></span>
+                    <span class="modern-menu-item-text">Equipment +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Equipment.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-torch"></i></span>
+                        <span class="modern-menu-item-text">All Equipment</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=1">
+                        <span class="modern-menu-item-icon"><i class="ra ra-campfire"></i></span>
+                        <span class="modern-menu-item-text">Adventuring Gear</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=6">
+                        <span class="modern-menu-item-icon"><i class="ra ra-round-bottom-flask"></i></span>
+                        <span class="modern-menu-item-text">Alchemical Items</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Armor.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-helmet"></i></span>
+                        <span class="modern-menu-item-text">Armor</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=21">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Held Items</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=23">
+                        <span class="modern-menu-item-icon"><i class="ra ra-rune-stone"></i></span>
+                        <span class="modern-menu-item-text">Runes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Shields.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-shield"></i></span>
+                        <span class="modern-menu-item-text">Shields</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Weapons.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-sword"></i></span>
+                        <span class="modern-menu-item-text">Weapons</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=41">
+                        <span class="modern-menu-item-icon"><i class="ra ra-crown-of-thorns"></i></span>
+                        <span class="modern-menu-item-text">Worn Items</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                    <span class="modern-menu-item-text">Feats +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Feats.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                        <span class="modern-menu-item-text">All Feats</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=78">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aware"></i></span>
+                        <span class="modern-menu-item-text">General</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=78&NoSkills=True">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-teleport"></i></span>
+                        <span class="modern-menu-item-text">General (No Skill)</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=144">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Skill</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-emerald"></i></span>
+                    <span class="modern-menu-item-text">Game Mastery +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Afflictions.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-biohazard"></i></span>
+                        <span class="modern-menu-item-text">Afflictions</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Creatures.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-dragon"></i></span>
+                        <span class="modern-menu-item-text">Creatures</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Hazards.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-bear-trap"></i></span>
+                        <span class="modern-menu-item-text">Hazards</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                    <span class="modern-menu-item-text">Rules +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Rules.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">All Rules</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Actions.aspx">
+                        <span class="modern-menu-item-icon">
+                            <svg viewBox="0 0 30 30" preserveAspectRatio="xMidYMid meet" stroke="null" style="fill:inherit;">
+                                <path d="M21.55532 8.015l7.07107 7.07106-7.07107 7.07107-7.07107-7.07107zM6.47996 10.07526l4.94975 4.94975-4.94975 4.94974-4.94974-4.94974z"></path>
+                                <path d="M15.00246 1.46211l8.48528 8.48528-7.07107 7.07107L7.9314 8.53318z"></path>
+                                <path d="M16.45563 13.11469l7.07107 7.07107-8.48529 8.48528-7.07106-7.07107z"></path>
+                            </svg>
+                        </span>
+                        <span class="modern-menu-item-text">Actions/Activities</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Conditions.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-pain"></i></span>
+                        <span class="modern-menu-item-text">Conditions</span>
+                    </a>
+                    <a class="modern-menu-item" href="/GMScreen.aspx">
+                        <span class="modern-menu-item-icon">
+                            <svg viewBox="0 0 30 30" preserveAspectRatio="xMidYMid meet" stroke="null" style="fill:inherit;">
+                                <path d="M5.72648 12.93117h9.17646v9.50588l-4.58823 2.37647-4.58823-2.37647.00001-9.50588z"></path>
+                                <path d="M5.96178 12.93118h9.17646v9.50587l-4.58823 2.37648-4.58824-2.37648.00001-9.50587z"></path>
+                                <path d="M15.0206 12.93118h9.17646v9.50587l-4.58823 2.37648-4.58824-2.37648.00001-9.50587z"></path>
+                                <path d="M16.70221 8.57471l7.52941-3.38823v16.94117h-7.52941V8.57471zM15.11765 8.69235L5.94118 5.30412v16.94117h9.17647V8.69235z"></path>
+                                <path d="M19.60883 17.75465h-9.17646V8.24878L15.0206 5.8723l4.58824 2.37648-.00001 9.50587z"></path>
+                            </svg>
+                        </span>
+                        <span class="modern-menu-item-text">GM Screen</span>
+                    </a>
+                    <a class="modern-menu-item" href="/PlayersGuide.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-uncertainty"></i></span>
+                        <span class="modern-menu-item-text">Player's Guide</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Traits.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-uncertainty"></i></span>
+                        <span class="modern-menu-item-text">Traits</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Sources.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Sources</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-sun"></i></span>
+                    <span class="modern-menu-item-text">Setting +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Setting.aspx?Adventure=true">
+                        <span class="modern-menu-item-icon"><i class="ra ra-all-for-one"></i></span>
+                        <span class="modern-menu-item-text">Adventures</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Articles.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Articles</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Deities.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-angel-wings"></i></span>
+                        <span class="modern-menu-item-text">Deities</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Domains.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-kaleidoscope"></i></span>
+                        <span class="modern-menu-item-text">Domains</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Languages.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-speech-bubbles"></i></span>
+                        <span class="modern-menu-item-text">Languages</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Planes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-circle-of-circles"></i></span>
+                        <span class="modern-menu-item-text">Planes</span>
+                    </a>
+                        <a class="modern-menu-item" href="/Setting.aspx?Group=40">
+                            <span class="modern-menu-item-icon"><i class="ra ra-mountains"></i></span>
+                            <span class="modern-menu-item-text">Scenarios</span>
+                        </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-crystal-wand"></i></span>
+                    <span class="modern-menu-item-text">Spells/Rituals +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Spells.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-scroll-unfurled"></i></span>
+                        <span class="modern-menu-item-text">All Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=1">
+                        <span class="modern-menu-item-icon"><i class="ra ra-scroll-unfurled"></i></span>
+                        <span class="modern-menu-item-text">Arcane</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=2">
+                        <span class="modern-menu-item-icon"><i class="ra ra-ankh"></i></span>
+                        <span class="modern-menu-item-text">Divine</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=3">
+                        <span class="modern-menu-item-icon"><i class="ra ra-burning-eye"></i></span>
+                        <span class="modern-menu-item-text">Occult</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=4">
+                        <span class="modern-menu-item-icon"><i class="ra ra-leaf"></i></span>
+                        <span class="modern-menu-item-text">Primal</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Focus=true">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aura"></i></span>
+                        <span class="modern-menu-item-text">Focus Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Rituals.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-rune-stone"></i></span>
+                        <span class="modern-menu-item-text">Rituals</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-player-thunder-struck"></i></span>
+                    <span class="modern-menu-item-text">Mythic +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Rules.aspx?ID=3320">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Mythic Rules</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicCallings.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aware"></i></span>
+                        <span class="modern-menu-item-text">Callings</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicFeats.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                        <span class="modern-menu-item-text">Mythic Feats</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicDestinies.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aura"></i></span>
+                        <span class="modern-menu-item-text">Destinies</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicSpells.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-lightning-trio"></i></span>
+                        <span class="modern-menu-item-text">Mythic Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicRituals.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-fire-ring"></i></span>
+                        <span class="modern-menu-item-text">Mythic Rituals</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-help"></i></span>
+                    <span class="modern-menu-item-text">About the Archives +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/ContactUs.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-quill-ink"></i></span>
+                        <span class="modern-menu-item-text">Contact Us</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Contributors.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-double-team"></i></span>
+                        <span class="modern-menu-item-text">Contributors</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Licenses.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Licenses</span>
+                    </a>
+                </div>
+                <a class="modern-menu-item" href="/Support.aspx">
+                    <span class="modern-menu-item-icon"><i class="ra ra-diamond"></i></span>
+                    <span class="modern-menu-item-text">Support the Archives</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="shelyns-corner-wrapper">
+        <div class="shelyns-corner-overlay"></div>
+        <div class="shelyns-corner">
+            <div class="shelyns-corner-header">
+                <h2>Shelyn's Corner</h2>
+                <a href="javascript:void(0)" class="close-shelyns-corner">&times;</a>
+            </div>
+            <div class="shelyns-corner-content">
+                <div class="shelyns-corner-settings">
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-remaster">Prefer Pathfinder Remastered Core?</label>
+                        <input type="checkbox" id="shelyns-corner-setting-remaster" checked/>
+                    </div>
+                    <hr />
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-dyslexia">Dyslexia friendly fonts</label>
+                        <input type="checkbox" id="shelyns-corner-setting-dyslexia"/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-sidebar-hover">Expand sidebar on hover</label>
+                        <input type="checkbox" id="shelyns-corner-setting-sidebar-hover" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-sidebar-shrink">Sidebar can be shrunk</label>
+                        <input type="checkbox" id="shelyns-corner-setting-sidebar-shrink" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-page-compress">Reduce page width</label>
+                        <input type="checkbox" id="shelyns-corner-setting-page-compress"/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-modern-menu">Modern menu</label>
+                        <input type="checkbox" id="shelyns-corner-setting-modern-menu" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-link-previews">Link previews</label>
+                        <input type="checkbox" id="shelyns-corner-setting-link-previews" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-link-previews-search">Link previews in search bar</label>
+                        <input type="checkbox" id="shelyns-corner-setting-link-previews-search"/>
+                    </div>
+                </div>
+                <hr />
+                <div class="theme-gallery-wrapper"></div>
+                <hr />
+                <div class="feel-gallery">
+                    <div class="feel-example classic_feel" onclick="setFeel('classic_feel')">
+                        <h1 class="feel-title">Classic Feel</h1>
+                        <h2 class="feel-title">Classic Feel <span class="output"></span></h2>
+                        <h3 class="feel-title">Classic Feel</h3>
+                        <p>The classic look for the Archives of Nethys.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example book_feel" onclick="setFeel('book_feel')">
+                        <h1 class="feel-title">Book Feel</h1>
+                        <h2 class="feel-title">Book Feel <span class="output"></span></h2>
+                        <h3 class="feel-title">Book Feel</h3>
+                        <p>An alternative feel, based on the Rulebooks.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example round_feel" onclick="setFeel('round_feel')">
+                        <h1 class="feel-title">Round Feel</h1>
+                        <h2 class="feel-title">Round Feel<span class="output"></span></h2>
+                        <h3 class="feel-title">Round Feel</h3>
+                        <p>A rounded, modern look for the archives.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example slim_feel" onclick="setFeel('slim_feel')">
+                        <h1 class="feel-title">Slim Feel</h1>
+                        <h2 class="feel-title">Slim Feel<span class="output"></span></h2>
+                        <h3 class="feel-title">Slim Feel</h3>
+                        <p>A variant of the Round feel, more compact.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <hr />
+                <div class="shelyns-corner-settings">
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-orc">More Orc?</label>
+                        <input type="checkbox" id="shelyns-corner-setting-orc" />
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-boar"><b>BOAR?</b></label>
+                        <input type="checkbox" id="shelyns-corner-setting-boar" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+      var legacyMode = getCore();
+
+      initializeMenuToggle(document.getElementById('minMaxMenu'));
+      initShelynsCorner();
+
+      window.nethysModernMenu.init();
+
+      initializeElasticSearch()
+      var initializeSearch = function (search) {
+          var button;
+          var text;
+          if (search.firstElementChild.classList.contains('search-input'))
+              text = search.firstElementChild;
+          if (search.lastElementChild.classList.contains('search-input'))
+              text = search.lastElementChild;
+          if (search.firstElementChild.classList.contains('search-button'))
+              button = search.firstElementChild;
+          if (search.lastElementChild.classList.contains('search-button'))
+              button = search.lastElementChild;
+
+          if (search) {
+              search.addEventListener('keypress', function (e) {
+                  if (e.keyCode == 13) {
+                      e.preventDefault();
+                      if (text.value != null && text.value.length > 0)
+                          window.location = window.location.origin + "/Search.aspx?q=" + encodeURIComponent(text.value);
+                  }
+              })
+          }
+          if (button) {
+              button.addEventListener('click', function (e) {
+                  window.location = window.location.origin + "/Search.aspx?q=" + encodeURIComponent(text.value);
+              });
+          }
+      };
+      var initializeExpand = function (toggle) {
+          var targetAttrString = "[data-target='" + toggle.dataset.toggle + "']";
+          //target = menu to be collapsed
+          var target = document.querySelector(targetAttrString);
+          toggle.addEventListener('click', function () {
+              var expanded = target.classList.contains('expanded');
+              expanded = !expanded;
+              if (expanded) {
+                  //hide other in group if exists
+                  if (target.dataset.group) {
+                      var otherExpanded = document.querySelector('.expanded[data-group="' + target.dataset.group + '"]');
+                      if (otherExpanded) {
+                          otherExpanded.classList.remove('expanded');
+                      }
+                  }
+                  target.classList.add('expanded');
+              } else {
+                  target.classList.remove('expanded');
+              }
+          });
+      };
+      (function () {
+          //toggles = link that expands/collapses target
+          var toggles = document.querySelectorAll('[data-toggle]');
+          toggles.forEach(function (toggle) {
+              initializeExpand(toggle);
+          });
+          //searches
+          var classicSearch = document.getElementById('classic-search');
+          initializeSearch(classicSearch);
+          var searches = document.querySelectorAll('.search');
+          searches.forEach(function (search) {
+              //initializeSearch(search);
+          });
+      })();
+
+      class NethysSearch extends HTMLElement {
+          constructor() {
+              super();
+
+              this.attachShadow({ mode: 'open' });
+
+              let container = document.createElement('div');
+              this.shadowRoot.append(container);
+
+              let fixedParams = this.getAttribute('fixed-params');
+
+              if (window.location.search.includes('Redirected=1')) {
+                  fixedParams = (fixedParams ? fixedParams + '&' : '') + 'Redirected=1';
+              }
+
+              if (window.location.search.includes('NoRedirect=1')) {
+                  fixedParams = (fixedParams ? fixedParams + '&' : '') + 'NoRedirect=1';
+              }
+
+              let fixedQueryString = this.getAttribute('fixed-query-string') ?? '';
+
+              if (!fixedQueryString.includes('category:item-bonus')) {
+                  fixedQueryString += ' !category:item-bonus';
+              }
+
+              let dataUrl = new URL(elasticUrl);
+              dataUrl.pathname = '/json-data';
+              dataUrl = dataUrl.toString();
+
+              let app = Elm.NethysSearch.init({
+                  node: container,
+                  flags: {
+                      autofocus: (this.getAttribute('autofocus') ?? 'true') == 'true',
+                      browserDateFormat: (new Date(2020, 9, 30).toLocaleDateString(navigator.language))
+                          .replace('2020', 'yyyy')
+                          .replace('10', 'MM')
+                          .replace('30', 'dd'),
+                      currentUrl: location.href,
+                      dataUrl: dataUrl,
+                      defaultQuery: this.getAttribute('default-query'),
+                      elasticUrl: elasticUrl,
+                      fixedParams: fixedParams,
+                      fixedQueryString: fixedQueryString,
+                      loadAll: this.getAttribute('load-all') == 'true',
+                      legacyMode: legacyMode,
+                      localStorage: { ...localStorage },
+                      noUi: this.getAttribute('no-ui') === 'true',
+                      pageDefaultDisplays: localStorage.getItem('page-default-displays'),
+                      pageId: this.getAttribute('page-id'),
+                      randomSeed: Math.floor(Math.random() * 2147483647),
+                      removeFilters: this.getAttribute('remove-filters')?.split(',') ?? [],
+                      resultBaseUrl: "/",
+                      showHeader: false,
+                      showQueryControls: this.getAttribute('show-query-controls') != 'false',
+                      windowHeight: window.innerHeight,
+                      windowWidth: window.innerWidth,
+                  }
+              });
+
+              app.ports.document_focusElement.subscribe(id => {
+                  window.requestAnimationFrame(() => {
+                      let element = this.shadowRoot.getElementById(id);
+
+                      if (element) {
+                          element.focus();
+                      }
+                  });
+              });
+
+              app.ports.document_scrollElementIntoView.subscribe(id => {
+                  window.requestAnimationFrame(() => {
+                      let element = this.shadowRoot.getElementById(id);
+
+                      if (element) {
+                          element.scrollIntoView({block: 'nearest'});
+                      }
+                  });
+              });
+
+              app.ports.localStorage_get && app.ports.localStorage_get.subscribe(function (key) {
+                  let value = localStorage.getItem(key);
+                  app.ports.localStorage_receive.send({ key: key, value: value });
+              });
+
+              app.ports.localStorage_set.subscribe(function (data) {
+                  localStorage.setItem(data.key, data.value);
+              });
+
+              window.addEventListener('popstate', function () {
+                  app.ports.navigation_urlChanged.send(location.href);
+              });
+
+              app.ports.navigation_pushUrl.subscribe(function (url) {
+                  history.pushState([], '', url);
+                  app.ports.navigation_urlChanged.send(location.href);
+              });
+
+              app.ports.navigation_loadUrl.subscribe(function (url) {
+                  location.href = url;
+              });
+
+              document.addEventListener('theme-changed', e => {
+                  app.ports.localStorage_receive.send({ key: 'theme', value: e.detail });
+              });
+
+              document.addEventListener('link-previews-changed', e => {
+                  app.ports.localStorage_receive.send({ key: 'link-previews-enabled', value: e.detail });
+              });
+
+              window.addEventListener('hashchange', e => {
+                  let url = new URL(e.newURL);
+                  if (url.hash != "#results") {
+                      return;
+                  }
+
+                  let results = this.shadowRoot.getElementById("results");
+                  if (!results) {
+                      return;
+                  }
+
+                  results.focus();
+                  results.scrollIntoView();
+                  window.location.hash = '';
+              });
+
+              if (this.getAttribute('no-ui') === 'true') {
+                  let linkPreviewTarget = null;
+
+                  document.addEventListener('mouseover', e => {
+                      const target = e.target.closest('a');
+                      const isSearchBar = e.target.closest('.searchBar') !== null;
+                      if (target && target != linkPreviewTarget) {
+                          let parent = getParentOffset(target.offsetParent);
+                          let data = {
+                              url: target.href,
+                              x: target.offsetLeft + parent.x,
+                              y: target.offsetTop + parent.y,
+                              height: target.offsetHeight,
+                              width: target.offsetWidth,
+                          }
+                          if (isSearchBar) {
+                              if (getFeature('search-bar-previews-enabled', '0') == '0') {
+                                  return;
+                              }
+                              data.x += window.scrollX;
+                              data.y += window.scrollY;
+                          }
+                          app.ports.document_linkEntered.send(data);
+                      } else if (!target && linkPreviewTarget) {
+                          app.ports.document_linkLeft.send("");
+                      }
+
+                      linkPreviewTarget = target;
+                  });
+              }
+
+              function getParentOffset(node) {
+                  if (!node) {
+                      return {
+                          x: 0,
+                          y: 0,
+                      };
+                  }
+                  let parent = getParentOffset(node.offsetParent);
+                  return {
+                      x: node.offsetLeft - node.scrollLeft + parent.x,
+                      y: node.offsetTop - node.scrollTop + parent.y,
+                  };
+              }
+
+              const resizeObserver = new ResizeObserver(entries => {
+                  app.ports.document_receiveBodySize.send({
+                      width: Math.round(entries[0].contentRect.width),
+                      height: Math.round(entries[0].contentRect.height),
+                  });
+              });
+
+              let relativeElement = document.getElementById('page');
+              resizeObserver.observe(relativeElement);
+
+              document.addEventListener('visibilitychange', () => {
+                  if (document.visibilityState === 'visible') {
+                      let rect = relativeElement.getBoundingClientRect();
+
+                      app.ports.document_receiveBodySize.send({
+                          width: Math.round(rect.width),
+                          height: Math.round(rect.height),
+                      });
+                  }
+              });
+          }
+      }
+
+      customElements.define('nethys-search', NethysSearch);
+    </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
+import { noocodec } from './eslint-rules/noocodec.mjs';
 
 // Minimal parser that accepts any content without errors.
 // Used to silence ESLint warnings on non-code files (JSON, CSS, etc.)
@@ -45,11 +46,14 @@ export default [
     files: config.files ?? TS_FILES
   })),
   {
-    files: ['src/**/*.ts', 'tests/**/*.ts'],
+    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts', 'workers/**/*.ts'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
       globals: { ...globals.node }
+    },
+    plugins: {
+      noocodec
     },
     rules: {
       'no-unused-vars': 'off',
@@ -58,7 +62,21 @@ export default [
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/ban-ts-comment': 'error',
-      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }]
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      // Identifiers must describe what a thing is — no single-character names.
+      'id-length': ['error', { min: 3, exceptions: ['as', 'fs', 'js', 'of', 'os', 'ts', 'vm'], properties: 'never' }],
+      // noocodec custom rules — scope/scope-report phase only (violations not yet fixed)
+      'noocodec/interface-must-be-contract': ['error', { allow: [] }],
+      'noocodec/logger-binding-name':        'error'
+    }
+  },
+  // src/types/ is the canonical type-grouping barrel — exempt it from
+  // group-types-in-namespace so the rule fires only on non-barrel src files.
+  {
+    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts', 'workers/**/*.ts'],
+    ignores: ['src/types/**'],
+    rules: {
+      'noocodec/group-types-in-namespace': 'error'
     }
   }
 ];

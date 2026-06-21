@@ -1,0 +1,101 @@
+{
+  "_type": "weapon",
+  "url": "https://2e.aonprd.com/Weapons.aspx?ID=351",
+  "weapon_id": 351,
+  "name": "Bolts (Phalanx Piercer)",
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Weapons.aspx?ID=665&NoRedirect=1",
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Treasure Vault (Remastered)",
+    "page": 30,
+    "source_id": 191
+  },
+  "sources": [
+    {
+      "book": "Treasure Vault (Remastered)",
+      "page": 30,
+      "source_id": 191,
+      "raw": "Treasure Vault (Remastered) pg. 30"
+    },
+    {
+      "book": "Core Rulebook",
+      "page": 283,
+      "source_id": 1,
+      "raw": "Core Rulebook pg. 283"
+    }
+  ],
+  "favored_weapon": [],
+  "price": {
+    "gp": null,
+    "sp": 1,
+    "cp": null,
+    "raw": "1 sp (price for 5)"
+  },
+  "damage": null,
+  "bulk": "L",
+  "hands": null,
+  "reload": null,
+  "range": null,
+  "ammunition": null,
+  "weapon_type": "ranged",
+  "category": null,
+  "group": {
+    "name": "Bow",
+    "group_id": 3
+  },
+  "description_html": "Heavy, iron-shod bolt.<br>",
+  "description_text": "Heavy, iron-shod bolt.",
+  "critical_specialization": {
+    "source": "Core Rulebook pg. 283",
+    "by_group": {
+      "Bow": "If the target of the critical hit is adjacent to a surface, it gets stuck to that surface by the missile. The target is immobilized and must spend an Interact action to attempt a DC 10 Athletics check to pull the missile free; it can't move from its space until it succeeds. The creature doesn't become stuck if it is incorporeal, is liquid (like a water elemental or some oozes), or could otherwise escape without effort."
+    }
+  },
+  "specific_magic_weapons": [],
+  "trait_glossary": [],
+  "raw_fields": {
+    "Price": "1 sp (price for 5)",
+    "Bulk": "L",
+    "Type": "Ranged",
+    "Category": "Ammunition",
+    "Group": "Bow"
+  },
+  "links": [
+    {
+      "href": "Sources.aspx?ID=1",
+      "text": "Core Rulebook pg. 283",
+      "kind": "Sources",
+      "id": 1
+    },
+    {
+      "href": "Conditions.aspx?ID=24",
+      "text": "immobilized",
+      "kind": "Conditions",
+      "id": 24
+    },
+    {
+      "href": "Skills.aspx?ID=3",
+      "text": "Athletics",
+      "kind": "Skills",
+      "id": 3
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=45",
+      "text": "water elemental",
+      "kind": "MonsterFamilies",
+      "id": 45
+    },
+    {
+      "href": "MonsterFamilies.aspx?ID=79",
+      "text": "oozes",
+      "kind": "MonsterFamilies",
+      "id": 79
+    }
+  ],
+  "meta_description": "Heavy, iron-shod bolt.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Equipment, Weapons, Bolts (Phalanx Piercer)"
+}

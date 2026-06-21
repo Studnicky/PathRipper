@@ -1,0 +1,241 @@
+{
+  "_type": "spell",
+  "url": "https://2e.aonprd.com/Spells.aspx?ID=1652",
+  "spell_id": 1652,
+  "name": "Retrocognition",
+  "kind": "spell",
+  "rank": 7,
+  "rarity": "common",
+  "pfs": "standard",
+  "legacy": false,
+  "alt_edition_url": "Spells.aspx?ID=260&NoRedirect=1",
+  "action_cost": null,
+  "traits": [
+    "Concentrate",
+    "Manipulate"
+  ],
+  "trait_ids": {
+    "Concentrate": 32,
+    "Manipulate": 104
+  },
+  "source": {
+    "book": "Player Core",
+    "page": 353,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 353,
+      "source_id": 216,
+      "raw": "Player Core pg. 353"
+    }
+  ],
+  "traditions": [
+    "arcane",
+    "occult"
+  ],
+  "spell_list": null,
+  "bloodlines": [
+    {
+      "name": "imperial",
+      "bloodline_id": 27
+    }
+  ],
+  "cult": [],
+  "domain": [],
+  "deities": [
+    {
+      "name": "Amaznen",
+      "deity_id": 404
+    },
+    {
+      "name": "Atrogine",
+      "deity_id": 331
+    },
+    {
+      "name": "Phlegyas",
+      "deity_id": 546
+    },
+    {
+      "name": "Pillars of Knowledge",
+      "deity_id": 209
+    },
+    {
+      "name": "Rivethun",
+      "deity_id": 388
+    },
+    {
+      "name": "Stone's Blood",
+      "deity_id": 382
+    },
+    {
+      "name": "Teki Stronggut",
+      "deity_id": 505
+    },
+    {
+      "name": "Yluma",
+      "deity_id": 721
+    },
+    {
+      "name": "Zohls",
+      "deity_id": 489
+    }
+  ],
+  "mysteries": [],
+  "patron_themes": [],
+  "catalysts": [],
+  "cast": {
+    "actions": null,
+    "components": [],
+    "time": "1 minute",
+    "raw": "1 minute"
+  },
+  "trigger": null,
+  "range": null,
+  "area": null,
+  "targets": null,
+  "defense": null,
+  "saving_throw": null,
+  "duration": "sustained",
+  "cost": null,
+  "requirements": null,
+  "description_html": "Opening your mind to mental echoes, you gain impressions from past events that occurred in your current location. <i>Retrocognition</i> reveals psychic impressions from events that occurred over the course of the last day throughout the first minute of the duration, followed by impressions from the next day back the next minute, and so on. These echoes don't play out like a vision but instead reveal impressions of emotions and metaphors that provide cryptic clues and details of the past. If you witness a traumatic or turbulent event through an impression, the spell ends unless you succeed at a Will save with a DC of at least 30 and possibly as much as 50, depending on the severity of the event. The GM determines whether an event is traumatic and chooses the DC.<ul></ul><hr>",
+  "description_text": "Opening your mind to mental echoes, you gain impressions from past events that occurred in your current location. Retrocognition reveals psychic impressions from events that occurred over the course of the last day throughout the first minute of the duration, followed by impressions from the next day back the next minute, and so on. These echoes don't play out like a vision but instead reveal impressions of emotions and metaphors that provide cryptic clues and details of the past. If you witness a traumatic or turbulent event through an impression, the spell ends unless you succeed at a Will save with a DC of at least 30 and possibly as much as 50, depending on the severity of the event. The GM determines whether an event is traumatic and chooses the DC.",
+  "outcomes": {
+    "critical_success": null,
+    "success": null,
+    "failure": null,
+    "critical_failure": null
+  },
+  "affliction": null,
+  "heightened": [
+    {
+      "rank_label": "8th",
+      "rank": 8,
+      "increment": null,
+      "body_html": "You gain impressions of events that occurred over the previous year for each minute you concentrate, instead of the previous day, though the details diminish, making it harder to distinguish impressions from all but the most major events.<br>",
+      "body_text": "You gain impressions of events that occurred over the previous year for each minute you concentrate, instead of the previous day, though the details diminish, making it harder to distinguish impressions from all but the most major events."
+    },
+    {
+      "rank_label": "9th",
+      "rank": 9,
+      "increment": null,
+      "body_html": "You gain impressions of events that occurred over the previous century for each minute you concentrate, instead of the previous day, though the details diminish, making it almost impossible to distinguish impressions from all but the most major events.",
+      "body_text": "You gain impressions of events that occurred over the previous century for each minute you concentrate, instead of the previous day, though the details diminish, making it almost impossible to distinguish impressions from all but the most major events."
+    }
+  ],
+  "raw_fields": {
+    "Traditions": "arcane, occult",
+    "Bloodline": "imperial",
+    "Deities": "Amaznen, Atrogine, Phlegyas, Pillars of Knowledge, Rivethun, Stone's Blood, Teki Stronggut, Yluma, Zohls",
+    "Cast": "1 minute",
+    "Duration": "sustained"
+  },
+  "links": [
+    {
+      "href": "Spells.aspx?ID=260&amp;NoRedirect=1",
+      "text": "here",
+      "kind": "Spells",
+      "id": 260
+    },
+    {
+      "href": "PFS.aspx",
+      "text": "",
+      "kind": "PFS",
+      "id": null
+    },
+    {
+      "href": "/Traits.aspx?ID=32",
+      "text": "Concentrate",
+      "kind": "Traits",
+      "id": 32
+    },
+    {
+      "href": "/Traits.aspx?ID=104",
+      "text": "Manipulate",
+      "kind": "Traits",
+      "id": 104
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 353",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Spells.aspx?Tradition=1",
+      "text": "arcane",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Spells.aspx?Tradition=3",
+      "text": "occult",
+      "kind": "Spells",
+      "id": null
+    },
+    {
+      "href": "Bloodlines.aspx?ID=27",
+      "text": "imperial",
+      "kind": "Bloodlines",
+      "id": 27
+    },
+    {
+      "href": "Deities.aspx?ID=404",
+      "text": "Amaznen",
+      "kind": "Deities",
+      "id": 404
+    },
+    {
+      "href": "Deities.aspx?ID=331",
+      "text": "Atrogine",
+      "kind": "Deities",
+      "id": 331
+    },
+    {
+      "href": "Deities.aspx?ID=546",
+      "text": "Phlegyas",
+      "kind": "Deities",
+      "id": 546
+    },
+    {
+      "href": "Deities.aspx?ID=209",
+      "text": "Pillars of Knowledge",
+      "kind": "Deities",
+      "id": 209
+    },
+    {
+      "href": "Deities.aspx?ID=388",
+      "text": "Rivethun",
+      "kind": "Deities",
+      "id": 388
+    },
+    {
+      "href": "Deities.aspx?ID=382",
+      "text": "Stone's Blood",
+      "kind": "Deities",
+      "id": 382
+    },
+    {
+      "href": "Deities.aspx?ID=505",
+      "text": "Teki Stronggut",
+      "kind": "Deities",
+      "id": 505
+    },
+    {
+      "href": "Deities.aspx?ID=721",
+      "text": "Yluma",
+      "kind": "Deities",
+      "id": 721
+    },
+    {
+      "href": "Deities.aspx?ID=489",
+      "text": "Zohls",
+      "kind": "Deities",
+      "id": 489
+    }
+  ],
+  "meta_description": "Opening your mind to mental echoes, you gain impressions from past events that occurred in your current location. Retrocognition reveals psychic impressions from events that occurred over the course of the last day throughout the first minute of the duration, followed by impressions from the next day back the next minute, and so on. These echoes don't play out like a vision but instead reveal impressions of emotions and metaphors that provide cryptic clues and details of the past. If you witness a traumatic or turbulent event through an impression, the spell ends unless you succeed at a Will save with a DC of at least 30 and possibly as much as 50, depending on the severity of the event. The GM determines whether an event is traumatic and chooses the DC.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Spells, Retrocognition"
+}

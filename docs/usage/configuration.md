@@ -5,262 +5,146 @@ title: Configuration
 
 # Configuration
 
-The config is a JSON file. Load it with `ripperoni --config ripperoni.config.json`. Schema source of truth: `src/schemas/internal/RipperConfigSchema.ts`.
+A `state.json` file (`RunStateSchema`) drives a run alongside the orchestration DAG. The state file supplies all runtime parameters — what to fetch, how fast, where to write, how to crawl. It is validated at startup before any network activity begins.
 
-Copy `ripperoni.config.example.json` as a starting point. The unprefixed file is gitignored.
+Pass it on the command line:
 
-## Top-level shape
-
-```ts
-{
-  output:    OutputConfig;                      // required
-  targets?:  { [name: string]: TargetConfig };  // HTML scrape targets
-  mediawiki?: { [name: string]: WikiConfig };   // MediaWiki scrape targets
-  crawlers?: { [name: string]: CrawlerConfig }; // link-crawler configs
-}
+```bash
+ripperoni run mysite.dag.jsonld --state mysite.state.json
 ```
 
-### `output`
+Schema source of truth: `src/schemas/RunStateSchema.ts`.
 
-Global output settings:
+## Top-level fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `baseUrl` | URI | no | Base URL for the target. All fetched URLs resolve against this. Required when using `html:fetch`. |
+| `apiUrl` | URI | no | MediaWiki API endpoint (e.g. `https://en.wikipedia.org/w/api.php`). Required when using `wiki:fetch`. |
+| `rateLimitMs` | integer ≥ 0 | no | Minimum milliseconds between requests. |
+| `jitterMs` | integer ≥ 0 | no | Random jitter added on top of `rateLimitMs` per request. |
+| `maxRetries` | integer 0–10 | no | Retry attempts on transient errors. |
+| `retryBaseDelayMs` | integer ≥ 100 | no | Base delay for retry backoff. |
+| `retryMaxDelayMs` | integer ≥ 1000 | no | Backoff ceiling. |
+| `headers` | object | no | Additional HTTP request headers. Include `User-Agent`. |
+| `output` | OutputConfig | yes | Output settings (see below). |
+| `cache` | CacheConfig | no | Cache settings. Defaults to `read-write` at `output/.cache/<taskName>`. |
+| `crawler` | CrawlerConfig | no | Link-crawler config for the `crawl:discover` DAG. |
+| `urls` | string[] | no | Explicit URL or title list. When present and no `crawl:discover` node is needed, the scatter reads directly from this. |
+| `parallelWorkers` | boolean | no | Route scatter items to a `WorkerThreadContainer` pool. Requires `npm run build:workers`. |
+| `includeRawContent` | boolean | no | Include `_raw` field in output records. Default `true`. |
+| `outputSchema` | string | no | Path to a JSON Schema file for output record validation. |
+| `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` | no | Disposition when a record fails schema validation. |
+
+### `output`
 
 | Key | Type | Required | Notes |
 |-----|------|----------|-------|
 | `basePath` | string | yes | Base directory for all written output files. |
-| `format` | `"json"` \| `"html"` \| `"text"` | no | Output file format. `json` is the default and what downstream tools (like Squashage) expect. |
+| `format` | `"json"` \| `"jsonl"` | no | Output file format. Default `"json"`. |
 | `pretty` | boolean | no | Pretty-print JSON output. Default `false`. |
+| `splitByTaskName` | boolean | no | When `true`, output is partitioned into per-task subdirectories beneath `basePath`. |
 
----
-
-## targets (HTML scrape)
-
-Each key is a target name (e.g. `"aonprd"`). Value is a target config.
-
-### Required
-
-| Key | Type | Notes |
-|-----|------|-------|
-| `baseUrl` | URI | Base URL for the target. All fetched URLs are resolved against this. |
-| `pipeline` | string[] | Ordered task names. Minimum one. |
-
-### Optional
-
-| Key | Type | Default | Notes |
-|-----|------|---------|-------|
-| `rateLimitMs` | integer ≥ 0 |  | Minimum milliseconds between requests. |
-| `jitterMs` | integer ≥ 0 |  | Random jitter added on top of `rateLimitMs`. Applied per request. |
-| `maxRetries` | integer 0–10 |  | Retry attempts on transient errors. |
-| `retryBaseDelayMs` | integer ≥ 100 |  | Base delay for retry backoff. |
-| `retryMaxDelayMs` | integer ≥ 1000 |  | Backoff ceiling. |
-| `concurrency` | integer 1–32 | `1` | Parallel fetch/process slots. |
-| `maxPages` | integer ≥ 0 |  | Stop after processing this many pages. |
-| `headers` | object |  | Additional HTTP headers. Include `User-Agent`. |
-| `outputSchema` | string |  | Path to a JSON Schema file. Records that fail validation are handled per `onSchemaError`. |
-| `onSchemaError` | `"halt"` \| `"skip"` \| `"warn"` |  | What to do when a record fails schema validation. |
-| `includeRawContent` | boolean | `true` | When `false`, raw content is not populated on `state.page._raw` at all during the pipeline run. No raw file is written to `raw/`. See [Output folder layout](#output-folder-layout) below. |
-| `mapping` | object |  | Field-rename map applied after plugin output. |
-| `cache` | CacheConfig | see [Cache defaults](#cache-config-shared-shape) | See [Cache](./cache). Omit to use the default. |
-| `crawler` | CrawlerConfig |  | Inline crawler config for this target. |
-
-Concurrency bound rationale: Concurrency is clamped to 1–32 to prevent runaway parallelism. At concurrency 32, you can have 32 HTTP requests in flight simultaneously. This is usually enough to saturate downstream bandwidth and quickly hit many servers' rate limits. Beyond 32, the marginal benefit drops and the risk of getting blocked increases. If you need more parallelism, run multiple Ripperoni instances.
-
-Validation timing: When validation errors surface depends on your schema. If your `outputSchema` has required fields and your plugin sets `output: {}`, the validation fails when `json:write` tries to serialize the record. The error is handled per `onSchemaError`: `"halt"` throws and stops the run, `"skip"` logs a warning and skips the file, `"warn"` logs and writes anyway.
-
-Retry × concurrency worst-case: If every fetch in a batch of `concurrency` tasks encounters a transient error and retries to `maxDelayMs` (30 seconds), the batch duration could be 30+ seconds. Total run time is `ceil(N / concurrency) * maxRetryTime`. For 1000 URLs with concurrency 10: `ceil(1000/10) * 30s = 100 * 30 = 50 minutes` in the absolute worst case (every fetch fails and retries max times). In practice, cache hits and successful first attempts keep this much lower.
-
-Field mapping worked example: After your plugin extracts a record, `mapping` renames fields without touching your code:
-
-```json
-"targets": {
-  "aonprd": {
-    "pipeline": ["html:fetch", "aonprd:parse", "json:write"],
-    "mapping": {
-      "name": "title",
-      "description": "desc"
-    }
-  }
-}
-```
-
-If your plugin sets `state.output = { name: "Fireball", description: "Conjures..." }`, the written file gets `{ title: "Fireball", desc: "Conjures...", ... }`. The original fields are gone; only the mapped names appear in the JSON.
-
-Cache and retry interaction: The cache sits upstream of retry logic. A cache hit means no retry-executor is invoked (no exponential backoff). A cache miss triggers the full HTTP stack: rate limiter, retry executor with backoff, then cache write on success. The first fetch of a URL can take up to `maxRetryTime`; the second hit takes microseconds (cache read).
-
-Validation errors surface at first write. If your plugin produces invalid output, the first file write detects it. All subsequent pages from the same target go through the same validator, so you'll see the full picture of validation failures quickly (don't run all 1000 pages to find out your schema is wrong).
-
-### Example
-
-Cache is on by default — omit the `cache` block and Ripperoni uses `output/.cache/<targetId>` with `read-write` mode automatically:
-
-```json
-{
-  "targets": {
-    "aonprd": {
-      "baseUrl":          "https://2e.aonprd.com",
-      "rateLimitMs":      1000,
-      "jitterMs":         250,
-      "maxRetries":       3,
-      "retryBaseDelayMs": 500,
-      "retryMaxDelayMs":  30000,
-      "headers": {
-        "User-Agent": "ripperoni/2.0 (+https://github.com/Studnicky/PathRipper)"
-      },
-      "pipeline": ["html:fetch", "aonprd:parse", "json:write"]
-    }
-  }
-}
-```
-
-This produces a cache at `output/.cache/aonprd` in `read-write` mode — identical to writing `"cache": { "dir": "output/.cache/aonprd", "mode": "read-write" }` explicitly.
-
----
-
-## Raw content output
-
-Every output record carries a `_raw` field by default. This field is injected just before the record is written to disk and holds the raw fetched bytes alongside the parsed fields. Downstream consumers can re-parse historical Ripperoni output without depending on Ripperoni's cache infrastructure.
-
-### Default behaviour
-
-Raw content is always written. No configuration is required to get `_raw` in output. Parsing and enrichment are additive layers on top — plugins set `state.output` fields that appear alongside `_raw`, not instead of it.
-
-A pipeline with no plugin step (`["html:fetch", "json:write"]`) is a valid and complete pipeline: it produces a raw dump per page with no further extraction. This is useful for archiving, debugging, or when you want to defer parsing to a downstream tool.
-
-### Shape
-
-```json
-{
-  "_raw": {
-    "contentType": "text/html",
-    "content":     "<html>...</html>",
-    "fetchedAt":   "2026-05-07T04:00:00.000Z"
-  }
-}
-```
-
-| Field | Type | Notes |
-|-------|------|-------|
-| `contentType` | string | MIME type of the response (`text/html` for HTML targets). |
-| `content` | string | Full raw response body, byte-for-byte. |
-| `fetchedAt` | ISO-8601 string | Timestamp at which the content was fetched. |
-
-### Opting out (storage savings)
-
-Set `includeRawContent: false` to strip `_raw` from output. Use this for production scrapes where storage is a concern. Rough estimate: 15,000 AONPRD records x 80 KB of HTML = roughly 1.2 GB of additional output. If you do not need to re-parse output offline, opt out to keep file sizes small.
-
-Note: when opting out of raw content, you may also set `cache.mode: "off"` if you have no need to cache fetched pages:
-
-```json
-{
-  "targets": {
-    "aonprd": {
-      "baseUrl":           "https://2e.aonprd.com",
-      "pipeline":          ["html:fetch", "aonprd:parse", "json:write"],
-      "includeRawContent": false,
-      "cache":             { "dir": ".cache", "mode": "off" }
-    }
-  }
-}
-```
-
-Setting `cache.mode: "off"` while `includeRawContent` is `true` (the default) is rejected at config load. See [Cache — Raw + cache-off invariant](./cache#raw--cache-off-invariant).
-
-### Raw-dump-only pipeline (no plugin)
-
-A pipeline without a plugin task is fully supported and produces one JSON file per page:
-
-```json
-{
-  "targets": {
-    "archive": {
-      "baseUrl":  "https://example.com",
-      "pipeline": ["html:fetch", "json:write"]
-    }
-  }
-}
-```
-
-Output shape per record (output is empty object because no plugin ran, `_raw` carries the content):
-
-```json
-{
-  "_raw": {
-    "contentType": "text/html",
-    "content":     "<html>...</html>",
-    "fetchedAt":   "2026-05-07T04:00:00.000Z"
-  }
-}
-```
-
-### Plugin contract
-
-Plugins must not read or write the `_raw` field. It is set by `html:fetch` and consumed by `json:write` / `jsonl:append`. Plugins interact with `state.page.html` and `state.output` as usual; `_raw` is injected transparently into the serialized file just before the disk write.
-
----
-
-## mediawiki
-
-Same rate-limit, retry, concurrency, and cache options as `targets`. MediaWiki-specific additions:
+### `cache`
 
 | Key | Type | Required | Notes |
 |-----|------|----------|-------|
-| `apiUrl` | URI | yes | MediaWiki API endpoint (e.g. `https://en.wikipedia.org/w/api.php`). |
-| `batchSize` | integer 1–50 | no | Pages per batch request. MediaWiki API maximum is 50. |
-| `categories` | string[] | no | Category names to enumerate. When present, overrides full-site enumeration. |
-
-See [MediaWiki](./mediawiki) for the three enumeration modes.
-
----
-
-## crawlers
-
-Top-level crawlers define link-harvesting jobs independent of scrape targets.
-
-| Key | Type | Required | Notes |
-|-----|------|----------|-------|
-| `startUrls` | URI[] | yes | Entry points for the crawl. |
-| `domain` | regex string | yes | Links must match to be considered. Bounds the crawl to one site. |
-| `target` | regex string | yes | Links matching `delimiter` AND this are collected as results. |
-| `delimiter` | regex string | yes | Links matching this are traversed (followed). Others are ignored. |
-| `rateLimitMs` | integer ≥ 0 | no | Gap between requests. |
-| `jitterMs` | integer ≥ 0 | no | Jitter on top of rate limit. |
-| `maxPages` | integer ≥ 1 | no | Traversal ceiling. |
-
-See [Crawler](./crawler) for how the three regexes interact.
-
----
-
-## cache config (shared shape)
-
-Cache is on by default. Omitting the `cache` block from a `targets` or `mediawiki` entry applies:
-
-```json
-{ "dir": "output/.cache/<targetId>", "mode": "read-write" }
-```
-
-To override, supply an explicit `cache` block:
-
-```json
-"cache": {
-  "dir":   "./output/.cache/aonprd",
-  "mode":  "read-write",
-  "ttlMs": 86400000
-}
-```
-
-| Key | Type | Required | Notes |
-|-----|------|----------|-------|
-| `dir` | string | yes | Directory for cache meta files. |
+| `dir` | string | yes | Directory for cache files. |
 | `mode` | enum | yes | `read-write`, `read-only`, `write-only`, or `off`. `off` requires `includeRawContent: false`. |
-| `ttlMs` | integer ≥ 0 | no | Entries older than this (in ms) are treated as misses. |
+| `ttlMs` | integer ≥ 0 | no | Entries older than this are treated as misses. |
 
-See [Cache](./cache) for sharding, eviction, TTL, and the raw + cache-off invariant.
+### `crawler`
 
----
+Configures the `crawl:discover` embedded DAG. All regex fields are strings compiled internally.
+
+| Key | Type | Required | Notes |
+|-----|------|----------|-------|
+| `startUrls` | string[] | yes | Absolute URLs where the crawl begins. At least one required. |
+| `domain` | regex string | yes | Links must match to enter the crawl at all. Bounds traversal to one site. |
+| `target` | regex string | yes | Links matching `domain` + `delimiter` + `target` are collected as scrape targets. |
+| `delimiter` | regex string | yes | Links matching `domain` + `delimiter` are added to the traversal frontier. |
+| `rateLimitMs` | integer ≥ 0 | no | Gap between crawler requests, independent of the target rate limit. |
+| `jitterMs` | integer ≥ 0 | no | Random jitter added on top of crawler `rateLimitMs`. |
+| `maxPages` | integer ≥ 1 | no | Hard ceiling on collected target URLs. Omit for an unbounded crawl. |
+
+## Full example
+
+```json
+{
+  "baseUrl":          "https://2e.aonprd.com",
+  "rateLimitMs":      1000,
+  "jitterMs":         250,
+  "maxRetries":       3,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs":  30000,
+  "headers": {
+    "User-Agent": "ripperoni/3.0 (+https://github.com/Studnicky/ripper)"
+  },
+  "output": {
+    "basePath": "./output",
+    "format":   "json",
+    "pretty":   true
+  },
+  "cache": {
+    "dir":   "./output/.cache/aonprd",
+    "mode":  "read-write",
+    "ttlMs": 86400000
+  },
+  "crawler": {
+    "startUrls": [
+      "https://2e.aonprd.com/Feats.aspx",
+      "https://2e.aonprd.com/Spells.aspx",
+      "https://2e.aonprd.com/Monsters.aspx"
+    ],
+    "domain":      "2e\\.aonprd\\.com",
+    "target":      "\\?ID=",
+    "delimiter":   "\\.aspx",
+    "rateLimitMs": 1000,
+    "jitterMs":    250,
+    "maxPages":    5000
+  }
+}
+```
+
+## Output folder layout
+
+Records land under `output.basePath` in a subdirectory named after the plugin's task. With `basePath: ./output` and a plugin task named `aonprd`, records land in `./output/aonprd/`. When `splitByTaskName: true`, output is further partitioned into per-task subdirectories.
+
+```
+output/
+  aonprd/
+    Feats.aspx?ID=750.json
+    Spells.aspx?ID=1.json
+  .cache/
+    aonprd/
+      a3/
+        b7c9d2e1f4.meta.json
+      bodies/
+        a3/
+          b7c9d2e1f4.body
+```
+
+Failed pages are written to `failures.json` in the output directory.
+
+## Raw content
+
+When `includeRawContent` is `true` (the default), each output record carries a `_raw` field:
+
+```json
+{
+  "_raw": {
+    "contentType": "text/html",
+    "content":     "<html>...</html>",
+    "fetchedAt":   "2026-05-07T04:00:00.000Z"
+  }
+}
+```
+
+Set `includeRawContent: false` to strip `_raw` from output. Setting `cache.mode: "off"` while `includeRawContent` is `true` is rejected at startup — raw content output without a write-capable cache exhausts disk on large scrapes. To disable caching, set `includeRawContent: false` first, then `cache.mode: "off"`.
 
 ## Related
 
-- [Pipeline](./pipeline); task registration and state shape
-- [Scrapers](./scrapers); HtmlScraper vs MediaWikiScraper
-- [MediaWiki](./mediawiki); three enumeration modes
-- [Crawler](./crawler); LinkLister behavior
-- [Cache](./cache); read/write modes, TTL, eviction
+- [Authoring a DAG](/usage/pipeline): placement types, `DAGBuilder` API, built-in nodes
+- [Plugins](/usage/plugins): node contract and the services bag
+- [Crawler](/usage/crawler): `crawl:discover` DAG and regex decision tree
+- [Cache](/usage/cache): read/write modes, TTL, eviction

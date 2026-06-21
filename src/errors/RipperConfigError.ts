@@ -1,5 +1,5 @@
 import { BaseError } from './BaseError.js';
-import type { BaseErrorOptionsInterface } from './BaseError.js';
+import type { BaseErrorOptionsType } from './BaseError.js';
 
 /**
  * Thrown when the ripperoni config file fails validation or cannot be loaded.
@@ -23,7 +23,7 @@ export class RipperConfigError extends BaseError {
    * @param message - Human-readable description of the config failure.
    * @param options - Optional cause and metadata.
    */
-  private constructor(message: string, options: BaseErrorOptionsInterface = {}) {
+  private constructor(message: string, options: BaseErrorOptionsType = {}) {
     super(message, { code: 'RIPPER_CONFIG', retryable: false, ...options });
   }
 
@@ -34,7 +34,7 @@ export class RipperConfigError extends BaseError {
    * @param options - Optional cause and metadata.
    * @returns A new RipperConfigError.
    */
-  public static create(message: string, options: BaseErrorOptionsInterface = {}): RipperConfigError {
+  public static create(message: string, options: BaseErrorOptionsType = {}): RipperConfigError {
     return new RipperConfigError(message, options);
   }
 }

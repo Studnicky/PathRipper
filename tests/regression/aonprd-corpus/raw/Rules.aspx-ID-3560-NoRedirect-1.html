@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script type="text/javascript" async src="https://www.googletagmanager.com/gtag/js?id=UA-137805785-3"></script>
+    <script type="text/javascript">
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-137805785-3');
+    </script>
+    <title>
+        Introduction - Rules - Archives of Nethys: Pathfinder 2nd Edition Database
+    </title>
+    
+
+    <link href="/Styles/Layout.css?v=eMY9bieGgcneWq7LIJnH8DTSorZ2kogN9ZnZUzfWpCs" rel="stylesheet" type="text/css" />
+    <link href="/Styles/rpg-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="/Styles/Typography.css?v=3et3D84VeOgcsPaSRyGH6nF1FfjjYgVpcGBq4HyG5vg" rel="stylesheet" type="text/css" />
+    <link href="/themes" rel="stylesheet" type="text/css" />
+    <link href="/Styles/SitePrint.css?v=8wGbZVsBHNUZjW78tbaeVtZ_Jlm0ss-wjdlzy_jKlOY" rel="stylesheet" type="text/css" media="print" />
+
+    <link href="https://fonts.googleapis.com/css?family=Julee" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Andika" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap" rel="stylesheet">
+    <link rel="search" type="application/opensearchdescription+xml" title="Search the Archives of Nethys" href="https://2e.aonprd.com/opensearch.xml" />
+
+
+    <script type="text/javascript">
+        window.elasticUrl = 'https://elasticsearch.aonprd.com/aon';
+    </script>
+
+        <script src="https://elasticsearch.aonprd.com/js/nethys-search-9f2620f2bfdf2014fd0b0c157f03248921d02563.js"></script>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js" integrity="sha512-5cguXwRllb+6bcc2pogwIeQmQPXEzn2ddsqAexIBhh7FO1z5Hkek1J9mrK2+rmZCTU6b6pERxI7acnp1MpAg4Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/search.min.css" integrity="sha512-1xyHOORqcJ80bareQ2TWmQE+WZ/TlsqjqILbLHeM3Urtw720aiFXE/N+Xm4MAJpcn42e3k4Z8ZpqZfsA2VVyNw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/transition.min.css" integrity="sha512-zsEyDFFD+yPxc7Kq8c3byp2H3tfx4GgT4wvCDzDGiOlkk2hl454XOHzHfN/OsPilopfPEbRzVJ0wxlIa/9BOyg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/transition.min.js" integrity="sha512-zPx44KLp+BP6OKcCIPQibTiLz0WAc2s9syi+7wOT+Ql2D1/kAX8y7K1rz8vuTtrhRS2dMZ7zVS5dQoHTvkXJCA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/icon.min.css" integrity="sha512-cKaYuptKrUbQ4/r0qmxhpQDjPWb7/SYN6gQRYMOQqPJ2+S4Bmb1zZ1/SAuszp+E6yoakjQFpM+rAzuw+EwR+xw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/input.min.css" integrity="sha512-6+BQOwPqqk5AianROXkI3LKgnLcjZbEV3KbhO++sKXemybg0FugrODki+nBsg9FipqlKSMd4ppnpkqC6VEpFiA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/button.min.css" integrity="sha512-XMrByQiBPJwH350YvTKR/XTY1fOQX4lSQqeft++WcyY39l0eKoPXOgx1OJHEODhHCW1FfvVl/Bdr90QE08FG+Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/dropdown.min.css" integrity="sha512-hDsG55Tp5IgyWKbBbNhOo0+bLTdIVVAGW09a7IFvgIkKg/xrjOdOA2lEPFkkgJQ3NuB7DxDFlSHX7/JYvFLYfA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/components/dropdown.min.js" integrity="sha512-1SzBIESNYM3Y8JkQrS1Mu2dPnPaAqeQkCV9KfDA2eYXBEzdkhHWyqTP6P0OAsh1RSC4cDvr8DmYVTmb/YWGYpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script src="/Scripts/modernMenu.js"></script>
+
+    <script type="text/javascript" src="/Scripts/tableState.js"></script>
+    <script type="text/javascript" src="/Scripts/drawerHandlers.js"></script>
+    <script type="text/javascript" src="/Scripts/hideFilter.js"></script>
+    <script type="text/javascript" src="/Scripts/searchBar.js"></script>
+
+    <script type="text/javascript" src="/Scripts/previewModal.js"></script>
+    
+    
+    <meta name="keywords" content="Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Rules, Introduction" />
+    <meta name="description" content="The Pathfinder Roleplaying Game features a high-fantasy setting where almost any story can be told. Where the Core Rulebook provides classic options for play and Secrets of Magic provides options for characters to delve deep into the magical mysteries of Golarion, Guns &amp; Gears presents the secrets of black powder weapons and clockwork technology, combining grit and steampunk to produce a flavor all its own." />
+
+
+    <meta charset="utf-8"/>
+
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="darkreader-lock" />
+    <style type="text/css">        
+        .nav-parent > * {
+            display: block;
+        }
+        .mobile-menu-toggle{
+            display:none;
+        }
+        #main-menu .nav-parent > .brand > .title{
+            display: none;
+        }
+    </style>
+</head>
+<body class="dark aon_dark_theme classic_feel">
+    <div id="wrapper" class="clearfix">
+
+
+        <script type="text/javascript" src="/Scripts/toggle.js"></script>
+
+
+        <div class="page clearfix" id="page">
+            <div class="header">
+                <div class="clear hideSkiplink" id="main-menu" >
+                    <a class="mobile-menu-toggle" id="mobile-menu-toggle" href="javascript:void(0);" data-toggle="mobile">|||</a>
+                    <div class="splash"></div>
+                    <div class="nav-parent" id="nav-parent">
+                        <a href="/" style="font-size:larger" class="brand">
+                            <span class="home">
+                                Home
+                            </span>
+                        </a>
+                        <a href="/Actions.aspx">Actions/Activities</a>
+                        <a href="/Afflictions.aspx">Afflictions</a>
+                        <a href="/Ancestries.aspx">Ancestries</a>
+                        <a href="/Archetypes.aspx">Archetypes</a>
+                        <a href="/Backgrounds.aspx">Backgrounds</a>
+                        <a href="/Classes.aspx">Classes</a>
+                        <a href="/Conditions.aspx">Conditions</a>
+                        <a href="/Creatures.aspx">Creatures</a>
+                        <a href="/Equipment.aspx">Equipment</a>
+                        <a href="/Feats.aspx">Feats</a>
+                        <a href="/Hazards.aspx">Hazards</a>
+                        <a href="/MythicCallings.aspx">Mythic</a>
+                        <a href="/Rules.aspx">Rules</a>
+                        <a href="/Setting.aspx">Setting</a>
+                        <a href="/Skills.aspx">Skills</a>
+                        <a href="/Spells.aspx">Spells/Rituals</a>
+                        <a href="/Traits.aspx">Traits</a>
+                        <img src="/Images/heading_flourish.png" alt="flourish" class="flourish" />
+                        <a href="/Licenses.aspx">Licenses</a>
+                        <a href="/Sources.aspx">Sources</a>
+                        <img src="/Images/heading_flourish.png" alt="flourish" class="flourish" />
+                        <a href="/ContactUs.aspx">Contact Us</a>
+                        <a href="/Contributors.aspx">Contributors</a>
+                        <a href="/Support.aspx">Support the Archives</a>
+                        <div id="classic-search" class="search">
+                            <input type="text" class="search-input" placeholder="Search" />
+                            <button type="button" class="search-button">
+                                <svg class="Icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" style="height: 24px; width: 24px; fill: "><path d="M0 0h512v512H0z" fill="transparent" fill-opacity="0"></path><g class="" transform="translate(0,0)" style="touch-action: none;"><path d="M333.78 20.188c-39.97 0-79.96 15.212-110.405 45.656-58.667 58.667-60.796 152.72-6.406 213.97l-15.782 15.748 13.25 13.25 15.75-15.78c61.248 54.39 155.3 52.26 213.968-6.407 60.887-60.886 60.888-159.894 0-220.78C413.713 35.4 373.753 20.187 333.78 20.187zm0 18.562c35.15 0 70.285 13.44 97.158 40.313 53.745 53.745 53.744 140.6 0 194.343-51.526 51.526-133.46 53.643-187.5 6.375l.218-.217c-2.35-2.05-4.668-4.17-6.906-6.407-2.207-2.206-4.288-4.496-6.313-6.812l-.218.22c-47.27-54.04-45.152-135.976 6.374-187.502C263.467 52.19 298.63 38.75 333.78 38.75zm0 18.813c-30.31 0-60.63 11.6-83.81 34.78-46.362 46.362-46.362 121.234 0 167.594 10.14 10.142 21.632 18.077 33.905 23.782-24.91-19.087-40.97-49.133-40.97-82.94 0-15.323 3.292-29.888 9.22-43-4.165 20.485.44 40.88 14.47 54.907 24.583 24.585 68.744 20.318 98.624-9.562 29.88-29.88 34.146-74.04 9.56-98.625-2.375-2.376-4.943-4.473-7.655-6.313 45.13 8.648 79.954 46.345 84.25 92.876 4.44-35.07-6.82-71.726-33.813-98.72-23.18-23.18-53.47-34.78-83.78-34.78zM176.907 297.688L42.094 432.5l34.562 34.563L211.47 332.25l-34.564-34.563zM40 456.813L24 472.78 37.22 486l15.968-16L40 456.812z" fill-opacity="1"></path></g></svg>
+                            </button>
+                        </div>       
+                            <a id="minMaxMenu" onclick='setMenuState("min")'>Maximize Menu</a>
+                    </div>
+                    
+                    <div class="nav-parent expand-collapse" id="mobile-nav-parent" data-target="mobile">
+                        <a href="/" style="font-size:larger" class="brand">
+                            <span class="title">
+                                Archives of Nethys
+                            </span>
+                        </a>
+                        <a href="/Afflictions.aspx">Afflictions</a>
+                        <a href="javascript:void(0);" data-toggle="cc">Character Creation +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed expanded" data-target="cc" data-group="menus">
+                            <a href="/Ancestries.aspx">Ancestries</a>
+                            <a href="/Archetypes.aspx">Archetypes</a>
+                            <a href="/Backgrounds.aspx">Backgrounds</a>
+                            <a href="/Classes.aspx">Classes</a>
+                            <a href="/Feats.aspx">Feats</a>
+                            <a href="/Skills.aspx">Skills</a>
+                        </div>
+                        <a href="/Creatures.aspx">Creatures</a>
+                        <a href="/Equipment.aspx">Equipment</a>
+                        <a href="/Setting.aspx">Setting</a>
+                        <a href="/Spells.aspx">Spells/Rituals</a>
+                        <a href="javascript:void(0);" data-toggle="rules">Rules +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="rules" data-group="menus">
+                            <a href="/Actions.aspx">Actions/Activities</a>
+                            <a href="/Conditions.aspx">Conditions</a>
+                            <a href="/Rules.aspx">Rules</a>
+                            <a href="/Traits.aspx">Traits</a>
+                        </div>
+                        <a href="/Hazards.aspx">Hazards</a>
+                        <a href="javascript:void(0);" data-toggle="mythic" data-group="">Mythic +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="mythic" data-group="menus">
+                            <a href="/Rules.aspx?ID=3320">Mythic Rules</a>
+                            <a href="/MythicCallings.aspx">Callings</a>
+                            <a href="/MythicFeats.aspx">Mythic Feats</a>
+                            <a href="/MythicDestinies.aspx">Destinies</a>
+                            <a href="/MythicSpells.aspx">Mythic Spells</a>
+                            <a href="/MythicRituals.aspx">Mythic Rituals</a>
+                        </div>
+                        <a href="/Sources.aspx">Sources</a>
+                        <a href="javascript:void(0);" data-toggle="about" data-group="">About the Archives +</a>
+                        <div class="expand-collapse expand-collapse-group hide-when-collapsed" data-target="about" data-group="menus">
+                            <a href="/Licenses.aspx">Licenses</a>
+                            <a href="/ContactUs.aspx">Contact Us</a>
+                            <a href="/Contributors.aspx">Contributors</a>
+                            <a href="/Support.aspx">Support the Archives</a>
+                        </div>
+                        <div id="mobileSearch" class="ui fluid search">
+                            <div class="ui action icon input" style="width:90%;height:100%">
+                                <input class="prompt" type="text" placeholder="Search..."/>
+                                <button class="ui icon button" onclick="jumpToSearch('#mobileSearch')">
+                                    <i class="search icon"></i>
+                                </button>
+                            </div>
+                            <div class="results"></div>
+                        </div>
+                        <a href="https://2e.aonprd.com">
+                                <img src="/Images/PF2Logo_Nethys_400_Selected.png" alt="Pathfinder RPG (2nd Edition)" />
+                            </a>
+                        <a href="https://www.aonprd.com" >
+                            <img src="/Images/PF1Logo_Nethys_200.png" alt="Pathfinder RPG (1st Edition)" />
+                        </a> 
+                        <a href="https://www.aonsrd.com">
+                            <img src="/Images/SFLogo_Nethys_200.png" alt="Starfinder RPG (1st Edition)" />
+                        </a>
+                        <a href="https://2e.aonsrd.com">
+                            <img src="/Images/starfinder_2_logo_200.webp" alt="Starfinder RPG (2nd Edition)" />
+                        </a>
+                    </div>
+                </div>
+                <div class="theme-toggle-wrapper" title="Toggle Theme">
+                    <div class="theme-open" title="Change Theme"><i class="ra ra-flowers"></i></div>
+                </div>
+            </div>
+
+            <div class="new-navbar">
+                <div class="drawer-toggle" title="Expand Sidebar" onclick="switchDrawer()">
+                    <img src="/Images/NethysMask.png" alt="&#xe030" /></div>
+                    <a class="title" href="/">Archives of Nethys</a>
+                    <div class="searchBar">
+                        <div id="desktopSearch" class="ui fluid search">
+                            <div class="ui action icon input" style="width:100%;height:100%">
+                                <input class="prompt" type="text" placeholder="Search..."/>
+                                <button class="ui icon button" onclick="jumpToSearch('#desktopSearch')">
+                                        <i class="search icon"></i>
+                                    </button>
+                            </div>
+                            <div class="results"></div>
+                        </div>                   
+                    </div>
+                    <div class="game-selector">
+                        <div class="game-selector-options">
+                            <a class="game-selector-option" href="https://aonprd.com">
+                                <img src="/Images/PF1Logo_Nethys.png" alt="Pathfinder 1e" />
+                            </a>
+                            <a class="game-selector-option" href="https://aonsrd.com">
+                                <img src="/Images/SFLogo_Nethys.png" alt="Starfinder 1e" />
+                            </a>
+                            <a class="game-selector-option" href="https://2e.aonsrd.com">
+                                <img src="/Images/starfinder_2_logo.webp" alt="Starfinder 2e" />
+                            </a>
+                        </div>
+                        <img class="game-selector-current" src="/Images/PF2Logo_Nethys.png" alt="Pathfinder 2e" />
+                    </div>
+                    <div class="theme-open" title="Change Theme"><i class="ra ra-flowers"></i></div>
+            </div>
+
+            <div class="main-wrapper" id="main-wrapper">
+                <div class="menutitle">
+                    <h1>
+                        Archives of Nethys
+                    </h1>
+                    <h2 class="game-titles">
+                        <a href="https://www.aonprd.com" >
+                            <img src="/Images/PF1Logo_Nethys.png" alt="Pathfinder RPG (1st Edition)" />
+                        </a> 
+                        <a href="https://2e.aonprd.com" class="selected">
+                            <img src="/Images/PF2Logo_Nethys-Selected.png" alt="Pathfinder RPG (2nd Edition)" />
+                        </a>
+                        <a href="https://www.aonsrd.com">
+                            <img src="/Images/SFLogo_Nethys.png" alt="Starfinder RPG (1st Edition)" />
+                        </a>
+                        <a href="https://2e.aonsrd.com">
+                            <img src="/Images/starfinder_2_logo.webp" alt="Starfinder RPG (2nd Edition)" />
+                        </a>
+                    </h2>
+                </div>
+                <div class="main" id="main">
+                    
+
+<h1 style="text-align:center" class="hide-on-print"><a href="Rules.aspx"><u>Rules Index</u></a> | <a href="GMScreen.aspx">GM Screen</a> | <a href="PlayersGuide.aspx">Player's Guide</a></h1>
+
+<hr class="hide-on-print" />
+
+
+<div class="sibling-navigation hide-on-print">
+    <div class="sibling-navigation-previous">
+            <a href="/Rules.aspx?ID=3541" class="link">&lt;&lt; Gears Equipment</a>
+    </div>
+    <div class="sibling-navigation-next">
+            <a href="/Rules.aspx?ID=3572" class="link">Guns Characters &gt;&gt;</a>
+    </div>
+</div>
+
+
+<div class="rule">
+    <h1 class="title">
+        <a href="/Rules.aspx?ID=3560">Introduction</a> 
+    </h1>
+
+    
+
+        <div class="sources"><strong>Source</strong> <a href="/Sources.aspx?ID=318" class="link link-source" target="_blank">Guns &amp; Gears pg. 6</a></div>
+
+    <div>
+        The Pathfinder Roleplaying Game features a high-fantasy setting where almost any story can be told. Where the Core Rulebook provides classic options for play and Secrets of Magic provides options for characters to delve deep into the magical mysteries of Golarion, Guns & Gears presents the secrets of black powder weapons and clockwork technology, combining grit and steampunk to produce a flavor all its own.
+    </div>
+
+    
+
+        
+<div class="rule">
+    <h2 class="title">
+        <a href="/Rules.aspx?ID=3561">Gears, Guns, or Both</a> 
+    </h2>
+
+    
+
+
+    <div>
+        <i>Guns & Gears</i> is presented as three smaller but interconnected “books” bundled inside a single cover. The Gears “book” is split into two chapters: Gears Characters and Gears Equipment. The first chapter features the <a style="text-decoration:underline" href="Classes.aspx?ID=19">inventor</a> class and <a style="text-decoration:underline" href="Ancestries.aspx?ID=48">automaton</a> ancestry, along with several archetypes that support innovation as a theme. The second chapter presents an array of gadgets and vehicles that embrace themes of inventiveness. This chapter includes rules for clockwork and steam-tech mechanisms as well as other more esoteric forms of technology.<br /><br />The Guns “book” has also been separated into two chapters: Guns Characters and Guns Equipment. The first section presents the gunslinger class along with an array of archetypes that support exciting combat styles built around firearms and crossbows. The second chapter offers a wide array of new firearms, from classic black powder weapons like the flintlock musket and arquebus to more fantastic options like versatile combination weapons or magical beast guns. Support for firearms and crossbows goes beyond just new weapons and includes other exciting accessories for customizing your weapon of choice, like bayonets and reinforced stocks to attach a melee option to your guns, magical scopes to improve your visual prowess, magical bandoliers and holsters, and even replacement barrels and firing mechanisms to change your weapon’s parameters. <br /><br />The final “book,” The Rotating Gear, offers a standalone gazetteer describing different areas of Golarion where black powder, clockworks, and other forms of technology are likely to be found. This chapter isn’t limited to just the Inner Sea. It explores continents like Arcadia, Casmaron, and Tian Xia, describing the technological traditions of those regions and how they’ve influenced the growth and proliferation of technology across the entire planet.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h2 class="title">
+        <a href="/Rules.aspx?ID=3562">How To Use This Book</a> 
+    </h2>
+
+    
+
+
+    <div>
+        The options here expand upon the rules contained in the Core Rulebook, and that book is required to use <i>Guns & Gears</i>. Some rules indicate other material found in this book with page references. Other products referencing the rules in this book might do so using the superscript citation “G&G.”
+    </div>
+
+    
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3563">Access Entries</a> 
+    </h3>
+
+    
+
+
+    <div>
+        Most of the rules content in this book is uncommon or rare because such technology is unusual in Golarion. However, sometimes a stat block for an uncommon rules element includes an Access entry that lists specific criteria. A character who meets the criteria listed in the Access entry, such as hailing from a particular locale, gains access to the rules element. This book often groups access requirements by section. For example, the introduction to the Gears Characters chapter (page 12) details the areas of Golarion that grant access to the inventor class and its related uncommon weapons and gadgetry, so the areas detailed there as granting access serve the role of access requirements for most of the section (not including rare items and certain other elements called out as needing additional approval from the GM, such as vehicles). <br /><br />As always, the GM has the final say on who can access uncommon or rarer options or whether to allow specific options in the game at all. They might decide that a character’s upbringing or abilities make sense for a specific rules option and grant them access even if the character doesn’t automatically qualify, or they might decide those same options can’t be taken by anyone.
+    </div>
+
+    
+
+
+</div>
+
+
+</div>
+
+        
+<div class="rule">
+    <h2 class="title">
+        <a href="/Rules.aspx?ID=3564">World-Building And Tone</a> 
+    </h2>
+
+    
+
+
+    <div>
+        <i>Guns & Gears</i> introduces elements of fantasy that might not fit into every game. The world of Golarion has a lot in common with the Renaissance period of Earth, supplemented with magic and old-fashioned technologies that were replaced on Earth before being refined to the point they’ve reached in Golarion. This high fantasy world is home to pirates with bandoliers of flintlock pistols, reckless scientists animating the dead with electric coils, knights in shining armor riding mighty griffons, and wizards casting spells in tall towers. Each of those character concepts has a place in Golarion; it’s just that to find some of the technological elements, you need to know where to look. For a home campaign, especially in a homebrew setting, some GMs might prefer a world that embraces the age of piracy and includes cannons and firearms with greater frequency than Golarion without the presence of steam-powered jetpacks and clockwork grappling hooks. Other GMs might prefer a world where clockworks and steam engines exist, but guns and other black powder weapons are absent. Guns & Gears takes steps to facilitate this world-building. As mentioned, this tome is divided into three smaller “books.” A GM who only wants to allow black powder weaponry without adding weird science to the game can allow their players to use the Guns chapters, eschewing the Gears chapters. A GM who wants to create a world of clockwork constructs and fantastic inventions unmarred by black powder weaponry can instead allow players to use the Gears chapters without giving access to the Guns chapters. Finally, a GM who remains unsure how any of these elements might fit into their game world is encouraged to read The Rotating Gear at the back of this book to see how these technologies have grown and spread through Golarion, and perhaps gain inspiration regarding how these elements might fit into their game.
+    </div>
+
+    
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3565">Functionality And Balance</a> 
+    </h3>
+
+    
+
+
+    <div>
+        Golarion is a world of magic with rune-bedecked swords forged out of metal fallen from the sky, full plate armor similar to that produced on Earth during the 15th century, and other armaments unlike anything the people of Earth ever had access to. As such, the black powder weapons and technological gadgets presented in this book are mechanically balanced to the other options available to all characters. Firearms, though capable of devastating critical hits, work alongside crossbows and composite longbows rather than replace them, in much the same way firearms and bows were both actively used in Asia for nearly 900 years of human history.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3566">Aren't Guns More Powerful Than Bows?</a> 
+    </h3>
+
+    
+
+
+    <div>
+        The guns presented in this book are representative of fairly early firearms with just a few unique twists, as explained in the introduction of the Guns Equipment chapter (page 146). Those old guns, which used black powder that did not exhibit the refinements of modern ammunition and lacked the rifle barrel technology for increasing range and accuracy, were extremely inaccurate and no more lethal with a glancing blow than most bows and crossbows; however, these firearms’ penetrating power was superior, and a wound to a vital area could prove incredibly deadly. This lethality is represented mechanically by the fatal trait given to most firearms, with a critical hit indicating a gunshot to a vital organ or other important body part. This mechanic allows a firearm to do far more damage in the correct circumstances than a weapon with a similar damage die while still maintaining a balanced gaming ecosystem that allows each player to shine.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3567">Armor And Persistent Technology</a> 
+    </h3>
+
+    
+
+
+    <div>
+        In Golarion, technology has moved much slower than on Earth. Many modern conveniences still have yet to be invented or discovered. That doesn’t mean technology has stood still, however. Because certain types of technology persisted for centuries on Golarion instead of being replaced as they were on Earth, many fantastic innovations remain prevalent since competing technologies developed more slowly or didn’t spread as quickly.<br /><br />While clockwork dragons and alchemical boots that rocket their wearer through the sky are manifestations of less frequent technological replacement, many other, more subtle examples are scattered throughout the game. At its height in the 16th century, a suit of full plate could stop even the penetrating power, if not the full force, of a shot from a firearm, though its expense and weight made it impractical for all but the wealthiest of individuals. Golarion, on the other hand, is a fantasy world where dragons and other supernatural monsters with destructive power akin to or in excess of a firearm are relatively common, and where adventurers accrue great wealth that they constantly reinvest into better arms and armor. Moreover, Golarion’s armaments can be enhanced with magical runes that elevate them far beyond anything that could be replicated on Earth without the application of advanced technology from beyond the age of swords and plate armor. <br /><br />Similarly for lighter armors, on Earth, techniques for incorporating silk that can stop bullets from penetrating into armor and other techniques for creating bullet-resistant armaments, such as painting layers of paper with lacquer to create a rudimentary analogue to modern-day Kevlar, have existed for a very long time, but didn’t often come into popular use before evolving into a form that is no longer recognizable. Several nations in Tian Xia have techniques for creating black powder weapons, like the hand cannon and fire lance, and lacquered armor. The intersection of these technologies means it’s not unlikely to find variants of studded leather armor or chainmail lined with layers of such early bulletproofing. In Avistan and the Inner Sea, knights who have encountered firearms imported or stolen from Alkenstar likely know armorers who know techniques to craft layered plates and silk surcoats or undergarments that provide additional protection from bullets.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3568">Alchemy's Influence on Technology</a> 
+    </h3>
+
+    
+
+
+    <div>
+        Considering that certain technologies have seen more refinement or followed divergent development paths on Golarion in comparison to Earth, the influence of alchemy on Golarion’s technology can’t be understated. In addition to enabling the creation of elemental weapons, such as <a style="text-decoration:underline" href="Equipment.aspx?ID=3287">alchemist’s fire</a> and <a style="text-decoration:underline" href="Equipment.aspx?ID=3290">bottled lightning</a>, alchemical techniques have often been applied to a variety of other fields and industries. Alchemical treatments for armor can create stronger materials; alchemical distillations allow for a variety of different forms and potencies in black powder; alchemy and the people who practice it even influence the most basic of needs, like preserving volatile substances for transport. <br /><br />Much like firearms, alchemy is something of an everyman’s tool, usable by most anyone who can get their hands on its components without requiring the specialized training or unique bloodlines of wizards and sorcerers. A single alchemist who makes their home in a community can quickly improve the quality of life for everyone there, reducing death by disease, improving the community’s ability to defend itself from outside threats, and providing other benefits both large and small. While it stands as a distinct science of its own, alchemy inextricably has ties to black powder weapons and other technologies of Golarion, enabling the development of sturdier metals and more volatile explosives to allow creations on a grand scale. For example, while steam technology is extremely new on Golarion, steam engines are much more likely to use alchemically derived heat sources than the coal furnaces used in our world.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3569">Technology In Golarion Today</a> 
+    </h3>
+
+    
+
+
+    <div>
+        Over the last two decades, Golarion, and especially the Inner Sea region comprised of the continent of Avistan and the northern portion of the continent of Garund, have been beset by catastrophe after catastrophe. Armies of demons pouring forth from a wound in the world itself, time‑displaced wizards inciting chaos to restore their faded glory, armies of giants and hobgoblins, and an evil lich leading undead hordes have all assaulted the people of Golarion and set them reeling time and time again. While these events have delayed certain technological advancements, they have spurred others. Firearms are more prevalent in Golarion than they’ve ever been before, and artificers in Varisia, Absalom, and northern Garund constantly create new devices both wondrous and terrible. Golarion stands on a cusp, with alchemy prominent, clockworks poised to expand, and steam-powered technology just entering its early days of exciting innovation. These technologies may be limited in their spread now but are positioned to bring great change and advancement to Golarion. That isn’t a guarantee, however. These advancements might all come crashing down if the forces that seek the dissolution of science and social cohesion have their way. Fortunately, Golarion is also a world where heroes inevitably rise up to face such challenges and take action to secure a future of limitless possibility.
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3570">Modularity</a> 
+    </h3>
+
+    
+
+
+    <div>
+        As mentioned at the beginning of this introduction, <i>Guns & Gears</i> has been organized so that you can use as much, or as little, of the book as is appropriate for your game world. While some obvious elements can help make this intent apparent, such as the border art changing between the Gears “book,” Guns “book,” and The Rotating Gear “book,” we’ve taken other steps as well that might not be immediately obvious. Vehicles and siege weapons, which can be fun and engaging rules but might not be an appropriate fit for all campaigns, each have their own separate section. The firearms section is divided between “Classic Firearms” and “Fantasy Firearms,” so that if your preferred setting has smooth-bore black powder weapons as the technological “ceiling,” you can allow only the classic firearms in your campaign. If your high fantasy setting blends the highlights of Earth’s renaissance with fantastical or outright magical technology, like firearms that transform into swords or axes, or gun-like weapons made from the taxidermic bodies of supernatural creatures, you can add those fantasy firearms to your game as well. <br /><br />With all the possible permutations of a fantasy world, we’ve endeavored to create a book that speaks to as many people and settings as possible, allowing people to include the storytelling elements they most enjoy without feeling overly pressured to include those that negatively impact their immersion or gaming experience. Whether you want to play a swashbuckling pirate with a black powder pistol or a ysoki engineer with a tesla coil backpack that disrupts magical energy and a grappling hook with a retractable clockwork cord, this book is for you. Feel free to use the elements of this book that align strongly with your vision for the characters, adventures, and game world you create while leaving the rest behind!
+    </div>
+
+    
+
+
+</div>
+
+        
+<div class="rule">
+    <h3 class="title">
+        <a href="/Rules.aspx?ID=3571">Borders and Change</a> 
+    </h3>
+
+    
+
+
+    <div>
+        When constructing a fantasy world or playing in a world like Golarion where wizards live next door to gunslingers and even the most magical of realms might have technological clockwork soldiers and other scientific discoveries that simulate, enhance, or even replace magic—it can become hard to picture how all these disparate elements coexist alongside each other. Why don’t firearms get adopted by other nearby nations? Why would someone spend vast troves of gold to build a clockwork dragon when they could teleport an egg away from a nest and get the real thing much more cheaply? <br /><br />There are quite a few possible answers to these questions, and figuring out those answers can help make your campaign setting more vibrant and relatable. To start, we’ll talk about some of the ways in which Golarion answers these questions before diving into ways to integrate these kinds of themes deeper into your own original setting. <br /><br />Dongun Hold and Alkenstar are strong examples of areas in Golarion that can have a technology level that’s significantly above the average technology level for the rest of the world, without undermining or significantly changing the general dynamics of Golarion and nearby regions. Wedged between two warring nations ruled by wizard kings, Alkenstar and Dongun Hold have no significant ports of their own and are surrounded by a wasteland filled with mutants and monsters. Moreover, the ancient magical wars that scarred the Mana Wastes also created pockets of unstable magic or magical dead zones where magic remains unreliable at best and virtually nonexistent at worst. As a result, it makes sense that the hearty smiths of Dongun Hold craft firearms as the primary method to protect themselves from dangerous creatures and threats, as does the fact that the weapons have remained available only in this small region of the Inner Sea until quite recently. <br /><br />In your homebrew world, you can use similar levers to partition the different countries and regions you create according to similar circumstances, or you can use completely different options as appropriate. For example, if your campaign world is one in which firearms exist but are limited to a very specific part of the world, ask yourself why these weapons have been restricted. Is there a powerful organization that relies on its stranglehold over the secrets of firearm production to protect its interests? Perhaps magic is so prevalent that only a rare, aberrant individual who lacks a talent for magic would be interested in pursuing technological advancements. Maybe the dynamics of the world itself comes into play; for example, some element in the atmosphere or properties of the metals drawn from below the surface resist being shaped and manipulated to the degree necessary for creating firearms or other technological weapons and gadgets, so the only way to obtain such items is to purchase them from extraplanar merchants who import them from distant planes. The possibilities are endless, and it doesn’t matter so much what reason you decide on, as long as you have some understanding of how the world you create weaves together. <br /><br />Of course, your world could also be a wild and boundless convergence of planar nexuses, where gunslingers fight alongside sword-swinging knights and psychic snakes. Anything is possible and only needs to make as much sense as is required for you and your friends to enjoy yourselves and tell the kinds of stories you want!
+    </div>
+
+    <div class="sidebars"><div class="sidebar-nofloat"><h2>What About Numeria?</h2><div class="sidebar-content">The nation of Numeria is known to have technology levels that greatly exceed those of the rest of Golarion. With a crashed spaceship from a distant planet thrust into the middle of its landscape, Numeria has lasers, artificial intelligences, and other technology that transcend steampunk or clockwork influences and approach the realm of science fiction. Numeria and its technology aren’t represented in this book, as those themes and mechanics are better reserved for a presentation that can give them the focus they deserve.<br /><br />Some players might want to play a character from Numeria, however, perhaps envisioning a <a style="text-decoration:underline" href="Ancestries.aspx?ID=82">ysoki </a> <a style="text-decoration:underline" href="Classes.aspx?ID=19">inventor</a> who didn’t have access to technology from the crashed spaceship and instead innovated based on what they saw, using clockworks and steam engines to emulate the functionality, if not the technological level, of weapons and devices scavenged in the region. GMs who allow access to the inventor class would be fully justified in also giving characters from Numeria access to the inventor and its gadgets, though with a clear understanding that the technology level represented by the inventor is very different from the highly advanced equipment normally associated with the region.</div></div></div>
+
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="sibling-navigation hide-on-print">
+    <div class="sibling-navigation-previous">
+            <a href="/Rules.aspx?ID=3541" class="link">&lt;&lt; Gears Equipment</a>
+    </div>
+    <div class="sibling-navigation-next">
+            <a href="/Rules.aspx?ID=3572" class="link">Guns Characters &gt;&gt;</a>
+    </div>
+</div>
+                </div>
+                <div class="clear">
+            </div>
+
+            <div class="footer" id="footer" >
+				<div id="et-al" >
+                    <a href="mailto:nethys@archivesofnethys.com">Site Owner: Rose-Winds LLC (Blake Davis)</a>
+                    <div id="footer-social"><a href="https://twitter.com/NethysArchives" target="_blank"><span class="k-icon k-i-twitter" style="font-size:2.5rem"></span></a></div>
+				</div>
+                <div style="text-align:center"><script type="text/javascript" async="true" src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- Main Archives Page -->
+                    <ins class="adsbygoogle"
+                        style="display:inline-block;width:728px;height:90px"
+                        data-ad-client="ca-pub-4953734518316037"
+                        data-ad-slot="7738185508"></ins>
+                    <script type="text/javascript">
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                </script></div>
+			</div>
+            <nethys-search no-ui="true"></nethys-search>
+        </div>
+    </div>
+
+    <div class="modern-menu-container">
+        <div class="modern-menu">
+            <div class="modern-menu-nethys-logo"></div>
+            <div class="modern-menu-items">
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-player"></i></span>
+                    <span class="modern-menu-item-text">Character Creation +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Ancestries.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hood"></i></span>
+                        <span class="modern-menu-item-text">Ancestries</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Archetypes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-nodular"></i></span>
+                        <span class="modern-menu-item-text">Archetypes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Backgrounds.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-guarded-tower"></i></span>
+                        <span class="modern-menu-item-text">Backgrounds</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Classes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-lift"></i></span>
+                        <span class="modern-menu-item-text">Classes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Skills.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Skills</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-torch"></i></span>
+                    <span class="modern-menu-item-text">Equipment +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Equipment.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-torch"></i></span>
+                        <span class="modern-menu-item-text">All Equipment</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=1">
+                        <span class="modern-menu-item-icon"><i class="ra ra-campfire"></i></span>
+                        <span class="modern-menu-item-text">Adventuring Gear</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=6">
+                        <span class="modern-menu-item-icon"><i class="ra ra-round-bottom-flask"></i></span>
+                        <span class="modern-menu-item-text">Alchemical Items</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Armor.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-helmet"></i></span>
+                        <span class="modern-menu-item-text">Armor</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=21">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Held Items</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=23">
+                        <span class="modern-menu-item-icon"><i class="ra ra-rune-stone"></i></span>
+                        <span class="modern-menu-item-text">Runes</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Shields.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-shield"></i></span>
+                        <span class="modern-menu-item-text">Shields</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Weapons.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-sword"></i></span>
+                        <span class="modern-menu-item-text">Weapons</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Equipment.aspx?Category=41">
+                        <span class="modern-menu-item-icon"><i class="ra ra-crown-of-thorns"></i></span>
+                        <span class="modern-menu-item-text">Worn Items</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                    <span class="modern-menu-item-text">Feats +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Feats.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                        <span class="modern-menu-item-text">All Feats</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=78">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aware"></i></span>
+                        <span class="modern-menu-item-text">General</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=78&NoSkills=True">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-teleport"></i></span>
+                        <span class="modern-menu-item-text">General (No Skill)</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Feats.aspx?Traits=144">
+                        <span class="modern-menu-item-icon"><i class="ra ra-hand"></i></span>
+                        <span class="modern-menu-item-text">Skill</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-emerald"></i></span>
+                    <span class="modern-menu-item-text">Game Mastery +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Afflictions.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-biohazard"></i></span>
+                        <span class="modern-menu-item-text">Afflictions</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Creatures.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-dragon"></i></span>
+                        <span class="modern-menu-item-text">Creatures</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Hazards.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-bear-trap"></i></span>
+                        <span class="modern-menu-item-text">Hazards</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                    <span class="modern-menu-item-text">Rules +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Rules.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">All Rules</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Actions.aspx">
+                        <span class="modern-menu-item-icon">
+                            <svg viewBox="0 0 30 30" preserveAspectRatio="xMidYMid meet" stroke="null" style="fill:inherit;">
+                                <path d="M21.55532 8.015l7.07107 7.07106-7.07107 7.07107-7.07107-7.07107zM6.47996 10.07526l4.94975 4.94975-4.94975 4.94974-4.94974-4.94974z"></path>
+                                <path d="M15.00246 1.46211l8.48528 8.48528-7.07107 7.07107L7.9314 8.53318z"></path>
+                                <path d="M16.45563 13.11469l7.07107 7.07107-8.48529 8.48528-7.07106-7.07107z"></path>
+                            </svg>
+                        </span>
+                        <span class="modern-menu-item-text">Actions/Activities</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Conditions.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-player-pain"></i></span>
+                        <span class="modern-menu-item-text">Conditions</span>
+                    </a>
+                    <a class="modern-menu-item" href="/GMScreen.aspx">
+                        <span class="modern-menu-item-icon">
+                            <svg viewBox="0 0 30 30" preserveAspectRatio="xMidYMid meet" stroke="null" style="fill:inherit;">
+                                <path d="M5.72648 12.93117h9.17646v9.50588l-4.58823 2.37647-4.58823-2.37647.00001-9.50588z"></path>
+                                <path d="M5.96178 12.93118h9.17646v9.50587l-4.58823 2.37648-4.58824-2.37648.00001-9.50587z"></path>
+                                <path d="M15.0206 12.93118h9.17646v9.50587l-4.58823 2.37648-4.58824-2.37648.00001-9.50587z"></path>
+                                <path d="M16.70221 8.57471l7.52941-3.38823v16.94117h-7.52941V8.57471zM15.11765 8.69235L5.94118 5.30412v16.94117h9.17647V8.69235z"></path>
+                                <path d="M19.60883 17.75465h-9.17646V8.24878L15.0206 5.8723l4.58824 2.37648-.00001 9.50587z"></path>
+                            </svg>
+                        </span>
+                        <span class="modern-menu-item-text">GM Screen</span>
+                    </a>
+                    <a class="modern-menu-item" href="/PlayersGuide.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-uncertainty"></i></span>
+                        <span class="modern-menu-item-text">Player's Guide</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Traits.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-uncertainty"></i></span>
+                        <span class="modern-menu-item-text">Traits</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Sources.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Sources</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-sun"></i></span>
+                    <span class="modern-menu-item-text">Setting +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Setting.aspx?Adventure=true">
+                        <span class="modern-menu-item-icon"><i class="ra ra-all-for-one"></i></span>
+                        <span class="modern-menu-item-text">Adventures</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Articles.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Articles</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Deities.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-angel-wings"></i></span>
+                        <span class="modern-menu-item-text">Deities</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Domains.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-kaleidoscope"></i></span>
+                        <span class="modern-menu-item-text">Domains</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Languages.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-speech-bubbles"></i></span>
+                        <span class="modern-menu-item-text">Languages</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Planes.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-circle-of-circles"></i></span>
+                        <span class="modern-menu-item-text">Planes</span>
+                    </a>
+                        <a class="modern-menu-item" href="/Setting.aspx?Group=40">
+                            <span class="modern-menu-item-icon"><i class="ra ra-mountains"></i></span>
+                            <span class="modern-menu-item-text">Scenarios</span>
+                        </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-crystal-wand"></i></span>
+                    <span class="modern-menu-item-text">Spells/Rituals +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Spells.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-scroll-unfurled"></i></span>
+                        <span class="modern-menu-item-text">All Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=1">
+                        <span class="modern-menu-item-icon"><i class="ra ra-scroll-unfurled"></i></span>
+                        <span class="modern-menu-item-text">Arcane</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=2">
+                        <span class="modern-menu-item-icon"><i class="ra ra-ankh"></i></span>
+                        <span class="modern-menu-item-text">Divine</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=3">
+                        <span class="modern-menu-item-icon"><i class="ra ra-burning-eye"></i></span>
+                        <span class="modern-menu-item-text">Occult</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Tradition=4">
+                        <span class="modern-menu-item-icon"><i class="ra ra-leaf"></i></span>
+                        <span class="modern-menu-item-text">Primal</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Spells.aspx?Focus=true">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aura"></i></span>
+                        <span class="modern-menu-item-text">Focus Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Rituals.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-rune-stone"></i></span>
+                        <span class="modern-menu-item-text">Rituals</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-player-thunder-struck"></i></span>
+                    <span class="modern-menu-item-text">Mythic +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/Rules.aspx?ID=3320">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Mythic Rules</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicCallings.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aware"></i></span>
+                        <span class="modern-menu-item-text">Callings</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicFeats.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-muscle-up"></i></span>
+                        <span class="modern-menu-item-text">Mythic Feats</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicDestinies.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-aura"></i></span>
+                        <span class="modern-menu-item-text">Destinies</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicSpells.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-lightning-trio"></i></span>
+                        <span class="modern-menu-item-text">Mythic Spells</span>
+                    </a>
+                    <a class="modern-menu-item" href="/MythicRituals.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-fire-ring"></i></span>
+                        <span class="modern-menu-item-text">Mythic Rituals</span>
+                    </a>
+                </div>
+                <div class="modern-menu-item">
+                    <span class="modern-menu-item-icon"><i class="ra ra-help"></i></span>
+                    <span class="modern-menu-item-text">About the Archives +</span>
+                </div>
+                <div class="modern-menu-subitems">
+                    <a class="modern-menu-item" href="/ContactUs.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-quill-ink"></i></span>
+                        <span class="modern-menu-item-text">Contact Us</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Contributors.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-double-team"></i></span>
+                        <span class="modern-menu-item-text">Contributors</span>
+                    </a>
+                    <a class="modern-menu-item" href="/Licenses.aspx">
+                        <span class="modern-menu-item-icon"><i class="ra ra-book"></i></span>
+                        <span class="modern-menu-item-text">Licenses</span>
+                    </a>
+                </div>
+                <a class="modern-menu-item" href="/Support.aspx">
+                    <span class="modern-menu-item-icon"><i class="ra ra-diamond"></i></span>
+                    <span class="modern-menu-item-text">Support the Archives</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="shelyns-corner-wrapper">
+        <div class="shelyns-corner-overlay"></div>
+        <div class="shelyns-corner">
+            <div class="shelyns-corner-header">
+                <h2>Shelyn's Corner</h2>
+                <a href="javascript:void(0)" class="close-shelyns-corner">&times;</a>
+            </div>
+            <div class="shelyns-corner-content">
+                <div class="shelyns-corner-settings">
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-remaster">Prefer Pathfinder Remastered Core?</label>
+                        <input type="checkbox" id="shelyns-corner-setting-remaster" checked/>
+                    </div>
+                    <hr />
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-dyslexia">Dyslexia friendly fonts</label>
+                        <input type="checkbox" id="shelyns-corner-setting-dyslexia"/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-sidebar-hover">Expand sidebar on hover</label>
+                        <input type="checkbox" id="shelyns-corner-setting-sidebar-hover" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-sidebar-shrink">Sidebar can be shrunk</label>
+                        <input type="checkbox" id="shelyns-corner-setting-sidebar-shrink" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-page-compress">Reduce page width</label>
+                        <input type="checkbox" id="shelyns-corner-setting-page-compress"/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-modern-menu">Modern menu</label>
+                        <input type="checkbox" id="shelyns-corner-setting-modern-menu" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-link-previews">Link previews</label>
+                        <input type="checkbox" id="shelyns-corner-setting-link-previews" checked/>
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-link-previews-search">Link previews in search bar</label>
+                        <input type="checkbox" id="shelyns-corner-setting-link-previews-search"/>
+                    </div>
+                </div>
+                <hr />
+                <div class="theme-gallery-wrapper"></div>
+                <hr />
+                <div class="feel-gallery">
+                    <div class="feel-example classic_feel" onclick="setFeel('classic_feel')">
+                        <h1 class="feel-title">Classic Feel</h1>
+                        <h2 class="feel-title">Classic Feel <span class="output"></span></h2>
+                        <h3 class="feel-title">Classic Feel</h3>
+                        <p>The classic look for the Archives of Nethys.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example book_feel" onclick="setFeel('book_feel')">
+                        <h1 class="feel-title">Book Feel</h1>
+                        <h2 class="feel-title">Book Feel <span class="output"></span></h2>
+                        <h3 class="feel-title">Book Feel</h3>
+                        <p>An alternative feel, based on the Rulebooks.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example round_feel" onclick="setFeel('round_feel')">
+                        <h1 class="feel-title">Round Feel</h1>
+                        <h2 class="feel-title">Round Feel<span class="output"></span></h2>
+                        <h3 class="feel-title">Round Feel</h3>
+                        <p>A rounded, modern look for the archives.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                    <div class="feel-example slim_feel" onclick="setFeel('slim_feel')">
+                        <h1 class="feel-title">Slim Feel</h1>
+                        <h2 class="feel-title">Slim Feel<span class="output"></span></h2>
+                        <h3 class="feel-title">Slim Feel</h3>
+                        <p>A variant of the Round feel, more compact.</p>
+                        <table>
+                            <thead><td>Table</td></thead>
+                            <tr><td>Data</td></tr>
+                            <tr><td>More Data</td></tr>
+                        </table>
+                    </div>
+                </div>
+                <hr />
+                <div class="shelyns-corner-settings">
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-orc">More Orc?</label>
+                        <input type="checkbox" id="shelyns-corner-setting-orc" />
+                    </div>
+                    <div class="shelyns-corner-setting">
+                        <label for="shelyns-corner-setting-boar"><b>BOAR?</b></label>
+                        <input type="checkbox" id="shelyns-corner-setting-boar" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+      var legacyMode = getCore();
+
+      initializeMenuToggle(document.getElementById('minMaxMenu'));
+      initShelynsCorner();
+
+      window.nethysModernMenu.init();
+
+      initializeElasticSearch()
+      var initializeSearch = function (search) {
+          var button;
+          var text;
+          if (search.firstElementChild.classList.contains('search-input'))
+              text = search.firstElementChild;
+          if (search.lastElementChild.classList.contains('search-input'))
+              text = search.lastElementChild;
+          if (search.firstElementChild.classList.contains('search-button'))
+              button = search.firstElementChild;
+          if (search.lastElementChild.classList.contains('search-button'))
+              button = search.lastElementChild;
+
+          if (search) {
+              search.addEventListener('keypress', function (e) {
+                  if (e.keyCode == 13) {
+                      e.preventDefault();
+                      if (text.value != null && text.value.length > 0)
+                          window.location = window.location.origin + "/Search.aspx?q=" + encodeURIComponent(text.value);
+                  }
+              })
+          }
+          if (button) {
+              button.addEventListener('click', function (e) {
+                  window.location = window.location.origin + "/Search.aspx?q=" + encodeURIComponent(text.value);
+              });
+          }
+      };
+      var initializeExpand = function (toggle) {
+          var targetAttrString = "[data-target='" + toggle.dataset.toggle + "']";
+          //target = menu to be collapsed
+          var target = document.querySelector(targetAttrString);
+          toggle.addEventListener('click', function () {
+              var expanded = target.classList.contains('expanded');
+              expanded = !expanded;
+              if (expanded) {
+                  //hide other in group if exists
+                  if (target.dataset.group) {
+                      var otherExpanded = document.querySelector('.expanded[data-group="' + target.dataset.group + '"]');
+                      if (otherExpanded) {
+                          otherExpanded.classList.remove('expanded');
+                      }
+                  }
+                  target.classList.add('expanded');
+              } else {
+                  target.classList.remove('expanded');
+              }
+          });
+      };
+      (function () {
+          //toggles = link that expands/collapses target
+          var toggles = document.querySelectorAll('[data-toggle]');
+          toggles.forEach(function (toggle) {
+              initializeExpand(toggle);
+          });
+          //searches
+          var classicSearch = document.getElementById('classic-search');
+          initializeSearch(classicSearch);
+          var searches = document.querySelectorAll('.search');
+          searches.forEach(function (search) {
+              //initializeSearch(search);
+          });
+      })();
+
+      class NethysSearch extends HTMLElement {
+          constructor() {
+              super();
+
+              this.attachShadow({ mode: 'open' });
+
+              let container = document.createElement('div');
+              this.shadowRoot.append(container);
+
+              let fixedParams = this.getAttribute('fixed-params');
+
+              if (window.location.search.includes('Redirected=1')) {
+                  fixedParams = (fixedParams ? fixedParams + '&' : '') + 'Redirected=1';
+              }
+
+              if (window.location.search.includes('NoRedirect=1')) {
+                  fixedParams = (fixedParams ? fixedParams + '&' : '') + 'NoRedirect=1';
+              }
+
+              let fixedQueryString = this.getAttribute('fixed-query-string') ?? '';
+
+              if (!fixedQueryString.includes('category:item-bonus')) {
+                  fixedQueryString += ' !category:item-bonus';
+              }
+
+              let dataUrl = new URL(elasticUrl);
+              dataUrl.pathname = '/json-data';
+              dataUrl = dataUrl.toString();
+
+              let app = Elm.NethysSearch.init({
+                  node: container,
+                  flags: {
+                      autofocus: (this.getAttribute('autofocus') ?? 'true') == 'true',
+                      browserDateFormat: (new Date(2020, 9, 30).toLocaleDateString(navigator.language))
+                          .replace('2020', 'yyyy')
+                          .replace('10', 'MM')
+                          .replace('30', 'dd'),
+                      currentUrl: location.href,
+                      dataUrl: dataUrl,
+                      defaultQuery: this.getAttribute('default-query'),
+                      elasticUrl: elasticUrl,
+                      fixedParams: fixedParams,
+                      fixedQueryString: fixedQueryString,
+                      loadAll: this.getAttribute('load-all') == 'true',
+                      legacyMode: legacyMode,
+                      localStorage: { ...localStorage },
+                      noUi: this.getAttribute('no-ui') === 'true',
+                      pageDefaultDisplays: localStorage.getItem('page-default-displays'),
+                      pageId: this.getAttribute('page-id'),
+                      randomSeed: Math.floor(Math.random() * 2147483647),
+                      removeFilters: this.getAttribute('remove-filters')?.split(',') ?? [],
+                      resultBaseUrl: "/",
+                      showHeader: false,
+                      showQueryControls: this.getAttribute('show-query-controls') != 'false',
+                      windowHeight: window.innerHeight,
+                      windowWidth: window.innerWidth,
+                  }
+              });
+
+              app.ports.document_focusElement.subscribe(id => {
+                  window.requestAnimationFrame(() => {
+                      let element = this.shadowRoot.getElementById(id);
+
+                      if (element) {
+                          element.focus();
+                      }
+                  });
+              });
+
+              app.ports.document_scrollElementIntoView.subscribe(id => {
+                  window.requestAnimationFrame(() => {
+                      let element = this.shadowRoot.getElementById(id);
+
+                      if (element) {
+                          element.scrollIntoView({block: 'nearest'});
+                      }
+                  });
+              });
+
+              app.ports.localStorage_get && app.ports.localStorage_get.subscribe(function (key) {
+                  let value = localStorage.getItem(key);
+                  app.ports.localStorage_receive.send({ key: key, value: value });
+              });
+
+              app.ports.localStorage_set.subscribe(function (data) {
+                  localStorage.setItem(data.key, data.value);
+              });
+
+              window.addEventListener('popstate', function () {
+                  app.ports.navigation_urlChanged.send(location.href);
+              });
+
+              app.ports.navigation_pushUrl.subscribe(function (url) {
+                  history.pushState([], '', url);
+                  app.ports.navigation_urlChanged.send(location.href);
+              });
+
+              app.ports.navigation_loadUrl.subscribe(function (url) {
+                  location.href = url;
+              });
+
+              document.addEventListener('theme-changed', e => {
+                  app.ports.localStorage_receive.send({ key: 'theme', value: e.detail });
+              });
+
+              document.addEventListener('link-previews-changed', e => {
+                  app.ports.localStorage_receive.send({ key: 'link-previews-enabled', value: e.detail });
+              });
+
+              window.addEventListener('hashchange', e => {
+                  let url = new URL(e.newURL);
+                  if (url.hash != "#results") {
+                      return;
+                  }
+
+                  let results = this.shadowRoot.getElementById("results");
+                  if (!results) {
+                      return;
+                  }
+
+                  results.focus();
+                  results.scrollIntoView();
+                  window.location.hash = '';
+              });
+
+              if (this.getAttribute('no-ui') === 'true') {
+                  let linkPreviewTarget = null;
+
+                  document.addEventListener('mouseover', e => {
+                      const target = e.target.closest('a');
+                      const isSearchBar = e.target.closest('.searchBar') !== null;
+                      if (target && target != linkPreviewTarget) {
+                          let parent = getParentOffset(target.offsetParent);
+                          let data = {
+                              url: target.href,
+                              x: target.offsetLeft + parent.x,
+                              y: target.offsetTop + parent.y,
+                              height: target.offsetHeight,
+                              width: target.offsetWidth,
+                          }
+                          if (isSearchBar) {
+                              if (getFeature('search-bar-previews-enabled', '0') == '0') {
+                                  return;
+                              }
+                              data.x += window.scrollX;
+                              data.y += window.scrollY;
+                          }
+                          app.ports.document_linkEntered.send(data);
+                      } else if (!target && linkPreviewTarget) {
+                          app.ports.document_linkLeft.send("");
+                      }
+
+                      linkPreviewTarget = target;
+                  });
+              }
+
+              function getParentOffset(node) {
+                  if (!node) {
+                      return {
+                          x: 0,
+                          y: 0,
+                      };
+                  }
+                  let parent = getParentOffset(node.offsetParent);
+                  return {
+                      x: node.offsetLeft - node.scrollLeft + parent.x,
+                      y: node.offsetTop - node.scrollTop + parent.y,
+                  };
+              }
+
+              const resizeObserver = new ResizeObserver(entries => {
+                  app.ports.document_receiveBodySize.send({
+                      width: Math.round(entries[0].contentRect.width),
+                      height: Math.round(entries[0].contentRect.height),
+                  });
+              });
+
+              let relativeElement = document.getElementById('page');
+              resizeObserver.observe(relativeElement);
+
+              document.addEventListener('visibilitychange', () => {
+                  if (document.visibilityState === 'visible') {
+                      let rect = relativeElement.getBoundingClientRect();
+
+                      app.ports.document_receiveBodySize.send({
+                          width: Math.round(rect.width),
+                          height: Math.round(rect.height),
+                      });
+                  }
+              });
+          }
+      }
+
+      customElements.define('nethys-search', NethysSearch);
+    </script>
+</body>
+</html>

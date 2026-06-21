@@ -67,13 +67,14 @@ const sidebar = [
     'items': [
       { 'link': '/getting-started', 'text': 'Getting Started' },
       { 'link': '/walk-through',    'text': 'Walk-through'    },
+      { 'link': '/faq',             'text': 'FAQ'             },
     ],
   },
   {
     'text':  'Usage',
     'items': [
       { 'link': '/usage/configuration', 'text': 'Configuration' },
-      { 'link': '/usage/pipeline',      'text': 'Pipeline'      },
+      { 'link': '/usage/pipeline',      'text': 'Authoring a DAG' },
       { 'link': '/usage/scrapers',      'text': 'Scrapers'      },
       { 'link': '/usage/mediawiki',     'text': 'MediaWiki'     },
       { 'link': '/usage/crawler',       'text': 'Crawler'       },
@@ -84,8 +85,10 @@ const sidebar = [
   {
     'text':  'Reference',
     'items': [
-      { 'link': '/architecture', 'text': 'Architecture' },
-      { 'link': '/roadmap',      'text': 'Roadmap'      },
+      { 'link': '/architecture',       'text': 'Architecture'       },
+      { 'link': '/diagrams',           'text': 'DAG Diagrams'       },
+      { 'link': '/aonprd-scraper-dag', 'text': 'AONPRD Scraper DAG' },
+      { 'link': '/roadmap',            'text': 'Roadmap'            },
     ],
   },
 ];
@@ -93,13 +96,25 @@ const sidebar = [
 export default withMermaid(defineConfig({
   'mermaid': {
     'theme': 'base',
+    // The full aonprd:parse DAG is ~191 placements / 42 KB — raise mermaid's
+    // safety caps so it renders instead of bailing out (defaults: maxTextSize
+    // 50000, maxEdges 500). Node fills/contrast are themed in theme/base.css.
+    'maxTextSize': 200000,
+    'maxEdges':    5000,
+    'flowchart':   { 'useMaxWidth': true, 'htmlLabels': true, 'nodeSpacing': 28, 'rankSpacing': 44 },
+    // NOTE: mermaid themeVariables are parsed by khroma (color math) — they MUST be
+    // concrete colors. CSS `var(--vp-…)` values throw "Unsupported color format" and
+    // blank every diagram. fontFamily is not colour-parsed, so a var is fine there.
     'themeVariables': {
       'fontFamily':       'var(--vp-font-family-mono)',
-      'background':       'var(--vp-c-bg-soft)',
+      'background':       '#ffffff',
       'primaryColor':     '#c8284a',
       'primaryTextColor': '#ffffff',
-      'lineColor':        'var(--vp-c-divider)',
-      'textColor':        'var(--vp-c-text-1)',
+      'primaryBorderColor': '#a01f3b',
+      'lineColor':        '#8a8f98',
+      'textColor':        '#213547',
+      'secondaryColor':   '#f3e6ea',
+      'tertiaryColor':    '#f6f6f7',
     },
   },
   'mermaidPlugin': { 'class': 'mermaid ripperoni-mermaid' },

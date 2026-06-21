@@ -14,9 +14,9 @@ const API_URL   = 'https://wiki.example.com/api.php';
 /** Builds a fake MediaWiki revisions API response for the given titles. */
 const fakeRevisionsResponse = (titles: string[]): string => {
   const pages: Record<string, unknown> = {};
-  for (let i = 0; i < titles.length; i++) {
-    const title = titles[i] ?? '';
-    pages[String(i + 1)] = { title, pageid: i + 1, revisions: [{ '*': `wikitext:${title}` }] };
+  for (let idx = 0; idx < titles.length; idx++) {
+    const title = titles[idx] ?? '';
+    pages[String(idx + 1)] = { title, pageid: idx + 1, revisions: [{ '*': `wikitext:${title}` }] };
   }
   return JSON.stringify({ query: { pages } });
 };
@@ -39,8 +39,8 @@ describe('MediaWikiScraper cache integration', () => {
     globalThis.fetch = (async (url: string | URL): Promise<Response> => {
       const href = typeof url === 'string' ? url : url.href;
       fetchCalls.push(href);
-      const u      = new URL(href);
-      const titles = (u.searchParams.get('titles') ?? '').split('|').filter((t: string): boolean => t.length > 0);
+      const parsedUrl = new URL(href);
+      const titles = (parsedUrl.searchParams.get('titles') ?? '').split('|').filter((str: string): boolean => str.length > 0);
       return new Response(fakeRevisionsResponse(titles), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }) as typeof fetch;
   });

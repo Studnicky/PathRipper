@@ -1,0 +1,62 @@
+{
+  "_type": "condition",
+  "url": "https://2e.aonprd.com/Conditions.aspx?ID=67",
+  "entity_id": 67,
+  "name": "Doomed",
+  "rarity": "common",
+  "pfs": null,
+  "legacy": false,
+  "alt_edition_url": null,
+  "traits": [],
+  "trait_ids": {},
+  "source": {
+    "book": "Player Core",
+    "page": 443,
+    "source_id": 216
+  },
+  "sources": [
+    {
+      "book": "Player Core",
+      "page": 443,
+      "source_id": 216,
+      "raw": "Player Core pg. 443"
+    }
+  ],
+  "sections": [],
+  "raw_fields": {},
+  "links": [
+    {
+      "href": "Conditions.aspx?ID=67",
+      "text": "Doomed",
+      "kind": "Conditions",
+      "id": 67
+    },
+    {
+      "href": "Sources.aspx?ID=216",
+      "text": "Player Core pg. 443",
+      "kind": "Sources",
+      "id": 216
+    },
+    {
+      "href": "Conditions.aspx?ID=11",
+      "text": "dying",
+      "kind": "Conditions",
+      "id": 11
+    }
+  ],
+  "body_text": "Your soul has been gripped by a powerful force that calls you closer to death. Doomed always includes a value. The dying value at which you die is reduced by your doomed value. If your maximum dying value is reduced to 0, you instantly die. When you die, you're no longer doomed. Your doomed value decreases by 1 each time you get a full night's rest.",
+  "body_html": "Your soul has been gripped by a powerful force that calls you closer to death. Doomed always includes a value. The <a style=\"text-decoration:underline\" href=\"Conditions.aspx?ID=11\">dying</a> value at which you die is reduced by your doomed value. If your maximum dying value is reduced to 0, you instantly die. When you die, you're no longer doomed.<br><br> Your doomed value decreases by 1 each time you get a full night's rest.",
+  "meta_description": "Your soul has been gripped by a powerful force that calls you closer to death. Doomed always includes a value. The dying value at which you die is reduced by your doomed value. If your maximum dying value is reduced to 0, you instantly die. When you die, you're no longer doomed. Your doomed value decreases by 1 each time you get a full night's rest.",
+  "meta_keywords": "Archives, Nethys, Wiki, Archives of Nethys, Pathfinder, Official, AoN, AoNPRD, PRD, PFSRD, 2E, 2nd Edition, Conditions, Doomed",
+  "stages": [],
+  "related_conditions": [
+    {
+      "name": "Doomed",
+      "condition_id": 67
+    },
+    {
+      "name": "dying",
+      "condition_id": 11
+    }
+  ]
+}
