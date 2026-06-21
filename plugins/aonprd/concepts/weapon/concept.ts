@@ -7,7 +7,7 @@
  * the complete picture of claimed labels.
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
 import type { ConceptDecl } from '../../taxonomy.js';
@@ -25,6 +25,14 @@ export type WeaponBaseOutput = 'success' | 'error';
 class WeaponBaseNode extends ScalarNode<ScrapeState, WeaponBaseOutput> {
   public readonly name = 'extract:weapon-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with WeaponBaseSlice
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -50,6 +58,14 @@ export type WeaponMechanicsOutput = 'success' | 'error';
 class WeaponMechanicsNode extends ScalarNode<ScrapeState, WeaponMechanicsOutput> {
   public readonly name = 'extract:weapon-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with WeaponMechanicsSlice
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

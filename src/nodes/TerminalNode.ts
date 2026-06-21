@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }   from '../state/ScrapeState.js';
 import type { RipperServices } from '../services/RipperServices.js';
@@ -21,6 +21,13 @@ type TerminalOutput = 'success';
 class TerminalNodeImpl extends ScalarNode<ScrapeState, TerminalOutput, RipperServices> {
   public readonly name = 'flow:terminate';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<TerminalOutput, SchemaObjectType> {
+    return {
+      // `success` — no-op terminator; no state delta.
+      success: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     _state:   ScrapeState,

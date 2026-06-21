@@ -9,6 +9,20 @@ import { DAGBuilder, ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer'
 class DocsParseNodeImpl extends ScalarNode {
     name = 'docs:parse-impl';
     outputs = ['success'];
+    get outputSchema() {
+        return {
+            // `success` — `state.output` is set to the first extracted section or a
+            // fallback page-level object; `state.metadata.sections` may hold all
+            // extracted sections.
+            success: {
+                type: 'object',
+                properties: {
+                    output: { type: 'object' },
+                },
+                required: ['output'],
+            },
+        };
+    }
     async executeOne(state, _context) {
         const html = state.page.html ?? '';
         const url = state.page.url;

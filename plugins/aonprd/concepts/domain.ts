@@ -4,7 +4,7 @@
 // Spells subsection, and a brief flavor description. This concept delegates to
 // Helpers are inlined with inline contracts.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -489,6 +489,35 @@ class DomainBaseNode extends ScalarNode<ScrapeState, DomainBaseOutput> {
   public readonly name    = 'extract:domain-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DomainBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              domain_id:       { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              pfs:             { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -513,6 +542,26 @@ export type DomainSpellsOutput = 'success' | 'error';
 class DomainSpellsNode extends ScalarNode<ScrapeState, DomainSpellsOutput> {
   public readonly name    = 'extract:domain-spells';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<DomainSpellsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              domain_spell:          { type: ['object', 'null'] },
+              advanced_domain_spell: { type: ['object', 'null'] },
+              apocryphal:            { type: ['object', 'null'] },
+            },
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -539,6 +588,28 @@ class DomainMetaNode extends ScalarNode<ScrapeState, DomainMetaOutput> {
   public readonly name    = 'extract:domain-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DomainMetaOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              description_text: { type: 'string' },
+              description_html: { type: 'string' },
+              sections:         { type: 'array', items: { type: 'object' } },
+              deities_using:    { type: 'array', items: { type: 'object' } },
+            },
+            required: ['description_text', 'description_html', 'sections', 'deities_using'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -563,6 +634,18 @@ export type FinalizeDomainOutput = 'success';
 class FinalizeDomainNode extends ScalarNode<ScrapeState, FinalizeDomainOutput> {
   public readonly name    = 'finalize:domain';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeDomainOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -19,7 +19,7 @@
 //
 // No `raw_fields` strip: rule pages have no `<b>Label</b>` field map.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import { load, type CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -315,6 +315,15 @@ class RuleBaseNode extends ScalarNode<ScrapeState, RuleBaseOutput> {
   public readonly name    = 'extract:rule-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with RuleBaseSlice (url, rule_id, name, source, sources, body_text, body_html)
+      success: { type: 'object' },
+      // `error` — aonprdCheerio metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -343,6 +352,15 @@ export type RuleSubsectionsOutput = 'success' | 'error';
 class RuleSubsectionsNode extends ScalarNode<ScrapeState, RuleSubsectionsOutput> {
   public readonly name    = 'extract:rule-subsections';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with RuleSubsectionsSlice (child_rules, sections)
+      success: { type: 'object' },
+      // `error` — aonprdCheerio metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -374,6 +392,19 @@ export type FinalizeRuleOutput = 'success';
 class FinalizeRuleConceptNode extends ScalarNode<ScrapeState, FinalizeRuleOutput> {
   public readonly name    = 'finalize:rule';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full RuleOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

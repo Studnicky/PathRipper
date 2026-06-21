@@ -244,7 +244,7 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
       },
     }),
     ...(workerContainer !== undefined
-      ? { containers: { worker: workerContainer as unknown as DagContainerInterface<ScrapeState> } }
+      ? { containers: { worker: workerContainer as unknown as DagContainerInterface } }
       : {}),
   });
 

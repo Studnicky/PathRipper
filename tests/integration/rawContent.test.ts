@@ -181,7 +181,7 @@ const PARSE_PAGE_DAG = JSON.stringify({
       '@type':  'SingleNode',
       'name':    'html:fetch',
       'node':    'html:fetch',
-      'outputs': { 'success': 'stub:parse', 'cached': 'stub:parse', 'error': 'stub-page:failed' },
+      'outputs': { 'success': 'stub:parse', 'cached': 'stub:parse', 'retry': 'html:fetch', 'error': 'stub-page:failed' },
     },
     {
       '@id':    'urn:noocodex:dag:stub:parse-page/node/stub:parse',
@@ -229,7 +229,7 @@ const RAW_PAGE_DAG = JSON.stringify({
       '@type':  'SingleNode',
       'name':    'html:fetch',
       'node':    'html:fetch',
-      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'error': 'stub-raw-page:failed' },
+      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'retry': 'html:fetch', 'error': 'stub-raw-page:failed' },
     },
     {
       '@id':    'urn:noocodex:dag:stub:raw-page/node/html:write-raw',
@@ -283,7 +283,7 @@ const RAW_ONLY_PAGE_DAG = JSON.stringify({
       '@type':  'SingleNode',
       'name':    'html:fetch',
       'node':    'html:fetch',
-      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'error': 'stub-raw-only-page:failed' },
+      'outputs': { 'success': 'html:write-raw', 'cached': 'html:write-raw', 'retry': 'html:fetch', 'error': 'stub-raw-only-page:failed' },
     },
     {
       '@id':    'urn:noocodex:dag:stub:raw-only-page/node/html:write-raw',
@@ -334,6 +334,15 @@ import { RoutedBatchBuilder, Timeout } from ${JSON.stringify(`file://${dagonzerI
 const stubParseNode = {
   name:    'stub:parse',
   outputs: ['success'],
+  outputSchema: {
+    success: {
+      type: 'object',
+      properties: {
+        output: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+      },
+      required: ['output'],
+    },
+  },
   timeout: Timeout.none(),
   async execute(batch) {
     for (const { state } of batch) {

@@ -46,7 +46,7 @@ import { dirname }         from 'node:path';
 import { fileURLToPath }   from 'node:url';
 
 import { DAGBuilder, Dagonizer, NodeStateBase, Timeout, RoutedBatchBuilder } from '@studnicky/dagonizer';
-import type { NodeInterface }                    from '@studnicky/dagonizer/contracts';
+import type { NodeInterface, SchemaObjectType }  from '@studnicky/dagonizer/contracts';
 import type { DagContainerInterface }            from '@studnicky/dagonizer';
 import type { JsonObjectType }                   from '@studnicky/dagonizer/entities';
 import { RecommendedWorkerCountConfigDefault }  from '@studnicky/dagonizer/entities';
@@ -108,9 +108,10 @@ class TestState extends NodeStateBase {
 // { processedInWorker: false } so assertions can confirm which path ran.
 
 const stubCaptureNode: NodeInterface<TestState, string, Record<string, never>> = {
-  name:    'stub:capture',
-  outputs: ['done'],
-  timeout: Timeout.none(),
+  name:         'stub:capture',
+  outputs:      ['done'],
+  timeout:      Timeout.none(),
+  outputSchema: { done: { type: 'object' } } as Record<string, SchemaObjectType>,
   async execute(batch) {
     for (const { state } of batch) {
       state.output = { processedInWorker: false };
@@ -236,7 +237,7 @@ describe('worker-container integration', () => {
 
     const dispatcher = new Dagonizer<TestState, Record<string, never>>({
       services:   {},
-      containers: { worker: container as unknown as DagContainerInterface<TestState> },
+      containers: { worker: container as unknown as DagContainerInterface },
     });
     // Register test:stub-page on coordinator (satisfies validator).
     // Execution is routed to the worker which uses StubRegistryModule's version.
@@ -323,7 +324,7 @@ describe('worker-container integration', () => {
 
     const workerDispatcher = new Dagonizer<TestState, Record<string, never>>({
       services:   {},
-      containers: { worker: container as unknown as DagContainerInterface<TestState> },
+      containers: { worker: container as unknown as DagContainerInterface },
     });
     workerDispatcher.registerNode(stubCaptureNode);
     workerDispatcher.registerDAG(inProcessPageDag);   // satisfies validator

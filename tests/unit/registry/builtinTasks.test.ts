@@ -5,6 +5,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { NodeContextBuilder } from '@studnicky/dagonizer/entities';
 import type { NodeContextType } from '@studnicky/dagonizer';
 
 import { ScrapeState }         from '../../../src/state/ScrapeState.js';
@@ -35,18 +36,19 @@ const buildState = (overrides: Partial<{
   return state;
 };
 
-const makeContext = (services: Partial<RipperServices>): NodeContextType<RipperServices> => ({
-  services: {
-    log:    Logger.forComponent('test'),
-    cache:  null,
-    target: { id: TARGET },
-    outDir: '',
-    ...services,
-  } as RipperServices,
-  signal:    new AbortController().signal,
-  dagName:   'test',
-  nodeName:  'test',
-});
+const makeContext = (services: Partial<RipperServices>): NodeContextType<RipperServices> =>
+  NodeContextBuilder.of<RipperServices>(
+    'test',
+    'test',
+    new AbortController().signal,
+    {
+      log:    Logger.forComponent('test'),
+      cache:  null,
+      target: { id: TARGET },
+      outDir: '',
+      ...services,
+    } as RipperServices,
+  );
 
 class FakeHtmlScraper {
   public calls: string[] = [];

@@ -5,7 +5,7 @@
  * extract:ritual-heightened, extract:ritual-meta
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -57,6 +57,14 @@ class RitualCastNode extends ScalarNode<ScrapeState, RitualCastOutput> {
   public readonly name = 'extract:ritual-cast';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<RitualCastOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualCastSlice (cast, trigger, range, area, targets, defense, saving_throw, duration, cost, requirements)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -91,6 +99,22 @@ export type RitualOutcomesOutput = 'success' | 'error';
 class RitualOutcomesNode extends ScalarNode<ScrapeState, RitualOutcomesOutput> {
   public readonly name = 'extract:ritual-outcomes';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<RitualOutcomesOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualOutcomesSlice (description_html, description_text, outcomes)
+      success: {
+        type: 'object',
+        properties: {
+          description_html: { type: 'string' },
+          description_text: { type: 'string' },
+          outcomes:         { type: 'array', items: { type: 'object' } },
+        },
+        required: ['description_html', 'description_text', 'outcomes'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -129,6 +153,14 @@ class RitualAfflictionNode extends ScalarNode<ScrapeState, RitualAfflictionOutpu
   public readonly name = 'extract:ritual-affliction';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<RitualAfflictionOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualAfflictionSlice (affliction, ritual_primary_check, ritual_secondary_casters, ritual_secondary_checks)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -156,6 +188,20 @@ export type RitualHeightenedOutput = 'success' | 'error';
 class RitualHeightenedNode extends ScalarNode<ScrapeState, RitualHeightenedOutput> {
   public readonly name = 'extract:ritual-heightened';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<RitualHeightenedOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualHeightenedSlice (heightened array)
+      success: {
+        type: 'object',
+        properties: {
+          heightened: { type: 'array', items: { type: 'object' } },
+        },
+        required: ['heightened'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -212,6 +258,14 @@ export type RitualMetaOutput = 'success' | 'error';
 class RitualMetaNode extends ScalarNode<ScrapeState, RitualMetaOutput> {
   public readonly name = 'extract:ritual-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<RitualMetaOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualMetaSlice (traditions, spell_list, bloodlines, cult, domain, deities, mysteries, patron_themes, catalysts, lesson, access, spoiler_source)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

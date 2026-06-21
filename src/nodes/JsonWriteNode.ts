@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join }    from 'node:path';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import { Logger }           from '../modules/logger/logger.js';
 import { pageSlug }         from './fileUtils.js';
@@ -30,6 +30,15 @@ type JsonWriteOutput = 'success' | 'skipped';
 class JsonWriteNodeImpl extends ScalarNode<ScrapeState, JsonWriteOutput, RipperServices> {
   public readonly name = 'json:write';
   public readonly outputs = ['success', 'skipped'] as const;
+
+  public override get outputSchema(): Record<JsonWriteOutput, SchemaObjectType> {
+    return {
+      // `success` — JSON file written to disk; no state delta.
+      success: { type: 'object' },
+      // `skipped` — `state.output` was null; no write performed; no state delta.
+      skipped: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,

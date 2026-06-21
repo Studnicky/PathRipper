@@ -2,7 +2,7 @@
 // Contributor pages have minimal structured data; no improvements warranted
 // beyond legacy-section filtering.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -266,6 +266,35 @@ class ContributorBaseNode extends ScalarNode<ScrapeState, ContributorBaseOutput>
   public readonly name = 'extract:contributor-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<ContributorBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              contributor_id:  { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -290,6 +319,30 @@ export type ContributorProfileOutput = 'success' | 'error';
 class ContributorProfileNode extends ScalarNode<ScrapeState, ContributorProfileOutput> {
   public readonly name = 'extract:contributor-profile';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<ContributorProfileOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              title:    { type: ['string', 'null'] },
+              email:    { type: ['string', 'null'] },
+              location: { type: ['string', 'null'] },
+              website:  { type: ['string', 'null'] },
+              bio_html: { type: 'string' },
+              bio_text: { type: 'string' },
+            },
+            required: ['bio_html', 'bio_text'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -317,6 +370,19 @@ export type FinalizeContributorOutput = 'success';
 class FinalizeContributorNode extends ScalarNode<ScrapeState, FinalizeContributorOutput> {
   public readonly name = 'finalize:contributor';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeContributorOutput, SchemaObjectType> {
+    return {
+      // `success` — merges sections, raw_fields, links, body_text, body_html, meta into state.output (no setConceptOutput call).
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

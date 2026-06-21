@@ -1,7 +1,7 @@
 //
 // SetRelics.aspx pages describe linked relic sets with tiered benefits.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -346,6 +346,15 @@ class SetRelicBaseNode extends ScalarNode<ScrapeState, SetRelicBaseOutput> {
   public readonly name = 'extract:set-relic-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SetRelicBaseSlice (url, set_relic_id, name, rarity, pfs, legacy, alt_edition_url, traits, trait_ids, source, sources)
+      success: { type: 'object' },
+      // `error` — aonprdCommon metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -371,6 +380,15 @@ class SetRelicComponentsNode extends ScalarNode<ScrapeState, SetRelicComponentsO
   public readonly name = 'extract:set-relic-components';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SetRelicComponentsSlice (aspects, components, gifts, features, description_text)
+      success: { type: 'object' },
+      // `error` — aonprdCommon metadata was absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -395,6 +413,19 @@ export type FinalizeSetRelicOutput = 'success';
 class FinalizeSetRelicNode extends ScalarNode<ScrapeState, FinalizeSetRelicOutput> {
   public readonly name = 'finalize:set-relic';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full SetRelicOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -23,6 +23,7 @@ import {
   HtmlWriteRawNode,
   WikiWriteRawNode,
   JsonWriteNode,
+  CaptureErrorNode,
   JsonlAppendNode,
   ValidateSchemaNode,
   TerminalNode,
@@ -76,6 +77,7 @@ export class PluginLoader {
     dispatcher.registerNode(HtmlWriteRawNode);
     dispatcher.registerNode(WikiWriteRawNode);
     dispatcher.registerNode(JsonWriteNode);
+    dispatcher.registerNode(CaptureErrorNode);
     dispatcher.registerNode(JsonlAppendNode);
     dispatcher.registerNode(ValidateSchemaNode);
     dispatcher.registerNode(TerminalNode);

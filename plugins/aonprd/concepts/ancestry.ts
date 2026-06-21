@@ -7,7 +7,7 @@
 //
 // partial extraction and incremental composition in the taxonomy pipeline.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -394,6 +394,38 @@ class AncestryBaseNode extends ScalarNode<ScrapeState, AncestryBaseOutput> {
   public readonly name = 'extract:ancestry-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<AncestryBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:              { type: 'string' },
+              ancestry_id:      { type: ['integer', 'null'] },
+              name:             { type: 'string' },
+              rarity:           { type: 'string' },
+              pfs:              { type: ['string', 'null'] },
+              legacy:           { type: 'boolean' },
+              alt_edition_url:  { type: ['string', 'null'] },
+              traits:           { type: 'array', items: { type: 'string' } },
+              trait_ids:        { type: 'object' },
+              source:           { type: 'object' },
+              sources:          { type: 'array', items: { type: 'object' } },
+              mechanics:        { type: 'object' },
+              popular_edicts:   { type: ['string', 'null'] },
+              popular_anathema: { type: ['string', 'null'] },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources', 'mechanics'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -424,6 +456,35 @@ class AncestryHeritagesNode extends ScalarNode<ScrapeState, AncestryHeritagesOut
   public readonly name = 'extract:ancestry-heritages';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<AncestryHeritagesOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              heritages: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name:        { type: 'string' },
+                    description: { type: 'string' },
+                  },
+                  required: ['name', 'description'],
+                },
+              },
+            },
+            required: ['heritages'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -451,6 +512,36 @@ export type AncestryFeaturesOutput = 'success' | 'error';
 class AncestryFeaturesNode extends ScalarNode<ScrapeState, AncestryFeaturesOutput> {
   public readonly name = 'extract:ancestry-features';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<AncestryFeaturesOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              initial_proficiencies: { type: 'object' },
+              features: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    name:        { type: 'string' },
+                    description: { type: 'string' },
+                  },
+                  required: ['name', 'description'],
+                },
+              },
+            },
+            required: ['initial_proficiencies', 'features'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -480,6 +571,19 @@ export type FinalizeAncestryOutput = 'success';
 class FinalizeAncestryNode extends ScalarNode<ScrapeState, FinalizeAncestryOutput> {
   public readonly name = 'finalize:ancestry';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeAncestryOutput, SchemaObjectType> {
+    return {
+      // `success` — calls setConceptOutput(state, assembled): writes state.output as the complete AncestryOutput.
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

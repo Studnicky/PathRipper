@@ -4,7 +4,7 @@
 // (mirrors the language concept pattern); the `legacy: true` flag already
 // carries that signal from the title extraction.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -375,6 +375,14 @@ class PlaneBaseNodeImpl extends ScalarNode<ScrapeState, PlaneBaseOutput> {
   public readonly name = 'extract:plane-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<PlaneBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with PlaneBaseSlice + PlaneDenizensSlice fields
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -402,6 +410,20 @@ class PlaneCharacteristicsNodeImpl extends ScalarNode<ScrapeState, PlaneCharacte
   public readonly name = 'extract:plane-characteristics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<PlaneCharacteristicsOutput, SchemaObjectType> {
+    return {
+      // state.output merged with PlaneCharacteristicsSlice (category: string|null, aspect: string|null)
+      success: {
+        type: 'object',
+        properties: {
+          category: { type: 'string' },
+          aspect:   { type: 'string' },
+        },
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -426,6 +448,27 @@ export type FinalizePlaneOutput = 'success';
 class FinalizePlaneNodeImpl extends ScalarNode<ScrapeState, FinalizePlaneOutput> {
   public readonly name = 'finalize:plane';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizePlaneOutput, SchemaObjectType> {
+    return {
+      // state.output gets description_text, description_html, sections, raw_fields, links, body_*, meta_*
+      success: {
+        type: 'object',
+        properties: {
+          description_text:  { type: 'string' },
+          description_html:  { type: 'string' },
+          sections:          { type: 'array', items: { type: 'object' } },
+          raw_fields:        { type: 'object' },
+          links:             { type: 'array', items: { type: 'object' } },
+          body_text:         { type: 'string' },
+          body_html:         { type: 'string' },
+          meta_description:  { type: 'string' },
+          meta_keywords:     { type: 'string' },
+        },
+        required: ['description_text', 'description_html', 'sections'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

@@ -5,7 +5,7 @@
  * Node: extract:ritual-base
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -40,6 +40,14 @@ export type RitualBaseOutput = 'success' | 'error';
 class RitualBaseNode extends ScalarNode<ScrapeState, RitualBaseOutput> {
   public readonly name = 'extract:ritual-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<RitualBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with RitualBaseSlice (url, spell_id, name, kind, rank, rarity, pfs, traits, source, etc.)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

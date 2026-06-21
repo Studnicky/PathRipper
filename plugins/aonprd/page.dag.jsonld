@@ -89,7 +89,8 @@
       "outputs": {
         "success": "aonprd:parse",
         "cached": "aonprd:parse",
-        "error": "aonprd-page:failed"
+        "retry": "html:fetch",
+        "error": "error:capture"
       }
     },
     {
@@ -99,7 +100,7 @@
       "dag": "aonprd:parse",
       "outputs": {
         "success": "json:write",
-        "error": "aonprd-page:failed"
+        "error": "error:capture"
       },
       "stateMapping": {
         "input": {
@@ -108,6 +109,15 @@
         "output": {
           "output": "output"
         }
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:aonprd:page/node/error:capture",
+      "@type": "SingleNode",
+      "name": "error:capture",
+      "node": "error:capture",
+      "outputs": {
+        "captured": "json:write"
       }
     },
     {
@@ -125,12 +135,6 @@
       "@type": "TerminalNode",
       "name": "aonprd-page:completed",
       "outcome": "completed"
-    },
-    {
-      "@id": "urn:noocodex:dag:aonprd:page/node/aonprd-page:failed",
-      "@type": "TerminalNode",
-      "name": "aonprd-page:failed",
-      "outcome": "failed"
     }
   ]
 }

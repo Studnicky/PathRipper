@@ -4,7 +4,7 @@
 // Helpers are inlined with inline contracts. The `entity_id` alias was
 // dropped in favour of the concept-specific `disease_id`.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -301,6 +301,36 @@ class DiseaseBaseNode extends ScalarNode<ScrapeState, DiseaseBaseOutput> {
   public readonly name = 'extract:disease-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DiseaseBaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              url:             { type: 'string' },
+              disease_id:      { type: ['integer', 'null'] },
+              name:            { type: 'string' },
+              level:           { type: ['integer', 'null'] },
+              rarity:          { type: 'string' },
+              pfs:             { type: ['string', 'null'] },
+              legacy:          { type: 'boolean' },
+              alt_edition_url: { type: ['string', 'null'] },
+              traits:          { type: 'array', items: { type: 'string' } },
+              trait_ids:       { type: 'object' },
+              source:          { type: 'object' },
+              sources:         { type: 'array', items: { type: 'object' } },
+            },
+            required: ['url', 'name', 'rarity', 'traits', 'trait_ids', 'source', 'sources'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -325,6 +355,26 @@ export type DiseaseMechanicsOutput = 'success' | 'error';
 class DiseaseMechanicsNode extends ScalarNode<ScrapeState, DiseaseMechanicsOutput> {
   public readonly name = 'extract:disease-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<DiseaseMechanicsOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              saving_throw:     { type: ['object', 'null'] },
+              onset:            { type: ['string', 'null'] },
+              maximum_duration: { type: ['string', 'null'] },
+            },
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -351,6 +401,37 @@ class DiseaseStagesNode extends ScalarNode<ScrapeState, DiseaseStagesOutput> {
   public readonly name = 'extract:disease-stages';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<DiseaseStagesOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: {
+            type: 'object',
+            properties: {
+              stages: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    stage:     { type: 'integer' },
+                    body_text: { type: 'string' },
+                    body_html: { type: 'string' },
+                    duration:  { type: ['string', 'null'] },
+                  },
+                  required: ['stage', 'body_text', 'body_html'],
+                },
+              },
+            },
+            required: ['stages'],
+          },
+        },
+        required: ['output'],
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -375,6 +456,18 @@ export type FinalizeDiseaseOutput = 'success';
 class FinalizeDiseaseNode extends ScalarNode<ScrapeState, FinalizeDiseaseOutput> {
   public readonly name = 'finalize:disease';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeDiseaseOutput, SchemaObjectType> {
+    return {
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

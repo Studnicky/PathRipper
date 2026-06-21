@@ -5,7 +5,7 @@
  * extractMonsterBase, monsterBaseNode.
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
@@ -124,6 +124,14 @@ export type MonsterBaseOutput = 'success' | 'error';
 class MonsterBaseNode extends ScalarNode<ScrapeState, MonsterBaseOutput> {
   public readonly name = 'extract:monster-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<MonsterBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with MonsterBaseSlice (url, monster_id, name, level, rarity, traits, source, perception, languages, skills, abilities, items, etc.)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

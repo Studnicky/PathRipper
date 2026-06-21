@@ -5,7 +5,7 @@
 // Output is
 // bespoke node-folder under nodes/tactic/.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -220,6 +220,14 @@ class TacticBaseNodeImpl extends ScalarNode<ScrapeState, TacticBaseOutput> {
   public readonly name    = 'extract:tactic-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with TacticBaseSlice (url, tactic_id, name, rarity, traits, action_cost, category, source, sources, pfs, legacy, alt_edition_url)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -244,6 +252,14 @@ class TacticMechanicsNodeImpl extends ScalarNode<ScrapeState, TacticMechanicsOut
   public readonly name    = 'extract:tactic-mechanics';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with TacticMechanicsSlice (prerequisites, requirements, trigger, frequency, effect, special)
+      success: { type: 'object' },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -267,6 +283,19 @@ export type FinalizeTacticOutput = 'success';
 class FinalizeTacticNodeImpl extends ScalarNode<ScrapeState, FinalizeTacticOutput> {
   public readonly name    = 'finalize:tactic';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<'success', SchemaObjectType> {
+    return {
+      // `success` — state.output set to full TacticOutput via setConceptOutput
+      success: {
+        type: 'object',
+        properties: {
+          output: { type: 'object' },
+        },
+        required: ['output'],
+      },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

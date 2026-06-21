@@ -6,7 +6,7 @@
  * Node: extract:spell-meta
  */
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
@@ -60,6 +60,15 @@ export type SpellMetaOutput = 'success' | 'error';
 class SpellMetaNode extends ScalarNode<ScrapeState, SpellMetaOutput> {
   public readonly name = 'extract:spell-meta';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+    return {
+      // `success` — state.output merged with SpellMetaSlice
+      success: { type: 'object' },
+      // `error` — required metadata absent; no state mutation
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,

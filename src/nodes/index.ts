@@ -3,6 +3,7 @@ export { WikiFetchNode }              from './WikiFetchNode.js';
 export { HtmlWriteRawNode }           from './HtmlWriteRawNode.js';
 export { WikiWriteRawNode }           from './WikiWriteRawNode.js';
 export { JsonWriteNode }              from './JsonWriteNode.js';
+export { CaptureErrorNode }           from './CaptureErrorNode.js';
 export { JsonlAppendNode }            from './JsonlAppendNode.js';
 export { ValidateSchemaNode }         from './ValidateSchemaNode.js';
 export { TerminalNode }               from './TerminalNode.js';

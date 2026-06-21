@@ -14,6 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 import { MediaWikiScraper }   from '../../src/scrapers/MediaWikiScraper.js';
 import { ScrapeState }        from '../../src/state/ScrapeState.js';
+import { NodeContextBuilder } from '@studnicky/dagonizer/entities';
 import type { RipperServices } from '../../src/services/RipperServices.js';
 import type { WikiFixtureServerInterface } from './fixtures/wiki/server.js';
 import { startWikiFixtureServer } from './fixtures/wiki/server.js';
@@ -77,13 +78,12 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
 
     const { wikiDocsParseNode } = await import('../../examples/wiki-docs/plugin.js');
 
-    const ctx = {
-      services: {} as unknown as RipperServices,
-      signal:   new AbortController().signal,
-      dagName:  'test',
-      nodeName: 'wiki-docs:parse',
-      runId:    'test',
-    };
+    const ctx = NodeContextBuilder.of<RipperServices>(
+      'test',
+      'wiki-docs:parse',
+      new AbortController().signal,
+      {} as unknown as RipperServices,
+    );
 
     const outputs: RipperoniComponentOutput[] = [];
 
@@ -126,13 +126,12 @@ describe('wiki-docs e2e — MediaWiki scraper against fixture server', () => {
 
     const { wikiDocsParseNode } = await import('../../examples/wiki-docs/plugin.js');
 
-    const ctx = {
-      services: {} as unknown as RipperServices,
-      signal:   new AbortController().signal,
-      dagName:  'test',
-      nodeName: 'wiki-docs:parse',
-      runId:    'test',
-    };
+    const ctx = NodeContextBuilder.of<RipperServices>(
+      'test',
+      'wiki-docs:parse',
+      new AbortController().signal,
+      {} as unknown as RipperServices,
+    );
 
     for (const page of pages) {
       const state = new ScrapeState();

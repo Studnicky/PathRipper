@@ -1,6 +1,7 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
+import { BaseError } from '../errors/BaseError.js';
 import { ExternalSchemaError } from '../errors/ExternalSchemaError.js';
 import type { ScrapedPageType } from '../scrapers/HtmlScraper.js';
 import type { RawContentType } from '../types/PipelineState.js';
@@ -13,7 +14,18 @@ const isHtmlScraper = (val: unknown): val is { fetchPage(url: string): Promise<S
   return typeof val === 'object' && val !== null && typeof (val as { fetchPage?: unknown }).fetchPage === 'function';
 };
 
-type HtmlFetchOutput = 'success' | 'error' | 'cached';
+type HtmlFetchOutput = 'success' | 'error' | 'cached' | 'retry';
+
+/**
+ * Number of DAG-level re-fetch attempts for a *transient* failure before the
+ * page routes to `error`. The scraper's own `HttpRetryPolicy` already retries
+ * transient HTTP errors per request; this is a second, coarser layer — each DAG
+ * retry re-runs the whole fetch — bounded by the native `recordAttempt` budget.
+ */
+const MAX_DAG_FETCH_RETRIES = 2;
+
+/** Budget key for the per-page fetch retry loop. */
+const FETCH_RETRY_KEY = 'html:fetch';
 
 /**
  * Reads `metadata['currentUrl']`, initialises `state.page` from it, then
@@ -23,14 +35,64 @@ type HtmlFetchOutput = 'success' | 'error' | 'cached';
  * Output ports:
  * - `success` — page fetched; `state.page.html` is populated.
  * - `cached`  — page was served from cache (no live HTTP); same fields set.
- * - `error`   — fetch failed (404, network error, etc); `state.failed` item recorded.
+ * - `retry`   — a *transient* failure (5xx/429/network) with the DAG retry
+ *   budget unspent; wire this port back to `html:fetch` for a bounded re-fetch.
+ * - `error`   — a *permanent* failure (4xx such as 404) or the retry budget is
+ *   exhausted; the error is recorded on `state.errors` and the url on
+ *   `state.failed`. Route to `error:capture` to persist it as inspectable data.
  *
  * @category Nodes
  * @since 3.0.0
  */
 class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperServices> {
   public readonly name = 'html:fetch';
-  public readonly outputs = ['success', 'error', 'cached'] as const;
+  public readonly outputs = ['success', 'error', 'cached', 'retry'] as const;
+
+  public override get outputSchema(): Record<HtmlFetchOutput, SchemaObjectType> {
+    return {
+      // `success` — page fetched from network; `state.page` populated with url, html, and optional _raw.
+      success: {
+        type: 'object',
+        properties: {
+          page: {
+            type: 'object',
+            properties: {
+              targetId: { type: 'string' },
+              title:    { type: 'string' },
+              url:      { type: 'string' },
+              html:     { type: 'string' },
+              _raw:     { type: 'object' },
+            },
+            required: ['targetId', 'title', 'url', 'html'],
+          },
+        },
+        required: ['page'],
+      },
+      // `cached` — page served from cache; same `state.page` shape as `success`.
+      cached: {
+        type: 'object',
+        properties: {
+          page: {
+            type: 'object',
+            properties: {
+              targetId: { type: 'string' },
+              title:    { type: 'string' },
+              url:      { type: 'string' },
+              html:     { type: 'string' },
+              _raw:     { type: 'object' },
+            },
+            required: ['targetId', 'title', 'url', 'html'],
+          },
+        },
+        required: ['page'],
+      },
+      // `retry` — transient failure, DAG retry budget unspent; one attempt
+      // recorded on `state.recordAttempt('html:fetch')`. No page delta.
+      retry: { type: 'object' },
+      // `error` — fetch failed; error recorded on state via collectError; `state.failed` may have the url appended.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   ScrapeState,
@@ -63,10 +125,22 @@ class HtmlFetchNodeImpl extends ScalarNode<ScrapeState, HtmlFetchOutput, RipperS
     try {
       result = await scraper.fetchPage(url);
     } catch (err) {
+      // Classify: a `BaseError` carries `retryable` (HttpError sets it false for
+      // 4xx like 404, true for 5xx/429/undefined-status); a non-BaseError is a
+      // raw network failure — treat as transient. Transient failures route to
+      // `retry` (a bounded DAG self-loop) until the budget is spent; permanent
+      // failures route straight to `error`.
+      const transient = err instanceof BaseError ? err.retryable : true;
+      if (transient && state.recordAttempt(FETCH_RETRY_KEY) <= MAX_DAG_FETCH_RETRIES) {
+        return NodeOutputBuilder.of('retry');
+      }
+      state.clearAttempts(FETCH_RETRY_KEY);
       state.collectError(toNodeError(err, 'html:fetch'));
       state.failed.push(url);
       return NodeOutputBuilder.of('error');
     }
+    // Fetched cleanly — reset the retry budget so a later re-entry starts fresh.
+    state.clearAttempts(FETCH_RETRY_KEY);
 
     const includeRaw = services.includeRawContent !== false;
     const raw: RawContentType | undefined = includeRaw

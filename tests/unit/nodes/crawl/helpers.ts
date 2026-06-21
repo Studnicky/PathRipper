@@ -1,6 +1,7 @@
 /**
  * Shared test helpers for crawl node unit tests.
  */
+import { NodeContextBuilder } from '@studnicky/dagonizer/entities';
 import type { NodeContextType } from '@studnicky/dagonizer';
 
 import { ScrapeState }         from '../../../../src/state/ScrapeState.js';
@@ -30,11 +31,11 @@ export const makeTestContext = (
       }
     : undefined;
 
-  return {
-    dagName:  'test',
-    nodeName: 'test',
-    signal:   new AbortController().signal,
-    services: {
+  return NodeContextBuilder.of<RipperServices>(
+    'test',
+    'test',
+    new AbortController().signal,
+    {
       log: {
         debug: () => {},
         info:  () => {},
@@ -48,8 +49,8 @@ export const makeTestContext = (
       ...(crawlerBlock !== undefined ? { crawler: crawlerBlock } : {}),
       ...(limiter !== undefined ? { crawlLimiter: limiter } : {}),
       ...(policy  !== undefined ? { crawlPolicy:  policy  } : {}),
-    },
-  };
+    } as unknown as RipperServices,
+  );
 };
 
 /**

@@ -4,17 +4,12 @@
 // SECONDARY taxonomy. Demonstrates the AONPRD Layer-1 capabilities binary
 // is plugin-agnostic when paired with a plugin-supplied `CommonStrategy`.
 import { Batch }                from '@studnicky/dagonizer';
-import type { NodeContextType } from '@studnicky/dagonizer';
+import { NodeContextBuilder } from '@studnicky/dagonizer/entities';
 
 import { ScrapeState } from '../../src/state/ScrapeState.js';
 import { TAXONOMY } from './taxonomy.js';
 
-const STUB_CONTEXT: NodeContextType = {
-  services: undefined,
-  signal:   new AbortController().signal,
-  dagName:  'secondary:parse:direct',
-  nodeName: 'secondary:parse:direct',
-};
+const STUB_CONTEXT = NodeContextBuilder.of('secondary:parse:direct', 'secondary:parse:direct', new AbortController().signal, undefined);
 
 /**
  * Parse a secondary-source HTML page via the compiled secondary taxonomy.

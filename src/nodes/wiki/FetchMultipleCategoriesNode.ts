@@ -1,5 +1,5 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { CategoryMemberType } from '../../types/MediaWikiScraper.js';
 import type { MediaWikiScraper }        from '../../scrapers/MediaWikiScraper.js';
@@ -28,6 +28,31 @@ type FetchMultipleCategoriesOutput = 'success' | 'error';
 class FetchMultipleCategoriesNodeImpl extends ScalarNode<MemberResolutionState, FetchMultipleCategoriesOutput, RipperServices> {
   public readonly name = 'wiki:fetch-multiple-categories';
   public readonly outputs = ['success', 'error'] as const;
+
+  public override get outputSchema(): Record<FetchMultipleCategoriesOutput, SchemaObjectType> {
+    return {
+      // `success` — `state.members` populated with deduplicated members from all config categories.
+      success: {
+        type: 'object',
+        properties: {
+          members: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                title:  { type: 'string' },
+                pageid: { type: 'integer' },
+              },
+              required: ['title', 'pageid'],
+            },
+          },
+        },
+        required: ['members'],
+      },
+      // `error` — scraper absent or API error; error recorded on state; no state delta.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   MemberResolutionState,

@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **`@studnicky/dagonizer` 0.25 adoption** — upgraded `@studnicky/dagonizer` and `@studnicky/dagonizer-executor-node` 0.24 → 0.25. Every `ScalarNode`/`MonadicNode` now declares the mandatory per-port `outputSchema` contract (a JSON Schema fragment describing the state delta each output port writes); manual `NodeContextType` literals move to `NodeContextBuilder.of(...)`; `DagContainerInterface` is no longer generic.
+- **`error:capture` node + error-as-data routing** — a new builtin node (`error:capture`) projects the `NodeError`s collected on `state.errors` into `state.output` as an `{ _type: 'error', url, errors }` document. The `aonprd:page` and `aonprd:page-raw` DAGs route the `error` ports of `html:fetch` and `aonprd:parse` through it to `json:write`, so a failing page persists an inspectable error document to disk instead of vanishing into an opaque scatter error partition — essential across the worker-thread boundary, where a thrown exception is otherwise unrecoverable detail.
+- **DAG-level fetch retry** — `html:fetch` now classifies failures and emits a `retry` port for *transient* errors (5xx / 429 / network), wired as a bounded self-loop (`MAX_DAG_FETCH_RETRIES = 2`) via the native `recordAttempt` / `clearAttempts` budget. *Permanent* failures (4xx such as 404) skip the loop and route straight to `error:capture` — no wasted requests. This sits above the per-request `HttpRetryPolicy` as a coarser, flow-visible resilience layer.
 - **CodeQL static analysis** — `.github/workflows/codeql.yml` runs the `security-extended` query suite over the TypeScript sources on every push/PR to the protected branches and weekly, surfacing findings under Security > Code scanning.
+
+### Fixed
+
+- **Worker-thread DAG assets** — `scripts/copy-dag-assets.mjs` now mirrors `.dag.jsonld` documents into `dist-workers/` (both the `src/` builtins and the `plugins/` documents), not only `dist/`. Without them a `WorkerThreadContainer` crashed on init (`DagHost init failed: ENOENT … crawl-discover.dag.jsonld`), so the parallel (`parallelWorkers: true`) scrape path produced no output. The parallel rip now fetches, parses, and writes correctly.
 
 ### Changed
 

@@ -2,7 +2,7 @@ import { readFile }   from 'node:fs/promises';
 import { resolve }    from 'node:path';
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { CategoryMemberType }  from '../../types/MediaWikiScraper.js';
 import type { FailuresManifestType } from '../../types/RipperRun.js';
@@ -26,6 +26,31 @@ type ResumeFailuresOutput = 'success' | 'error';
 class ResumeFailuresNodeImpl extends ScalarNode<MemberResolutionState, ResumeFailuresOutput, RipperServices> {
   public readonly name = 'wiki:resume-failures';
   public readonly outputs = ['success', 'error'] as const;
+
+  public override get outputSchema(): Record<ResumeFailuresOutput, SchemaObjectType> {
+    return {
+      // `success` — `state.members` populated from failures.json as synthetic CategoryMemberType entries (pageid 0).
+      success: {
+        type: 'object',
+        properties: {
+          members: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                title:  { type: 'string' },
+                pageid: { type: 'integer' },
+              },
+              required: ['title', 'pageid'],
+            },
+          },
+        },
+        required: ['members'],
+      },
+      // `error` — failures.json missing, unreadable, or malformed; error recorded on state; no state delta.
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state:   MemberResolutionState,

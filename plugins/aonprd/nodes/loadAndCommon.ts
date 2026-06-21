@@ -8,7 +8,7 @@
 // plugin builds its own node via `makeLoadAndCommonNode(strategy)` and binds
 // the same Layer-1 capabilities downstream.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }  from '../../../src/state/ScrapeState.js';
 import {
@@ -26,8 +26,8 @@ export type LoadAndCommonOutput = 'success' | 'error';
  * Inline contract:
  *   - `hardRequired: []` — `page.html` is external initial state, seeded into
  *     `ScrapeState.page.html` before the DAG runs. The DAG entrypoint is the
- *     URL router, not this node, so the `ContractRegistryValidator` would
- *     flag a `page.html` read as dangling. The runtime still reads
+ *     URL router, not this node, so DAGBuilder's explicit wiring does not
+ *     declare page.html as a produced metadata key. The runtime still reads
  *     `state.page.html` directly.
  *   - `produces: ['aonprdCheerio', 'aonprdCommon', 'aonprdTarget']` — the
  *     three metadata keys downstream Layer-1 capabilities consume.
@@ -45,7 +45,16 @@ export function makeLoadAndCommonNode(
   class LoadAndCommonNodeImpl extends ScalarNode<ScrapeState, LoadAndCommonOutput> {
     public readonly name    = 'aonprd:load-and-common';
     public readonly outputs = CAPABILITY_OUTPUTS;
-  
+
+    public override get outputSchema(): Record<'success' | 'error', SchemaObjectType> {
+      return {
+        // `success` — stashes aonprdCheerio (and aonprdCommon + aonprdTarget for non-rule pages) in metadata; no state.output mutation
+        success: { type: 'object' },
+        // `error` — page.html was absent or extractCommon returned null; no state mutation
+        error: { type: 'object' },
+      };
+    }
+
     protected override async executeOne(
       state:    ScrapeState,
       _context: NodeContextType,

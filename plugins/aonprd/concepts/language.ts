@@ -8,7 +8,7 @@
 //   - `pfs_note` is NEW.
 //   - `sections[]` filters out legacy-content-warning headings.
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
-import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
+import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
@@ -301,6 +301,14 @@ class LanguageBaseNode extends ScalarNode<ScrapeState, LanguageBaseOutput> {
   public readonly name = 'extract:language-base';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<LanguageBaseOutput, SchemaObjectType> {
+    return {
+      // state.output merged with language base fields (url, language_id, name, rarity, pfs, traits, source, kind, script)
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+      error:   { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -346,6 +354,21 @@ export type LanguageSpeakersOutput = 'success' | 'error';
 class LanguageSpeakersNode extends ScalarNode<ScrapeState, LanguageSpeakersOutput> {
   public readonly name = 'extract:language-speakers';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<LanguageSpeakersOutput, SchemaObjectType> {
+    return {
+      // state.output gets speakers (object with ancestries/creatures/npcs/monsters/etc arrays) and section_counts (object)
+      success: {
+        type: 'object',
+        properties: {
+          speakers:       { type: 'object' },
+          section_counts: { type: 'object' },
+        },
+        required: ['speakers', 'section_counts'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -401,6 +424,19 @@ class LanguagePfsNoteNode extends ScalarNode<ScrapeState, LanguagePfsNoteOutput>
   public readonly name = 'extract:language-pfs-note';
   public readonly outputs = CAPABILITY_OUTPUTS;
 
+  public override get outputSchema(): Record<LanguagePfsNoteOutput, SchemaObjectType> {
+    return {
+      // state.output gets pfs_note: string | null
+      success: {
+        type: 'object',
+        properties: {
+          pfs_note: { type: 'string' },
+        },
+      },
+      error: { type: 'object' },
+    };
+  }
+
   protected override async executeOne(
     state: ScrapeState,
     _ctx:  NodeContextType,
@@ -433,6 +469,22 @@ export type LanguageDescriptionOutput = 'success' | 'error';
 class LanguageDescriptionNode extends ScalarNode<ScrapeState, LanguageDescriptionOutput> {
   public readonly name = 'extract:language-description';
   public readonly outputs = CAPABILITY_OUTPUTS;
+
+  public override get outputSchema(): Record<LanguageDescriptionOutput, SchemaObjectType> {
+    return {
+      // state.output gets description_text (string), description_html (string), sections (array)
+      success: {
+        type: 'object',
+        properties: {
+          description_text: { type: 'string' },
+          description_html: { type: 'string' },
+          sections:         { type: 'array', items: { type: 'object' } },
+        },
+        required: ['description_text', 'description_html', 'sections'],
+      },
+      error: { type: 'object' },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
@@ -476,6 +528,13 @@ export type FinalizeLanguageOutput = 'success';
 class FinalizeLanguageNode extends ScalarNode<ScrapeState, FinalizeLanguageOutput> {
   public readonly name = 'finalize:language';
   public readonly outputs = ['success'] as const;
+
+  public override get outputSchema(): Record<FinalizeLanguageOutput, SchemaObjectType> {
+    return {
+      // setConceptOutput writes fully assembled LanguageOutput to state.output
+      success: { type: 'object', properties: { output: { type: 'object' } }, required: ['output'] },
+    };
+  }
 
   protected override async executeOne(
     state: ScrapeState,
