@@ -23,6 +23,14 @@ import { resolve }                    from 'node:path';
 
 import { DAGDocument }                from '@studnicky/dagonizer';
 import type { DagonizerInterface }    from '@studnicky/dagonizer';
+import type { DagContainerInterface } from '@studnicky/dagonizer';
+import type { JsonObjectType }        from '@studnicky/dagonizer/entities';
+import { WorkerThreadContainer }              from '@studnicky/dagonizer-executor-node';
+import { NodeSystemInfo }                    from '@studnicky/dagonizer-executor-node';
+import { RecommendedWorkerCountConfigDefault } from '@studnicky/dagonizer/entities';
+
+import type { WorkerServicesConfigType } from './ParseRegistryConfig.js';
+import { REGISTRY_VERSION }              from './ParseRegistryConfig.js';
 
 import { RipperDagonizer }            from '../dispatcher/RipperDagonizer.js';
 import { Logger }                     from '../modules/logger/logger.js';
@@ -167,6 +175,61 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
   // ── Ensure output directory exists ────────────────────────────────────────
   await mkdir(outDir, { recursive: true });
 
+  // ── Worker container (optional) ───────────────────────────────────────────
+  // When `state.parallelWorkers` is true, build a WorkerThreadContainer and
+  // bind it under the 'worker' role. Scatter placements that declare
+  // `container: "worker"` are dispatched to the pool. Absent or false →
+  // no container bound; all placements run in-process.
+  const workerEnabled = state.parallelWorkers === true;
+  let workerContainer: WorkerThreadContainer | undefined;
+
+  if (workerEnabled) {
+    // The registry module is compiled to dist-workers/ by `tsconfig.workers.json`.
+    // Compiled runDag.js is at dist/run/runDag.js.
+    // Registry module is at dist-workers/workers/ParseRegistryModule.js.
+    // Relative: dist/run/ → ../../dist-workers/workers/ParseRegistryModule.js
+    const registryModuleUrl = new URL(
+      '../../dist-workers/workers/ParseRegistryModule.js',
+      import.meta.url,
+    ).href;
+
+    const servicesConfig: WorkerServicesConfigType = {
+      outDir:            outDir,
+      targetId:          dag.name,
+      pluginTaskName:    PluginLoader.derivePluginTaskName(dag),
+      splitByTaskName:   typeof state.output.splitByTaskName === 'boolean'
+        ? state.output.splitByTaskName
+        : undefined,
+      baseUrl:           state.baseUrl,
+      rateLimitMs:       state.rateLimitMs,
+      jitterMs:          state.jitterMs,
+      headers:           state.headers as Record<string, string> | undefined,
+      includeRawContent: state.includeRawContent,
+      outputSchema:      state.outputSchema,
+      onSchemaError:     state.onSchemaError as WorkerServicesConfigType['onSchemaError'],
+      cache:             state.cache != null
+        ? {
+            dir:   state.cache.dir,
+            mode:  state.cache.mode,
+            ttlMs: state.cache.ttlMs,
+          }
+        : undefined,
+    };
+
+    const systemInfo = new NodeSystemInfo();
+    const poolSize = systemInfo.recommendedWorkerCount(RecommendedWorkerCountConfigDefault);
+
+    workerContainer = new WorkerThreadContainer({
+      registryModule:  registryModuleUrl,
+      registryVersion: REGISTRY_VERSION,
+      // Round-trip through JSON to get a structurally plain `JsonObjectType`.
+      // `WorkerServicesConfigType` is JSON-serialisable by contract; the cast
+      // is sound — the type constraint is structural, not semantic.
+      servicesConfig:  JSON.parse(JSON.stringify(servicesConfig)) as JsonObjectType,
+      poolSize,
+    });
+  }
+
   // ── Services + dispatcher (proxy breaks construction circularity) ──────────
   // The Proxy holder lets the dispatcher reference `services` before the
   // services literal is built.
@@ -180,6 +243,9 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
         return (holder.current as unknown as Record<string | symbol, unknown>)[prop as string];
       },
     }),
+    ...(workerContainer !== undefined
+      ? { containers: { worker: workerContainer as unknown as DagContainerInterface<ScrapeState> } }
+      : {}),
   });
 
   // ── Derive pluginTaskName from the orchestration's first non-builtin ref ───
@@ -255,4 +321,8 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
     );
     log.warn('runDag', `${scrapeState.failedAfterRetry.length.toString()} pages failed after retry — written to failures.json`);
   }
+
+  // ── Release worker pool ────────────────────────────────────────────────────
+  // Terminates all worker threads cleanly. No-op when no containers were bound.
+  await dispatcher.destroy();
 }

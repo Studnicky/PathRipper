@@ -46,7 +46,7 @@ export default [
     files: config.files ?? TS_FILES
   })),
   {
-    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts'],
+    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts', 'workers/**/*.ts'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'module',
@@ -73,7 +73,7 @@ export default [
   // src/types/ is the canonical type-grouping barrel — exempt it from
   // group-types-in-namespace so the rule fires only on non-barrel src files.
   {
-    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts'],
+    files: ['src/**/*.ts', 'plugins/**/*.ts', 'tests/**/*.ts', 'workers/**/*.ts'],
     ignores: ['src/types/**'],
     rules: {
       'noocodec/group-types-in-namespace': 'error'

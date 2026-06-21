@@ -49,7 +49,7 @@ class BundleFixture {
 
     assert.ok(Array.isArray(dagArray), `${relPath}.dag.jsonld must be a JSON array`);
 
-    const dags = (dagArray as unknown[]).map((element, index) => {
+    const dags = (dagArray as unknown[]).map((element, _index) => {
       return DAGDocument.ofValue(element as unknown);
     });
 
@@ -57,7 +57,7 @@ class BundleFixture {
   }
 
   static rootOf(dags: DAGType[]): DAGType {
-    const allNames   = new Set(dags.map((d) => d.name));
+    const allNames   = new Set(dags.map((dag) => dag.name));
     const referenced = new Set<string>();
 
     for (const dag of dags) {
@@ -76,8 +76,8 @@ class BundleFixture {
       }
     }
 
-    const roots = dags.filter((d) => !referenced.has(d.name));
-    assert.equal(roots.length, 1, `Expected exactly 1 root DAG, found ${roots.length}: [${roots.map((d) => d.name).join(', ')}]`);
+    const roots = dags.filter((dag) => !referenced.has(dag.name));
+    assert.equal(roots.length, 1, `Expected exactly 1 root DAG, found ${roots.length}: [${roots.map((dag) => dag.name).join(', ')}]`);
 
     return roots[0] as DAGType;
   }

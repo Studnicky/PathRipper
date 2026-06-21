@@ -124,7 +124,7 @@ export class PluginLoader {
    * @param dags - The plugin DAGs to sort (any order).
    * @returns A new array in leaves-first, dependents-last order.
    */
-  private static pluginDagsInRegistrationOrder(dags: ReadonlyArray<DAGType>): DAGType[] {
+  static pluginDagsInRegistrationOrder(dags: ReadonlyArray<DAGType>): DAGType[] {
     const nameSet = new Set(dags.map((dag) => dag.name));
     const registered = new Set<string>();
     const result: DAGType[] = [];

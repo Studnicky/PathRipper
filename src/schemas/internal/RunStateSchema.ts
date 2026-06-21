@@ -262,6 +262,12 @@ const SCHEMA = {
         },
       },
     },
+    parallelWorkers: {
+      title: 'Parallel Workers',
+      description: 'When true, scatter nodes whose DAG placement declares `container: "worker"` are executed in a `WorkerThreadContainer` pool instead of in-process. Defaults to false when absent. Requires the built `dist-workers/` registry module.',
+      type: 'boolean',
+      examples: [true],
+    },
     urls: {
       title: 'Seed URLs',
       description: 'Explicit list of page URLs to scrape. When present, the run seeds `ScrapeState.urls` directly from this list — the orchestration DAG scatters over them without a crawl phase. Mutually convenient with an embedded `crawler` block: supply `urls` for a bounded, deterministic page set; supply `crawler` for link discovery.',

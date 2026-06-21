@@ -8,7 +8,6 @@ import { RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 import type { NodeContextType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import type { RipperServices } from '../../../../src/services/RipperServices.js';
 import { Taxonomy, TaxonomyError } from '../../../../plugins/aonprd/taxonomy.js';
 import type { ConceptDecl, CapabilityNode } from '../../../../plugins/aonprd/taxonomy.js';
 

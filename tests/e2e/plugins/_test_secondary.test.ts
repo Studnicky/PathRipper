@@ -21,7 +21,7 @@ import { parseSecondaryHtml } from '../../../plugins/_test_secondary/parse.task.
 const __dirname    = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR  = resolve(__dirname, 'fixtures/_test_secondary');
 
-interface SampleOutputShape {
+type SampleOutputShape = {
   _type:    string;
   url:      string;
   name:     string;

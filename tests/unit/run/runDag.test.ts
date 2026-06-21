@@ -100,7 +100,7 @@ describe('runDag', () => {
 
   it('ScrapeState.params defaults to undefined when constructed directly', () => {
     // Guard: the field must not be populated unless runDag seeds it.
-    const s = new ScrapeState();
-    assert.equal(s.params, undefined, 'params should be undefined by default');
+    const scrapeState = new ScrapeState();
+    assert.equal(scrapeState.params, undefined, 'params should be undefined by default');
   });
 });

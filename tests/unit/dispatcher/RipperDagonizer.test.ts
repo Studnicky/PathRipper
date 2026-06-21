@@ -17,7 +17,7 @@ import type { RipperServices } from '../../../src/services/RipperServices.js';
 
 // ── SpyLogger — intercepts Logger calls without touching any stream ────────────
 
-interface LogCall {
+type LogCall = {
   level:     'debug' | 'info' | 'error';
   operation: string;
   message:   string;

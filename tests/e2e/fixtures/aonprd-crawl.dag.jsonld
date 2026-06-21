@@ -104,6 +104,7 @@
       "body": {
         "dag": "aonprd:page"
       },
+      "container": "worker",
       "itemKey": "currentUrl",
       "gather": {
         "strategy": "partition",

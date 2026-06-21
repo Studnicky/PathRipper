@@ -75,7 +75,7 @@ async function startDocsServer(): Promise<{ port: number; url: string }> {
   });
 }
 
-interface DocsSectionOutput {
+type DocsSectionOutput = {
   _type: 'docs_section';
   component: string;
   title: string;

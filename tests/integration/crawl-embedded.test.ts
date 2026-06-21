@@ -14,12 +14,13 @@
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync }  from 'node:fs';
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
-import { DAGDocument, Timeout, Batch } from '@studnicky/dagonizer';
+import { DAGDocument, Timeout } from '@studnicky/dagonizer';
+import type { Batch } from '@studnicky/dagonizer';
 import { RipperDagonizer }             from '../../src/dispatcher/RipperDagonizer.js';
 import { ScrapeState }         from '../../src/state/ScrapeState.js';
 import { PluginLoader }        from '../../src/run/PluginLoader.js';

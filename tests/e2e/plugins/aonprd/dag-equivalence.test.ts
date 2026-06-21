@@ -49,7 +49,7 @@ async function runViaDAG(html: string, url: string): Promise<Record<string, unkn
   return state.output ?? { url };
 }
 
-interface FixtureCase {
+type FixtureCase = {
   /** Human-readable family label (used in test name). */
   readonly family:  string;
   /** Fixture HTML filename under tests/e2e/plugins/fixtures/aonprd/. */

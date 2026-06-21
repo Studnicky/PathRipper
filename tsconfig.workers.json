@@ -8,7 +8,7 @@
     "sourceMap": false,
     "noEmit": false
   },
-  "include": ["src/**/*.ts", "plugins/**/*.ts"],
+  "include": ["src/**/*.ts", "plugins/**/*.ts", "workers/**/*.ts"],
   "exclude": [
     "node_modules",
     "plugins/bulbapedia/**",

@@ -23,7 +23,7 @@ const OUT_DIR   = resolve(__dirname, '../../examples/wiki-docs/output');
 
 const EXPECTED_COMPONENTS = ['Pipeline', 'HtmlScraper', 'MediaWikiScraper', 'LinkLister', 'TaskRegistry'];
 
-interface RipperoniComponentOutput {
+type RipperoniComponentOutput = {
   _type: 'ripperoni_component';
   name: string;
   kind: string;

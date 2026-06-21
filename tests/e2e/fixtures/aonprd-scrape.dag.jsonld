@@ -89,6 +89,7 @@
       "body": {
         "dag": "aonprd:page"
       },
+      "container": "worker",
       "gather": {
         "strategy": "partition",
         "partitions": {

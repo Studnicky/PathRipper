@@ -13,14 +13,14 @@ import type { ConceptDecl, ConceptOutputUnion, ConceptOutputFor } from '../../pl
 
 // ─── Stub output types ──────────────────────────────────────────────────────
 
-interface StubLanguageOutput {
+type StubLanguageOutput = {
   readonly _type: 'language';
   readonly url: string;
   readonly name: string;
   readonly script: string | null;
 }
 
-interface StubMonsterOutput {
+type StubMonsterOutput = {
   readonly _type: 'monster';
   readonly url: string;
   readonly name: string;
