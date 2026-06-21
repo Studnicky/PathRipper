@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-06-21
+
+### Changed
+
+- **README condensed to a Dagonizer-style landing card** — `README.md` drops from 229 to 62 lines: a centered `og-image` banner linked to the docs site, a scoped `@studnicky/ripperoni` title with a one-line tagline, and a Documentation section linking the GitHub Pages sections that carry the detail. The outdated `pipeline`-list prose is replaced with the native two-document model (`scaffold` → `run`), the GitHub Packages install, and a CLI quick start.
+
 ## [3.1.0] - 2026-06-21
 
 ### Added
