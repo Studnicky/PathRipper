@@ -22,6 +22,7 @@ import type { HttpRetryPolicy }   from '../modules/http/httpRetryPolicy.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
 import type { RunCrawlerType }    from '../types/RunState.js';
 import type { FailurePolicyInterface } from '../resilience/FailurePolicy.js';
+import type { ReconcilerInterface }    from '../resilience/Reconciler.js';
 
 /**
  * Shared services injected into every node via `context.services`.
@@ -94,6 +95,11 @@ export type RipperServices = {
    * When absent, `DefaultFailurePolicy` (retryable→retry up to 2x, else→capture) is used.
    */
   readonly failurePolicy?: FailurePolicyInterface | undefined;
+  /**
+   * Identity reconciler for the post-crawl `reconcile:identity` phase.
+   * When absent, `DefaultReconciler` (all failures → `missing`) is used.
+   */
+  readonly reconciler?: ReconcilerInterface | undefined;
   /**
    * Dispatcher reference for nodes that need to run child DAGs. Set to the
    * same dispatcher this services bag is registered on so nodes can call
