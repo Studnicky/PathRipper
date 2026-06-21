@@ -55,10 +55,10 @@ jobs:
         shell: bash
         run: |
           test -f dist/cli/cli.js
-          test -f dist/run/runHtml.js
-          test -f dist/run/runWiki.js
+          test -f dist/run/runDag.js
           test -f dist/dispatcher/RipperDagonizer.js
-          test -f dist-workers/src/workers/parseRegistry.js
+          test -f dist/crawlers/crawl-discover.dag.jsonld
+          test -f dist-workers/workers/ParseRegistryModule.js
 
       - name: Audit production deps
         run: npm audit --omit=dev --audit-level=high
