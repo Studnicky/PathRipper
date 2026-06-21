@@ -230,13 +230,28 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
   };
   holder.current = services;
 
-  // ── Node registration ──────────────────────────────────────────────────────
+  // ── Node + plugin DAG registration ────────────────────────────────────────
+  // Order: builtins first, then plugin DAGs + nodes discovered from the root
+  // DAG's placements (new native DAG-document contract), then the orchestration
+  // bundle's own DAGs in topo order (leaves first, root last).
+  // `registerPluginsFromEntry` loads each plugin namespace's *.dag.jsonld files
+  // and calls `plugins/<ns>/index.js` register — the orchestration's own DAGs
+  // come after so they can reference the plugin DAGs already in the dispatcher.
+  // Build the set of DAG names that are in-bundle so that registerPluginsFromEntry
+  // skips them during namespace resolution (they are handled by the bundle topo-sort).
+  const bundleDagNames = new Set(dags.map((dag) => dag.name));
+
   PluginLoader.registerBuiltinNodes(dispatcher);
-  await PluginLoader.registerFromDags(dispatcher, dags, configDir);
+  await PluginLoader.registerPluginsFromEntry(dispatcher, rootDag, configDir, bundleDagNames);
 
   // ── DAG registration (topological order: leaves first, root last) ─────────
+  // Skip any DAG already registered by registerPluginsFromEntry to avoid
+  // duplicate registration errors from dagonizer.
+  const registeredNames = new Set(dispatcher.listDAGs().map((dag) => dag.name));
   for (const dag of orderedDags) {
-    dispatcher.registerDAG(dag);
+    if (!registeredNames.has(dag.name)) {
+      dispatcher.registerDAG(dag);
+    }
   }
 
   // ── Seed initial state ────────────────────────────────────────────────────
