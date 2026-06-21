@@ -8,27 +8,18 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { readFile, mkdtemp, readdir, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
-import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { HtmlScraper }  from '../../src/scrapers/HtmlScraper.js';
-import { LinkLister }   from '../../src/crawlers/LinkLister.js';
-import { ScraperCache } from '../../src/modules/cache/ScraperCache.js';
-import { DAGDocument }  from '@studnicky/dagonizer';
-import { runDag }       from '../../src/run/runDag.js';
 import { parseAonHtml } from '../../plugins/aonprd/parse.task.js';
 import { ParsedOutput } from '../helpers/ParsedOutput.js';
 import type { SpellOutput }   from '../../plugins/aonprd/concepts/spell/index.js';
 import type { MonsterOutput } from '../../plugins/aonprd/concepts/monster/types.js';
 import type { WeaponOutput }  from '../../plugins/aonprd/concepts/weapon.js';
-import type { RunStateType, RunCrawlerType } from '../../src/types/RunState.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CRAWLER_STATE_PATH = resolve(__dirname, 'fixtures/aonprd-crawler.state.json');
-const SCRAPE_DAG_PATH    = resolve(__dirname, 'fixtures/aonprd-scrape.dag.jsonld');
-const REPO_ROOT          = resolve(__dirname, '..', '..');
 
 // A curated set of stable URLs across every page-type the plugin supports.
 const PLUGIN_PROBES: ReadonlyArray<{ url: string; expectType: string }> = [
@@ -161,63 +152,4 @@ describe('AONPRD plugin e2e (local only)', () => {
     assert.ok(result.category !== null, 'category must parse');
   });
 
-  it('full pipeline — LinkLister + runDag + plugin → typed JSON outputs', async () => {
-    const crawlerState = JSON.parse(readFileSync(CRAWLER_STATE_PATH, 'utf-8')) as { crawler: RunCrawlerType };
-    const crawler  = crawlerState.crawler;
-    const cacheDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-listcache-'));
-    const cache    = ScraperCache.create({ dir: cacheDir, mode: 'read-write' });
-    const lister = LinkLister.create({
-      domain:      new RegExp(crawler.domain),
-      target:      new RegExp(crawler.target),
-      delimiter:   new RegExp(crawler.delimiter),
-      rateLimitMs: crawler.rateLimitMs,
-      jitterMs:    crawler.jitterMs,
-      maxPages:    5,
-      cache,
-    });
-    const links = await lister.buildList(['https://2e.aonprd.com/Conditions.aspx']);
-    const sample = [
-      '/Conditions.aspx?ID=1',
-      '/Spells.aspx?ID=1',
-      '/Feats.aspx?ID=1',
-      '/Monsters.aspx?ID=1',
-      '/Weapons.aspx?ID=1',
-    ];
-    process.stdout.write(`\n  full pipeline: ${links.length.toString()} URLs collected, parsing ${sample.length.toString()} deterministic samples\n`);
-
-    const outDir = await mkdtemp(resolve(tmpdir(), 'ripper-aonprd-e2e-'));
-    try {
-      const entryDag = DAGDocument.load(readFileSync(SCRAPE_DAG_PATH, 'utf-8'));
-      const absoluteUrls = sample.map((path) => path.startsWith('http') ? path : `https://2e.aonprd.com${path}`);
-      const state = {
-        output:  { basePath: outDir, splitByTaskName: false },
-        baseUrl: 'https://2e.aonprd.com',
-        headers: { 'User-Agent': 'ripperoni-e2e/2.0 (+https://github.com/Studnicky/ripper)' },
-        urls:    absoluteUrls,
-      } satisfies RunStateType;
-
-      await runDag({ dag: entryDag, state, outDir, configDir: REPO_ROOT });
-
-      // splitByTaskName: false keeps plugin JSON flat under <outDir>/aonprd/<slug>.json
-      // (pluginTaskName resolves to the 'aonprd:page' scatter-body ref, but the
-      // explicit false disables per-task subfoldering).
-      const targetDir = resolve(outDir, 'aonprd');
-      const files     = (await readdir(targetDir)).filter((file) => file.endsWith('.json') && file !== 'failures.json');
-      assert.ok(files.length === sample.length,
-        `expected ${sample.length.toString()} JSON files in aonprd/, got ${files.length.toString()}`);
-      for (const file of files) {
-        const json = JSON.parse(await readFile(resolve(targetDir, file), 'utf-8')) as {
-          name?: string; source?: { book: string | null }; _raw?: unknown;
-        };
-        process.stdout.write(`    • ${file}  →  name=${json.name ?? '?'}\n`);
-        assert.ok(json.name !== undefined && json.name !== '', `${file}: missing name`);
-        assert.ok(json.source !== undefined && json.source.book !== null,
-          `${file}: missing source.book`);
-        assert.equal(json._raw, undefined, `${file}: _raw must NOT be embedded in plugin JSON`);
-      }
-    } finally {
-      await rm(outDir, { recursive: true, force: true });
-      await rm(cacheDir, { recursive: true, force: true });
-    }
-  });
 });

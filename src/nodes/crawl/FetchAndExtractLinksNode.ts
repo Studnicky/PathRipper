@@ -4,27 +4,28 @@ import type { Element } from 'domhandler';
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import { ScraperCache }           from '../../modules/cache/ScraperCache.js';
-import type { RateLimiter }        from '../../modules/http/rateLimiter.js';
-import type { HttpRetryPolicy }    from '../../modules/http/httpRetryPolicy.js';
-import type { LinkCrawlState }     from '../../state/LinkCrawlState.js';
-import type { LinkCrawlServices }  from './Services.js';
+import { CrawlFetcher }        from './CrawlFetcher.js';
+import type { ScrapeState }    from '../../state/ScrapeState.js';
+import type { RipperServices } from '../../services/RipperServices.js';
 
 /**
- * Fetches every URL in `state.frontier` and extracts outbound links.
+ * Fetches every URL in `state.crawl.frontier` and extracts outbound links.
  *
  * @remarks
- * Processes all frontier URLs as a batch within a single node execution
- * (not a DAG fan-out), so discovered links can be written directly into
- * `state.nextFrontierRaw` and `state.discoveredRaw` without workarounds
- * for fan-out item isolation.
+ * Processes all frontier URLs as a batch within a single node execution.
+ * Discovered links are written into `state.crawl.nextFrontierRaw` and
+ * `state.crawl.discoveredRaw`. Uses `services.crawlLimiter` and
+ * `services.crawlPolicy` for rate-limiting and retry.
  *
- * Link classification uses the three regex sources on state:
+ * Link classification uses three regex sources on `state.crawl`:
  * - `domainRe`    — must match; offsite links are dropped.
  * - `delimiterRe` — must match; both traversable and target links match this.
- * - `targetRe`    — further subset: links that also match this go to
- *                   `discoveredRaw`. Links that match `delimiterRe` but NOT
- *                   `targetRe` go to `nextFrontierRaw` for the next level.
+ * - `targetRe`    — further subset: links matching this go to `discoveredRaw`.
+ *                   Links matching `delimiterRe` but NOT `targetRe` go to
+ *                   `nextFrontierRaw` for the next level.
+ *
+ * Requires `services.crawlLimiter` and `services.crawlPolicy` to be present.
+ * These are built in `runDag` when `state.crawler` is configured.
  *
  * Output ports:
  * - `success`   — at least one link (target or traversable) was found.
@@ -33,51 +34,59 @@ import type { LinkCrawlServices }  from './Services.js';
  * - `permanent` — all failures were 4xx (permanent); no retry expected.
  *
  * @category Nodes
- * @since 3.0.0
+ * @since 4.1.0
  */
 class FetchAndExtractLinksNodeImpl extends ScalarNode<
-  LinkCrawlState,
+  ScrapeState,
   'success' | 'empty' | 'error' | 'permanent',
-  LinkCrawlServices
+  RipperServices
 > {
   public readonly name = 'crawl:fetch-and-extract';
   public readonly outputs = ['success', 'empty', 'error', 'permanent'] as const;
 
   protected override async executeOne(
-    state: LinkCrawlState,
-    context: NodeContextType<LinkCrawlServices>,
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<'success' | 'empty' | 'error' | 'permanent'>> {
     const { services } = context;
-    const { log, limiter, policy, cache } = services;
+    const { log, cache } = services;
+    const headers = services.headers ?? {};
 
-    if (state.frontier.length === 0) {
+    if (state.crawl.frontier.length === 0) {
       return NodeOutputBuilder.of('empty');
     }
 
-    const domainRe    = new RegExp(state.domainRe);
-    const delimiterRe = new RegExp(state.delimiterRe);
-    const targetRe    = new RegExp(state.targetRe);
+    if (services.crawlLimiter === undefined || services.crawlPolicy === undefined) {
+      log.warn('FetchAndExtractLinksNode', 'crawlLimiter/crawlPolicy absent — crawler not configured');
+      return NodeOutputBuilder.of('error');
+    }
 
-    const visitedSet    = new Set<string>(state.visited);
-    const discoveredSet = new Set<string>(state.discovered);
+    const { crawlLimiter: limiter, crawlPolicy: policy } = services;
 
-    let transientErrors  = 0;
-    let permanentErrors  = 0;
-    let anyLinksFound    = false;
+    const domainRe    = new RegExp(state.crawl.domainRe);
+    const delimiterRe = new RegExp(state.crawl.delimiterRe);
+    const targetRe    = new RegExp(state.crawl.targetRe);
 
-    for (const url of state.frontier) {
+    const visitedSet    = new Set<string>(state.crawl.visited);
+    const discoveredSet = new Set<string>(state.crawl.discovered);
+    const maxPages      = services.crawler?.maxPages;
+
+    let transientErrors = 0;
+    let permanentErrors = 0;
+    let anyLinksFound   = false;
+
+    for (const url of state.crawl.frontier) {
       // Budget check
-      const budget = state.maxPages;
-      if (budget !== undefined && discoveredSet.size >= budget) break;
+      if (maxPages !== undefined && discoveredSet.size >= maxPages) break;
 
-      // Skip already-visited URLs (handles duplicate seeds and intra-level duplicates)
+      // Skip already-visited URLs
       if (visitedSet.has(url)) continue;
 
       let html: string;
       try {
-        html = await fetchBody(url, state.headers, cache, limiter, policy);
+        html = await CrawlFetcher.fetch(url, headers, cache, limiter, policy);
       } catch (err) {
-        const status = extractStatus(err);
+        const status = CrawlFetcher.extractStatus(err);
         log.warn('FetchAndExtractLinksNode', `Fetch failed for ${url}`, { status });
         if (status !== null && status >= 400 && status < 500) {
           permanentErrors++;
@@ -94,28 +103,28 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
         .filter((link) => delimiterRe.test(link));
 
       for (const link of allLinks) {
-        if (budget !== undefined && discoveredSet.size >= budget) break;
+        if (maxPages !== undefined && discoveredSet.size >= maxPages) break;
 
         if (targetRe.test(link)) {
           if (!discoveredSet.has(link)) {
             discoveredSet.add(link);
-            state.discoveredRaw.push(link);
+            state.crawl.discoveredRaw.push(link);
             anyLinksFound = true;
           }
         } else if (!visitedSet.has(link)) {
-          state.nextFrontierRaw.push(link);
+          state.crawl.nextFrontierRaw.push(link);
           anyLinksFound = true;
         }
       }
     }
 
     // Update visited from the set (deduplicated)
-    state.visited = Array.from(visitedSet);
+    state.crawl.visited = Array.from(visitedSet);
 
     log.debug(
       'FetchAndExtractLinksNode',
-      `Level ${state.depth.toString()}: discovered ${state.discoveredRaw.length.toString()} targets, `
-        + `${state.nextFrontierRaw.length.toString()} traversable links`,
+      `Level ${state.crawl.depth.toString()}: discovered ${state.crawl.discoveredRaw.length.toString()} targets, `
+        + `${state.crawl.nextFrontierRaw.length.toString()} traversable links`,
     );
 
     if (transientErrors > 0) return NodeOutputBuilder.of('error');
@@ -128,47 +137,6 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
 export const FetchAndExtractLinksNode = new FetchAndExtractLinksNodeImpl();
 
 // ── Private helpers ────────────────────────────────────────────────────────────
-
-const extractStatus = (err: unknown): number | null => {
-  if (err !== null && typeof err === 'object' && 'status' in err) {
-    const status = (err as { status: unknown }).status;
-    return typeof status === 'number' ? status : null;
-  }
-  return null;
-};
-
-const fetchBody = async (
-  url:     string,
-  headers: Record<string, string>,
-  cache:   ReturnType<typeof ScraperCache.create> | null,
-  limiter: RateLimiter,
-  policy:  HttpRetryPolicy,
-): Promise<string> => {
-  const networkFetch = (): Promise<string> =>
-    limiter.schedule((): Promise<string> =>
-      policy.run((): Promise<string> =>
-        fetch(url, { headers }).then((response: Response): Promise<string> => {
-          if (!response.ok) {
-            const fetchError = Object.assign(new Error(`HTTP ${response.status.toString()} for ${url}`), { status: response.status });
-            return Promise.reject(fetchError);
-          }
-          return response.text();
-        }),
-      ),
-    );
-
-  if (cache === null) return networkFetch();
-
-  const key = ScraperCache.keyFor({ method: 'GET', url, headers });
-  const hit = await cache.read(key);
-  if (hit !== null) return hit.body;
-
-  const body = await networkFetch();
-  await cache.write(key, body, {
-    url, method: 'GET', fetchedAt: new Date().toISOString(), status: 200,
-  });
-  return body;
-};
 
 const extractLinks = (html: string, baseUrl: string): string[] => {
   const root = load(html);

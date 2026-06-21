@@ -35,7 +35,7 @@ export type PipelineContextType = {
   readonly scraper?:        HtmlScraper | MediaWikiScraper | undefined;
   /** Per-target configuration object as supplied by the loaded ripper config. */
   readonly config:          Record<string, unknown>;
-  /** Optional shared content store; used by `crawl:list-targets` and any task that needs the same cache the scraper sees. */
+  /** Optional shared content store; used by crawl tasks and any task that needs the same cache the scraper sees. */
   readonly cache?:          ScraperCache | undefined;
   /**
    * Name of the first non-built-in pipeline task (the plugin step), if any.
@@ -49,7 +49,7 @@ export type PipelineContextType = {
    * Defaults to `true` when absent.
    */
   readonly splitByTaskName?: boolean | undefined;
-  /** Discovered target URLs (populated by `crawl:list-targets`); orchestrator iterates this when set. */
+  /** Discovered target URLs (populated by the crawl phase); orchestrator iterates this when set. */
   targets?: ReadonlyArray<string>;
 };
 

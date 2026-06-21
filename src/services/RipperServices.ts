@@ -17,6 +17,8 @@ import type { HtmlScraper }       from '../scrapers/HtmlScraper.js';
 import type { MediaWikiScraper }  from '../scrapers/MediaWikiScraper.js';
 import type { Logger }            from '../modules/logger/logger.js';
 import type { ScraperCache }      from '../modules/cache/ScraperCache.js';
+import type { RateLimiter }       from '../modules/http/rateLimiter.js';
+import type { HttpRetryPolicy }   from '../modules/http/httpRetryPolicy.js';
 import type { ScrapeState }       from '../state/ScrapeState.js';
 import type { RunCrawlerType }    from '../types/RunState.js';
 
@@ -47,6 +49,18 @@ export type RipperServices = {
    * Typed crawler block. Present when a crawler is configured for this run.
    */
   readonly crawler?:       RunCrawlerType | undefined;
+  /**
+   * Rate limiter for crawl HTTP requests. Built in `runDag` from
+   * `crawler.rateLimitMs` / `crawler.jitterMs` when the crawler block is
+   * present. Absent when no crawler is configured.
+   */
+  readonly crawlLimiter?:  RateLimiter | undefined;
+  /**
+   * HTTP retry policy for crawl requests. Built in `runDag` from run-state
+   * retry params when the crawler block is present. Absent when no crawler
+   * is configured.
+   */
+  readonly crawlPolicy?:   HttpRetryPolicy | undefined;
   /**
    * Additional HTTP request headers for this run.
    */

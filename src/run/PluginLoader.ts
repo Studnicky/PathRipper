@@ -25,9 +25,19 @@ import {
   JsonWriteNode,
   JsonlAppendNode,
   ValidateSchemaNode,
-  CrawlListTargetsNode,
   TerminalNode,
+  InitFrontierNode,
+  FetchAndExtractLinksNode,
+  DedupeAndEnqueueNode,
+  CrawlExhaustedNode,
 } from '../nodes/index.js';
+
+// ── Builtin crawl DAG ──────────────────────────────────────────────────────────
+
+const CRAWL_DISCOVER_DAG_PATH = resolve(
+  import.meta.dirname,
+  '../crawlers/crawl-discover.dag.jsonld',
+);
 
 // ── PluginLoader ───────────────────────────────────────────────────────────────
 
@@ -68,8 +78,16 @@ export class PluginLoader {
     dispatcher.registerNode(JsonWriteNode);
     dispatcher.registerNode(JsonlAppendNode);
     dispatcher.registerNode(ValidateSchemaNode);
-    dispatcher.registerNode(CrawlListTargetsNode);
     dispatcher.registerNode(TerminalNode);
+    // Crawl nodes (native embedded-DAG model)
+    dispatcher.registerNode(InitFrontierNode);
+    dispatcher.registerNode(FetchAndExtractLinksNode);
+    dispatcher.registerNode(DedupeAndEnqueueNode);
+    dispatcher.registerNode(CrawlExhaustedNode);
+    // Builtin crawl DAG document
+    dispatcher.registerDAG(
+      DAGDocument.load(readFileSync(CRAWL_DISCOVER_DAG_PATH, 'utf-8')),
+    );
   }
 
   /**

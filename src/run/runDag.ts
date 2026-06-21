@@ -27,6 +27,8 @@ import type { DagonizerInterface }    from '@studnicky/dagonizer';
 import { RipperDagonizer }            from '../dispatcher/RipperDagonizer.js';
 import { Logger }                     from '../modules/logger/logger.js';
 import { ScraperCache }               from '../modules/cache/ScraperCache.js';
+import { RateLimiter }                from '../modules/http/rateLimiter.js';
+import { HttpRetryPolicy }            from '../modules/http/httpRetryPolicy.js';
 import { HtmlScraper }                from '../scrapers/HtmlScraper.js';
 import { MediaWikiScraper }           from '../scrapers/MediaWikiScraper.js';
 import { ScrapeState }                from '../state/ScrapeState.js';
@@ -151,6 +153,17 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
       })
     : undefined;
 
+  // ── Build crawl HTTP primitives when crawler config is present ────────────
+  const crawlLimiter = state.crawler !== undefined
+    ? RateLimiter.create({
+        minTimeMs: state.crawler.rateLimitMs ?? 100,
+        jitterMs:  state.crawler.jitterMs    ?? 0,
+      })
+    : undefined;
+  const crawlPolicy = state.crawler !== undefined
+    ? HttpRetryPolicy.create({})
+    : undefined;
+
   // ── Ensure output directory exists ────────────────────────────────────────
   await mkdir(outDir, { recursive: true });
 
@@ -191,6 +204,8 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
     splitByTaskName,
     // Typed config fields — nodes read these directly.
     ...(state.crawler !== undefined           ? { crawler:            state.crawler }                     : {}),
+    ...(crawlLimiter  !== undefined           ? { crawlLimiter }                                          : {}),
+    ...(crawlPolicy   !== undefined           ? { crawlPolicy }                                           : {}),
     ...(state.headers !== undefined           ? { headers:            state.headers as Record<string, string> } : {}),
     ...(state.includeRawContent !== undefined ? { includeRawContent:  state.includeRawContent }           : {}),
     ...(state.outputSchema !== undefined      ? { outputSchema:       state.outputSchema }                : {}),

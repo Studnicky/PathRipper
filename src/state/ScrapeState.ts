@@ -5,6 +5,55 @@ import type { PipelinePageType } from '../types/PipelineState.js';
 import type { RunStateType }     from '../types/RunState.js';
 
 /**
+ * Crawl working state nested under `ScrapeState.crawl`.
+ *
+ * @remarks
+ * JSON-safe: regex patterns are stored as string sources (`domainRe`,
+ * `targetRe`, `delimiterRe`). Rebuild live `RegExp` objects at each use site
+ * via `new RegExp(state.crawl.domainRe)`.
+ *
+ * `frontier` holds URLs to fetch at the current depth level.
+ * `nextFrontierRaw` is the fan-in accumulator; `DedupeAndEnqueueNode`
+ * deduplicates and promotes it to `frontier`.
+ * `discovered` accumulates target-matching URLs; `discoveredRaw` is the
+ * per-level accumulator that `DedupeAndEnqueueNode` merges into `discovered`.
+ *
+ * @category State
+ * @since 4.1.0
+ */
+export type CrawlSubStateType = {
+  /** Current-level URLs to fetch. Swapped by `DedupeAndEnqueueNode`. */
+  frontier:        string[];
+  /**
+   * Fan-in accumulator for the current level's traversable links.
+   * Cleared after promotion to `frontier`.
+   */
+  nextFrontierRaw: string[];
+  /**
+   * Fan-in accumulator for target URLs found this level.
+   * Promoted to `discovered` by `DedupeAndEnqueueNode`.
+   */
+  discoveredRaw:   string[];
+  /**
+   * URLs that matched the `target` regex — the crawl result.
+   * Deduplicated across all levels.
+   */
+  discovered:      string[];
+  /** Already-visited URLs. Serializable substitute for `Set<string>`. */
+  visited:         string[];
+  /** Current depth level (0-based). */
+  depth:           number;
+  /** Maximum depth to crawl (inclusive). Undefined = unlimited. */
+  maxDepth:        number | undefined;
+  /** RegExp source for the domain filter. */
+  domainRe:        string;
+  /** RegExp source for the target filter. */
+  targetRe:        string;
+  /** RegExp source for the delimiter/traversal filter. */
+  delimiterRe:     string;
+};
+
+/**
  * Shared state flowing through every node in a scrape DAG.
  *
  * @remarks
@@ -50,6 +99,25 @@ export class ScrapeState extends NodeStateBase {
    * Each item is a URL string to fetch + process in the per-URL sub-flow.
    */
   urls: string[] = [];
+
+  /**
+   * Link-crawl working state. Present during embedded crawl DAG execution.
+   * Nodes in the `crawl:discover` DAG read/write this sub-object exclusively;
+   * the `EmbeddedDAGNode` output mapping copies `crawl.discovered` → `urls`
+   * after the child finishes.
+   */
+  crawl: CrawlSubStateType = {
+    frontier:        [],
+    nextFrontierRaw: [],
+    discoveredRaw:   [],
+    discovered:      [],
+    visited:         [],
+    depth:           0,
+    maxDepth:        undefined,
+    domainRe:        '',
+    targetRe:        '',
+    delimiterRe:     '',
+  };
 
   /**
    * Source array for MediaWiki fan-out.
@@ -160,6 +228,18 @@ export class ScrapeState extends NodeStateBase {
       failed:           [...this.failed],
       recovered:        [...this.recovered],
       failedAfterRetry: [...this.failedAfterRetry],
+      crawl: {
+        frontier:        [...this.crawl.frontier],
+        nextFrontierRaw: [...this.crawl.nextFrontierRaw],
+        discoveredRaw:   [...this.crawl.discoveredRaw],
+        discovered:      [...this.crawl.discovered],
+        visited:         [...this.crawl.visited],
+        depth:           this.crawl.depth,
+        maxDepth:        this.crawl.maxDepth ?? null,
+        domainRe:        this.crawl.domainRe,
+        targetRe:        this.crawl.targetRe,
+        delimiterRe:     this.crawl.delimiterRe,
+      },
     };
   }
 
@@ -188,5 +268,34 @@ export class ScrapeState extends NodeStateBase {
     if (Array.isArray(rec)) this.recovered = rec as string[];
     const failedAfterRetrySnap = snap['failedAfterRetry'];
     if (Array.isArray(failedAfterRetrySnap)) this.failedAfterRetry = failedAfterRetrySnap as string[];
+
+    const crawlSnap = snap['crawl'];
+    if (crawlSnap !== null && typeof crawlSnap === 'object' && !Array.isArray(crawlSnap)) {
+      const crawlRecord = crawlSnap as Record<string, unknown>;
+      const arr = (key: string): string[] => {
+        const val = crawlRecord[key];
+        return Array.isArray(val) ? (val as string[]) : [];
+      };
+      const str = (key: string): string => {
+        const val = crawlRecord[key];
+        return typeof val === 'string' ? val : '';
+      };
+      const num = (key: string): number | undefined => {
+        const val = crawlRecord[key];
+        return typeof val === 'number' ? val : undefined;
+      };
+      this.crawl = {
+        frontier:        arr('frontier'),
+        nextFrontierRaw: arr('nextFrontierRaw'),
+        discoveredRaw:   arr('discoveredRaw'),
+        discovered:      arr('discovered'),
+        visited:         arr('visited'),
+        depth:           num('depth') ?? 0,
+        maxDepth:        num('maxDepth'),
+        domainRe:        str('domainRe'),
+        targetRe:        str('targetRe'),
+        delimiterRe:     str('delimiterRe'),
+      };
+    }
   }
 }

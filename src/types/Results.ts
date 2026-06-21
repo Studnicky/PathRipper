@@ -18,21 +18,6 @@
 
 import type { WikiPageType, CategoryMemberType } from './MediaWikiScraper.js';
 
-// ─── Crawlers ─────────────────────────────────────────────────────────────────
-
-/**
- * Return type of {@link LinkLister.buildList} — a sorted, deduplicated list of
- * collected target URLs.
- *
- * @remarks Resolves after the full recursive crawl completes.
- * @example `const links: BuildListResult = lister.buildList(['https://example.com']);`
- * @category Results
- * @since 2.0.0
- * @see {@link LinkLister}
- * @group Crawlers
- */
-export type BuildListResult = Promise<string[]>;
-
 // ─── Scrapers ─────────────────────────────────────────────────────────────────
 
 /**

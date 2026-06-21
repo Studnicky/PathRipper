@@ -3,11 +3,7 @@ import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
 import { FetchAndExtractLinksNode } from '../../../../src/nodes/crawl/FetchAndExtractLinksNode.js';
-import { makeState }                from './helpers.js';
-import type { NodeContextType } from '@studnicky/dagonizer';
-import type { LinkCrawlServices }   from '../../../../src/nodes/crawl/Services.js';
-import { RateLimiter }              from '../../../../src/modules/http/rateLimiter.js';
-import { HttpRetryPolicy }          from '../../../../src/modules/http/httpRetryPolicy.js';
+import { makeState, makeHttpContext } from './helpers.js';
 
 // ── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -27,30 +23,6 @@ const PAGES: Record<string, string> = {
 
 const realFetch = globalThis.fetch;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const makeCtx = (): NodeContextType<LinkCrawlServices> => {
-  const limiter = RateLimiter.create({ minTimeMs: 0 });
-  const policy  = HttpRetryPolicy.create({ maxAttempts: 1 });
-  return {
-    dagName:  'test',
-    nodeName: 'test',
-    signal:   new AbortController().signal,
-    services: {
-      log: {
-        debug: () => {},
-        info:  () => {},
-        warn:  () => {},
-        error: () => {},
-      } as unknown as LinkCrawlServices['log'],
-      cache:      null,
-      limiter,
-      policy,
-      dispatcher: {} as LinkCrawlServices['dispatcher'],
-    },
-  };
-};
-
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('FetchAndExtractLinksNode', () => {
@@ -69,11 +41,21 @@ describe('FetchAndExtractLinksNode', () => {
 
   it('routes empty when frontier is empty', async () => {
     const state = makeState({ frontier: [] });
-    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
     assert.ok(result.has('empty'));
   });
 
-  it('collects target links into discoveredRaw', async () => {
+  it('routes error when crawlLimiter/crawlPolicy absent', async () => {
+    // No limiter/policy provided — makeTestContext without them
+    const { makeTestContext: makeCtx } = await import('./helpers.js');
+    const state = makeState({ frontier: ['https://example.com/index'] });
+    // Context has no crawlLimiter/crawlPolicy
+    const ctx = makeCtx({ startUrls: [], domain: 'example\\.com', target: '\\?id=', delimiter: 'category' });
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), ctx);
+    assert.ok(result.has('error'));
+  });
+
+  it('collects target links into crawl.discoveredRaw', async () => {
     const state = makeState({
       frontier:    ['https://example.com/category/a'],
       domainRe:    'example\\.com',
@@ -81,14 +63,14 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
 
     assert.ok(result.has('success'));
-    assert.ok(state.discoveredRaw.includes('https://example.com/category/item?id=1'));
-    assert.ok(state.discoveredRaw.includes('https://example.com/category/item?id=2'));
+    assert.ok(state.crawl.discoveredRaw.includes('https://example.com/category/item?id=1'));
+    assert.ok(state.crawl.discoveredRaw.includes('https://example.com/category/item?id=2'));
   });
 
-  it('puts traversable (non-target) links into nextFrontierRaw', async () => {
+  it('puts traversable (non-target) links into crawl.nextFrontierRaw', async () => {
     const state = makeState({
       frontier:    ['https://example.com/index'],
       domainRe:    'example\\.com',
@@ -96,11 +78,11 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
 
-    assert.ok(state.nextFrontierRaw.includes('https://example.com/category/a'));
-    assert.ok(state.nextFrontierRaw.includes('https://example.com/category/b'));
-    assert.ok(!state.nextFrontierRaw.includes('https://other.test/skip'));
+    assert.ok(state.crawl.nextFrontierRaw.includes('https://example.com/category/a'));
+    assert.ok(state.crawl.nextFrontierRaw.includes('https://example.com/category/b'));
+    assert.ok(!state.crawl.nextFrontierRaw.includes('https://other.test/skip'));
   });
 
   it('filters offsite links via domainRe', async () => {
@@ -111,9 +93,9 @@ describe('FetchAndExtractLinksNode', () => {
       targetRe:    '\\?id=',
     });
 
-    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
 
-    const allLinks = [...state.discoveredRaw, ...state.nextFrontierRaw];
+    const allLinks = [...state.crawl.discoveredRaw, ...state.crawl.nextFrontierRaw];
     for (const link of allLinks) {
       assert.match(link, /example\.com/);
     }
@@ -126,16 +108,34 @@ describe('FetchAndExtractLinksNode', () => {
       delimiterRe: 'category',
       targetRe:    '\\?id=',
     });
-    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
+    const result = await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
     assert.ok(result.has('permanent'));
   });
 
-  it('marks visited URLs after processing', async () => {
+  it('marks visited URLs in crawl.visited after processing', async () => {
     const state = makeState({
       frontier: ['https://example.com/category/a'],
     });
 
-    await FetchAndExtractLinksNode.execute(Batch.of(state), makeCtx());
-    assert.ok(state.visited.includes('https://example.com/category/a'));
+    await FetchAndExtractLinksNode.execute(Batch.of(state), makeHttpContext());
+    assert.ok(state.crawl.visited.includes('https://example.com/category/a'));
+  });
+
+  it('respects maxPages budget from services.crawler', async () => {
+    const state = makeState({
+      frontier:    ['https://example.com/category/a'],
+      domainRe:    'example\\.com',
+      delimiterRe: 'category',
+      targetRe:    '\\?id=',
+    });
+
+    // maxPages: 1 — only one discovered URL should be collected
+    const result = await FetchAndExtractLinksNode.execute(
+      Batch.of(state),
+      makeHttpContext(undefined, 1),
+    );
+
+    assert.ok(result.has('success'));
+    assert.equal(state.crawl.discoveredRaw.length, 1);
   });
 });

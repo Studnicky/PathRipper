@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { Batch } from '@studnicky/dagonizer';
 import assert from 'node:assert/strict';
 
-import { CrawlExhaustedNode } from '../../../../src/nodes/crawl/CrawlExhaustedNode.js';
+import { CrawlExhaustedNode }       from '../../../../src/nodes/crawl/CrawlExhaustedNode.js';
 import { makeTestContext, makeState } from './helpers.js';
 
 describe('CrawlExhaustedNode', () => {
@@ -12,40 +12,41 @@ describe('CrawlExhaustedNode', () => {
     assert.ok(result.has('success'));
   });
 
-  it('sorts discovered URLs with numeric-aware collation', async () => {
+  it('sorts crawl.discovered URLs with numeric-aware collation', async () => {
     const state = makeState();
-    state.discovered = [
+    state.crawl.discovered = [
       'https://example.com/item?id=10',
       'https://example.com/item?id=2',
       'https://example.com/item?id=1',
     ];
     await CrawlExhaustedNode.execute(Batch.of(state), makeTestContext());
-    assert.deepEqual(state.discovered, [
+    assert.deepEqual(state.crawl.discovered, [
       'https://example.com/item?id=1',
       'https://example.com/item?id=2',
       'https://example.com/item?id=10',
     ]);
   });
 
-  it('deduplicates discovered URLs', async () => {
+  it('deduplicates crawl.discovered URLs', async () => {
     const state = makeState();
-    state.discovered = [
+    state.crawl.discovered = [
       'https://example.com/item?id=1',
       'https://example.com/item?id=1',
       'https://example.com/item?id=2',
     ];
     await CrawlExhaustedNode.execute(Batch.of(state), makeTestContext());
-    assert.equal(state.discovered.length, 2);
+    assert.equal(state.crawl.discovered.length, 2);
   });
 
-  it('truncates to maxPages', async () => {
-    const state = makeState({ maxPages: 2 });
-    state.discovered = [
+  it('truncates to maxPages (from services.crawler)', async () => {
+    const state = makeState();
+    state.crawl.discovered = [
       'https://example.com/item?id=1',
       'https://example.com/item?id=2',
       'https://example.com/item?id=3',
     ];
-    await CrawlExhaustedNode.execute(Batch.of(state), makeTestContext());
-    assert.equal(state.discovered.length, 2);
+    const ctx = makeTestContext({ maxPages: 2 });
+    await CrawlExhaustedNode.execute(Batch.of(state), ctx);
+    assert.equal(state.crawl.discovered.length, 2);
   });
 });

@@ -1,41 +1,52 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
-import type { LinkCrawlState }   from '../../state/LinkCrawlState.js';
-import type { LinkCrawlServices } from './Services.js';
+import type { ScrapeState }    from '../../state/ScrapeState.js';
+import type { RipperServices } from '../../services/RipperServices.js';
 
 /**
- * Initialises the crawl frontier from `state.seedUrls`.
+ * Initialises the crawl frontier from `services.crawler.startUrls`.
+ *
+ * Reads crawl config from `services.crawler` and regex sources from the same,
+ * then initialises `state.crawl` ready for the first fetch-and-extract level.
  *
  * Output ports:
- * - `ready` — `state.frontier` populated; crawl can proceed.
- * - `empty` — `state.seedUrls` was empty; nothing to crawl.
+ * - `ready` — `state.crawl.frontier` populated; crawl can proceed.
+ * - `empty` — `services.crawler.startUrls` was empty or crawler not configured.
  *
  * @category Nodes
- * @since 3.0.0
+ * @since 4.1.0
  */
-class InitFrontierNodeImpl extends ScalarNode<LinkCrawlState, 'ready' | 'empty', LinkCrawlServices> {
+class InitFrontierNodeImpl extends ScalarNode<ScrapeState, 'ready' | 'empty', RipperServices> {
   public readonly name = 'crawl:init-frontier';
   public readonly outputs = ['ready', 'empty'] as const;
 
   protected override async executeOne(
-    state: LinkCrawlState,
-    context: NodeContextType<LinkCrawlServices>,
+    state:   ScrapeState,
+    context: NodeContextType<RipperServices>,
   ): Promise<NodeOutputType<'ready' | 'empty'>> {
     const { services } = context;
-    if (state.seedUrls.length === 0) {
-      services.log.warn('InitFrontierNode', 'crawl:init-frontier called with empty seedUrls');
+    const crawler = services.crawler;
+
+    if (crawler === undefined || crawler.startUrls.length === 0) {
+      services.log.warn('InitFrontierNode', 'crawl:init-frontier called with no crawler config or empty startUrls');
       return NodeOutputBuilder.of('empty');
     }
 
-    state.frontier        = [...state.seedUrls];
-    state.visited         = [];
-    state.discovered      = [];
-    state.discoveredRaw   = [];
-    state.nextFrontierRaw = [];
-    state.depth           = 0;
+    state.crawl = {
+      frontier:        [...crawler.startUrls],
+      nextFrontierRaw: [],
+      discoveredRaw:   [],
+      discovered:      [],
+      visited:         [],
+      depth:           0,
+      maxDepth:        undefined,
+      domainRe:        crawler.domain,
+      targetRe:        crawler.target,
+      delimiterRe:     crawler.delimiter,
+    };
 
-    services.log.debug('InitFrontierNode', `Frontier initialised with ${state.frontier.length.toString()} seed(s)`);
+    services.log.debug('InitFrontierNode', `Frontier initialised with ${state.crawl.frontier.length.toString()} seed(s)`);
     return NodeOutputBuilder.of('ready');
   }
 }
