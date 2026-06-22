@@ -1,0 +1,260 @@
+{
+  "$id": "https://2e.aonprd.com/Equipment",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentType.draft.json"
+    },
+    "access": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentAccess.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "activations": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/EquipmentActivation.draft.json"
+      },
+      "type": "array"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "benefit": {
+      "type": "null"
+    },
+    "bulk": {
+      "maximum": 40,
+      "minimum": 1,
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cost": {
+      "type": "null"
+    },
+    "craft_requirements": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentCraftRequirements.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "description_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "drawback": {
+      "type": "null"
+    },
+    "duration": {
+      "type": "null"
+    },
+    "effect": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "equipment_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentEquipmentId.draft.json"
+    },
+    "frequency": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentFrequency.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "hands": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentHands.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "item_level": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentItemLevel.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/EquipmentLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "onset": {
+      "type": "null"
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentPfs.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "price": {
+      "properties": {
+        "cp": {
+          "maximum": 8,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "gp": {
+          "maximum": 90000,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sp": {
+          "maximum": 5,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "requirements": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentRequirements.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "saving_throw": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentSavingThrow.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 595,
+          "minimum": 38,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 290,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/EquipmentSource.draft.json"
+      },
+      "type": "array"
+    },
+    "tiered_variants": {
+      "type": "boolean"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trigger": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentTrigger.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString_2.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    },
+    "usage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "variants": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/EquipmentVariant.draft.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "_type",
+    "access",
+    "activations",
+    "alt_edition_url",
+    "benefit",
+    "bulk",
+    "cost",
+    "craft_requirements",
+    "description_text",
+    "drawback",
+    "duration",
+    "effect",
+    "equipment_id",
+    "frequency",
+    "hands",
+    "item_level",
+    "legacy",
+    "links",
+    "name",
+    "onset",
+    "pfs",
+    "price",
+    "rarity",
+    "requirements",
+    "saving_throw",
+    "source",
+    "sources",
+    "tiered_variants",
+    "traits",
+    "trigger",
+    "url",
+    "usage",
+    "variants"
+  ],
+  "title": "Equipment",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Equipment",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/description_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

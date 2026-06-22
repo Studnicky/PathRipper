@@ -1,115 +1,101 @@
 ---
 layout: doc
 title: Plugins
-description: Squashage exposes one plugin slot — the per-run squash node. Plugins ship a NodeInterface and inject it via SquashageRun's squashNode option.
+description: Squashage plugin system — plugins/<namespace>/index.ts exports register(dispatcher) and owns classifier nodes, OntologyProjectionNode, and per-record DAG files.
 ---
 
 # Plugins
 
-Squashage has one extension slot: the per-run **squash node**. Everything else (classifiers, conflict resolution, finalize, catalog emit, provenance) is fixed by the DAG topology.
+A plugin registers classifier nodes, the squash node, and a per-record DAG. The framework discovers the plugin by namespace, calls `register(dispatcher)`, and loads the plugin's `*.dag.jsonld` files before the run starts.
 
-A squash plugin reads a classified record (`state.classification` and `state.input`) and emits typed RDF quads. The framework provides a `defaultSquashNode` that emits a single `rdf:type` triple keyed by the classification's class IRI. Real runs ship their own.
+## Plugin directory
 
-## The contract
+Plugins live under `plugins/<namespace>/` in the project root:
 
-```ts
-import type { NodeInterface } from '@studnicky/dagonizer';
-import type { SquashageServices } from '@studnicky/squashage/services/SquashageServices';
-import type { SquashageRecordState } from '@studnicky/squashage/state/SquashageRecordState';
-
-export type SquashOutput = 'squashed' | 'quarantined';
-export type SquashNodeInterface =
-  NodeInterface<SquashageRecordState, SquashOutput, SquashageServices>;
+```
+plugins/
+  myplugin/
+    index.ts              ← entrypoint
+    myplugin-record.dag.jsonld  ← per-record DAG definition
+    registry.ts           ← optional worker registry
 ```
 
-Your plugin module exports a const-literal `NodeInterface` with `name: 'squash'`. Two outputs:
+## Entrypoint
 
-- `squashed` — emit one or more quads into `state.squashedQuads` AND `services.dataset`; route to `output-provenance`.
-- `quarantined` — collect an error, set `state.quarantineBucket = 'projection'`, route to `record-quarantine`.
-
-```ts
-// plugins/aonprd/squash.ts
-import type { Quad } from '@rdfjs/types';
-import type { SquashNodeInterface } from '@studnicky/squashage/nodes/record/squashNode';
-
-export const aonprdSquashNode: SquashNodeInterface = {
-  name:    'squash',
-  outputs: ['squashed', 'quarantined'],
-  async execute(state, context) {
-    if (state.classification === null) {
-      state.collectError({
-        code:        'AONPRD_NO_CLASSIFICATION',
-        message:     'aonprd squash invoked without a classification',
-        operation:   'squash',
-        recoverable: false,
-        timestamp:   new Date().toISOString(),
-      });
-      state.quarantineBucket = 'projection';
-      return { output: 'quarantined' };
-    }
-
-    const quads: Quad[] = [];
-    // ... build quads from state.input and state.classification ...
-
-    (state as unknown as { squashedQuads: Quad[] }).squashedQuads = quads;
-    for (const q of quads) context.services.dataset.add(q);
-
-    return { output: 'squashed' };
-  },
-};
-```
-
-## Wiring
-
-The CLI builds `SquashageRun` from the config file; to register your plugin you instead construct the run directly:
+`plugins/<namespace>/index.ts` exports a single async function:
 
 ```ts
-import { SquashageRun }    from '@studnicky/squashage/SquashageRun';
-import { SquashageConfig } from '@studnicky/squashage/config/SquashageConfig';
-import { aonprdSquashNode } from './plugins/aonprd/squash.js';
-
-const config = SquashageConfig.loadFromFile('./squashage.config.json');
-
-const run = await SquashageRun.forRun({
-  target:       'aonprd',
-  targetConfig: config,
-  output:       config.output,
-  outDir:       './graphs',
-  schemasBase:  '.',
-  squashNode:   aonprdSquashNode,   // <-- inject here
-});
-
-const result = await run.execute();
+export async function register(
+  dispatcher: SquashageDagonizer<NodeStateInterface>
+): Promise<void>
 ```
 
-When `squashNode` is omitted, the run uses `defaultSquashNode`, which emits one `<record> rdf:type <classIri>` quad and nothing else. Real runs ship a domain squash node that projects the full record.
+`register()` is called once at startup. It constructs classifier node instances and the `OntologyProjectionNode`, then registers them on the dispatcher. The dispatcher is the same instance used for the full run.
 
-## What services you have
+## What `register()` does
 
-`context.services` carries the full bag:
+1. Builds a `JsonTologyOntology` from core schemas and any plugin-specific leaf schemas.
+2. Constructs classifier node instances (`DiscriminatorClassifierNode`, `UrlPatternClassifierNode`, `StructuralClassifierNode`, `ClassifyConflictNode`, etc.) from `@studnicky/squashage/classifiers`.
+3. Constructs an `OntologyProjectionNode` with the plugin-built ontology and registers it as the squash node.
+4. Registers all nodes on the dispatcher via `dispatcher.registerNode(node)`.
 
-| Field | Use it when |
-|---|---|
-| `services.factory` | minting `NamedNode` / `Literal` / `Quad` / `BlankNode` |
-| `services.dataset` | adding quads to the run-wide dataset (`services.dataset.add(quad)`) |
-| `services.builder` | convenience wrapper for building quads against the run's base IRI |
-| `services.prefixes` | resolved (instance, graph, vocabulary) base IRIs |
-| `services.iri` | `NamespaceBuilder` over the vocabulary base — `services.iri('Feat')` returns a `NamedNode` |
-| `services.graphs` | named-graph `NamedNode` map (per-run lanes) |
-| `services.ontology` | optional `JsonTologyOntology` instance — null when not configured |
-| `services.ajv` | run-wide AJV instance for per-record schema work |
-| `services.logger` | `services.logger.forComponent('aonprd-squash')` for component-scoped logging |
+`services.ontology` is always `null` at the framework level. Plugins own their ontology entirely — it is constructed inside `register()` and passed directly to `OntologyProjectionNode`.
+
+## Per-record DAG
+
+`plugins/<namespace>/<namespace>-record.dag.jsonld` is a plugin-authored DAG definition named `squashage:record`. It overrides the framework's built-in minimal DAG and chains the classifiers the plugin registers.
+
+The PluginLoader loads and registers `*.dag.jsonld` files found in the plugin directory in topological order.
+
+## Worker registry (optional)
+
+`plugins/<namespace>/registry.ts` implements `RegistryModuleInterface` to support `--workers <n>`. When `--workers` is set, the dispatcher spawns worker threads; the registry module provides the worker-side node factory.
+
+## Loading
+
+```bash
+squashage-dag build --config path/to/squashage.config.json --plugin myplugin
+```
+
+The PluginLoader discovers `plugins/myplugin/`, calls `register(dispatcher)`, then registers the plugin's `*.dag.jsonld` files. Without `--plugin`, the run uses the built-in minimal `squashage:record` DAG (json-read → generic squash → end).
+
+## Example plugin
+
+```typescript
+// plugins/myplugin/index.ts
+import type { SquashageDagonizer } from '../../src/dispatcher/SquashageDagonizer.js';
+import type { NodeStateInterface } from '@studnicky/dagonizer';
+import { DiscriminatorClassifierNode, ClassifyConflictNode } from '../../src/classifiers/index.js';
+import { OntologyProjectionNode } from '../../src/nodes/record/ontologyProjection.js';
+import { loadCoreSchemaInputs, loadExtractedSchemaInputs } from '../../src/ontology/coreSchemas.js';
+import { JsonTologyOntology } from '../../src/ontology/JsonTologyOntology.js';
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
+
+const PLUGIN_DIR = dirname(fileURLToPath(import.meta.url));
+
+export async function register(dispatcher: SquashageDagonizer<NodeStateInterface>): Promise<void> {
+  const [coreInputs, extractedInputs] = await Promise.all([
+    loadCoreSchemaInputs(),
+    loadExtractedSchemaInputs(PLUGIN_DIR),
+  ]);
+  const ontology = await JsonTologyOntology.create({
+    baseIRI:  'https://example.org/',
+    schemas:  [...coreInputs, ...extractedInputs],
+  });
+  dispatcher.registerNode(new OntologyProjectionNode(ontology));
+  dispatcher.registerNode(new DiscriminatorClassifierNode({ from: '/_type', sanitize: 'pascalCase', priority: 80 }));
+  dispatcher.registerNode(new ClassifyConflictNode({ onConflict: 'pickPriority', evidence: true }));
+}
+```
 
 ## Never throw
 
-Per the dagonizer contract, nodes don't throw. Catch every error, call `state.collectError(...)`, and route to `quarantined`. The dispatcher records the error onto state and routes through the DAG so other records in the fan-out aren't affected.
-
-## State mutation
-
-`state.squashedQuads` is `readonly` in the type but the value field is mutable through a cast — squash nodes assign a fresh array. Per-record streaming consumers iterate this slot to flush quads as they emit.
+Per the dagonizer contract, nodes don't throw. Each node catches its own errors, calls `state.collectError(...)`, and routes to the appropriate quarantine output. This keeps a single-record failure from aborting the rest of the fan-out.
 
 ## See also
 
-- [DAG](./pipeline) — where the squash node sits.
+- [DAG](./pipeline) — where classifier and squash nodes sit in the topology.
+- [Classifier cascade](./classifier-cascade) — the available classifier building blocks.
 - [Output](./output) — how `rdfjs-finalize` serializes the dataset.
-- [Provenance](./provenance) — observer hooks that fire around your node.
+- [Provenance](./provenance) — observer hooks that fire around each node.

@@ -1,69 +1,86 @@
 ---
 layout: doc
 title: Entity-link enrichment
-description: Entity-link enrichment closes the gap between records that mention each other in prose fields, densifying the graph by approximately 10x on typical AONPRD-scale corpora through prose field scanning.
+description: The href-reconcile enrichment engine resolves link-item reference nodes to canonical entities inline during the scatter, collapsing ~136k mention-nodes into direct parent→entity edges and eliminating duplicate quads.
 ---
 
 # Entity-link enrichment
 
 ## Problem framing
 
-After classification and quad emission, records that mention each other in their prose fields remain disconnected in the graph. A feat whose description says "combine with Combat Reflexes" produces no edge to the Combat Reflexes entity. A spell that "counters Fireball" stays isolated from the Fireball spell node.
+The json-tology projection layer creates a fresh skolem node for every item in an array
+property (`links`, `family_links`, …). A feat that links to the Leshy ancestry creates a
+node `instances/…/links/items-<hash>` carrying `href`, `text`, `id`, and `kind` — but
+never an edge to the canonical Leshy entity itself. Each parent that links to Leshy mints
+its own copy, so the same entity floods the graph as thousands of disconnected mention-nodes
+with no readable label.
 
-This gap means SPARQL queries like "find all Feats that mention any Spell" return nothing, and the WebGL visualisation shows sparse clusters where the domain knowledge implies dense cross-links.
-
-The entity-link enrichment task closes this gap without requiring per-record rules. It densifies the graph by approximately 10x on typical AONPRD-scale corpora purely from prose field scanning.
+The `href-reconcile` engine closes this gap. It resolves every link-item node to its
+canonical entity target and rewrites the parent edge to point there directly, collapsing
+mention-nodes out of the graph and leaving only named entity-to-entity connections.
 
 ## When it runs
 
-`enrich-entity-link` is a run-scope node placed between `process-all-records` and `rdfjs-finalize`. It runs once per run after every record clone has settled, so the entity index it builds reflects the full dataset.
+Resolution runs **inline during the scatter** — not as a post-processing pass. A lightweight
+pre-scan node (`index-entities`) runs before `process-all-records` and builds a complete
+canonical index from the input files. Each record's `ontologyProjection` node resolves its
+own link items against that index at write time. No second full pass over the data is needed.
 
-The node reads its config from the config root `enrichment.entityLink` and consumes entity IRIs + labels from `services.dataset`. It writes enrichment edge quads back into `services.dataset` for `rdfjs-finalize` to serialize.
+`enrich-entity-link` runs after the scatter settles and logs the summary counts.
+
+## DAG topology
+
+```
+walk-input
+    ──walked──► index-entities   (pre-scan: builds canonical entity index)
+                    ──indexed/skipped──► process-all-records
+                                              (each record: classify → project → resolve inline)
+                        ──all-success/partial──► enrich-entity-link   (confirm + log)
+                                                      ──enriched/skipped──► ontology-emit
+```
 
 See [DAG](./pipeline) for the full run-scope topology.
 
-## State machine
+## How resolution works
 
-The node executes once per run as an **end-of-run enrichment phase**, after all per-record classification and squash nodes have settled and before `rdfjs-finalize` serialises the dataset.
+**Phase 1 — pre-scan (`index-entities` node).**  
+Scans all input files using only the `SubjectIriPolicy` (no RDF projection). For each
+record it reads the configured URL pointer (e.g. `/url`), applies the same sanitize
+strategy the main projection uses, and stores `hrefTail → canonicalIri` in `services.entityIndex`.
+Only records whose canonical IRI falls under `canonicalBase` are indexed; hash-fallback
+IRIs are excluded. The complete index is typically ~20k entries and takes 2–3 seconds.
 
-```
-all record clones complete
-          |
-          v
-  [ dataset population ]   <- squash node emitted quads for every record
-          |
-          v
-  [ index build (once) ]   <- scan dataset for typed instances in linkAgainst set
-          |                   map caseFolded(label) -> instanceIri
-          |
-          v  for each typed instance subject:
-  [ prose field scan ]     <- read <vocabBase><field> literals from dataset
-          |
-          v  for each sliding-window token span (1-5 tokens):
-  [ span lookup ]          <- caseFolded span in index?
-          |                   yes -> emit <subject> <edgeIri> <linkTarget> quad
-          |                   no  -> skip
-          v
-  [ rdfjs-finalize ]       <- serialize dataset with enrichment edges included
-```
+**Phase 2 — inline resolution (per-record, inside `ontologyProjection`).**  
+After json-tology produces the raw quad set for a record, the resolver scans for quads
+where the predicate is one of the configured `linkPredicates`. For each such edge whose
+object is a link-item node, the resolver reads the item's `hrefPredicate` value, looks it
+up in the canonical index, and either:
 
-**Why deterministic:** winkNLP's tokenizer is pattern-based (no model sampling). The index is built once from the dataset state at enrichment time. The sliding-window span generation is a pure function. Same input + same config produces identical edges across runs.
+- **Resolved** → rewrites `<parent> <linkPred> <itemNode>` to `<parent> <linkPred> <canonicalIri>` and drops all quads whose subject is the item node. The skolem node is never written.
+- **Unresolved** (off-dataset link) → keeps the item node and its `text` property so the viewer can label it.
+
+**Phase 3 — in-pass dedup.**  
+When `dedupeTriples: "inPass"` is configured, a `Set<string>` in `services.dedupSet` tracks
+quad signatures across all records. Quads already written are silently skipped, eliminating
+the exact duplicate triples that arise when multiple parents link to the same off-dataset
+target.
 
 ## Configuration
 
 Add an `enrichment` block at the config root, sibling to `classification` and `output`:
 
-```jsonc
+```json
 {
-  "input":  { "basePath": "./input", "format": "json" },
-  "output": { "type": "file", "path": "./graphs/aonprd.trig", "format": "trig" },
   "enrichment": {
     "entityLink": {
-      "engine":        "winknlp",
-      "fields":        ["description", "summary", "traits_text"],
-      "edgeIri":       "aonprd:mentions",
-      "linkAgainst":   ["aonprd:Feat", "aonprd:Spell", "aonprd:Trait"],
-      "minConfidence": 0.85
+      "engine":         "href-reconcile",
+      "linkPredicates": [
+        "https://2e.aonprd.com/links",
+        "https://2e.aonprd.com/family_links"
+      ],
+      "hrefPredicate":  "https://2e.aonprd.com/href",
+      "canonicalBase":  "https://squashage.dev/instance/aonprd/",
+      "dedupeTriples":  "inPass"
     }
   }
 }
@@ -73,73 +90,63 @@ Add an `enrichment` block at the config root, sibling to `classification` and `o
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `engine` | `"winknlp"` | yes | - | NLP engine. Only `"winknlp"` is supported. |
-| `fields` | `string[]` | no | `["description"]` | Prose predicate local names to scan (resolved as `<vocabBase><field>`). |
-| `edgeIri` | `string` | yes | - | Full IRI or prefixed name of the edge predicate to emit. |
-| `linkAgainst` | `string[]` | yes | - | Allow-list of `rdf:type` IRIs. Only instances with one of these types are indexed. |
-| `minConfidence` | `number` | no | `0.85` | Threshold in `[0, 1]`. winkNLP token matches are binary (1.0), so values above 1.0 suppress all edges. |
+| `engine` | `"href-reconcile"` | yes | — | Resolution engine. |
+| `linkPredicates` | `string[]` | yes | — | Predicate IRIs that connect a canonical entity to a link-item node. |
+| `hrefPredicate` | `string` | yes | — | Predicate IRI on link-item nodes carrying the resolvable relative href. |
+| `canonicalBase` | `string` | yes | — | IRI prefix shared by all canonical entities (must end with `/`). |
+| `dedupeTriples` | `"inPass" \| "sortUnique" \| false` | no | `"inPass"` | Triple deduplication mode. `"inPass"` uses an in-memory hash set; `"sortUnique"` runs an external sort-unique pass; `false` disables dedup. |
 
-## Worked example (AONPRD-style)
+## Worked example (AONPRD)
 
-### Input records
+### Before enrichment
 
-`feat-power-attack.json`:
-```json
-{
-  "_type": "feat",
-  "name": "Power Attack",
-  "description": "You can combine this with Combat Reflexes to guard the battlefield."
-}
-```
-
-`feat-combat-reflexes.json`:
-```json
-{
-  "_type": "feat",
-  "name": "Combat Reflexes",
-  "description": "Pairs well after a Power Attack."
-}
-```
-
-### Plugin output (before enrichment)
-
-The squash plugin emits these quads (among others):
+The Leshy ancestry entity links to the Concealed condition:
 
 ```turtle
-<instances:Feats.aspx?ID=750> rdf:type      <vocab:Feat> ;
-                               <vocab:name>  "Power Attack" ;
-                               <vocab:description> "You can combine this with Combat Reflexes..." .
+# canonical entity
+<squashage.dev/instance/aonprd/Ancestries.aspx?ID=14>
+    aonprd:links  <2e.aonprd.com/instances/…/links/items-abc123> .
 
-<instances:Feats.aspx?ID=80>  rdf:type      <vocab:Feat> ;
-                               <vocab:name>  "Combat Reflexes" ;
-                               <vocab:description> "Pairs well after a Power Attack." .
+# link-item skolem node
+<2e.aonprd.com/instances/…/links/items-abc123>
+    aonprd:href  "Conditions.aspx?ID=4" ;
+    aonprd:text  "Concealed" .
 ```
 
-### After entity-link enrichment
+### After enrichment
 
 ```turtle
-<instances:Feats.aspx?ID=750> <vocab:mentions> <instances:Feats.aspx?ID=80> .
-<instances:Feats.aspx?ID=80>  <vocab:mentions> <instances:Feats.aspx?ID=750> .
+# direct canonical edge — skolem node gone
+<squashage.dev/instance/aonprd/Ancestries.aspx?ID=14>
+    aonprd:links  <squashage.dev/instance/aonprd/Conditions.aspx?ID=4> .
 ```
+
+## Results on the AONPRD dataset
+
+| Metric | Before | After |
+|---|---|---|
+| Link edges → canonical entity | 0 | **370,649** |
+| Link edges → unresolved skolem | — | 142,231 (off-dataset) |
+| Duplicate quad lines | 427,606 | **0** |
+| Total quads | 4,614,923 | 1,741,985 |
 
 ## Edge cases
 
-### No `linkAgainst` types match
+### Off-dataset hrefs
 
-If `linkAgainst` lists a type IRI that no instance in the dataset has, the index will be empty and the task emits zero edges. This is not an error.
+Links to page types not present in the input dataset (e.g. `Articles.aspx`, `NPCs.aspx`)
+remain as unresolved link-item nodes. They keep their `text` property so the visualiser
+can display a label. This is correct — open-world; the edge simply doesn't resolve.
 
-### Stop-word and single-token matches
+### Same entity, different editions
 
-Single tokens like "a", "the", "feat" may superficially match entity names. In practice this is rare because entity names are multi-word (2+ tokens). The sliding-window span extraction generates 2-5 token combinations, which is where most cross-reference matches occur. Single-token matches against entity names that happen to be one word are valid and expected.
+AONPRD publishes both legacy and remaster editions of some entities under distinct IDs
+(e.g. `Ancestries.aspx?ID=14` vs `Ancestries.aspx?ID=65` for Leshy). Both are indexed as
+separate canonical entities and resolve correctly because the key is the full href tail
+including the ID, not just the name.
 
-### Multi-token entity names
+### Dedup accuracy at concurrency > 1
 
-Multi-word names like "Combat Reflexes" or "Power Attack" are matched by 2-token sliding windows. The index keys are always the full case-folded label, so a 2-token span must exactly match the full name to produce an edge.
-
-### Prose field not emitted by plugin
-
-The node reads prose from dataset predicates: `<vocabBase><fieldName>`. If the squash plugin does not emit a `<vocabBase>description` literal for a subject, that subject's description field produces zero spans. Ensure the plugin emits the relevant prose predicates to the shared dataset before `enrich-entity-link` runs.
-
-### Index is frozen at enrichment time
-
-The index is built exactly once per run, from the dataset as it stands when `enrich-entity-link` first executes. Instances added to the dataset after the index build (which cannot happen in normal sequential execution) are not reflected in the edge output. This preserves determinism.
+The `"inPass"` dedup set is shared across concurrent record projections. At `concurrency > 1`,
+two projections may race on the set and both emit the same quad. For exact dedup, run at
+`concurrency: 1` or use `"sortUnique"`.

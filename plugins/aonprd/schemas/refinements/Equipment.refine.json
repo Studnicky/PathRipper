@@ -1,0 +1,53 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Equipment",
+  "rdfsLabel": "name",
+  "rdfsComment": "description_text",
+  "promoteIri": [
+    "/url"
+  ],
+  "closedEnum": [
+    "rarity"
+  ],
+  "openVocabulary": [
+    "access",
+    "craft_requirements",
+    "frequency",
+    "hands",
+    "pfs",
+    "requirements",
+    "saving_throw",
+    "trigger",
+    "name",
+    "description_text",
+    "description_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "range": {
+    "rarity": "Rarity"
+  },
+  "drop": [
+    "/raw_fields",
+    "/trait_ids",
+    "/description_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "parents": [
+    "ContentEntry"
+  ],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

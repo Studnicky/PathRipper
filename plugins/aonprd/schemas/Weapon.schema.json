@@ -1,0 +1,413 @@
+{
+  "$id": "https://2e.aonprd.com/Weapon",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ammunition": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bulk": {
+      "maximum": 3,
+      "minimum": 1,
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "category": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponCategory.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "critical_specialization": {
+      "properties": {
+        "by_group": {
+          "properties": {
+            "Axe": {
+              "enum": [
+                "Choose one creature adjacent to the initial target and within reach. If its AC is lower than your attack roll result for the critical hit, you deal damage to that creature equal to the result of the weapon damage die you rolled (including extra dice for its"
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Bomb": {
+              "enum": [
+                "Increase the radius of the bomb's splash damage (if any) to 10 feet."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Bow": {
+              "enum": [
+                "If the target of the critical hit is adjacent to a surface, it gets stuck to that surface by the missile. The target is immobilized and must spend an Interact action to attempt a DC 10 Athletics check to pull the missile free; it can't move from its space until it succeeds. The creature doesn't become stuck if it is incorporeal, is liquid (like a water elemental or some oozes), or could otherwise escape without effort."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Brawling": {
+              "enum": [
+                "The target must succeed at a Fortitude save against your class DC or be slowed 1 until the end of your next turn."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Club": {
+              "enum": [
+                "You knock the target away from you up to 10 feet (you choose the distance). This is forced movement."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Crossbow": {
+              "enum": [
+                "The target takes 1d8 persistent bleed damage. You gain an item bonus to this bleed damage equal to the weapon's item bonus to attack rolls."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Dart": {
+              "enum": [
+                "The target takes 1d6 persistent bleed damage. You gain an item bonus to this bleed damage equal to the weapon's item bonus to attack rolls."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Firearm": {
+              "enum": [
+                "The target must succeed at a Fortitude save against your class DC or be stunned 1."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Flail": {
+              "enum": [
+                "The target is knocked prone unless they succeed at a Reflex save against your class DC."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Hammer": {
+              "enum": [
+                "The target is knocked prone unless they succeed at a Fortitude save against your class DC."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Knife": {
+              "enum": [
+                "The target takes 1d6 persistent bleed damage. You gain an item bonus to this bleed damage equal to the weapon's item bonus to attack rolls."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Pick": {
+              "enum": [
+                "The weapon viciously pierces the target, who takes 2 additional damage per weapon damage die."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Polearm": {
+              "enum": [
+                "The target is moved 5 feet in a direction of your choice. This is forced movement."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Shield": {
+              "enum": [
+                "You knock the target back from you 5 feet. This is forced movement."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Sling": {
+              "enum": [
+                "The target must succeed at a Fortitude save against your class DC or be stunned 1."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Spear": {
+              "enum": [
+                "The weapon pierces the target, weakening its attacks. The target is clumsy 1 until the start of your next turn."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            },
+            "Sword": {
+              "enum": [
+                "The target is made off-balance by your attack, becoming off-guard until the start of your next turn."
+              ],
+              "type": "string",
+              "x-squashage-closed-enum": true
+            }
+          },
+          "type": "object"
+        },
+        "source": {
+          "enum": [
+            "Core Rulebook pg. 283"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": "object"
+    },
+    "damage": {
+      "properties": {
+        "dice": {
+          "enum": [
+            "1d10",
+            "1d12",
+            "1d4",
+            "1d6",
+            "1d8"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "rider": {
+          "enum": [
+            "+ 1d4 F",
+            "modular",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        },
+        "type": {
+          "enum": [
+            "B",
+            "P",
+            "S",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "description_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "favored_weapon": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/WeaponFavoredWeapon.draft.json"
+      },
+      "type": "array"
+    },
+    "group": {
+      "properties": {
+        "group_id": {
+          "maximum": 17,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "hands": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponHands.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/WeaponLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponPfs.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "price": {
+      "properties": {
+        "cp": {
+          "maximum": 5,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "gp": {
+          "maximum": 550,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sp": {
+          "maximum": 9,
+          "minimum": 1,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "range": {
+      "type": "null"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "reload": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponReload.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 337,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 276,
+          "minimum": 2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/WeaponSource.draft.json"
+      },
+      "type": "array"
+    },
+    "specific_magic_weapons": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/WeaponSpecificMagicWeapon.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    },
+    "weapon_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponWeaponId.draft.json"
+    },
+    "weapon_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/WeaponWeaponType.draft.json",
+      "x-squashage-open-vocab": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "ammunition",
+    "bulk",
+    "category",
+    "critical_specialization",
+    "damage",
+    "description_text",
+    "favored_weapon",
+    "group",
+    "hands",
+    "legacy",
+    "links",
+    "name",
+    "pfs",
+    "price",
+    "range",
+    "rarity",
+    "reload",
+    "source",
+    "sources",
+    "specific_magic_weapons",
+    "traits",
+    "url",
+    "weapon_id",
+    "weapon_type"
+  ],
+  "title": "Weapon",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Weapon",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/description_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

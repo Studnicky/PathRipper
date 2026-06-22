@@ -71,6 +71,7 @@ Nodes read whichever fields they need via `context.services.<x>`.
 ```mermaid
 flowchart TB
   walk[walk-input]
+  index[index-entities]
   scatter{{process-all-records\nscatter dag=squashage:record\ngather=squashage:record-fold}}
   enrich[enrich-entity-link]
   ont[ontology-emit]
@@ -78,8 +79,10 @@ flowchart TB
   catalog[catalog-emit]
   END([run-end])
 
-  walk -->|walked|     scatter
-  walk -->|empty|      finalize
+  walk -->|walked|   index
+  walk -->|empty|    finalize
+  index -->|indexed| scatter
+  index -->|skipped| scatter
   scatter -->|all-success| enrich
   scatter -->|partial|     enrich
   scatter -->|all-error|   finalize
@@ -94,42 +97,20 @@ flowchart TB
   catalog --> END
 ```
 
-`process-all-records` is a native `ScatterNode`. It reads `locators` from `SquashageRunState`, runs `squashage:record` once per locator as the scatter body (`itemKey: currentLocator`), and gathers the record clones back through the `squashage:record-fold` strategy. Concurrency comes from the config root `concurrency` knob.
+`index-entities` runs once before the scatter. It reads the `enrichment.entityLink` config and builds the canonical entity index used by the href-reconcile enrichment engine. When no `enrichment.entityLink` config is present, it routes `skipped` directly to the scatter. `process-all-records` is a native `ScatterNode`. It reads `locators` from `SquashageRunState`, runs `squashage:record` once per locator as the scatter body (`itemKey: currentLocator`), and gathers the record clones back through the `squashage:record-fold` strategy. Concurrency comes from the config root `concurrency` knob.
 
 ## Per-record DAG
 
 ```mermaid
 flowchart TB
-  init[record-init]
   read[json-read]
-  disc[classify:discriminator]
-  src[classify:source]
-  url[classify:url-pattern]
-  struct[classify:structural]
-  rules[classify:rules]
-  schema[classify:schema]
-  shacl[classify:shacl-shape]
-  fp[classify:property-fingerprint]
-  nlp[classify:winknlp-entities]
-  ontc[classify:ontology]
-  narrow[classify:taxonomic-narrowing]
-  gate[record-health-gate]
-  conflict[classify-conflict]
   squash[squash]
   prov[output-provenance]
   q[record-quarantine]
   END([end])
 
-  init -->|done|        read
-  read -->|loaded|      disc
+  read -->|loaded|      squash
   read -->|quarantined| q
-  disc --> src --> url --> struct --> rules --> schema --> shacl --> fp --> nlp --> ontc --> narrow --> gate
-  gate -->|has-proposals|    conflict
-  gate -->|generic-fallback| squash
-  gate -->|errors|           q
-  conflict -->|resolved| squash
-  conflict -->|tie|      q
-  conflict -->|unknown|  q
   squash -->|squashed|    prov
   squash -->|quarantined| q
   prov -->|written| END
@@ -137,7 +118,7 @@ flowchart TB
   q --> END
 ```
 
-The record DAG entrypoint is `record-init`, which routes to `json-read`. The classifier nodes run in chain order. Each classifier writes its proposal to `state.proposals[<classifier-name>]` — a named slot, so writes never collide. The two ontology-aware classifiers run last because they read the other classifiers' proposals:
+This is the framework's built-in minimal per-record DAG. `json-read` is the DAG entrypoint; it reads the record and routes either to `squash` or `record-quarantine`. Plugins supply `squashage:record` (registered under the same name), which overrides this built-in and chains their own classifier nodes between `json-read` and `squash`. The classifier nodes run in chain order. Each classifier writes its proposal to `state.proposals[<classifier-name>]` — a named slot, so writes never collide. The two ontology-aware classifiers run last because they read the other classifiers' proposals:
 
 - `classify:ontology` — validates other classifiers' votes against the configured class map; emits `__validation__` sentinels for unknown class names.
 - `classify:taxonomic-narrowing` — drops supertype proposals when a more-specific subtype is also present, via OWL `subClassOf` transitive closure.

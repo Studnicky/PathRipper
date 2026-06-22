@@ -1,0 +1,142 @@
+{
+  "$id": "https://2e.aonprd.com/Trait",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Vocabulary.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/TraitType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-squashage-open-vocab": true
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "category": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/TraitCategory.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "TraitCategory"
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/TraitEntityId.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/TraitLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "type": "null"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ArmorRarity.draft.json"
+    },
+    "raw_fields": {
+      "type": "object"
+    },
+    "sections": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 637,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "source_id": {
+          "maximum": 294,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/TraitSource.draft.json"
+      },
+      "type": "array"
+    },
+    "trait_ids": {
+      "type": "object"
+    },
+    "traits": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "body_text",
+    "category",
+    "entity_id",
+    "legacy",
+    "links",
+    "name",
+    "pfs",
+    "rarity",
+    "raw_fields",
+    "sections",
+    "source",
+    "sources",
+    "trait_ids",
+    "traits",
+    "url"
+  ],
+  "title": "Trait",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Trait",
+  "x-squashage-predicate-override": {
+    "category": "skos:broader"
+  },
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/body_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

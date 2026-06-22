@@ -100,7 +100,7 @@ export class ShaclShapeClassifierNode extends ScalarNode<SquashageRecordState, O
       const cause = err instanceof Error ? err : undefined;
       throw OutputConfigError.create(
         `classify:shacl-shape: cannot read shape file at ${absPath}: ${cause?.message ?? String(err)}`,
-        { cause, metadata: { shapesFrom: config.shapesFrom, absPath } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { shapesFrom: config.shapesFrom, absPath } },
       );
     }
     const { quads } = await Parser.parse(text, { format: 'turtle' });

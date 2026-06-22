@@ -1,0 +1,253 @@
+{
+  "$id": "https://2e.aonprd.com/Ancestry",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/AncestryType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/AncestryEntityId.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/AncestryLink.draft.json"
+      },
+      "type": "array"
+    },
+    "mechanics": {
+      "properties": {
+        "attribute_boosts": {
+          "items": {
+            "enum": [
+              "Charisma",
+              "Constitution",
+              "Dexterity",
+              "Free",
+              "Intelligence",
+              "Strength",
+              "Two free ability boosts",
+              "Wisdom"
+            ],
+            "type": "string",
+            "x-squashage-closed-enum": true
+          },
+          "type": "array"
+        },
+        "attribute_flaws": {
+          "items": {
+            "enum": [
+              "Charisma",
+              "Constitution",
+              "Dexterity",
+              "Intelligence",
+              "Strength",
+              "Wisdom"
+            ],
+            "type": "string",
+            "x-squashage-closed-enum": true
+          },
+          "type": "array"
+        },
+        "granted": {
+          "items": {
+            "enum": [
+              "Clan Dagger"
+            ],
+            "type": "string",
+            "x-squashage-closed-enum": true
+          },
+          "type": "array"
+        },
+        "hit_points": {
+          "maximum": 10,
+          "minimum": 6,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "languages": {
+          "properties": {
+            "bonus_choice": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "fixed": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "raw": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "size": {
+          "enum": [
+            "Choose the size appropriate to your animal: Tiny, Small, Medium, or Large",
+            "Large",
+            "Medium",
+            "Medium or Small",
+            "Small",
+            "Tiny",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        },
+        "speed": {
+          "maximum": 30,
+          "minimum": 5,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "vision": {
+          "enum": [
+            "Darkvision",
+            "Low-Light Vision",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": "object"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/AncestryPfs.draft.json",
+      "x-squashage-closed-enum": true
+    },
+    "popular_anathema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "popular_edicts": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "sections": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/AncestrySection.draft.json"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 393,
+          "minimum": 9,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 293,
+          "minimum": 29,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/AncestrySource.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString_2.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "body_text",
+    "entity_id",
+    "legacy",
+    "links",
+    "mechanics",
+    "name",
+    "pfs",
+    "popular_anathema",
+    "popular_edicts",
+    "rarity",
+    "sections",
+    "source",
+    "sources",
+    "traits",
+    "url"
+  ],
+  "title": "Ancestry",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Ancestry",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/body_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

@@ -33,7 +33,7 @@ import type {
 } from './JsonLdGraph.js';
 
 const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
-const NAME_LOCAL_NAMES = ['name', 'title', 'label'] as const;
+const NAME_LOCAL_NAMES = ['name', 'title', 'label', 'heading', 'text'] as const;
 
 interface WorkingNodeInterface {
   id:         string;

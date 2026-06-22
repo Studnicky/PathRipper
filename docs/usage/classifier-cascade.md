@@ -12,7 +12,7 @@ The cascade is deterministic: same config + same record produce identical propos
 
 ## Opt-in
 
-Each classifier has a config slot under `classification.<key>`. When the slot is present, the corresponding classifier is instantiated and registered on the dispatcher. When the slot is absent, a no-op classifier is registered under the same name so the static DAG topology still resolves.
+Classifiers are registered by the plugin via `register(dispatcher)`. Each classifier is a generic `ScalarNode` subclass instantiated with domain config in the plugin. The plugin also authors its own per-record DAG (`*.dag.jsonld`) that chains only the classifiers it needs.
 
 The nine parallel classifiers + two sequential classifiers + the conflict resolver are wired in `SquashageRun.forRun(...)` from the matching config slots.
 

@@ -1,0 +1,81 @@
+{
+  "name": "aonprd",
+  "input":  { "basePath": "/Users/studs/Workspace/ripperoni/output/aonprd/aonprd/aonprd:parse", "format": "json" },
+  "output": { "kind": "file", "path": "./graphs/aonprd/aonprd.nq", "format": "nquads", "encoding": "stream" },
+  "concurrency": 16,
+  "graphs": {
+    "default":       "https://squashage.dev/graph/aonprd/default",
+    "Action":        "https://squashage.dev/graph/aonprd/Action",
+    "Ancestry":      "https://squashage.dev/graph/aonprd/Ancestry",
+    "Armor":         "https://squashage.dev/graph/aonprd/Armor",
+    "Background":    "https://squashage.dev/graph/aonprd/Background",
+    "Class":         "https://squashage.dev/graph/aonprd/Class",
+    "Condition":     "https://squashage.dev/graph/aonprd/Condition",
+    "Equipment":     "https://squashage.dev/graph/aonprd/Equipment",
+    "Feat":          "https://squashage.dev/graph/aonprd/Feat",
+    "Generic":       "https://squashage.dev/graph/aonprd/Generic",
+    "Hazard":        "https://squashage.dev/graph/aonprd/Hazard",
+    "Monster":       "https://squashage.dev/graph/aonprd/Monster",
+    "MonsterFamily": "https://squashage.dev/graph/aonprd/MonsterFamily",
+    "Rule":          "https://squashage.dev/graph/aonprd/Rule",
+    "Spell":         "https://squashage.dev/graph/aonprd/Spell",
+    "Trait":         "https://squashage.dev/graph/aonprd/Trait",
+    "Unknown":       "https://squashage.dev/graph/aonprd/Unknown",
+    "Weapon":        "https://squashage.dev/graph/aonprd/Weapon"
+  },
+  "subjectIri": {
+    "from":     "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "enrichment": {
+    "entityLink": {
+      "engine":         "href-reconcile",
+      "linkPredicates": [
+        "https://2e.aonprd.com/links",
+        "https://2e.aonprd.com/family_links"
+      ],
+      "hrefPredicate":  "https://2e.aonprd.com/href",
+      "canonicalBase":  "https://squashage.dev/instance/aonprd/",
+      "dedupeTriples":  "inPass"
+    }
+  },
+  "classification": {
+    "conflict": { "onConflict": "pickPriority", "evidence": true },
+    "discriminator": { "from": "/_type", "sanitize": "pascalCase", "priority": 80 },
+    "urlPattern": {
+      "patterns": [
+        { "className": "Feat",          "match": "/Feats\\.aspx",           "priority": 35 },
+        { "className": "Spell",         "match": "/Spells\\.aspx",          "priority": 35 },
+        { "className": "Monster",       "match": "/Monsters\\.aspx",        "priority": 35 },
+        { "className": "MonsterFamily", "match": "/MonsterFamilies\\.aspx", "priority": 35 },
+        { "className": "Action",        "match": "/Actions\\.aspx",         "priority": 35 },
+        { "className": "Weapon",        "match": "/Weapons\\.aspx",         "priority": 35 },
+        { "className": "Armor",         "match": "/Armor\\.aspx",           "priority": 35 },
+        { "className": "Equipment",     "match": "/Equipment\\.aspx",       "priority": 35 },
+        { "className": "Ancestry",      "match": "/Ancestries\\.aspx",      "priority": 35 },
+        { "className": "Class",         "match": "/Classes\\.aspx",         "priority": 35 },
+        { "className": "Background",    "match": "/Backgrounds\\.aspx",     "priority": 35 },
+        { "className": "Condition",     "match": "/Conditions\\.aspx",      "priority": 35 },
+        { "className": "Trait",         "match": "/Traits\\.aspx",          "priority": 35 },
+        { "className": "Hazard",        "match": "/Hazards\\.aspx",         "priority": 35 }
+      ]
+    },
+    "structural": [
+      { "className": "Feat",          "priority": 20, "predicate": { "path": "/_type", "equals": "feat" },          "reasons": ["_type=feat"] },
+      { "className": "Spell",         "priority": 20, "predicate": { "path": "/_type", "equals": "spell" },         "reasons": ["_type=spell"] },
+      { "className": "Monster",       "priority": 20, "predicate": { "path": "/_type", "equals": "monster" },       "reasons": ["_type=monster"] },
+      { "className": "Action",        "priority": 20, "predicate": { "path": "/_type", "equals": "action" },        "reasons": ["_type=action"] },
+      { "className": "Weapon",        "priority": 20, "predicate": { "path": "/_type", "equals": "weapon" },        "reasons": ["_type=weapon"] },
+      { "className": "Armor",         "priority": 20, "predicate": { "path": "/_type", "equals": "armor" },         "reasons": ["_type=armor"] },
+      { "className": "Equipment",     "priority": 20, "predicate": { "path": "/_type", "equals": "equipment" },     "reasons": ["_type=equipment"] },
+      { "className": "Ancestry",      "priority": 20, "predicate": { "path": "/_type", "equals": "ancestry" },      "reasons": ["_type=ancestry"] },
+      { "className": "Class",         "priority": 20, "predicate": { "path": "/_type", "equals": "class" },         "reasons": ["_type=class"] },
+      { "className": "Background",    "priority": 20, "predicate": { "path": "/_type", "equals": "background" },    "reasons": ["_type=background"] },
+      { "className": "Condition",     "priority": 20, "predicate": { "path": "/_type", "equals": "condition" },     "reasons": ["_type=condition"] },
+      { "className": "Trait",         "priority": 20, "predicate": { "path": "/_type", "equals": "trait" },         "reasons": ["_type=trait"] },
+      { "className": "Hazard",        "priority": 20, "predicate": { "path": "/_type", "equals": "hazard" },        "reasons": ["_type=hazard"] },
+      { "className": "Generic",       "priority": 10, "predicate": { "path": "/_type", "equals": "generic" },       "reasons": ["_type=generic"] }
+    ]
+  }
+}

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { NodeStateBase, Batch, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
+import { NodeStateBase, RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 import { DAGBuilder } from '@studnicky/dagonizer/builder';
-import type { NodeInterface, RoutedBatchType } from '@studnicky/dagonizer';
+import type { NodeInterface, RoutedBatchType , Batch} from '@studnicky/dagonizer';
 
 import { SquashageDagonizer } from '../../../src/dispatcher/SquashageDagonizer.js';
 import { SquashageServices } from '../../../src/services/SquashageServices.js';

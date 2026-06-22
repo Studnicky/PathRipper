@@ -223,5 +223,5 @@ Returns a new array — never mutates the input.
 
 - [Architecture — layered taxonomic model](../architecture#layered-taxonomic-model) — Layer 0 / Layer N split and open-world design.
 - [Classifier cascade](./classifier-cascade) — how `classify:discriminator` reads `_type` to resolve the class name.
-- [Configuration](./configuration) — `classification.discriminator` config slot.
-- [Ontology (json-tology)](./ontology) — how `services.ontology` traverses the schema graph for ancestor resolution.
+- [Plugins](./plugins) — how plugins register `DiscriminatorClassifierNode` with domain config.
+- [Ontology (json-tology)](./ontology) — how plugins build and pass `JsonTologyOntology` to classifier nodes for ancestor resolution.

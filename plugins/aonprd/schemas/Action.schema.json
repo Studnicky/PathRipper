@@ -1,0 +1,209 @@
+{
+  "$id": "https://2e.aonprd.com/Action",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    },
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Mechanic.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionType.draft.json"
+    },
+    "action_cost": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionActionCost.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "action_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionActionId.draft.json"
+    },
+    "alt_edition_url": {
+      "type": "null"
+    },
+    "cost": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionCost.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "effect_html": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "effect_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "frequency": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionFrequency.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/ActionLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "outcomes": {
+      "properties": {
+        "critical_failure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "critical_success": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "success": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "requirements": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "skill": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "proficiency": {
+          "enum": [
+            "Trained",
+            "Untrained"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "skill_id": {
+          "maximum": 50,
+          "minimum": 18,
+          "type": "integer"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 582,
+          "minimum": 9,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 307,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/ActionSource.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trigger": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "action_cost",
+    "action_id",
+    "alt_edition_url",
+    "cost",
+    "effect_html",
+    "effect_text",
+    "frequency",
+    "legacy",
+    "links",
+    "name",
+    "outcomes",
+    "rarity",
+    "requirements",
+    "skill",
+    "source",
+    "sources",
+    "traits",
+    "trigger",
+    "url"
+  ],
+  "title": "Action",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Action",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-skolem-subject": {
+    "action_cost": {
+      "fragment": "actionCost",
+      "properties": {
+        "actionSymbol": "xsd:string"
+      },
+      "type": "ActionCost"
+    }
+  },
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

@@ -64,7 +64,7 @@ A config file is one run. The root object carries `input`, `output`, and the run
 }
 ```
 
-The DAG topology is fixed — the run is authored as `src/dag/*.dag.jsonld` documents loaded via `DAGDocument.load` and bound with `dispatcher.registerBundle`. Classifiers join the per-record DAG just by appearing under `classification`. `SquashageRun.forRun(config)` materialises the run; the CLI invokes it with:
+The CLI invokes:
 
 ```bash
 squashage-dag build --config ./squashage.config.jsonc
@@ -74,25 +74,25 @@ squashage-dag build --config ./squashage.config.jsonc
 
 1. **`walk-input`** scans `./input` and produces one `RecordLocator` per file. The native `scatter { dag }` placement fans the array out across per-record DAG instances.
 
-2. **`scatter { dag }`** dispatches the per-record DAG once per locator, capped at `concurrency: 4` workers. Each record runs:
+2. **`index-entities`** runs once. It reads `enrichment.entityLink` config; when absent, it routes `skipped` and `services.entityIndex` stays null. (In this walk-through there is no enrichment config, so it skips.)
 
-   a. **`record-init`** seeds per-record state from the scattered `RecordLocator`.
+3. **`scatter { dag }`** dispatches the per-record DAG once per locator, capped at `concurrency: 4` workers. Each record runs:
 
-   b. **`json-read`** parses the file. On parse failure, route `quarantined` → `record-quarantine` → end.
+   a. **`json-read`** parses the file. On parse failure, route `quarantined` → `record-quarantine` → end.
 
-   c. **`classify-all`** runs the classifier cascade concurrently:
+   b. **`classify-all`** runs the classifier cascade concurrently:
       - `classify:source` writes a `__source__` sentinel because `_source` is present.
       - `classify:url-pattern` writes `{ className: 'feat', priority: 35 }` because the URL matches `/Feats\.aspx`.
       - `classify:structural` writes `{ className: 'feat', priority: 10 }` because `_type === 'feat'`.
       - The remaining classifiers have no config in this run, so their placeholders return `no-match`. See [Classifier cascade](./usage/classifier-cascade) for the full set and what each reads.
 
-   d. **`classify:ontology`** reads `state.proposals` and confirms `feat` is in the known class map; no `__validation__` sentinel needed.
+   c. **`classify:ontology`** reads `state.proposals` and confirms `feat` is in the known class map; no `__validation__` sentinel needed.
 
-   e. **`classify:taxonomic-narrowing`** has no config slot in this run, so it routes `no-op`.
+   d. **`classify:taxonomic-narrowing`** has no config slot in this run, so it routes `no-op`.
 
-   f. **`record-health-gate`** sees two real proposals and zero errors; routes `has-proposals`.
+   e. **`record-health-gate`** sees two real proposals and zero errors; routes `has-proposals`.
 
-   g. **`classify-conflict`** sees both proposals agree on `feat`; writes:
+   f. **`classify-conflict`** sees both proposals agree on `feat`; writes:
       ```ts
       state.classification = {
         type:       'feat',
@@ -102,17 +102,17 @@ squashage-dag build --config ./squashage.config.jsonc
       };
       ```
 
-   h. **`squash`** projects the record to RDF through lenient json-tology ABox projection: the `feat` class maps to `<https://example.org/vocab/Feat>`. The projection drops no record on shape mismatch — an unmapped class is emitted under a Generic fallback class. Here the quad `<record-iri> rdf:type <https://example.org/vocab/Feat>` lands in `state.squashedQuads` and `services.dataset`.
+   g. **`squash`** projects the record to RDF through lenient json-tology ABox projection: the `feat` class maps to `<https://example.org/vocab/Feat>`. The projection drops no record on shape mismatch — an unmapped class is emitted under a Generic fallback class. Here the quad `<record-iri> rdf:type <https://example.org/vocab/Feat>` lands in `state.squashedQuads` and `services.dataset`.
 
-   i. **`output-provenance`** is a no-op (no `output.provenance` config).
+   h. **`output-provenance`** is a no-op (no `output.provenance` config).
 
-3. **`enrich-entity-link`** runs once after the fan-out gathers. No `enrichment.entityLink` config → skipped.
+4. **`enrich-entity-link`** confirms the enrichment pass. No `enrichment.entityLink` config → skipped. (When href-reconcile IS configured, enrichment happened inline during the scatter, not here.)
 
-4. The native fold gather (`squashage:record-fold`) collects each per-record result. With `output.mode: 'stream'` the ABox and PROV quads stream to disk as they arrive; otherwise the finalize step splits the dataset:
+5. The native fold gather (`squashage:record-fold`) collects each per-record result. With `output.mode: 'stream'` the ABox and PROV quads stream to disk as they arrive; otherwise the finalize step splits the dataset:
    - Quads whose graph is `urn:squashage:prov:*` → `./graphs/aonprd.prov.trig`.
    - Everything else → `./graphs/aonprd.trig`.
 
-5. **`catalog-emit`** is a no-op without `output.bucketing`.
+6. **`catalog-emit`** is a no-op without `output.bucketing`.
 
 ## After — the success graph
 

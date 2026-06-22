@@ -69,23 +69,39 @@ const sidebar = [
     ]
   },
   {
-    text: 'Usage',
+    text: 'Classifiers',
+    collapsed: false,
     items: [
-      { link: '/usage/configuration',                  text: 'Configuration' },
-      { link: '/usage/pipeline',                       text: 'DAG' },
-      { link: '/usage/classifier-cascade',             text: 'Classifier cascade' },
-      { link: '/usage/shacl-shape-classifier',         text: 'SHACL-shape classifier' },
-      { link: '/usage/url-pattern-classifier',         text: 'URL-pattern classifier' },
-      { link: '/usage/property-fingerprint-classifier', text: 'Property-fingerprint classifier' },
-      { link: '/usage/winknlp-entities',               text: 'winkNLP entities classifier' },
-      { link: '/usage/entity-link',                    text: 'Entity-link enrichment' },
-      { link: '/usage/taxonomy',                        text: 'Taxonomy (upper ontology)' },
-      { link: '/usage/taxonomic-narrowing',            text: 'Taxonomic narrowing' },
-      { link: '/usage/ontology',                       text: 'Ontology (json-tology)' },
-      { link: '/usage/output',                         text: 'Output' },
-      { link: '/usage/provenance',                     text: 'Provenance (PROV-O graph)' },
-      { link: '/usage/viz',                            text: 'Viz' },
-      { link: '/usage/plugins',                        text: 'Plugins' },
+      { link: '/usage/classifier-cascade',              text: 'Cascade overview' },
+      { link: '/usage/discriminator-classifier',        text: 'Discriminator' },
+      { link: '/usage/url-pattern-classifier',          text: 'URL pattern' },
+      { link: '/usage/structural-classifier',           text: 'Structural' },
+      { link: '/usage/rules-classifier',                text: 'Rules' },
+      { link: '/usage/schema-classifier',               text: 'Schema (AJV)' },
+      { link: '/usage/shacl-shape-classifier',          text: 'SHACL shape' },
+      { link: '/usage/property-fingerprint-classifier', text: 'Property fingerprint' },
+      { link: '/usage/winknlp-entities',                text: 'winkNLP entities' },
+      { link: '/usage/custom-classifier',               text: 'Writing a classifier' },
+    ]
+  },
+  {
+    text: 'Pipeline',
+    items: [
+      { link: '/usage/pipeline',             text: 'DAG topology' },
+      { link: '/usage/configuration',        text: 'Configuration' },
+      { link: '/usage/plugins',              text: 'Plugins' },
+      { link: '/usage/entity-link',          text: 'Entity-link enrichment' },
+      { link: '/usage/taxonomy',             text: 'Taxonomy (upper ontology)' },
+      { link: '/usage/taxonomic-narrowing',  text: 'Taxonomic narrowing' },
+      { link: '/usage/ontology',             text: 'Ontology (json-tology)' },
+    ]
+  },
+  {
+    text: 'Output',
+    items: [
+      { link: '/usage/output',      text: 'Output formats' },
+      { link: '/usage/provenance',  text: 'Provenance (PROV-O)' },
+      { link: '/usage/viz',         text: 'Graph viewer' },
     ]
   },
   {
@@ -132,10 +148,11 @@ export default withMermaid(defineConfig({
        SVG support is patchy. Order matters: browsers pick the first
        `rel=icon` they can render, so SVG goes first. */
     ['link',   { 'rel': 'icon',             'type': 'image/svg+xml',                       'href': `${SITE_BASE}favicon.svg` }],
-    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '32x32',       'href': `${SITE_BASE}squashage.png` }],
-    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '192x192',     'href': `${SITE_BASE}squashage.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '32x32',       'href': `${SITE_BASE}favicon-32.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '48x48',       'href': `${SITE_BASE}favicon-48.png` }],
+    ['link',   { 'rel': 'icon',             'type': 'image/png',   'sizes': '192x192',     'href': `${SITE_BASE}favicon-192.png` }],
     ['link',   { 'rel': 'shortcut icon',                                                   'href': `${SITE_BASE}favicon.svg` }],
-    ['link',   { 'rel': 'apple-touch-icon', 'sizes': '180x180',                            'href': `${SITE_BASE}squashage.png` }],
+    ['link',   { 'rel': 'apple-touch-icon', 'sizes': '180x180',                            'href': `${SITE_BASE}favicon-180.png` }],
     ['link',   { 'rel': 'mask-icon',        'color': SITE_THEME_COLOR,                     'href': `${SITE_BASE}favicon.svg` }],
     ['link',   { 'rel': 'manifest',                                                        'href': `${SITE_BASE}manifest.webmanifest` }],
     ['link',   { 'rel': 'sitemap',          'type': 'application/xml',  'href': `${SITE_BASE}sitemap.xml` }],

@@ -33,22 +33,6 @@ class SmokeTestConfig {
       output,
       graphs:   { default: 'https://squashage.dev/graph/aonprd/default' },
       ontology: { baseIri: 'https://2e.aonprd.com/' },
-      classification: {
-        conflict:   { onConflict: 'pickPriority', evidence: true },
-        structural: [
-          {
-            className: 'feat',
-            priority:  20,
-            predicate: { path: '/_type', equals: 'feat' },
-            reasons:   ['_type=feat'],
-          },
-        ],
-        urlPattern: {
-          patterns: [
-            { className: 'feat', match: '/Feats\\.aspx', priority: 35 },
-          ],
-        },
-      },
       concurrency: 1,
     };
   }
@@ -60,11 +44,12 @@ test('induceDag smoke — one-record fixture', async (t) => {
     try {
       const targetConfig = SmokeTestConfig.forSchemasBase(work);
       const run = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
+        target:          'aonprd',
         targetConfig,
-        output:      targetConfig.output,
-        outDir:      work,
-        schemasBase: work,
+        output:          targetConfig.output,
+        outDir:          work,
+        schemasBase:     work,
+        pluginNamespace: 'aonprd',
       });
 
       const result     = await run.executeInduce();
@@ -105,11 +90,12 @@ test('induceDag smoke — one-record fixture', async (t) => {
       const makeRun = async (work: string): Promise<{ inferredDir: string }> => {
         const targetConfig = SmokeTestConfig.forSchemasBase(work);
         const run = await SquashageRun.forTargetWithNullObserver({
-          target:      'aonprd',
+          target:          'aonprd',
           targetConfig,
-          output:      targetConfig.output,
-          outDir:      work,
-          schemasBase: work,
+          output:          targetConfig.output,
+          outDir:          work,
+          schemasBase:     work,
+          pluginNamespace: 'aonprd',
         });
         await run.executeInduce();
         return { inferredDir: run.services.schemaPaths.inferred };

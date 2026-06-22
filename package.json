@@ -1,6 +1,6 @@
 {
   "name": "@studnicky/squashage",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "Graph reconstitution pipeline; squashes classified JSON records into deterministic RDF (Turtle, TriG, JSON-LD, N-Triples, N-Quads).",
   "type": "module",
   "bin": {
@@ -38,7 +38,7 @@
   },
   "scripts": {
     "prebuild": "rm -rf dist",
-    "build": "tsc --noEmit false && npm run build:assets",
+    "build": "tsc --noEmit false && npm run build:plugins && npm run build:assets",
     "build:assets": "node scripts/copy-dag-assets.mjs",
     "author:dags": "node --import tsx scripts/author-dags.ts",
     "typecheck": "tsc --noEmit",
@@ -56,7 +56,8 @@
     "docs:render-favicons": "node scripts/render-favicons.mjs",
     "docs:dev": "npm run docs:render-dags && npm run docs:render-favicons && vitepress dev docs",
     "docs:build": "npm run docs:render-dags && npm run docs:render-favicons && vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "build:plugins": "tsc -p tsconfig.plugins.json --noEmit false"
   },
   "dependencies": {
     "@rdfjs/data-model": "^2.1.1",
@@ -64,6 +65,7 @@
     "@rdfjs/namespace": "^2.0.1",
     "@rdfjs/types": "^2.0.1",
     "@studnicky/dagonizer": "^0.25.0",
+    "@studnicky/dagonizer-executor-node": "^0.25.0",
     "@studnicky/json-tology": "^0.26.0",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",

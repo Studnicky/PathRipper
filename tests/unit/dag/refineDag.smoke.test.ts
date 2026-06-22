@@ -33,22 +33,6 @@ class SmokeTestConfig {
       output,
       graphs:   { default: 'https://squashage.dev/graph/aonprd/default' },
       ontology: { baseIri: 'https://2e.aonprd.com/' },
-      classification: {
-        conflict:   { onConflict: 'pickPriority', evidence: true },
-        structural: [
-          {
-            className: 'feat',
-            priority:  20,
-            predicate: { path: '/_type', equals: 'feat' },
-            reasons:   ['_type=feat'],
-          },
-        ],
-        urlPattern: {
-          patterns: [
-            { className: 'feat', match: '/Feats\\.aspx', priority: 35 },
-          ],
-        },
-      },
       concurrency: 1,
     };
   }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AONPRD Knowledge Graph</title>
+<title>Squashage — aonprd</title>
 <style>
 
 /* Squashage eggplant palette — cosmos.gl renderer. */
@@ -15,15 +15,18 @@ html, body { height: 100%; font-family: system-ui, sans-serif; font-size: 14px; 
 .sq-layout { display: flex; height: calc(100vh - 41px); position: relative; }
 #cy { flex: 1 1 auto; background: #000000; position: relative; }
 #cy canvas { display: block; }
-.sq-sidebar { width: 320px; flex: 0 0 320px; overflow-y: auto; background: #111111; border-left: 1px solid #2a2a2a; display: flex; flex-direction: column; }
+.sq-sidebar { width: 320px; flex: 0 0 320px; overflow-y: auto; overflow-x: hidden; background: #111111; border-left: 1px solid #2a2a2a; display: flex; flex-direction: column; scrollbar-width: thin; scrollbar-color: #333 transparent; }
+.sq-sidebar::-webkit-scrollbar { width: 5px; }
+.sq-sidebar::-webkit-scrollbar-track { background: transparent; }
+.sq-sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 .sq-section { border-bottom: 1px solid #2a2a2a; padding: 12px; }
 .sq-section h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #808080; margin-bottom: 8px; font-weight: 600; }
 .sq-hint { color: #707070; font-size: 12px; }
 #sq-stats-body { font-size: 12px; color: #c0c0c0; }
 #sq-stats-body span { color: #c09fef; font-weight: 600; }
-#sq-details-body { font-size: 12px; word-break: break-all; }
+#sq-details-body { font-size: 12px; word-break: break-word; overflow-wrap: break-word; overflow-x: hidden; }
 .sq-detail-id { color: #e94560; font-weight: 600; margin-bottom: 4px; font-size: 14px; }
-.sq-detail-iri { font-family: ui-monospace, monospace; font-size: 10px; color: #707070; margin-bottom: 6px; word-break: break-all; }
+.sq-detail-iri { font-family: ui-monospace, monospace; font-size: 10px; color: #707070; margin-bottom: 6px; word-break: break-word; overflow-wrap: break-word; }
 .sq-detail-class { color: #c09fef; margin-bottom: 6px; font-size: 12px; }
 .sq-detail-prop { margin-bottom: 3px; font-size: 12px; }
 .sq-detail-prop-key { color: #c09fef; }
@@ -58,6 +61,10 @@ html, body { height: 100%; font-family: system-ui, sans-serif; font-size: 14px; 
 .sq-physics-row span { font-family: ui-monospace, monospace; font-size: 10px; color: #c09fef; min-width: 32px; text-align: right; }
 .sq-physics-reset { width: 100%; margin-top: 4px; background: rgba(233,69,96,0.15); border: 1px solid #e94560; color: #e94560; border-radius: 4px; padding: 4px 0; font-size: 11px; cursor: pointer; }
 .sq-physics-reset:hover { background: rgba(233,69,96,0.3); }
+.sq-physics-pause { width: 100%; margin-top: 4px; background: rgba(192,159,239,0.12); border: 1px solid #c09fef; color: #c09fef; border-radius: 4px; padding: 4px 0; font-size: 11px; cursor: pointer; }
+.sq-physics-pause:hover { background: rgba(192,159,239,0.3); }
+.sq-physics-pause.sq-paused { background: rgba(129,199,132,0.12); border-color: #81c784; color: #81c784; }
+.sq-physics-pause.sq-paused:hover { background: rgba(129,199,132,0.3); }
 .sq-physics-toggle { margin-left: auto; background: rgba(192,159,239,0.12); border: 1px solid #c09fef; color: #c09fef; border-radius: 4px; padding: 3px 10px; font-size: 11px; cursor: pointer; }
 .sq-physics-toggle:hover { background: rgba(192,159,239,0.3); }
 /* Neighbor list */
@@ -65,11 +72,19 @@ html, body { height: 100%; font-family: system-ui, sans-serif; font-size: 14px; 
 .sq-neighbor-item { padding: 2px 0; border-bottom: 1px solid #1e1e1e; }
 .sq-neighbor-item:last-child { border-bottom: none; }
 .sq-neighbor-count { color: #c09fef; font-weight: 600; margin-bottom: 4px; font-size: 11px; }
+/* Properties table */
+.sq-props-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 11px; }
+.sq-props-table td { padding: 2px 4px; vertical-align: top; }
+.sq-prop-key { color: #c09fef; white-space: nowrap; font-weight: 600; padding-right: 8px; width: 40%; }
+.sq-prop-val { color: #c0c0c0; word-break: break-word; }
+.sq-prop-list { margin: 0; padding: 0; list-style: none; }
+.sq-prop-list li { display: inline; }
+.sq-prop-list li:not(:last-child)::after { content: ", "; }
 
 </style>
 </head>
 <body>
-<header class="sq-header"><h1>AONPRD Knowledge Graph</h1><span class="sq-tag">streaming • cosmos.gl webgl • binary frames • forceatlas2</span><button class="sq-physics-toggle" id="sq-physics-toggle" title="Toggle physics panel">Physics</button></header>
+<header class="sq-header"><h1>Squashage — aonprd</h1><span class="sq-tag">streaming • cosmos.gl webgl • binary frames • forceatlas2</span><button class="sq-physics-toggle" id="sq-physics-toggle" title="Toggle physics panel">Physics</button></header>
 <div class="sq-layout">
   <div id="cy">
     <div id="sq-dpad-wrap" class="sq-dpad-wrap">
@@ -97,7 +112,7 @@ html, body { height: 100%; font-family: system-ui, sans-serif; font-size: 14px; 
       <div class="sq-physics-row"><label>Link Distance<input type="range" id="sq-phys-dist" min="1" max="200" step="1" value="10"></label><span id="sq-phys-dist-val">10</span></div>
       <div class="sq-physics-row"><label>Friction<input type="range" id="sq-phys-friction" min="0" max="1" step="0.01" value="0.1"></label><span id="sq-phys-friction-val">0.1</span></div>
       <div class="sq-physics-row"><label>Decay<input type="range" id="sq-phys-decay" min="100" max="10000" step="100" value="100000"></label><span id="sq-phys-decay-val">∞</span></div>
-      <button class="sq-physics-reset" id="sq-physics-reset">Reset</button>
+      <button class="sq-physics-pause" id="sq-physics-pause">⏸ Pause</button>
     </div>
   </div>
   <div id="sq-loading-overlay" class="sq-loading-overlay sq-hidden">
@@ -1847,7 +1862,7 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
 
   // ── Manifest + accumulation buffers ─────────────────────────────────────
   var manifest     = null;
-  var frameMeta    = [];   // per-frame { label, color, nodeCount, nodeBase }
+  var frameMeta    = [];   // per-frame { label, color, nodeCount, nodeBase, dataFile }
   var queueItems   = [];
   var allPositions = null;
   var allColors    = null;
@@ -1858,10 +1873,14 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
   var edgeCursor   = 0;    // running write cursor into allLinks (in floats)
   var cosmos       = null;
   var INCREMENTAL_ALPHA = 0.1;
+  var simPaused    = false;   // physics Pause/Resume toggle — gates the keep-alive re-energizer
 
   // ── Feature 2: node metadata from meta.json ──────────────────────────────
   var nodeIris   = [];   // nodeIris[globalIndex] = full IRI string
   var nodeLabels = [];   // nodeLabels[globalIndex] = human label string
+
+  // ── Data shard cache: dataFile path → { props, nodeBase } | null ─────────
+  var nodeDataCache = new Map();
 
   // Neighbor adjacency is read from cosmos.getAdjacentIndices(idx) at click
   // time — cosmos builds it natively from the links we upload, so there is no
@@ -1995,6 +2014,30 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
     return null;
   }
 
+  // Load a data shard (.json.gz) for the given dataFile path, store in nodeDataCache,
+  // and call callback() when done (success or failure).
+  function loadDataShard(cacheKey, dataFile, callback) {
+    // Sentinel: set to null immediately to prevent double-fetch
+    nodeDataCache.set(cacheKey, null);
+    var shardUrl = new URL(dataFile, baseUrl).href;
+    fetch(shardUrl)
+      .then(function (r) {
+        if (!r.ok) throw new Error('shard ' + r.status);
+        if (typeof DecompressionStream === 'undefined' || r.body === null) throw new Error('no-decomp');
+        var stream = r.body.pipeThrough(new DecompressionStream('gzip'));
+        return new Response(stream).json();
+      })
+      .then(function (data) {
+        nodeDataCache.set(cacheKey, data);
+        callback();
+      })
+      .catch(function (err) {
+        console.warn('[squashage] data shard load failed:', String(err && err.message || err));
+        nodeDataCache.set(cacheKey, { props: {} });
+        callback();
+      });
+  }
+
   function showNodeDetails(idx) {
     var meta        = frameForNode(idx);
     var iri         = nodeIris[idx]   || '';
@@ -2008,21 +2051,74 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
 
     var html = '';
     html += '<div class="sq-detail-id">' + esc(label) + '</div>';
-    if (iri)     html += '<div class="sq-detail-iri">'   + esc(iri)     + '</div>';
     if (concept) html += '<div class="sq-detail-class">' + esc(concept) + '</div>';
+
+    // Properties table — from lazy-loaded data shard
+    var dataFile  = meta ? (meta.dataFile || null) : null;
+    var cacheKey  = dataFile || '';
+    var shardData = dataFile ? nodeDataCache.get(cacheKey) : undefined;
+
+    if (dataFile && shardData === undefined) {
+      // Not yet loaded — trigger fetch, show placeholder
+      html += '<div class="sq-hint">Loading properties…</div>';
+      loadDataShard(cacheKey, dataFile, function () {
+        // Re-render once loaded (only if this node is still selected)
+        if (selFsm.state === 'nodeSelected' && selFsm.selectedIdx === idx) {
+          showNodeDetails(idx);
+        }
+      });
+    } else if (shardData && shardData.props) {
+      var nodeProps = shardData.props[String(idx)];
+      if (nodeProps && Object.keys(nodeProps).length > 0) {
+        html += '<table class="sq-props-table">';
+        var keys = Object.keys(nodeProps).sort();
+        for (var ki = 0; ki < keys.length; ki++) {
+          var k = keys[ki];
+          var vals = nodeProps[k] || [];
+          if (vals.length === 0) continue;
+          // Strip IRI prefix if present (key may be full IRI or local name).
+          var localKey = k;
+          var lastHash  = k.lastIndexOf('#');
+          var lastSlash = k.lastIndexOf('/');
+          var lastColon = k.lastIndexOf(':');
+          var bestSep   = Math.max(lastHash, lastSlash, lastColon);
+          if (bestSep >= 0 && bestSep < k.length - 1) localKey = k.slice(bestSep + 1);
+          var displayKey = localKey.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+          var displayVal = vals.length === 1
+            ? esc(vals[0])
+            : '<ul class="sq-prop-list">' + vals.map(function (v) { return '<li>' + esc(v) + '</li>'; }).join('') + '</ul>';
+          html += '<tr><td class="sq-prop-key">' + esc(displayKey) + '</td><td class="sq-prop-val">' + displayVal + '</td></tr>';
+        }
+        html += '</table>';
+      }
+    }
+
+    // IRI (compact, wrapped) — suppress skolem IRIs
+    if (iri && iri.indexOf('//2e.aonprd.com/instances/') === -1) {
+      html += '<div class="sq-detail-iri">' + esc(iri) + '</div>';
+    }
+    // Connection count
     html += '<div class="sq-detail-prop"><span class="sq-detail-prop-key">Connections: </span><span class="sq-detail-prop-val">' + neighborCnt + '</span></div>';
     detailsBody.innerHTML = html;
 
-    // Neighbor list (first 20)
+    // Neighbor list (first 20), filtering out skolem IRI nodes
     if (neighborCnt > 0) {
       var nlHtml = '<div class="sq-neighbor-count">Neighbors (' + neighborCnt + ')</div>';
-      var shown  = Math.min(20, neighborCnt);
-      for (var i = 0; i < shown; i++) {
-        var nIdx   = neighbors[i];
+      var shown  = 0;
+      var skipped = 0;
+      for (var ni = 0; ni < neighbors.length && shown < 20; ni++) {
+        var nIdx   = neighbors[ni];
+        var nIri   = nodeIris[nIdx] || '';
+        if (nIri && nIri.indexOf('//2e.aonprd.com/instances/') !== -1) {
+          skipped++;
+          continue;
+        }
         var nLabel = nodeLabels[nIdx] || ('Node #' + nIdx);
         nlHtml += '<div class="sq-neighbor-item">' + esc(nLabel) + '</div>';
+        shown++;
       }
-      if (neighborCnt > 20) nlHtml += '<div class="sq-neighbor-item" style="color:#707070">… and ' + (neighborCnt - 20) + ' more</div>';
+      var remaining = neighborCnt - shown - skipped;
+      if (remaining > 0) nlHtml += '<div class="sq-neighbor-item" style="color:#707070">… and ' + remaining + ' more</div>';
       neighborList.innerHTML = nlHtml;
       neighborList.classList.remove('sq-hidden');
     } else {
@@ -2089,7 +2185,9 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
   function startKeepAlive() {
     cosmos.setConfig({ simulationDecay: 100000 });
     setInterval(function () {
-      if (cosmos !== null) cosmos.start(0.1);
+      // Skip re-energizing while paused, otherwise the 2s tick would
+      // immediately undo cosmos.pause() (which only clears isSimulationRunning).
+      if (cosmos !== null && !simPaused) cosmos.start(0.1);
     }, 2000);
   }
 
@@ -2244,8 +2342,9 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
       simulationFriction:     fri,
       simulationDecay:        dec,
     });
-    // cosmos.gl re-energizes the layout via start(alpha).
-    cosmos.start(0.2);
+    // cosmos.gl re-energizes the layout via start(alpha). Skip while paused so a
+    // slider tweak doesn't silently resume — the new config takes effect on Resume.
+    if (!simPaused) cosmos.start(0.2);
   }
 
   function updatePhysicsVal(id, valId, suffix) {
@@ -2274,22 +2373,23 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
     });
   }
 
-  var physicsResetBtn = document.getElementById('sq-physics-reset');
-  if (physicsResetBtn) {
-    physicsResetBtn.addEventListener('click', function () {
-      var setSlider = function (id, valId, value, label) {
-        var el = document.getElementById(id);
-        var vl = document.getElementById(valId);
-        if (el) el.value = String(value);
-        if (vl) vl.textContent = label !== undefined ? label : String(value);
-      };
-      setSlider('sq-phys-gravity',   'sq-phys-gravity-val',   PHYSICS_DEFAULTS.gravity,   undefined);
-      setSlider('sq-phys-repulsion', 'sq-phys-repulsion-val', PHYSICS_DEFAULTS.repulsion, undefined);
-      setSlider('sq-phys-spring',    'sq-phys-spring-val',    PHYSICS_DEFAULTS.spring,    undefined);
-      setSlider('sq-phys-dist',      'sq-phys-dist-val',      PHYSICS_DEFAULTS.dist,      undefined);
-      setSlider('sq-phys-friction',  'sq-phys-friction-val',  PHYSICS_DEFAULTS.friction,  undefined);
-      setSlider('sq-phys-decay',     'sq-phys-decay-val',     PHYSICS_DEFAULTS.decay,     '∞');
-      applyPhysics();
+  // ── Feature: Physics Pause/Resume toggle ─────────────────────────────────
+  var pauseBtn  = document.getElementById('sq-physics-pause');
+  if (pauseBtn) {
+    pauseBtn.addEventListener('click', function () {
+      if (cosmos === null) return;
+      if (simPaused) {
+        simPaused = false;
+        cosmos.start(0.1);
+        cosmos.unpause();
+        pauseBtn.textContent = '⏸ Pause';
+        pauseBtn.classList.remove('sq-paused');
+      } else {
+        simPaused = true;
+        cosmos.pause();
+        pauseBtn.textContent = '▶ Resume';
+        pauseBtn.classList.add('sq-paused');
+      }
     });
   }
 
@@ -2318,7 +2418,7 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
     .then(function (data) {
       manifest = data;
       frameMeta = data.frames.map(function (f) {
-        return { label: f.label, color: f.color, nodeCount: f.nodeCount, nodeBase: f.nodeBase };
+        return { label: f.label, color: f.color, nodeCount: f.nodeCount, nodeBase: f.nodeBase, dataFile: f.dataFile || null };
       });
       console.log('[squashage] manifest loaded: ' + frameMeta.length + ' frames, ' +
         data.totalNodes + ' nodes, ' + data.totalEdges + ' edges');
@@ -2341,15 +2441,15 @@ const SQ_WORKER_SRC = "\n'use strict';\nvar FRAME_MAGIC = 0x53514247;\nvar FRAME
 
   // Expose diagnostic handle.
   window.__sq = {
-    cosmos:       function () { return cosmos; },
-    manifest:     function () { return manifest; },
-    liveNodes:    function () { return liveNodes; },
-    liveEdges:    function () { return liveEdges; },
-    nodeIris:     function () { return nodeIris; },
-    nodeLabels:   function () { return nodeLabels; },
-    adjMap:       function () { return adjMap; },
-    showNode:     showNodeDetails,
-    clearSel:     fsmClear,
+    cosmos:         function () { return cosmos; },
+    manifest:       function () { return manifest; },
+    liveNodes:      function () { return liveNodes; },
+    liveEdges:      function () { return liveEdges; },
+    nodeIris:       function () { return nodeIris; },
+    nodeLabels:     function () { return nodeLabels; },
+    nodeDataCache:  function () { return nodeDataCache; },
+    showNode:       showNodeDetails,
+    clearSel:       fsmClear,
   };
 })();
 

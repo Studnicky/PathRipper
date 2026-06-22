@@ -1,12 +1,15 @@
 ---
 layout: doc
 title: Getting Started
-description: Install Squashage from source, run the Pathfinder AONPRD demo, and open the self-contained interactive graph in any browser.
+description: Feed Squashage structured JSON records. It classifies each one, squashes the lot into a deterministic RDF graph, and hands you a single file you can serve.
 ---
 
 # Getting Started
 
-Squashage is not on npm yet. Clone, install, build.
+Squashage takes a pile of JSON records and squashes them into a deterministic RDF graph. Every build is a directed acyclic graph (DAG) executed by [@studnicky/dagonizer](https://github.com/Studnicky/Dagonizer). Two things drive a run: a config file and a plugin.
+
+- **Config** `squashage.config.json` — where the JSON lives, where the graph goes, how many records run at once.
+- **Plugin** `plugins/<namespace>/` — the classifiers, the squash node, the per-record DAG. Bring your own; or run bare for a generic rdf:type-only projection.
 
 ## Install
 
@@ -17,64 +20,71 @@ npm install
 npm run build
 ```
 
-## Run a build
+## Season the config
 
-The CLI binary is `squashage-dag`. A config file is one run:
-
-```bash
-npx squashage-dag build \
-  --config squashage.config.json
-```
-
-Or invoke it directly during development:
-
-```bash
-node --import tsx src/cli/dagonizerCli.ts build \
-  --config squashage.config.json
-```
-
-Three artifacts land on disk, anchored at `output.path`:
-
-| File | What's in it |
-|---|---|
-| `<output.path>` | the success graph |
-| `<output.path-stem>.prov.<ext>` | PROV-O activity quads, one `prov:Activity` per node |
-| `quarantine/<bucket>/<id>.json` | one file per failed record (`unknown`, `conflicts`, `projection`, `output`) |
-
-## Build a config
-
-A config file is one run. The root object holds `input`, `output`, and the run knobs directly:
+A config file is one run. The root holds `input`, `output`, and the run knobs directly — nothing else:
 
 ```jsonc
 {
   "input":  { "basePath": "./input", "format": "json" },
-  "output": { "type": "file", "path": "./graphs/out.trig", "format": "trig" },
+  "output": { "path": "./graphs/out.nq", "format": "nquads" },
   "concurrency": 4,
-  "graphs": { "default": "https://example.org/graph/default" },
-  "ontology": { "baseIri": "https://example.org/" },
-  "classification": { "source": true }
+  "graphs":    { "default": "https://example.org/graph/default" },
+  "subjectIri": { "from": "/url", "sanitize": "url-tail" }
 }
 ```
 
-Copy `squashage.config.example.json` as a starting point. The unprefixed file is gitignored.
+Drop JSON records into `./input/`, point `output.path` at where you want the graph, and you're done seasoning. Full field reference: [Configuration](./usage/configuration).
 
-The full shape is described in [Configuration](./usage/configuration).
+## Load the plugin
 
-## Render the graph
+A plugin lives in `plugins/<namespace>/` and exports `register(dispatcher)`. It registers the classifiers and squash node for your domain, and ships its own per-record DAG as a `*.dag.jsonld` file. Full authoring guide: [Plugins](./usage/plugins).
+
+Pass `--plugin <namespace>` to load it:
+
+```bash
+npx squashage-dag build \
+  --config squashage.config.json \
+  --plugin myplugin
+```
+
+No plugin? Squashage runs bare: every record lands in the graph as `rdf:type <vocab>Generic`. Good for exploring data before you write classifiers.
+
+## Run it
+
+```bash
+npx squashage-dag build \
+  --config squashage.config.json \
+  --plugin myplugin
+```
+
+Three files land at `output.path`:
+
+| File | Contents |
+|---|---|
+| `<output.path>` | The success graph — every record that made it through. |
+| `<output.path-stem>.prov.<ext>` | PROV-O activity quads — one `prov:Activity` per node execution. |
+| `quarantine/<bucket>/<id>.json` | One file per failed record, bucketed by failure mode. |
+
+13,653 Pathfinder records in, 1.74M quads out, 0 failures. [Live demo →](./examples/aonprd)
+
+## Plate it
+
+Turn any `.nq` graph into a self-contained, offline, cosmos.gl WebGL browser:
 
 ```bash
 npx squashage-dag viz \
-  --in ./graphs/aonprd.nq \
-  --out aonprd
+  --in ./graphs/out.nq \
+  --out my-graph
 ```
 
-Reads an `.nq` file and emits a self-contained cosmos.gl WebGL graph browser to `./aonprd/`. Open `aonprd.html` in any browser. The viewer ships with a d-pad, node inspector, highlight, physics panel, and continuous simulation.
+Open `my-graph.html` in any browser. No network, no `node_modules`. Ships with a node inspector, physics panel, pause/resume, and per-concept rulebook properties loaded on demand.
 
 ## Where to look next
 
-- [Walk-through](./walk-through) — a record's full journey through the DAG.
+- [Walk-through](./walk-through) — one record's full journey from JSON to quad.
+- [Classifier cascade](./usage/classifier-cascade) — ten classifiers, one winner per record.
 - [DAG](./usage/pipeline) — the run-scope + per-record DAGs in full.
+- [Plugins](./usage/plugins) — `register(dispatcher)` contract, per-record DAG, classifier building blocks.
 - [Configuration](./usage/configuration) — every config slot.
-- [Classifier cascade](./usage/classifier-cascade) — the ten classifiers + the conflict resolver.
-- [Plugins](./usage/plugins) — how to ship a target-specific squash node.
 - [Architecture](./architecture) — module map + class lineage.

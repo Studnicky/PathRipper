@@ -1,0 +1,47 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Class",
+  "rdfsLabel": "name",
+  "rdfsComment": "body_text",
+  "promoteIri": [
+    "/url"
+  ],
+  "closedEnum": [
+    "rarity",
+    "pfs"
+  ],
+  "openVocabulary": [
+    "name",
+    "body_text",
+    "body_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "range": {
+    "rarity": "Rarity"
+  },
+  "drop": [
+    "/raw_fields",
+    "/trait_ids",
+    "/body_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "parents": [
+    "ContentEntry",
+    "Container"
+  ],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

@@ -1,18 +1,23 @@
 /**
- * enrich-entity-link — placeholder. Entity-linking enrichment runs once after
- * all records have been processed (post fan-out, pre finalize). Reads
- * `services.targetConfig.enrichment.entityLink` config; no-ops when absent.
+ * enrich-entity-link — post-scatter confirmation node for entity-link enrichment.
  *
- * The full algorithm lives in the legacy `src/tasks/entityLink.ts`. Porting
- * it is queued as Phase 4 follow-up; for now this node is a pass-through so
- * the run-scope DAG wires correctly.
+ * For the `href-reconcile` engine: enrichment happened inline during the scatter
+ * (in `ontologyProjection`, using the canonical index built by `index-entities`).
+ * This node returns `'enriched'` to confirm completion and allow ontology-emit
+ * to proceed. It is also the designated hook for a future `sortUnique` dedup pass.
+ *
+ * Returns `'skipped'` when no entityLink enrichment is configured.
  */
 
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 
+import { isHrefReconcileConfig } from '../../config/EnrichmentConfig.js';
+import { Logger }                from '../../modules/logger/logger.js';
 import type { SquashageServices } from '../../services/SquashageServices.js';
 import type { SquashageRunState } from '../../state/SquashageRunState.js';
+
+const log = Logger.forComponent('EnrichEntityLinkNode');
 
 type Output = 'enriched' | 'skipped';
 
@@ -31,12 +36,24 @@ class EnrichEntityLinkNodeImpl extends ScalarNode<SquashageRunState, Output, Squ
     _state:  SquashageRunState,
     context: NodeContextType<SquashageServices>,
   ): Promise<NodeOutputType<Output>> {
-    const enrichment = (context.services.targetConfig.enrichment ?? {}) as Record<string, unknown>;
-    if (enrichment['entityLink'] === undefined) {
+    const enrichmentBlock = (context.services.targetConfig as unknown as Record<string, unknown>)['enrichment'];
+    const rawConfig  = ((enrichmentBlock ?? {}) as Record<string, unknown>)['entityLink'];
+
+    if (!isHrefReconcileConfig(rawConfig)) {
       return NodeOutputBuilder.of('skipped');
     }
-    // Full port of legacy entityLink algorithm queued — currently a pass-through.
-    return NodeOutputBuilder.of('skipped');
+
+    // href-reconcile: inline reconciliation already ran during the scatter.
+    // Log summary and confirm.
+    const indexSize  = context.services.entityIndex?.size ?? 0;
+    const dedupCount = context.services.dedupSet?.size    ?? 0;
+    log.info('executeOne', 'href-reconcile enrichment complete', {
+      canonicalEntitiesIndexed: indexSize,
+      dedupeMode:               rawConfig.dedupeTriples ?? 'inPass',
+      uniqueQuadsWritten:       dedupCount,
+    });
+
+    return NodeOutputBuilder.of('enriched');
   }
 }
 

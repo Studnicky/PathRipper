@@ -1,0 +1,360 @@
+{
+  "$id": "https://2e.aonprd.com/Hazard",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    },
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Mechanic.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/HazardType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "complexity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/HazardComplexity.draft.json"
+    },
+    "defenses": {
+      "properties": {
+        "ac": {
+          "maximum": 48,
+          "minimum": 10,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "hardness": {
+          "items": {
+            "properties": {
+              "bt": {
+                "type": "null"
+              },
+              "component": {
+                "type": "string"
+              },
+              "notes": {
+                "enum": [
+                  "10 in theguthallath's erosion aura",
+                  "plate",
+                  "toy box",
+                  "while inside the centurion",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "x-squashage-closed-enum": true
+              },
+              "value": {
+                "maximum": 35,
+                "minimum": 0,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "hp": {
+          "items": {
+            "properties": {
+              "bt": {
+                "maximum": 230,
+                "minimum": 2,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "component": {
+                "type": "string"
+              },
+              "notes": {
+                "enum": [
+                  "29",
+                  "50",
+                  "6 squares must be destroyed to disable the haunt",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "x-squashage-closed-enum": true
+              },
+              "value": {
+                "maximum": 460,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "immunities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resistances": {
+          "items": {
+            "properties": {
+              "exceptions": {
+                "enum": [
+                  "fire, force, ghost touch, or positive",
+                  "force, ghost touch, or positive; double resistance vs. non-magical",
+                  "ghost touch",
+                  null
+                ],
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "x-squashage-closed-enum": true
+              },
+              "type": {
+                "enum": [
+                  "all",
+                  "all damage",
+                  "bludgeoning",
+                  "physical",
+                  "piercing",
+                  "slashing"
+                ],
+                "type": "string",
+                "x-squashage-closed-enum": true
+              },
+              "value": {
+                "maximum": 20,
+                "minimum": 5,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "saves": {
+          "properties": {
+            "fort": {
+              "maximum": 36,
+              "minimum": 0,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "ref": {
+              "maximum": 38,
+              "minimum": 0,
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "will": {
+              "maximum": 36,
+              "minimum": 6,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        "weaknesses": {
+          "items": {
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "maximum": 30,
+                "minimum": 5,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "description_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "disable": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/HazardDisable.draft.json"
+      },
+      "type": "array"
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/HazardEntityId.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "level": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/HazardLevel.draft.json"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/HazardLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "type": "null",
+      "x-squashage-closed-enum": true
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "reset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "routines": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/HazardRoutine.draft.json"
+      },
+      "type": "array"
+    },
+    "sections": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 525,
+          "minimum": 6,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 315,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/HazardSource.draft.json"
+      },
+      "type": "array"
+    },
+    "stealth": {
+      "properties": {
+        "dc": {
+          "maximum": 53,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "body_text",
+    "complexity",
+    "defenses",
+    "description_text",
+    "disable",
+    "entity_id",
+    "legacy",
+    "level",
+    "links",
+    "name",
+    "pfs",
+    "rarity",
+    "reset",
+    "routines",
+    "sections",
+    "source",
+    "sources",
+    "stealth",
+    "traits",
+    "url"
+  ],
+  "title": "Hazard",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Hazard",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/description_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

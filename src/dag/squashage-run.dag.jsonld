@@ -87,8 +87,18 @@
       "name": "walk-input",
       "node": "walk-input",
       "outputs": {
-        "walked": "process-all-records",
+        "walked": "index-entities",
         "empty": "rdfjs-finalize"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:run/node/index-entities",
+      "@type": "SingleNode",
+      "name": "index-entities",
+      "node": "index-entities",
+      "outputs": {
+        "indexed": "process-all-records",
+        "skipped": "process-all-records"
       }
     },
     {

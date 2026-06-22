@@ -1,0 +1,46 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Trait",
+  "rdfsLabel": "name",
+  "rdfsComment": "body_text",
+  "promoteIri": [
+    "/url"
+  ],
+  "closedEnum": [
+    "category"
+  ],
+  "openVocabulary": [
+    "name",
+    "body_text",
+    "body_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "range": {
+    "category": "TraitCategory"
+  },
+  "drop": [
+    "/body_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "predicateOverride": {
+    "category": "skos:broader"
+  },
+  "parents": [
+    "Vocabulary"
+  ],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

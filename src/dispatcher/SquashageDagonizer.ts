@@ -10,13 +10,15 @@
 
 import type { NamedNode, Quad } from '@rdfjs/types';
 import { Dagonizer } from '@studnicky/dagonizer';
-import type { ExecutionResultType, NodeStateInterface } from '@studnicky/dagonizer';
+import type { DagContainerInterface, ExecutionResultType, NodeStateInterface } from '@studnicky/dagonizer';
 
 import { ProvVocabulary } from '../observer/ProvVocabulary.js';
 import type { SquashageServices } from '../services/SquashageServices.js';
 
 export interface SquashageDagonizerOptionsInterface {
-  readonly services: SquashageServices;
+  readonly services:    SquashageServices;
+  /** Optional named container backends, keyed by role name. */
+  readonly containers?: Record<string, DagContainerInterface>;
 }
 
 export class SquashageDagonizer<TState extends NodeStateInterface>
@@ -31,7 +33,10 @@ export class SquashageDagonizer<TState extends NodeStateInterface>
   readonly #activeByNode: Map<string, NamedNode> = new Map();
 
   constructor(options: SquashageDagonizerOptionsInterface) {
-    super({ services: options.services });
+    super({
+      services: options.services,
+      ...(options.containers !== undefined ? { containers: options.containers } : {}),
+    });
     this.#services = options.services;
     this.#vocab    = new ProvVocabulary(options.services.factory);
     this.#graph    = this.#vocab.graph(options.services.factory, options.services.runStartTime);

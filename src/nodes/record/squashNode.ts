@@ -19,8 +19,6 @@ import type { Quad } from '@rdfjs/types';
 import type { SquashageServices } from '../../services/SquashageServices.js';
 import type { SquashageRecordState } from '../../state/SquashageRecordState.js';
 
-export { ontologyProjectionNode } from './ontologyProjection.js';
-
 export type SquashOutput = 'squashed' | 'quarantined';
 
 /** Contract every target's squash node must satisfy. */
