@@ -1,0 +1,127 @@
+{
+  "$id": "https://2e.aonprd.com/MonsterFamily",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Container.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterFamilyType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterFamilyEntityId.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterFamilyLink_2.draft.json"
+      },
+      "type": "array"
+    },
+    "members": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterFamilyMember.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "type": "null"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ArmorRarity.draft.json"
+    },
+    "sections": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterFamilySection.draft.json"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 616,
+          "minimum": 8,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 319,
+          "minimum": 2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterFamilySource.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "body_text",
+    "entity_id",
+    "legacy",
+    "links",
+    "members",
+    "name",
+    "pfs",
+    "rarity",
+    "sections",
+    "source",
+    "sources",
+    "traits",
+    "url"
+  ],
+  "title": "MonsterFamily",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/MonsterFamily",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

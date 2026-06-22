@@ -29,6 +29,10 @@
  * @since 2.2.0
  */
 
+import { createWriteStream } from 'node:fs';
+import { mkdir }             from 'node:fs/promises';
+import { dirname }           from 'node:path';
+import type { Writable }     from 'node:stream';
 import { Writer } from 'n3';
 import jsonld from 'jsonld';
 
@@ -144,6 +148,71 @@ export interface SerializeResultInterface {
 }
 
 // ---------------------------------------------------------------------------
+// Streaming writer
+// ---------------------------------------------------------------------------
+
+/**
+ * Handle returned by {@link Serializer.openStream}.
+ *
+ * @remarks
+ * Provides incremental quad writing to an open file stream and a close
+ * method that resolves once the underlying stream has been fully flushed.
+ * Designed for the streaming output path where individual per-record quad
+ * batches are written to disk as they are produced, avoiding accumulation of
+ * the entire quad set in memory.
+ *
+ * @category RDF
+ * @since 2.3.0
+ * @group Types
+ */
+export interface RecordWriterInterface {
+  /**
+   * Serialize `quads` in the configured format and write them to the stream.
+   *
+   * @param quads - The quad batch to write.  Must not contain JSON-LD format
+   *   quads (JSON-LD requires batch serialization; use `Serializer.serialize`
+   *   for that path).
+   * @returns A Promise that resolves once the data has been accepted by the
+   *   writable stream (i.e. the `write()` call did not return `false`, or the
+   *   `'drain'` event was received if it did).
+   */
+  write(quads: ReadonlyArray<Quad>): Promise<void>;
+
+  /**
+   * Flush the write stream and wait for the `'finish'` event.
+   *
+   * @returns A Promise that resolves when the stream is fully closed.
+   */
+  close(): Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
+// PROV synchronous sink
+// ---------------------------------------------------------------------------
+
+/**
+ * Synchronous sink for PROV-O quads in streaming mode.
+ *
+ * Unlike {@link RecordWriterInterface} (which is async due to back-pressure),
+ * this interface exposes synchronous writes because PROV lifecycle events fire
+ * synchronously from the dagonizer and we cannot await inside them.
+ *
+ * The underlying Node.js WriteStream buffers writes internally; back-pressure
+ * is never applied because PROV quad volume (~10 quads per record node) is tiny
+ * relative to the stream's highWaterMark.
+ *
+ * @category RDF
+ * @since 2.4.0
+ * @group Types
+ */
+export interface ProvSinkInterface {
+  /** Write a single PROV quad synchronously as one N-Quads line. */
+  writeQuad(quad: Quad): void;
+  /** Flush and close the underlying stream. */
+  close(): Promise<void>;
+}
+
+// ---------------------------------------------------------------------------
 // Serializer class
 // ---------------------------------------------------------------------------
 
@@ -244,6 +313,235 @@ export class Serializer {
     return Serializer.serializeN3(quads, options, n3Format, format);
   }
 
+  /**
+   * Opens a writable file stream and returns a {@link RecordWriterInterface}
+   * handle for incremental quad writing.
+   *
+   * @remarks
+   * The parent directory of `path` is created with `{ recursive: true }` if
+   * it does not already exist.  Quads are serialized using the same n3.Writer
+   * logic as {@link Serializer.serialize} for line-oriented formats (Turtle,
+   * TriG, N-Triples, N-Quads).  JSON-LD is not supported on this code path
+   * because it requires batch serialization — callers must check and fall back
+   * to the batched path when `format === 'jsonld'`.
+   *
+   * Each {@link RecordWriterInterface.write} call creates a fresh n3.Writer for
+   * the batch, serializes the quads to a string, and pushes that string to the
+   * underlying `WriteStream`.  This avoids holding all quads in memory while
+   * still producing correct line-oriented output.
+   *
+   * @param path    - Absolute or relative file path to write to.
+   * @param format  - Line-oriented RDF format (turtle, trig, ntriples, nquads).
+   *   Passing `'jsonld'` throws an {@link OutputConfigError} immediately.
+   * @param options - Optional prefix map (forwarded to n3.Writer for Turtle/TriG).
+   * @returns A Promise that resolves to the writer handle once the file has
+   *   been opened (directory created, stream open).
+   * @throws {OutputConfigError} When `format === 'jsonld'` or an unrecognised
+   *   format is requested.
+   *
+   * @example
+   * ```ts
+   * const writer = await Serializer.openStream('./graphs/out.nq', 'nquads');
+   * for (const batch of recordBatches) {
+   *   await writer.write(batch);
+   * }
+   * await writer.close();
+   * ```
+   *
+   * @since 2.3.0
+   */
+  public static async openStream(
+    path:    string,
+    format:  Exclude<RDFFormat, 'jsonld'>,
+    options: { prefixes?: Record<string, string> } = {},
+  ): Promise<RecordWriterInterface> {
+    if ((format as string) === 'jsonld') {
+      throw OutputConfigError.create(
+        'Serializer.openStream does not support JSON-LD — JSON-LD requires batch serialization.',
+        { metadata: { format: format as string, path } },
+      );
+    }
+
+    const n3Format = N3_FORMAT[format];
+    if (n3Format === undefined) {
+      throw OutputConfigError.create(
+        `Unsupported RDF format for streaming: "${format}"`,
+        { metadata: { format: format as string, path } },
+      );
+    }
+
+    await mkdir(dirname(path), { recursive: true });
+
+    const stream = createWriteStream(path, { encoding: 'utf8' });
+
+    // Wait for the stream to be ready (open event) or reject on error.
+    await new Promise<void>((resolve, reject) => {
+      stream.once('open', () => resolve());
+      stream.once('error', (err) => reject(err));
+    });
+
+    const writerOptions: { format: string; prefixes?: Record<string, string> } = {
+      format: n3Format,
+    };
+    if (options.prefixes !== undefined) writerOptions.prefixes = options.prefixes;
+
+    // For N-Quads and N-Triples, bypass n3.Writer to avoid creating per-batch n3
+    // internal term objects (NamedNode, Literal, Quad copies) that accumulate in V8
+    // old-gen before the major GC has a chance to collect them.  The direct
+    // serialization path produces identical output without any intermediate objects.
+    const useDirectNq = format === 'nquads' || format === 'ntriples';
+
+    // Suppress MaxListenersExceededWarning when many concurrent writes register
+    // drain/error listeners on the same stream (e.g. at high concurrency).
+    stream.setMaxListeners(0);
+
+    return {
+      async write(quads: ReadonlyArray<Quad>): Promise<void> {
+        if (quads.length === 0) return;
+
+        let chunk: string;
+        if (useDirectNq) {
+          // Direct N-Quads/N-Triples serialization: one string concat per batch,
+          // no n3.Writer object graph.
+          chunk = quads.map((q) => Serializer.serializeNquadsLine(q)).join('');
+        } else {
+          // Serialize the batch to a string via n3.Writer for Turtle/TriG formats.
+          chunk = await new Promise<string>((resolve, reject) => {
+            const batchOptions: { format: string; prefixes?: Record<string, string> } = {
+              format: n3Format,
+            };
+            // Only emit prefix declarations on first batch; subsequent batches
+            // emit raw lines. We omit prefixes from per-batch writers to avoid
+            // repeated @prefix declarations in N-Quads / line-oriented output.
+            const w = new Writer(batchOptions);
+            for (const quad of quads) {
+              w.addQuad(quad);
+            }
+            w.end((error, result) => {
+              if (error !== null) { reject(error); return; }
+              resolve(result as string);
+            });
+          });
+        }
+
+        // Write to the stream via a static helper that has no reference to
+        // `quads` in its closure context.  V8's async context for `write(quads)`
+        // is suspended at the `await` below; once control transfers to
+        // `#writeChunk`, the `quads` parameter is no longer reachable from any
+        // live closure and becomes GC-eligible immediately — preventing the
+        // per-record Quad array accumulation that caused multi-GB RSS growth on
+        // large corpora.
+        await Serializer.#writeChunk(stream, chunk);
+      },
+
+      close(): Promise<void> {
+        return Serializer.#closeStream(stream);
+      },
+    };
+  }
+
+  /**
+   * Opens a writable file stream and returns a {@link ProvSinkInterface}
+   * handle for synchronous PROV quad writing.
+   *
+   * @remarks
+   * Unlike {@link Serializer.openStream}, which returns an async
+   * {@link RecordWriterInterface}, this method returns a synchronous sink
+   * because PROV lifecycle events fire synchronously from the dagonizer and
+   * we cannot `await` inside them.
+   *
+   * Each {@link ProvSinkInterface.writeQuad} call serializes one quad as a
+   * single N-Quads line (synchronously) and calls `stream.write(line)`. The
+   * return value is intentionally ignored — PROV quad volume (~10 quads per
+   * node) is small enough that the stream's highWaterMark is never reached.
+   *
+   * @param path - Absolute or relative file path to write to.
+   * @returns A Promise that resolves to the sink handle once the file is open.
+   *
+   * @since 2.4.0
+   */
+  public static async openProvSink(path: string): Promise<ProvSinkInterface> {
+    await mkdir(dirname(path), { recursive: true });
+
+    const stream = createWriteStream(path, { encoding: 'utf8' });
+
+    await new Promise<void>((resolve, reject) => {
+      stream.once('open', () => resolve());
+      stream.once('error', (err) => reject(err));
+    });
+
+    return {
+      writeQuad(quad: Quad): void {
+        const line = Serializer.serializeNquadsLine(quad);
+        stream.write(line);
+      },
+
+      close(): Promise<void> {
+        return Serializer.#closeStream(stream);
+      },
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Private stream helpers
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Writes `chunk` to `stream`, awaiting drain if back-pressure is applied.
+   *
+   * @remarks
+   * Intentionally isolated as a static method with no reference to `quads`.
+   * The caller (`write(quads)`) serializes quads to a string BEFORE calling
+   * this method; by the time this frame is suspended at an `await`, the caller's
+   * `quads` parameter has already been transferred and is not captured in this
+   * frame's V8 async context.  This breaks the per-record Quad retention that
+   * occurs when the same async frame both holds `quads` and awaits a drain event.
+   *
+   * Listener hygiene: both `drain` and `error` listeners are removed atomically
+   * when EITHER fires to prevent orphaned error listeners from accumulating on the
+   * stream and retaining per-write closure contexts indefinitely.
+   */
+  static #writeChunk(stream: Writable, chunk: string): Promise<void> {
+    const ok = stream.write(chunk);
+    if (ok) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+      const onDrain = (): void => {
+        stream.removeListener('error', onError);
+        resolve();
+      };
+      const onError = (err: Error): void => {
+        stream.removeListener('drain', onDrain);
+        reject(err);
+      };
+      stream.once('drain', onDrain);
+      stream.once('error', onError);
+    });
+  }
+
+  /**
+   * Ends `stream` and resolves when the `finish` event fires.
+   *
+   * @remarks
+   * Mirrors {@link #writeChunk}: both `finish` and `error` listeners are removed
+   * atomically so no listener is left orphaned on the stream object after the
+   * Promise settles.
+   */
+  static #closeStream(stream: Writable): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const onFinish = (): void => {
+        stream.removeListener('error', onError);
+        resolve();
+      };
+      const onError = (err: Error): void => {
+        stream.removeListener('finish', onFinish);
+        reject(err);
+      };
+      stream.once('finish', onFinish);
+      stream.once('error', onError);
+      stream.end();
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Private dispatch helpers
   // ---------------------------------------------------------------------------
@@ -277,6 +575,54 @@ export class Serializer {
         resolve({ data: result as string, format });
       });
     });
+  }
+
+  /**
+   * Serializes a single RDF quad as one N-Quads line.
+   *
+   * @remarks
+   * Handles NamedNode, Literal (with xsd:dateTime, xsd:string, or plain string),
+   * and BlankNode term types.  The graph term is always a NamedNode for PROV quads.
+   * Literal string values are escaped per N-Quads spec: `\` → `\\`, `"` → `\"`,
+   * newline → `\n`, carriage return → `\r`, tab → `\t`.
+   */
+  private static serializeNquadsLine(quad: Quad): string {
+    const s = Serializer.serializeNqTerm(quad.subject);
+    const p = Serializer.serializeNqTerm(quad.predicate);
+    const o = Serializer.serializeNqTerm(quad.object);
+    const g = quad.graph.termType === 'DefaultGraph'
+      ? ''
+      : `${Serializer.serializeNqTerm(quad.graph)} `;
+    return `${s} ${p} ${o} ${g}.\n`;
+  }
+
+  private static escapeNqLiteral(value: string): string {
+    return value
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g,  '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
+  }
+
+  private static serializeNqTerm(term: Quad['subject'] | Quad['predicate'] | Quad['object'] | Quad['graph']): string {
+    if (term.termType === 'NamedNode') {
+      return `<${term.value}>`;
+    }
+    if (term.termType === 'BlankNode') {
+      return `_:${term.value}`;
+    }
+    if (term.termType === 'Literal') {
+      const escaped = Serializer.escapeNqLiteral(term.value);
+      const datatypeIri = term.datatype.value;
+      if (datatypeIri.length > 0 &&
+          datatypeIri !== 'http://www.w3.org/2001/XMLSchema#string') {
+        return `"${escaped}"^^<${datatypeIri}>`;
+      }
+      return `"${escaped}"`;
+    }
+    // DefaultGraph — should not appear in subject/predicate/object position
+    return `<${term.value}>`;
   }
 
   /**

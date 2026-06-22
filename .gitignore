@@ -66,11 +66,28 @@ data
 
 # Build / scrape output
 dist/
+# TypeScript incremental build info
+*.tsbuildinfo
 # Top-level output/ directory (run artifacts); src/output/ is source code and is tracked.
 /output/
+
+# Pipeline + viz outputs (gigabytes of N-Quads + per-class JSON chunks).
+# Reproduce by re-running the pipeline + viz CLI.
+/graphs/
+/graphs.partial/
+/viz/
+/plugins/*/schemas/inferred/
+/plugins/*/schemas/primitives/
+/plugins/*/schemas/objects/
+
+# Scratch debug scripts (one-off conversions, ad-hoc tests).
+/scripts/test-*.mjs
 # Example output files are committed as documentation of expected output shape
 !examples/**/output/
 !examples/**/output/**
+# Demo data shards committed alongside frames + manifest for the live browser demo
+!docs/public/examples/**/data/
+!docs/public/examples/**/data/**
 
 # Compiled plugin outputs (built from plugins/**/*.ts via tsconfig.plugins.json)
 plugins/**/*.js
@@ -98,10 +115,8 @@ squashage.config*.json
 .orchestration/
 .env
 
-# Target-specific plugin source — shipped as examples in v1, not the beta.
-# Anchored to repo root so first-party silo plugins under
-# `src/classification/plugins/` (and their tests) stay tracked.
-/plugins/
+# Plugin compiled outputs are gitignored; source .ts and .dag.jsonld files are tracked.
+# (plugins/**/*.js and plugins/**/*.d.ts rules above already cover compiled outputs)
 
 # Demo build artifacts (graphs/ subdirectory from viz:demo script)
 docs/examples/aonprd/graphs/
@@ -115,3 +130,7 @@ docs/plans/
 # Session triage / plan artifacts (working documents)
 .triage-*.md
 .plan-*.md
+
+# Heap profiling artifacts
+*.heapsnapshot
+*.heapprofile

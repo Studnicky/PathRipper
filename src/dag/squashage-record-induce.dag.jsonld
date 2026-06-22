@@ -1,0 +1,120 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "name": {
+      "@id": "https://noocodex.dev/ontology/dag/name"
+    },
+    "version": {
+      "@id": "https://noocodex.dev/ontology/dag/version"
+    },
+    "entrypoint": {
+      "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+    },
+    "nodes": {
+      "@id": "https://noocodex.dev/ontology/dag/nodes",
+      "@container": "@set"
+    },
+    "outputs": {
+      "@id": "https://noocodex.dev/ontology/dag/outputs"
+    },
+    "node": {
+      "@id": "https://noocodex.dev/ontology/dag/node"
+    },
+    "dag": {
+      "@id": "https://noocodex.dev/ontology/dag/dag"
+    },
+    "body": {
+      "@id": "https://noocodex.dev/ontology/dag/body"
+    },
+    "source": {
+      "@id": "https://noocodex.dev/ontology/dag/source"
+    },
+    "itemKey": {
+      "@id": "https://noocodex.dev/ontology/dag/itemKey"
+    },
+    "concurrency": {
+      "@id": "https://noocodex.dev/ontology/dag/concurrency"
+    },
+    "gather": {
+      "@id": "https://noocodex.dev/ontology/dag/gather"
+    },
+    "reducer": {
+      "@id": "https://noocodex.dev/ontology/dag/reducer"
+    },
+    "outcome": {
+      "@id": "https://noocodex.dev/ontology/dag/outcome"
+    },
+    "phase": {
+      "@id": "https://noocodex.dev/ontology/dag/phase"
+    },
+    "stateMapping": {
+      "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+    },
+    "container": {
+      "@id": "https://noocodex.dev/ontology/dag/container"
+    },
+    "DAG": {
+      "@id": "https://noocodex.dev/ontology/dag/DAG"
+    },
+    "Placement": {
+      "@id": "https://noocodex.dev/ontology/dag/Placement"
+    },
+    "SingleNode": {
+      "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+    },
+    "ScatterNode": {
+      "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+    },
+    "EmbeddedDAGNode": {
+      "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+    },
+    "TerminalNode": {
+      "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+    },
+    "PhaseNode": {
+      "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+    }
+  },
+  "@id": "urn:noocodex:dag:squashage:record-induce",
+  "@type": "DAG",
+  "name": "squashage:record-induce",
+  "version": "1.0",
+  "entrypoint": "json-read",
+  "nodes": [
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/json-read",
+      "@type": "SingleNode",
+      "name": "json-read",
+      "node": "json-read",
+      "outputs": {
+        "loaded": "shape-observe",
+        "quarantined": "record-quarantine"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/shape-observe",
+      "@type": "SingleNode",
+      "name": "shape-observe",
+      "node": "shape-observe",
+      "outputs": {
+        "observed": "end",
+        "skipped": "end"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/record-quarantine",
+      "@type": "SingleNode",
+      "name": "record-quarantine",
+      "node": "record-quarantine",
+      "outputs": {
+        "recorded": "end"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/end",
+      "@type": "TerminalNode",
+      "name": "end",
+      "outcome": "completed"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "MonsterFamily",
+  "rdfsLabel": "name",
+  "promoteIri": ["/url"],
+  "openVocabulary": [
+    "name",
+    "body_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "drop": [
+    "/raw_fields",
+    "/trait_ids",
+    "/body_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "parents": ["Container"],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

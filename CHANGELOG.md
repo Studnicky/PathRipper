@@ -5,7 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.8.0] - 2026-06-22
+
+### Added
+
+- **Native plugin registry.** Plugins live in `plugins/<namespace>/` and export `register(dispatcher)`. `PluginLoader` discovers the namespace from the run DAG's scatter body, imports `index.js`, calls `register(dispatcher)`, and loads `*.dag.jsonld` files in topological order — mirroring ripperoni's plugin contract exactly. CLI: `squashage-dag build --config config.json --plugin aonprd`.
+- **`plugins/aonprd/` — first-party plugin.** Discriminator, URL-pattern, structural, and conflict classifiers; `OntologyProjectionNode` built with the plugin's own `JsonTologyOntology`; per-record DAG (`aonprd-record.dag.jsonld`, 11 nodes) replacing the old monolithic 19-node framework DAG.
+- **`src/classifiers/index.ts` — generic classifier exports.** All classifier `ScalarNode` subclasses are exported as building blocks for any domain. The framework registers none of them; plugins import and instantiate with their own config.
+- **`PluginLoader` (`src/run/PluginLoader.ts`).** Discovery, topological sort, and async `register()` dispatch — 1:1 with ripperoni's `PluginLoader`.
+- **`src/ontology/coreSchemas.ts` — public utility.** `loadCoreSchemaInputs()` and `loadExtractedSchemaInputs()` expose the framework's core upper-ontology schema loading so plugins can build complete `JsonTologyOntology` instances.
+- **Href-reconcile entity resolution.** `EntityIndex` (pre-scan), `HrefReconciler` (per-record inline collapse), and `indexEntities` pre-scatter node resolve link-item skolem nodes to canonical entity IRIs before any quad is written. On the AONPRD corpus: 370,649 direct canonical edges created, 427,606 duplicate quads eliminated, 0 failures.
+- **`WorkerThreadContainer` support.** `@studnicky/dagonizer-executor-node` integrated. `--workers <n>` CLI flag activates a `WorkerThreadContainer` pool. `plugins/aonprd/registry.ts` implements `RegistryModuleInterface` for worker-isolated builds (requires `output.mode: 'dataset'`).
+- **Graph viewer: inspector rulebook + physics pause.** Clicking a node loads its data shard lazily and displays rulebook properties (level, rarity, traits, edicts, …) in the sidebar. Physics simulation pause/resume sticks — the keep-alive re-energizer is gated on the paused state.
+- **Graph viewer: entity resolution in the browser.** Unresolved link-item nodes display their `text` label (extended label priority list). Skolem IRI nodes are filtered from the neighbor list.
+
+### Changed
+
+- **`squashage-record.dag.jsonld` is now a 5-node minimal built-in.** `json-read → squash → output-provenance → record-quarantine → end`. Plugins provide `squashage:record` (same name, overrides the built-in) with their own classifier chain.
+- **`squashage-run.dag.jsonld` is now the authoritative run-scope DAG.** `RunDag.build()` (programmatic runtime DAG construction) deleted. Concurrency is patched onto the loaded document at startup.
+- **`record-init` node deleted.** The scatter locator seeds `SquashageRecordState` directly via the `ChildStateFactoryType`; `json-read` picks it up from metadata.
+- **`NoOpClassifierNode` deleted.** Plugins author DAGs with only the classifiers they register. Unused classifier slots produce `registerDAG` validation errors at startup, not silent no-ops.
+- **`services.ontology` is always null.** The framework no longer builds `JsonTologyOntology` from config. Plugins construct their own via `loadCoreSchemaInputs()` + `loadExtractedSchemaInputs()` + `JsonTologyOntology.create()` in `register()`.
+- **`OntologyProjectionNode` takes ontology at construction.** No longer a singleton. Plugins instantiate with their own `JsonTologyOntology`. `ontologyProjectionNode` singleton export removed.
+- **`classification` and `enrichment` removed from core config schema.** Run config is now `input`, `output`, `concurrency`, `graphs`, `subjectIri`, `quarantine`. Classifier config is a plugin concern.
+- **`output.mode` defaults to `"stream"`.** Dataset mode (full in-memory accumulation) must be opted into explicitly. JSON-LD format still enforces dataset mode.
+- **`BaseError` ported as squashage-native implementation.** No external dependency. SCREAMING_SNAKE_CASE code auto-derivation, cause chain, metadata, `toJson()` / `serialize()` / `flatten()`.
+- **`build:plugins` step added.** `tsconfig.plugins.json` compiles plugin source in-place (`.js` alongside `.ts`, `rootDir: "."`, `outDir: "."`). Same pattern as ripperoni. Plugin `.js` and `.d.ts` outputs remain gitignored; `.ts` source and `.dag.jsonld` files are tracked.
+- **Demo data shards.** Per-concept gzipped property shards (`data/aonprdg-<class>.json.gz`) with local-name keys, `body_html`/`body_text`/`alt_edition_url` stripped. Demo total: 41 MB → 19 MB.
+- **Docs overhauled.** Sidebar restructured with dedicated Classifiers section (all 9 classifier types + custom classifier guide). New pages: Discriminator, Structural, Rules, Schema (AJV), Writing a classifier. Getting Started, Walk-through, Configuration, Plugins, Ontology, Architecture, Pipeline, entity-link all rewritten for current architecture. Favicon updated to the squash vegetable icon.
+- **Lenient projection — no record is dropped on shape.** The ABox projection schema is relaxed (induced `required`/enum/bounds/null- and integer-narrowing stripped) so records project with whatever properties they carry; the strict schema is retained for TBox/SHACL and deviations surface as advisory warnings. Records that no classifier maps fall back to the `Generic` class (no-drop floor) instead of quarantining. On the aonprd corpus this takes quarantine from 100% of projectable records to 5 genuine cases.
+- **Ontology/TBox emission errors route through the DAG.** A malformed class schema makes `ontology-emit` collect a warning and return an `error` output port (routed onward to finalize) rather than throwing and aborting the whole run.
+
+- **Single-run config model.** A config file IS one run: the root carries `input`, `output`, and the run knobs (`graphs`, `ontology`, `classification`, `enrichment`, `quarantine`, `concurrency`, `subjectIri`) directly — the `targets` map and the CLI `--target` flag are removed. `SquashageRun.forTarget` → `SquashageRun.forRun`.
+
+### Added
+
+- **Interactive cosmos.gl graph browser.** The example projection ships as compact binary frames (one per concept named-graph; ~14 MB for the full 256,362-node / 842,275-edge AONPRD graph) and streams into a WebGL `@cosmos.gl/graph` viewer via a transferable-`ArrayBuffer` Web Worker (GitHub Pages compatible — no SharedArrayBuffer/COOP-COEP). Nodes are colored and sized per concept (keyed off the named graph), animate in with a warm-restart settle, and expose hover/click details. Replaces the prior sigma.js renderer (`SigmaGraphRenderer`, `sigma` dep removed). `QuadGraph` now resolves `classIri` to the most-specific `rdf:type` rather than the first-seen supertype.
+- **Transient json-tology #126 workaround.** ABox projection inline-resolves cross-schema `$ref` property bodies so referenced object properties are not dropped during `toQuads`; TBox/SHACL emission stays on the strict-graph schemas. Removed when json-tology #126 ships upstream.
 
 ## [0.7.1] - 2026-05-18
 

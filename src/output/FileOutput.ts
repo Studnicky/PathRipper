@@ -210,7 +210,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         `Failed to create output directory for "${this.#config.path}"`,
-        { cause, metadata: { stage: 'open', path: this.#config.path } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'open', path: this.#config.path } },
       );
     }
 
@@ -465,7 +465,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         'Canonicalization failed',
-        { cause, metadata: { stage: 'canonicalize', path: this.#config.path } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'canonicalize', path: this.#config.path } },
       );
     }
   }
@@ -495,7 +495,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         `Failed to read SHACL shapes file "${shapesPath}"`,
-        { cause, metadata: { stage: 'validate', shapesPath } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'validate', shapesPath } },
       );
     }
 
@@ -641,7 +641,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         `Serialization to "${this.#format}" failed`,
-        { cause, metadata: { stage: 'serialize', path: this.#config.path, format: this.#format } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'serialize', path: this.#config.path, format: this.#format as string } },
       );
     }
   }
@@ -666,7 +666,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         `Failed to write tmp file "${tmpPath}"`,
-        { cause, metadata: { stage: 'finalize', path: destPath, tmpPath } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'finalize', path: destPath, tmpPath } },
       );
     }
 
@@ -694,7 +694,7 @@ export class FileOutput implements OutputInterface {
       const cause = err instanceof Error ? err : undefined;
       throw FileOutputError.create(
         `Atomic rename from "${tmpPath}" to "${destPath}" failed`,
-        { cause, metadata: { stage: 'finalize', path: destPath, tmpPath, partialPath } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { stage: 'finalize', path: destPath, tmpPath, partialPath } },
       );
     }
 

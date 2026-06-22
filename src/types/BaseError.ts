@@ -22,13 +22,13 @@
  */
 export interface BaseErrorOptionsInterface {
   /** Optional override for the auto-derived error code. */
-  readonly code?:      string | undefined;
+  readonly code?:      string;
   /** Underlying error that caused this one. */
-  readonly cause?:     Error | undefined;
+  readonly cause?:     Readonly<Error>;
   /** Arbitrary structured metadata attached to the error. */
-  readonly metadata?:  Readonly<Record<string, unknown>> | undefined;
+  readonly metadata?:  Readonly<Record<string, unknown>>;
   /** Whether the operation that produced this error can be retried. */
-  readonly retryable?: boolean | undefined;
+  readonly retryable?: boolean;
 }
 
 /**

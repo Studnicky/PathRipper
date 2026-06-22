@@ -1,0 +1,201 @@
+{
+  "$id": "https://2e.aonprd.com/Background",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundType.draft.json"
+    },
+    "alt_edition_url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundAltEditionUrl.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "attribute_boost_choice": {
+      "properties": {
+        "fixed_options": {
+          "items": {
+            "enum": [
+              "Charisma",
+              "Constitution",
+              "Dexterity",
+              "Intelligence",
+              "Strength",
+              "Wisdom"
+            ],
+            "type": "string",
+            "x-squashage-closed-enum": true
+          },
+          "type": "array"
+        },
+        "free": {
+          "type": "boolean"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "body_text": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundBodyText.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundEntityId.draft.json"
+    },
+    "flavor_text": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundFlavorText.draft.json"
+    },
+    "granted_feat": {
+      "properties": {
+        "feat_id": {
+          "maximum": 854,
+          "minimum": 756,
+          "type": "integer"
+        },
+        "name": {
+          "enum": [
+            "Assurance",
+            "Group Coercion",
+            "Multilingual",
+            "Quick Identification",
+            "Titan Wrestler"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": "object"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/BackgroundLink.draft.json"
+      },
+      "type": "array"
+    },
+    "lore_skills": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/BackgroundLoreSkill.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundName.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/AncestryPfs.draft.json",
+      "x-squashage-closed-enum": true
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "related_sources": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "sections": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "enum": [
+            "Pathfinder #150: Broken Promises",
+            "Player Core"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "page": {
+          "maximum": 88,
+          "minimum": 73,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 216,
+          "minimum": 15,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/BackgroundSource.draft.json"
+      },
+      "type": "array"
+    },
+    "trained_skills": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/BackgroundTrainedSkill.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/BackgroundTrait.draft.json"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString_3.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "attribute_boost_choice",
+    "body_text",
+    "entity_id",
+    "flavor_text",
+    "granted_feat",
+    "legacy",
+    "links",
+    "lore_skills",
+    "name",
+    "pfs",
+    "rarity",
+    "related_sources",
+    "sections",
+    "source",
+    "sources",
+    "trained_skills",
+    "traits",
+    "url"
+  ],
+  "title": "Background",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Background",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/body_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

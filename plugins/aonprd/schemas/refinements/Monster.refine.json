@@ -1,0 +1,61 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Monster",
+  "rdfsLabel": "name",
+  "promoteIri": [
+    "/url"
+  ],
+  "closedEnum": [
+    "rarity",
+    "size"
+  ],
+  "openVocabulary": [
+    "alignment",
+    "pfs",
+    "name",
+    "body_text",
+    "body_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "range": {
+    "rarity": "Rarity",
+    "size": "CreatureSize"
+  },
+  "drop": [
+    "/raw_fields",
+    "/trait_ids",
+    "/body_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "skolemSubject": {
+    "hp": {
+      "fragment": "stat-hp",
+      "type": "StatBlock",
+      "properties": {
+        "statValue": "xsd:integer"
+      }
+    },
+    "ac": {
+      "fragment": "stat-ac",
+      "type": "StatBlock"
+    }
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "parents": [
+    "ContentEntry"
+  ],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

@@ -37,10 +37,9 @@ const TARGET_SCHEMA = {
   title: 'Squashage Target Config',
   type: 'object',
   additionalProperties: false,
-  required: ['input', 'pipeline', 'output'],
+  required: ['input', 'output'],
   properties: {
     input:          { type: 'string', minLength: 1 },
-    pipeline:       { type: 'array', items: { type: 'string', minLength: 1 }, minItems: 1 },
     output:         { $ref: 'https://squashage.dev/schemas/output.json' },
     graphs:         { type: 'object', additionalProperties: { type: 'string', format: 'uri' } },
     ontology: {
@@ -87,201 +86,14 @@ const TARGET_SCHEMA = {
         required: ['baseIRI', 'schemas'] as const,
       },
     },
-    classification: {
+    subjectIri: {
       type: 'object',
       additionalProperties: false,
+      required: ['from', 'sanitize'] as const,
       properties: {
-        source: { type: 'boolean', const: true },
-        structural: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'predicate', 'reasons'],
-            properties: {
-              className: { type: 'string', minLength: 1 },
-              priority:  { type: 'number' },
-              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
-              reasons:   { type: 'array', items: { type: 'string' } },
-            },
-          },
-        },
-        rules: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'predicate', 'reasons'],
-            properties: {
-              className: { type: 'string', minLength: 1 },
-              priority:  { type: 'number' },
-              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
-              reasons:   { type: 'array', items: { type: 'string' } },
-            },
-          },
-        },
-        schemas: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'schemaPath'],
-            properties: {
-              className:  { type: 'string', minLength: 1 },
-              priority:   { type: 'number' },
-              schemaPath: { type: 'string', minLength: 1 },
-            },
-          },
-        },
-        ontology: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['classes'],
-          properties: {
-            classes: {
-              type: 'object',
-              additionalProperties: { type: 'string', format: 'uri' },
-              minProperties: 1,
-            },
-          },
-        },
-        conflict: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['onConflict', 'onUnknown', 'evidence'],
-          properties: {
-            onConflict: { type: 'string', enum: ['quarantine', 'pickPriority'] as const },
-            onUnknown:  { type: 'string', enum: ['quarantine', 'skip'] as const },
-            evidence:   { type: 'boolean' },
-          },
-        },
-        shaclShape: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['shapesFrom'],
-          properties: {
-            shapesFrom: {
-              oneOf: [
-                { type: 'string', const: 'ontology' as const },
-                { type: 'string', minLength: 1 },
-              ],
-            },
-            priority: { type: 'integer', minimum: 0 },
-          },
-        },
-        taxonomicNarrowing: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['tboxFrom'],
-          properties: {
-            tboxFrom: {
-              oneOf: [
-                { type: 'string', const: 'ontology' as const },
-                { type: 'string', minLength: 1 },
-              ],
-            },
-            enabled: { type: 'boolean' },
-          },
-        },
-        urlPattern: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['patterns'],
-          properties: {
-            patterns: {
-              type: 'array',
-              minItems: 1,
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['className', 'match'],
-                properties: {
-                  className: { type: 'string', minLength: 1 },
-                  match:     { type: 'string', minLength: 1 },
-                  priority:  { type: 'integer', minimum: 0 },
-                },
-              },
-            },
-          },
-        },
-        propertyFingerprint: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['fingerprintsFrom'],
-          properties: {
-            fingerprintsFrom: { type: 'string', minLength: 1 },
-            minMatchScore:    { type: 'number', minimum: 0, maximum: 1 },
-            priority:         { type: 'integer', minimum: 0 },
-          },
-        },
-        winknlpEntities: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['patterns'],
-          properties: {
-            patterns: {
-              type: 'array',
-              minItems: 1,
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['name', 'patterns', 'className'],
-                properties: {
-                  name:      { type: 'string', minLength: 1 },
-                  patterns:  {
-                    type:     'array',
-                    minItems: 1,
-                    items:    { type: 'string', minLength: 1 },
-                  },
-                  className: { type: 'string', minLength: 1 },
-                  priority:  { type: 'integer', minimum: 0 },
-                },
-              },
-            },
-            fields: {
-              type:  'array',
-              items: { type: 'string', minLength: 1 },
-            },
-          },
-        },
-      },
-    },
-    enrichment: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        entityLink: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['engine', 'edgeIri', 'linkAgainst'],
-          properties: {
-            engine: {
-              type: 'string',
-              enum: ['winknlp'] as const,
-            },
-            fields: {
-              type:  'array',
-              items: { type: 'string', minLength: 1 },
-            },
-            edgeIri: {
-              type:      'string',
-              minLength: 1,
-            },
-            linkAgainst: {
-              type:     'array',
-              minItems: 1,
-              items:    { type: 'string', minLength: 1 },
-            },
-            minConfidence: {
-              type:    'number',
-              minimum: 0,
-              maximum: 1,
-            },
-          },
-        },
+        from:     { type: 'string', minLength: 1 },
+        sanitize: { type: 'string', enum: ['url-tail', 'url-host-path', 'slug', 'verbatim'] as const },
+        fallback: { type: 'string', minLength: 1 },
       },
     },
     quarantine:     { type: 'object' },
@@ -289,16 +101,18 @@ const TARGET_SCHEMA = {
   },
 } as const;
 
-// ─── Root config schema ────────────────────────────────────────────────────────
+// ─── Root config schema (single-run) ──────────────────────────────────────────
+// The root IS the run — no targets map.
 
 const ROOT_SCHEMA = {
   $schema: 'http://json-schema.org/draft-07/schema#',
   $id: 'https://squashage.dev/schemas/squashage-config.json',
-  title: 'Squashage Config',
+  title: 'Squashage Run Config',
   type: 'object',
   additionalProperties: false,
-  required: ['input', 'targets'],
+  required: ['input', 'output'],
   properties: {
+    name:           { type: 'string', minLength: 1 },
     input: {
       type: 'object',
       additionalProperties: false,
@@ -308,11 +122,23 @@ const ROOT_SCHEMA = {
         format:   { type: 'string', enum: ['json', 'jsonl'] as const },
       },
     },
-    targets: {
+    output:         { $ref: 'https://squashage.dev/schemas/output.json' },
+    graphs:         { type: 'object', additionalProperties: { type: 'string', format: 'uri' } },
+    ontology:       { type: 'object' },
+    classification: { type: 'object' },
+    enrichment:     { type: 'object' },
+    subjectIri: {
       type: 'object',
-      additionalProperties: { $ref: 'https://squashage.dev/schemas/target.json' },
-      minProperties: 1,
+      additionalProperties: false,
+      required: ['from', 'sanitize'] as const,
+      properties: {
+        from:     { type: 'string', minLength: 1 },
+        sanitize: { type: 'string', enum: ['url-tail', 'url-host-path', 'slug', 'verbatim'] as const },
+        fallback: { type: 'string', minLength: 1 },
+      },
     },
+    quarantine:  { type: 'object' },
+    concurrency: { type: 'integer', minimum: 1, default: 1 },
   },
 } as const;
 
@@ -330,74 +156,92 @@ const _validate: ValidateFunction<object> = ajv.compile(ROOT_SCHEMA);
 // ─── Public interface types ────────────────────────────────────────────────────
 
 /**
- * Validated per-target configuration for a squashage build target.
+ * Validated single-run squashage configuration.
  *
  * @remarks
  * Produced by {@link SquashageConfig.loadFromFile} and {@link SquashageConfig.validate}
- * after AJV validation succeeds. The `output` field satisfies the
- * `PipelineContextInterface.output` slot.
+ * after AJV validation succeeds against the root squashage-config schema. The root
+ * object IS the run — there is no targets map. The optional `name` field acts as
+ * the run slug used for graph IRI and output directory derivation.
  *
  * @example
  * ```ts
  * const cfg = SquashageConfig.loadFromFile('./squashage.config.json');
- * const target: TargetConfigInterface = cfg.targets['aonprd'];
+ * console.log(cfg.input.basePath);   // './output/aonprd'
+ * console.log(cfg.output.kind);      // 'file'
  * ```
  *
  * @category Configuration
- * @since 2.2.0
- * @see {@link SquashageConfigInterface}
- * @group Types
- */
-export interface TargetConfigInterface {
-  /** Path to the input directory or file containing source JSON records. */
-  readonly input: string;
-  /** Ordered list of pipeline task names to execute per record. */
-  readonly pipeline: ReadonlyArray<string>;
-  /** Resolved output configuration (merged with CLI overrides at runtime). */
-  readonly output: OutputConfigInterface;
-  /** Named-graph IRIs keyed by lane name (e.g. `{ default: 'https://…' }`). */
-  readonly graphs?: Readonly<Record<string, string>> | undefined;
-  /** Ontology-specific settings (passed through to plugin tasks). */
-  readonly ontology?: Readonly<Record<string, unknown>> | undefined;
-  /** Classification cascade configuration (passed through to classifier). */
-  readonly classification?: Readonly<Record<string, unknown>> | undefined;
-  /** Enrichment configuration (passed through to enrichment tasks). */
-  readonly enrichment?: Readonly<Record<string, unknown>> | undefined;
-  /** Quarantine bucket configuration (passed through to QuarantineWriter). */
-  readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
-  /** Maximum concurrent pipeline executions (default 1). */
-  readonly concurrency?: number | undefined;
-}
-
-/**
- * Validated top-level squashage configuration.
- *
- * @remarks
- * Produced by {@link SquashageConfig.loadFromFile} and {@link SquashageConfig.validate}
- * after AJV validation succeeds against the root squashage-config schema.
- *
- * @example
- * ```ts
- * const cfg: SquashageConfigInterface = SquashageConfig.loadFromFile('./squashage.config.json');
- * console.log(cfg.input.basePath);          // './output'
- * console.log(Object.keys(cfg.targets));    // ['aonprd']
- * ```
- *
- * @category Configuration
- * @since 2.2.0
+ * @since 2.3.0
  * @see {@link SquashageConfig}
  * @group Types
  */
-export interface SquashageConfigInterface {
-  /** Input source settings shared across all targets. */
+export interface SquashageRunConfigInterface {
+  /** Optional run name / slug used for graph IRI and output directory derivation. */
+  readonly name?: string | undefined;
+  /** Input source settings for this run. */
   readonly input: {
     /** Base path to the directory containing source JSON input files. */
     readonly basePath: string;
     /** Input file format (one record per file for json; multiple per file for jsonl). */
     readonly format: 'json' | 'jsonl';
   };
-  /** Map of target id → target configuration. Must have at least one entry. */
-  readonly targets: Record<string, TargetConfigInterface>;
+  /** Resolved output configuration (merged with CLI overrides at runtime). */
+  readonly output: OutputConfigInterface;
+  /** Named-graph IRIs keyed by lane name (e.g. `{ default: 'https://…' }`). */
+  readonly graphs?: Readonly<Record<string, string>> | undefined;
+  /** Ontology-specific settings (passed through to plugin tasks). */
+  readonly ontology?: Readonly<Record<string, unknown>> | undefined;
+  /** Quarantine bucket configuration (passed through to QuarantineWriter). */
+  readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
+  /** Maximum concurrent pipeline executions (default 1). */
+  readonly concurrency?: number | undefined;
+  /**
+   * Subject-IRI derivation policy for this run.
+   *
+   * When absent, subject IRIs are derived from a sha1 hash of
+   * `recordPath:recordLine` (legacy default).
+   */
+  readonly subjectIri?: {
+    /** JSON Pointer into the record to read the candidate IRI value. */
+    readonly from: string;
+    /** Sanitize strategy applied to the resolved string. */
+    readonly sanitize: 'url-tail' | 'url-host-path' | 'slug' | 'verbatim';
+    /** JSON Pointer used when `from` resolves to undefined. */
+    readonly fallback?: string | undefined;
+  } | undefined;
+}
+
+/**
+ * Backward-compatible alias for {@link SquashageRunConfigInterface}.
+ *
+ * @remarks
+ * Callers that previously imported `TargetConfigInterface` continue to work
+ * without modification. New code should prefer `SquashageRunConfigInterface`.
+ *
+ * @category Configuration
+ * @since 2.2.0
+ * @group Types
+ */
+export interface TargetConfigInterface {
+  /** Optional run name / slug. */
+  readonly name?: string | undefined;
+  /** Input source settings for this run. */
+  readonly input: {
+    readonly basePath: string;
+    readonly format: 'json' | 'jsonl';
+  };
+  /** Resolved output configuration. */
+  readonly output: OutputConfigInterface;
+  readonly graphs?: Readonly<Record<string, string>> | undefined;
+  readonly ontology?: Readonly<Record<string, unknown>> | undefined;
+  readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
+  readonly concurrency?: number | undefined;
+  readonly subjectIri?: {
+    readonly from: string;
+    readonly sanitize: 'url-tail' | 'url-host-path' | 'slug' | 'verbatim';
+    readonly fallback?: string | undefined;
+  } | undefined;
 }
 
 // ─── Cross-validation helper ───────────────────────────────────────────────────
@@ -421,8 +265,8 @@ export interface SquashageConfigInterface {
  *
  * @internal
  */
-function validateOutputJsonldContext(target: string, targetConfig: TargetConfigInterface): void {
-  const output = targetConfig.output as Record<string, unknown>;
+function validateOutputJsonldContext(runConfig: SquashageRunConfigInterface): void {
+  const output = runConfig.output as Record<string, unknown>;
   const jsonldContext = output['jsonldContext'];
   if (jsonldContext === undefined) return;
 
@@ -432,10 +276,11 @@ function validateOutputJsonldContext(target: string, targetConfig: TargetConfigI
     format === 'jsonld' ||
     (format === undefined && path !== undefined && extname(path).toLowerCase() === '.jsonld');
   if (!isJsonldFormat) {
+    const run = runConfig.name ?? '(run)';
     throw SquashageConfigError.create(
-      `output.jsonldContext is set on target "${target}" but the resolved output format is not "jsonld". ` +
+      `output.jsonldContext is set on run "${run}" but the resolved output format is not "jsonld". ` +
       `Either set output.format to "jsonld", use a ".jsonld" output path extension, or remove jsonldContext.`,
-      { metadata: { target, format, path } },
+      { metadata: { run, format, path } },
     );
   }
 }
@@ -477,8 +322,10 @@ class SquashageConfigSchema {
  *
  * @remarks
  * All methods are static; the class cannot be instantiated. Uses synchronous
- * I/O with three registered AJV schemas (output, target, root) so callers can
- * load config at startup without top-level `await`.
+ * I/O with the registered AJV schemas (output, predicate, and the single-run
+ * root config schema) so callers can load config at startup without top-level
+ * `await`. The config file IS one run — its root holds `input`, `output`, and
+ * the run knobs directly; there is no targets map.
  *
  * Throws {@link SquashageConfigError} on I/O failure, JSON parse failure, or
  * AJV schema violation. The error message includes the absolute config path
@@ -487,13 +334,12 @@ class SquashageConfigSchema {
  * @example
  * ```ts
  * const config = SquashageConfig.loadFromFile('./squashage.config.json');
- * const target = config.targets['aonprd'];
- * console.log(target.output.path);   // './graphs/aonprd.jsonld'
+ * console.log(config.output.path);   // './graphs/aonprd.jsonld'
  * ```
  *
  * @category Configuration
  * @since 2.2.0
- * @see {@link SquashageConfigInterface}
+ * @see {@link SquashageRunConfigInterface}
  * @see {@link SquashageConfigError}
  * @group Core
  */
@@ -509,7 +355,7 @@ export class SquashageConfig {
    * loading occurs at process startup before any async pipeline work begins.
    *
    * @param path - Path to the squashage config JSON file (resolved to absolute).
-   * @returns Validated {@link SquashageConfigInterface} object.
+   * @returns Validated {@link SquashageRunConfigInterface} object.
    * @throws {SquashageConfigError} When the file is missing, unparseable, or fails schema validation.
    *
    * @example
@@ -517,7 +363,7 @@ export class SquashageConfig {
    * const config = SquashageConfig.loadFromFile('./squashage.config.json');
    * ```
    */
-  public static loadFromFile(path: string): SquashageConfigInterface {
+  public static loadFromFile(path: string): SquashageRunConfigInterface {
     const abs = resolve(path);
     log.info('loadFromFile', `Loading squashage config from ${abs}`, { path: abs });
 
@@ -529,7 +375,7 @@ export class SquashageConfig {
       log.error('loadFromFile', `Failed to read config file: ${abs}`, { path: abs });
       throw SquashageConfigError.create(
         `Cannot read squashage config at ${abs}: ${cause?.message ?? String(err)}`,
-        { cause, metadata: { configPath: abs } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { configPath: abs } },
       );
     }
 
@@ -541,7 +387,7 @@ export class SquashageConfig {
       log.error('loadFromFile', `Failed to parse config JSON: ${abs}`, { path: abs });
       throw SquashageConfigError.create(
         `Cannot parse squashage config at ${abs}: ${cause?.message ?? String(err)}`,
-        { cause, metadata: { configPath: abs } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { configPath: abs } },
       );
     }
 
@@ -555,14 +401,14 @@ export class SquashageConfig {
    * Pure validation with no I/O. Useful for callers that have already parsed
    * the config JSON (e.g. from an environment variable or a test fixture).
    *
-   * After AJV schema validation passes, cross-validation is performed for each
-   * target's `output.jsonldContext` vs the resolved output format.
-   * (Classify task config-namespace and proposer-count rules now live in the
-   * per-plugin AJV schemas and the orchestrator's startup manifest check.)
+   * After AJV schema validation passes, cross-validation checks the run's
+   * `output.jsonldContext` against the resolved output format. Classify task
+   * config-namespace and proposer-count rules live in the per-plugin AJV
+   * schemas.
    *
    * @param raw - Unknown value to validate.
    * @param configPath - Optional path shown in error messages for context.
-   * @returns Validated {@link SquashageConfigInterface} object.
+   * @returns Validated {@link SquashageRunConfigInterface} object.
    * @throws {SquashageConfigError} When `raw` fails schema validation or cross-validation.
    *
    * @example
@@ -570,7 +416,7 @@ export class SquashageConfig {
    * const config = SquashageConfig.validate(JSON.parse(rawJson));
    * ```
    */
-  public static validate(raw: unknown, configPath?: string): SquashageConfigInterface {
+  public static validate(raw: unknown, configPath?: string): SquashageRunConfigInterface {
     const errors = SquashageConfigSchema.validate(raw);
     if (errors !== null) {
       const location = configPath !== undefined ? ` at ${configPath}` : '';
@@ -581,14 +427,10 @@ export class SquashageConfig {
       );
     }
 
-    const validated = raw as SquashageConfigInterface;
+    const validated = raw as SquashageRunConfigInterface;
 
-    // Cross-validate each target: jsonldContext vs resolved output format.
-    // (Classify task config-namespace + proposer-count rules now live in the
-    // per-plugin AJV schemas and the orchestrator's startup manifest check.)
-    for (const [target, targetConfig] of Object.entries(validated.targets)) {
-      validateOutputJsonldContext(target, targetConfig);
-    }
+    // Cross-validate: jsonldContext vs resolved output format.
+    validateOutputJsonldContext(validated);
 
     log.debug('validate', 'Squashage config validated successfully', { configPath });
     return validated;

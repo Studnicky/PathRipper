@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": ".",
+    "declarationMap": false,
+    "sourceMap": false,
+    "declaration": false,
+    "noEmit": false
+  },
+  "include": [
+    "plugins/aonprd/index.ts",
+    "plugins/aonprd/aonprd.plugin.config.ts",
+    "plugins/aonprd/registry.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}

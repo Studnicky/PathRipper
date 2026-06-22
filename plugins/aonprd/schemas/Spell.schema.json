@@ -1,0 +1,494 @@
+{
+  "$id": "https://2e.aonprd.com/Spell",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    },
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Mechanic.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellType.draft.json"
+    },
+    "access": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellAccess.draft.json"
+    },
+    "action_cost": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellActionCost.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "affliction": {
+      "properties": {
+        "body_html": {
+          "enum": [
+            "<b>Abyssal Plague</b> (disease); <b>Level</b> 9. The target can't recover from the drained condition from Abyssal plague until the disease is cured. <b>Stage 1</b> drained 1 (1 day); <b>Stage 2</b> drained increases by 2 (1 day).<br><br>"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "level": {
+          "maximum": 9,
+          "minimum": 9,
+          "type": "integer"
+        },
+        "maximum_duration": {
+          "type": "null"
+        },
+        "name": {
+          "enum": [
+            "Abyssal Plague"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "onset": {
+          "type": "null"
+        },
+        "saving_throw": {
+          "type": "null"
+        },
+        "stages": {
+          "items": {
+            "properties": {
+              "body_text": {
+                "enum": [
+                  "drained 1",
+                  "drained increases by 2"
+                ],
+                "type": "string",
+                "x-squashage-closed-enum": true
+              },
+              "duration": {
+                "enum": [
+                  "1 day"
+                ],
+                "type": "string",
+                "x-squashage-closed-enum": true
+              },
+              "stage": {
+                "maximum": 2,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "disease"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-squashage-open-vocab": true
+    },
+    "area": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bloodlines": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellBloodline.draft.json"
+      },
+      "type": "array"
+    },
+    "cast": {
+      "properties": {
+        "actions": {
+          "enum": [
+            "one-action",
+            "reaction",
+            "three-actions",
+            "two-actions",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        },
+        "components": {
+          "items": {
+            "enum": [
+              "focus",
+              "material",
+              "somatic",
+              "verbal"
+            ],
+            "type": "string",
+            "x-squashage-closed-enum": true
+          },
+          "type": "array"
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "time": {
+          "enum": [
+            "1 day",
+            "1 hour",
+            "1 minute",
+            "1 minute ( )",
+            "10 minutes",
+            "10 minutes ( )",
+            "4 hours",
+            "7 days",
+            "or",
+            "to",
+            null
+          ],
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": "object"
+    },
+    "catalysts": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellCatalyst.draft.json"
+      },
+      "type": "array"
+    },
+    "cost": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellCost.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "cult": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "defense": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellDefense.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "deities": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellDeitie.draft.json"
+      },
+      "type": "array"
+    },
+    "description_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "domain": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellDomain.draft.json"
+      },
+      "type": "array"
+    },
+    "duration": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "heightened": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellHeightened.draft.json"
+      },
+      "type": "array"
+    },
+    "kind": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellKind.draft.json",
+      "x-squashage-closed-enum": true
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "lesson": {
+      "properties": {
+        "lesson_id": {
+          "maximum": 34,
+          "minimum": 11,
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellLink.draft.json"
+      },
+      "type": "array"
+    },
+    "mysteries": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellMysterie.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "outcomes": {
+      "properties": {
+        "critical_failure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "critical_success": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "failure": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "success": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "patron_themes": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellPatronTheme.draft.json"
+      },
+      "type": "array"
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentPfs.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "range": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rank": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellRank.draft.json"
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "requirements": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellRequirements.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "ritual_primary_check": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellRitualPrimaryCheck.draft.json"
+    },
+    "ritual_secondary_casters": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellHeightenedIncrement.draft.json"
+    },
+    "ritual_secondary_checks": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellRitualSecondaryChecks.draft.json"
+    },
+    "saving_throw": {
+      "properties": {
+        "basic": {
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "AC",
+            "Fortitude",
+            "Fortitude, see text",
+            "Reflex",
+            "Will",
+            "see below"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "raw": {
+          "enum": [
+            "AC",
+            "Fortitude",
+            "Reflex",
+            "Will",
+            "basic Fortitude",
+            "basic Fortitude, see text",
+            "basic Reflex",
+            "basic Will",
+            "see below"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 410,
+          "minimum": 15,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 294,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/SpellSource.draft.json"
+      },
+      "type": "array"
+    },
+    "spell_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellSpellId.draft.json"
+    },
+    "spell_list": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellSpellList.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "spoiler_source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "targets": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "traditions": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/SpellTradition.draft.json"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "trigger": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "access",
+    "action_cost",
+    "affliction",
+    "alt_edition_url",
+    "area",
+    "bloodlines",
+    "cast",
+    "catalysts",
+    "cost",
+    "cult",
+    "defense",
+    "deities",
+    "description_text",
+    "domain",
+    "duration",
+    "heightened",
+    "kind",
+    "legacy",
+    "lesson",
+    "links",
+    "mysteries",
+    "name",
+    "outcomes",
+    "patron_themes",
+    "pfs",
+    "range",
+    "rank",
+    "rarity",
+    "requirements",
+    "ritual_primary_check",
+    "ritual_secondary_casters",
+    "ritual_secondary_checks",
+    "saving_throw",
+    "source",
+    "sources",
+    "spell_id",
+    "spell_list",
+    "spoiler_source",
+    "targets",
+    "traditions",
+    "traits",
+    "trigger",
+    "url"
+  ],
+  "title": "Spell",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traditions": "Tradition",
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Spell",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/description_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}
