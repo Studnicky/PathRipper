@@ -1,0 +1,65 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Feat",
+  "rdfsLabel": "name",
+  "rdfsComment": "description_text",
+  "promoteIri": [
+    "/url"
+  ],
+  "closedEnum": [
+    "rarity"
+  ],
+  "openVocabulary": [
+    "access",
+    "action_cost",
+    "cost",
+    "frequency",
+    "pfs",
+    "name",
+    "description_text",
+    "description_html",
+    "prerequisites",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "range": {
+    "rarity": "Rarity"
+  },
+  "drop": [
+    "/raw_fields",
+    "/trait_glossary",
+    "/trait_ids",
+    "/description_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "arrayEnumIri": {
+    "traits": "Trait"
+  },
+  "skolemSubject": {
+    "action_cost": {
+      "fragment": "actionCost",
+      "type": "ActionCost",
+      "properties": {
+        "actionSymbol": "xsd:string"
+      }
+    }
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "inverseOf": {
+    "hasPrerequisite": "isPrerequisiteFor"
+  },
+  "parents": [
+    "ContentEntry",
+    "Mechanic"
+  ],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

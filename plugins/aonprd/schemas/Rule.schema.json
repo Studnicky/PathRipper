@@ -1,0 +1,102 @@
+{
+  "$id": "https://2e.aonprd.com/Rule",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    },
+    {
+      "$ref": "https://noocodec.dev/squashage/core/DocumentSegment.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/RuleType.draft.json"
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "child_rules": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/RuleChildRule.draft.json"
+      },
+      "type": "array"
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/RuleEntityId.draft.json"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/RuleLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "sections": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/RuleSection.draft.json"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 618,
+          "minimum": 2,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 320,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/RuleSource.draft.json"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "body_text",
+    "child_rules",
+    "entity_id",
+    "links",
+    "name",
+    "sections",
+    "source",
+    "sources",
+    "url"
+  ],
+  "title": "Rule",
+  "type": "object",
+  "x-squashage-class": "https://2e.aonprd.com/Rule",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/body_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

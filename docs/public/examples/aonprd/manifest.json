@@ -2,128 +2,143 @@
   "format": "squashage-binary-frames-v1",
   "version": 1,
   "spaceSize": 5400,
-  "totalNodes": 256362,
-  "totalEdges": 842275,
+  "totalNodes": 196648,
+  "totalEdges": 761876,
   "frames": [
     {
       "file": "frames/frame-000.bin",
       "label": "aonprdg:Background",
       "color": "#90caf9",
-      "nodeCount": 70,
-      "edgeCount": 106,
-      "nodeBase": 0
+      "nodeCount": 43,
+      "edgeCount": 101,
+      "nodeBase": 0,
+      "dataFile": "data/aonprdg-background.json.gz"
     },
     {
       "file": "frames/frame-001.bin",
       "label": "aonprdg:Armor",
       "color": "#ffb74d",
-      "nodeCount": 180,
-      "edgeCount": 414,
-      "nodeBase": 70
+      "nodeCount": 161,
+      "edgeCount": 406,
+      "nodeBase": 43,
+      "dataFile": "data/aonprdg-armor.json.gz"
     },
     {
       "file": "frames/frame-002.bin",
       "label": "aonprdg:Condition",
       "color": "#ffd54f",
-      "nodeCount": 406,
-      "edgeCount": 940,
-      "nodeBase": 250
+      "nodeCount": 286,
+      "edgeCount": 884,
+      "nodeBase": 204,
+      "dataFile": "data/aonprdg-condition.json.gz"
     },
     {
       "file": "frames/frame-003.bin",
       "label": "aonprdg:Equipment",
       "color": "#ff8a65",
-      "nodeCount": 1294,
-      "edgeCount": 2641,
-      "nodeBase": 656
+      "nodeCount": 854,
+      "edgeCount": 2602,
+      "nodeBase": 490,
+      "dataFile": "data/aonprdg-equipment.json.gz"
     },
     {
       "file": "frames/frame-004.bin",
       "label": "aonprdg:Class",
       "color": "#aed581",
-      "nodeCount": 2050,
-      "edgeCount": 4613,
-      "nodeBase": 1950
+      "nodeCount": 1433,
+      "edgeCount": 4062,
+      "nodeBase": 1344,
+      "dataFile": "data/aonprdg-class.json.gz"
     },
     {
       "file": "frames/frame-005.bin",
       "label": "aonprdg:Action",
       "color": "#c09fef",
-      "nodeCount": 2604,
-      "edgeCount": 5636,
-      "nodeBase": 4000
+      "nodeCount": 1661,
+      "edgeCount": 5271,
+      "nodeBase": 2777,
+      "dataFile": "data/aonprdg-action.json.gz"
     },
     {
       "file": "frames/frame-006.bin",
       "label": "aonprdg:Ancestry",
       "color": "#f06292",
-      "nodeCount": 2833,
-      "edgeCount": 6088,
-      "nodeBase": 6604
+      "nodeCount": 1664,
+      "edgeCount": 5642,
+      "nodeBase": 4438,
+      "dataFile": "data/aonprdg-ancestry.json.gz"
     },
     {
       "file": "frames/frame-007.bin",
       "label": "aonprdg:Trait",
       "color": "#a1887f",
-      "nodeCount": 3254,
-      "edgeCount": 5172,
-      "nodeBase": 9437
+      "nodeCount": 2238,
+      "edgeCount": 4615,
+      "nodeBase": 6102,
+      "dataFile": "data/aonprdg-trait.json.gz"
     },
     {
       "file": "frames/frame-008.bin",
       "label": "aonprdg:Weapon",
       "color": "#dce775",
-      "nodeCount": 3477,
-      "edgeCount": 11855,
-      "nodeBase": 12691
+      "nodeCount": 2493,
+      "edgeCount": 11156,
+      "nodeBase": 8340,
+      "dataFile": "data/aonprdg-weapon.json.gz"
     },
     {
       "file": "frames/frame-009.bin",
       "label": "aonprdg:Hazard",
       "color": "#ffb13c",
-      "nodeCount": 4979,
-      "edgeCount": 11158,
-      "nodeBase": 16168
+      "nodeCount": 3566,
+      "edgeCount": 10404,
+      "nodeBase": 10833,
+      "dataFile": "data/aonprdg-hazard.json.gz"
     },
     {
       "file": "frames/frame-010.bin",
       "label": "aonprdg:Spell",
       "color": "#ba68c8",
-      "nodeCount": 6235,
-      "edgeCount": 28459,
-      "nodeBase": 21147
+      "nodeCount": 4617,
+      "edgeCount": 28316,
+      "nodeBase": 14399,
+      "dataFile": "data/aonprdg-spell.json.gz"
     },
     {
       "file": "frames/frame-011.bin",
       "label": "aonprdg:Feat",
       "color": "#81c784",
-      "nodeCount": 7466,
-      "edgeCount": 20644,
-      "nodeBase": 27382
+      "nodeCount": 5034,
+      "edgeCount": 19659,
+      "nodeBase": 19016,
+      "dataFile": "data/aonprdg-feat.json.gz"
     },
     {
       "file": "frames/frame-012.bin",
       "label": "aonprdg:MonsterFamily",
       "color": "#7986cb",
-      "nodeCount": 10406,
-      "edgeCount": 25345,
-      "nodeBase": 34848
+      "nodeCount": 5480,
+      "edgeCount": 21955,
+      "nodeBase": 24050,
+      "dataFile": "data/aonprdg-monsterfamily.json.gz"
     },
     {
       "file": "frames/frame-013.bin",
-      "label": "aonprdg:Monster",
-      "color": "#e94560",
-      "nodeCount": 96040,
-      "edgeCount": 406625,
-      "nodeBase": 45254
+      "label": "aonprdg:Generic",
+      "color": "#4dd0e1",
+      "nodeCount": 81525,
+      "edgeCount": 291935,
+      "nodeBase": 29530,
+      "dataFile": "data/aonprdg-generic.json.gz"
     },
     {
       "file": "frames/frame-014.bin",
-      "label": "aonprdg:Generic",
-      "color": "#4dd0e1",
-      "nodeCount": 115068,
-      "edgeCount": 312579,
-      "nodeBase": 141294
+      "label": "aonprdg:Monster",
+      "color": "#e94560",
+      "nodeCount": 85593,
+      "edgeCount": 354868,
+      "nodeBase": 111055,
+      "dataFile": "data/aonprdg-monster.json.gz"
     }
   ]
 }

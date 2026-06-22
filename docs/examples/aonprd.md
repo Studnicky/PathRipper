@@ -1,14 +1,14 @@
 ---
 layout: doc
 title: Pathfinder/AONPRD Demo
-description: Interactive cytoscape graph of 12,553+ Pathfinder Second Edition records from Archives of Nethys — nodes coloured by RDF class, edges showing object-property links. Produced by the Squashage pipeline.
+description: Interactive WebGL graph of 196,648 Pathfinder Second Edition records from Archives of Nethys — nodes coloured by RDF class, edges resolved to canonical entities by the href-reconcile enrichment pipeline. Produced by the Squashage pipeline.
 ---
 
 # Pathfinder/AONPRD Graph Demo
 
-An interactive cytoscape graph of the Pathfinder Second Edition (Archives of Nethys) fixture data produced by the squashage pipeline.
+An interactive WebGL graph of Pathfinder Second Edition (Archives of Nethys) data produced by the squashage pipeline with href-reconcile entity resolution.
 
-Nodes are coloured by RDF class (feat, spell, monster, action, equipment). Edges show object-property links (`rarity`, `trait`, `tradition`, `actionCost`). Click any node to see its properties in the sidebar. The canvas is zoomable and pannable.
+Nodes are coloured by RDF class (feat, spell, monster, action, ancestry, …). Edges connect canonical entities — `rarity`, `trait`, `links`, `family_links` — all resolved to `squashage.dev/instance` targets. Click any node to see its rulebook properties (level, traits, rarity, book/page, edicts, …) and named neighbors. The canvas is zoomable and pannable.
 
 <iframe
   src="/Squashage/examples/aonprd/aonprd.html"
@@ -18,16 +18,17 @@ Nodes are coloured by RDF class (feat, spell, monster, action, equipment). Edges
 
 ---
 
-To regenerate this demo from the fixture data:
+To regenerate this demo from N-Quads output:
 
 ```bash
-npm run viz:demo
+squashage viz --in ./graphs/aonprd/aonprd.nq --out docs/public/examples/aonprd
 ```
 
-Or render any squashage JSON-LD output as a standalone offline graph:
+To run the full pipeline from the fixture data (classification → projection → entity resolution → viz):
 
 ```bash
-squashage viz --in ./graphs/aonprd.jsonld --out aonprd.html --title "My Graph"
+squashage build --config plugins/aonprd/aonprd.run.config.json
+squashage viz --in ./graphs/aonprd/aonprd.nq --out docs/public/examples/aonprd
 ```
 
-The standalone HTML file (`docs/public/examples/aonprd/aonprd.html`) runs entirely offline — no network access, no Node.js, no `node_modules` required at display time. Open it in any browser.
+The standalone HTML file (`docs/public/examples/aonprd/aonprd.html`) runs entirely offline — no network access, no Node.js, no `node_modules` required at display time. Open it directly in any browser.

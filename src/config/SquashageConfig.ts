@@ -86,213 +86,6 @@ const TARGET_SCHEMA = {
         required: ['baseIRI', 'schemas'] as const,
       },
     },
-    classification: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        source: { type: 'boolean', const: true },
-        structural: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'predicate', 'reasons'],
-            properties: {
-              className: { type: 'string', minLength: 1 },
-              priority:  { type: 'number' },
-              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
-              reasons:   { type: 'array', items: { type: 'string' } },
-            },
-          },
-        },
-        rules: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'predicate', 'reasons'],
-            properties: {
-              className: { type: 'string', minLength: 1 },
-              priority:  { type: 'number' },
-              predicate: { $ref: 'https://squashage.dev/schemas/predicate.json' },
-              reasons:   { type: 'array', items: { type: 'string' } },
-            },
-          },
-        },
-        schemas: {
-          type: 'array',
-          minItems: 1,
-          items: {
-            type: 'object',
-            additionalProperties: false,
-            required: ['className', 'priority', 'schemaPath'],
-            properties: {
-              className:  { type: 'string', minLength: 1 },
-              priority:   { type: 'number' },
-              schemaPath: { type: 'string', minLength: 1 },
-            },
-          },
-        },
-        ontology: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['classes'],
-          properties: {
-            classes: {
-              type: 'object',
-              additionalProperties: { type: 'string', format: 'uri' },
-              minProperties: 1,
-            },
-          },
-        },
-        conflict: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['onConflict', 'evidence'],
-          properties: {
-            onConflict: { type: 'string', enum: ['quarantine', 'pickPriority'] as const },
-            evidence:   { type: 'boolean' },
-          },
-        },
-        shaclShape: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['shapesFrom'],
-          properties: {
-            shapesFrom: {
-              oneOf: [
-                { type: 'string', const: 'ontology' as const },
-                { type: 'string', minLength: 1 },
-              ],
-            },
-            priority: { type: 'integer', minimum: 0 },
-          },
-        },
-        taxonomicNarrowing: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['tboxFrom'],
-          properties: {
-            tboxFrom: {
-              oneOf: [
-                { type: 'string', const: 'ontology' as const },
-                { type: 'string', minLength: 1 },
-              ],
-            },
-            enabled: { type: 'boolean' },
-          },
-        },
-        urlPattern: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['patterns'],
-          properties: {
-            patterns: {
-              type: 'array',
-              minItems: 1,
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['className', 'match'],
-                properties: {
-                  className: { type: 'string', minLength: 1 },
-                  match:     { type: 'string', minLength: 1 },
-                  priority:  { type: 'integer', minimum: 0 },
-                },
-              },
-            },
-          },
-        },
-        propertyFingerprint: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['fingerprintsFrom'],
-          properties: {
-            fingerprintsFrom: { type: 'string', minLength: 1 },
-            minMatchScore:    { type: 'number', minimum: 0, maximum: 1 },
-            priority:         { type: 'integer', minimum: 0 },
-          },
-        },
-        winknlpEntities: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['patterns'],
-          properties: {
-            patterns: {
-              type: 'array',
-              minItems: 1,
-              items: {
-                type: 'object',
-                additionalProperties: false,
-                required: ['name', 'patterns', 'className'],
-                properties: {
-                  name:      { type: 'string', minLength: 1 },
-                  patterns:  {
-                    type:     'array',
-                    minItems: 1,
-                    items:    { type: 'string', minLength: 1 },
-                  },
-                  className: { type: 'string', minLength: 1 },
-                  priority:  { type: 'integer', minimum: 0 },
-                },
-              },
-            },
-            fields: {
-              type:  'array',
-              items: { type: 'string', minLength: 1 },
-            },
-          },
-        },
-        discriminator: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['from'],
-          properties: {
-            from:     { type: 'string', minLength: 1 },
-            fallback: { type: 'string', minLength: 1 },
-            priority: { type: 'integer', minimum: 0 },
-            sanitize: { type: 'string', enum: ['verbatim', 'pascalCase', 'kebabToPascal'] as const },
-          },
-        },
-      },
-    },
-    enrichment: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        entityLink: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['engine', 'edgeIri', 'linkAgainst'],
-          properties: {
-            engine: {
-              type: 'string',
-              enum: ['winknlp'] as const,
-            },
-            fields: {
-              type:  'array',
-              items: { type: 'string', minLength: 1 },
-            },
-            edgeIri: {
-              type:      'string',
-              minLength: 1,
-            },
-            linkAgainst: {
-              type:     'array',
-              minItems: 1,
-              items:    { type: 'string', minLength: 1 },
-            },
-            minConfidence: {
-              type:    'number',
-              minimum: 0,
-              maximum: 1,
-            },
-          },
-        },
-      },
-    },
     subjectIri: {
       type: 'object',
       additionalProperties: false,
@@ -399,10 +192,6 @@ export interface SquashageRunConfigInterface {
   readonly graphs?: Readonly<Record<string, string>> | undefined;
   /** Ontology-specific settings (passed through to plugin tasks). */
   readonly ontology?: Readonly<Record<string, unknown>> | undefined;
-  /** Classification cascade configuration (passed through to classifier). */
-  readonly classification?: Readonly<Record<string, unknown>> | undefined;
-  /** Enrichment configuration (passed through to enrichment tasks). */
-  readonly enrichment?: Readonly<Record<string, unknown>> | undefined;
   /** Quarantine bucket configuration (passed through to QuarantineWriter). */
   readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
   /** Maximum concurrent pipeline executions (default 1). */
@@ -446,8 +235,6 @@ export interface TargetConfigInterface {
   readonly output: OutputConfigInterface;
   readonly graphs?: Readonly<Record<string, string>> | undefined;
   readonly ontology?: Readonly<Record<string, unknown>> | undefined;
-  readonly classification?: Readonly<Record<string, unknown>> | undefined;
-  readonly enrichment?: Readonly<Record<string, unknown>> | undefined;
   readonly quarantine?: Readonly<Record<string, unknown>> | undefined;
   readonly concurrency?: number | undefined;
   readonly subjectIri?: {
@@ -588,7 +375,7 @@ export class SquashageConfig {
       log.error('loadFromFile', `Failed to read config file: ${abs}`, { path: abs });
       throw SquashageConfigError.create(
         `Cannot read squashage config at ${abs}: ${cause?.message ?? String(err)}`,
-        { cause, metadata: { configPath: abs } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { configPath: abs } },
       );
     }
 
@@ -600,7 +387,7 @@ export class SquashageConfig {
       log.error('loadFromFile', `Failed to parse config JSON: ${abs}`, { path: abs });
       throw SquashageConfigError.create(
         `Cannot parse squashage config at ${abs}: ${cause?.message ?? String(err)}`,
-        { cause, metadata: { configPath: abs } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { configPath: abs } },
       );
     }
 

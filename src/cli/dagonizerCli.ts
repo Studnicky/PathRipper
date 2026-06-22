@@ -27,10 +27,12 @@ import { QuadGraph } from '../viz/QuadGraph.js';
 import { extname } from 'node:path';
 
 interface BuildOptionsInterface {
-  config:  string;
-  out?:    string;
-  format?: string;
-  dryRun?: boolean;
+  config:   string;
+  plugin?:  string;
+  out?:     string;
+  format?:  string;
+  dryRun?:  boolean;
+  workers?: string;
 }
 
 interface InduceOptionsInterface {
@@ -58,9 +60,11 @@ export class DagonizerCli {
       .command('build')
       .description('Run the DAG pipeline')
       .requiredOption('--config <path>', 'Squashage run config path')
+      .option('--plugin <namespace>', 'Plugin namespace to load from plugins/<namespace>/ (e.g. aonprd)')
       .option('--out <path>',    'Output path override')
       .option('--format <fmt>',  'Output format override')
       .option('--dry-run',       'Skip writes')
+      .option('--workers <n>',   'Number of worker threads (requires dataset output mode)')
       .action(async (opts: BuildOptionsInterface): Promise<void> => {
         const runConfig = SquashageConfig.loadFromFile(opts.config);
 
@@ -72,10 +76,13 @@ export class DagonizerCli {
         } as typeof runConfig.output;
 
         const run = await SquashageRun.forRun({
-          targetConfig: runConfig,
+          targetConfig:    runConfig,
           output,
-          outDir:       './graphs',
-          schemasBase:  dirname(opts.config),
+          outDir:          './graphs',
+          schemasBase:     dirname(opts.config),
+          pluginNamespace: opts.plugin,
+          pluginsDir:      opts.plugin !== undefined ? resolve(dirname(opts.config), '..') : undefined,
+          workers:         opts.workers !== undefined ? parseInt(opts.workers, 10) : undefined,
         });
 
         const result = await run.execute();

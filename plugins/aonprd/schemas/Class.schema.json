@@ -1,0 +1,244 @@
+{
+  "$id": "https://2e.aonprd.com/Class",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    },
+    {
+      "$ref": "https://noocodec.dev/squashage/core/Container.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ClassType.draft.json"
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "class_dc": {
+      "type": "null"
+    },
+    "entity_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ClassEntityId.draft.json"
+    },
+    "hit_points_text": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ClassHitPointsText.draft.json"
+    },
+    "hp_per_level": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ClassHpPerLevel.draft.json"
+    },
+    "initial_proficiencies": {
+      "properties": {
+        "Attacks": {
+          "enum": [
+            "Expert in simple firearms and crossbows Expert in martial firearms and crossbows Trained in advanced firearms and crossbows Trained in simple weapons Trained in martial weapons Trained in unarmed attacks",
+            "Trained in simple weapons Trained in martial weapons Trained in unarmed attacks",
+            "Trained in simple weapons Trained in the favored weapon of your deity. If your deity's favored weapon is uncommon, you also gain access to that weapon. Trained in unarmed attacks",
+            "Trained in simple weapons Trained in unarmed attacks"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Class DC": {
+          "enum": [
+            "Trained in animist class DC",
+            "Trained in bard class DC",
+            "Trained in champion class DC",
+            "Trained in cleric class DC",
+            "Trained in commander class DC",
+            "Trained in druid class DC",
+            "Trained in gunslinger class DC",
+            "Trained in oracle class DC",
+            "Trained in sorcerer class DC",
+            "Trained in witch class DC"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Defenses": {
+          "enum": [
+            "Trained in all armor Trained in unarmored defense",
+            "Trained in light armor Trained in medium armor Trained in unarmored defense",
+            "Trained in light armor Trained in unarmored defense",
+            "Untrained in all armor Trained in unarmored defense",
+            "Untrained in all armor, though your doctrine might alter this Trained in unarmored defense"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Perception": {
+          "enum": [
+            "Expert in Perception",
+            "Trained in Perception"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Saving Throws": {
+          "enum": [
+            "Expert in Fortitude Expert in Reflex Trained in Will",
+            "Expert in Fortitude Trained in Reflex Expert in Will",
+            "Trained in Fortitude Expert in Reflex Expert in Will",
+            "Trained in Fortitude Trained in Reflex Expert in Will"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Skills": {
+          "enum": [
+            "Trained in Nature Trained in one skill determined by your druidic order Trained in a number of additional skills equal to 2 plus your Intelligence modifier",
+            "Trained in Occultism Trained in Performance Trained in a number of additional skills equal to 4 plus your Intelligence modifier",
+            "Trained in Religion Trained in one or more skills determined by your mystery Trained in a number of additional skills equal to 3 plus your Intelligence modifier",
+            "Trained in Religion Trained in one skill determined by your choice of deity Trained in a number of additional skills equal to 2 plus your Intelligence modifier",
+            "Trained in Religion and either Nature or Occultism Trained in a number of additional skills equal to 2 plus your Intelligence modifier",
+            "Trained in Society and Warfare Lore Trained in a number of additional skills equal to 2 plus your Intelligence modifier",
+            "Trained in one or more skills determined by your gunslinger's way Trained in a number of additional skills equal to 3 plus your Intelligence modifier",
+            "Trained in one skill determined by your patron Trained in a number of additional skills equal to 3 plus your Intelligence modifier",
+            "Trained in two skills determined by your bloodline Trained in a number of additional skills equal to 2 plus your Intelligence modifier"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "Spells": {
+          "enum": [
+            "Trained in spell attack modifier Trained in spell DC"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        }
+      },
+      "type": "object"
+    },
+    "key_attribute": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ClassKeyAttribute.draft.json"
+    },
+    "legacy": {
+      "type": "boolean"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/ClassLink.draft.json"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ArmorPfs.draft.json",
+      "x-squashage-closed-enum": true
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/ActionRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "sections": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/ClassSection.draft.json"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "enum": [
+            "Battlecry!",
+            "Dark Archives (Remastered)",
+            "Guns &amp; Gears (Remastered)",
+            "Player Core",
+            "Player Core 2",
+            "Rage of Elements",
+            "Secrets of Magic",
+            "War of Immortals"
+          ],
+          "type": "string",
+          "x-squashage-closed-enum": true
+        },
+        "page": {
+          "maximum": 192,
+          "minimum": 9,
+          "type": "integer"
+        },
+        "source_id": {
+          "maximum": 293,
+          "minimum": 96,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/ClassSource.draft.json"
+      },
+      "type": "array"
+    },
+    "subclasses": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString_2.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    }
+  },
+  "required": [
+    "_type",
+    "alt_edition_url",
+    "body_text",
+    "class_dc",
+    "entity_id",
+    "hit_points_text",
+    "hp_per_level",
+    "initial_proficiencies",
+    "key_attribute",
+    "legacy",
+    "links",
+    "name",
+    "pfs",
+    "rarity",
+    "sections",
+    "source",
+    "sources",
+    "subclasses",
+    "traits",
+    "url"
+  ],
+  "title": "Class",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Class",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-comment": "/body_text",
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

@@ -30,6 +30,7 @@ import { BinaryGraphWriter } from './BinaryGraphWriter.js';
 import {
   FRAME_VERSION,
   MANIFEST_FORMAT,
+  DATA_FORMAT,
   POSITION_STRIDE,
   COLOR_STRIDE,
   EDGE_STRIDE,
@@ -550,7 +551,105 @@ export class ChunkBuilder {
       String(Math.round(metaGz.length / 1024)) + ' KB gzip (' +
       String(Math.round(metaJson.length / 1024)) + ' KB raw) → ' + metaGzPath);
 
-    return manifest;
+    // Emit per-concept node data shards so the browser inspector can display
+    // rulebook content (level, traits, immunities, etc.) without bloating the
+    // binary frames. Format: squashage-node-data-v1, gzip level 9.
+    //
+    // Property keys in the payload may be full IRIs (e.g., "https://2e.aonprd.com/level"),
+    // CURIEs (e.g., "aonprd:level"), or plain local names. All are normalised to their
+    // local name before inclusion in the shard so the browser renders "Level", not a URL.
+    // Noisy HTML/SEO local names are excluded; blank values are stripped.
+    // A shard is written only when the concept has at least one node with retained props.
+
+    const noisyLocalNames = new Set([
+      'bodyHtml', 'body_html', 'bodyText', 'body_text',
+      'altEditionUrl', 'alt_edition_url',
+      'metaDescription', 'meta_description',
+      'metaKeywords', 'meta_keywords',
+    ]);
+
+    // Extract the local name from a full IRI, CURIE, or plain string.
+    // "https://2e.aonprd.com/level" → "level"
+    // "aonprd:level" → "level"
+    // "level" → "level"
+    const localName = (key: string): string => {
+      const hashIdx  = key.lastIndexOf('#');
+      const slashIdx = key.lastIndexOf('/');
+      const colonIdx = key.lastIndexOf(':');
+      const best     = Math.max(hashIdx, slashIdx, colonIdx);
+      return best >= 0 ? key.slice(best + 1) : key;
+    };
+
+    // Build a fast id → properties lookup from the payload.
+    const nodePropsMap = new Map<string, Readonly<Record<string, ReadonlyArray<string>>>>();
+    for (const n of payload.nodes) {
+      if (Object.keys(n.properties).length > 0) nodePropsMap.set(n.id, n.properties);
+    }
+
+    const dataDir = join(outDir, 'data');
+    await mkdir(dataDir, { recursive: true });
+
+    // Walk orderedBuckets in the same order used to build `frames`.
+    // `frames` entries are indexed identically (skipped-empty buckets excluded).
+    let frameIdx = 0;
+    const updatedFrames: BinaryFrameManifestEntryInterface[] = [];
+    for (const bucket of orderedBuckets) {
+      const ids = bucketNodeIds.get(bucket.id) ?? [];
+      if (ids.length === 0) continue;
+
+      const nodeBase   = globalIndex.get(ids[0] as string) as number;
+      const shardProps: Record<string, Record<string, ReadonlyArray<string>>> = {};
+
+      for (const id of ids) {
+        const raw = nodePropsMap.get(id);
+        if (raw === undefined) continue;
+        const gIdx = globalIndex.get(id);
+        if (gIdx === undefined) continue;
+
+        // Normalise keys to local names, skip noisy keys, strip blank values.
+        // Merge values under the same local name (two IRIs with same local = merge).
+        const filtered: Record<string, string[]> = {};
+        for (const [key, vals] of Object.entries(raw)) {
+          const local   = localName(key);
+          if (noisyLocalNames.has(local)) continue;
+          const cleaned = vals.filter((v) => v.trim().length > 0);
+          if (cleaned.length === 0) continue;
+          if (filtered[local] === undefined) filtered[local] = [];
+          filtered[local].push(...cleaned);
+        }
+        if (Object.keys(filtered).length > 0) {
+          shardProps[String(gIdx)] = filtered;
+        }
+      }
+
+      const existing = frames[frameIdx] as BinaryFrameManifestEntryInterface;
+      if (Object.keys(shardProps).length > 0) {
+        const shardData = {
+          format:   DATA_FORMAT,
+          nodeBase,
+          props:    shardProps,
+        };
+        const shardJson  = JSON.stringify(shardData);
+        const shardGz    = gzipSync(Buffer.from(shardJson, 'utf-8'), { level: 9 });
+        const dataFile   = `data/${bucket.slug}.json.gz`;
+        const shardPath  = join(outDir, dataFile);
+        await writeFile(shardPath, shardGz);
+        console.log('[ChunkBuilder] data shard written: ' + bucket.slug + ' — ' +
+          String(Object.keys(shardProps).length) + ' nodes, ' +
+          String(Math.round(shardGz.length / 1024)) + ' KB gzip → ' + shardPath);
+        updatedFrames.push({ ...existing, dataFile });
+      } else {
+        updatedFrames.push(existing);
+      }
+
+      frameIdx += 1;
+    }
+
+    // Re-write manifest.json with dataFile references now that shards are on disk.
+    const updatedManifest: BinaryFrameManifestInterface = { ...manifest, frames: updatedFrames };
+    await BinaryGraphWriter.writeManifest(join(outDir, 'manifest.json'), updatedManifest);
+
+    return updatedManifest;
   }
 
   // ---- Internals ----------------------------------------------------------

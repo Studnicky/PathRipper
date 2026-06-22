@@ -16,6 +16,7 @@ import type { NodeContextType, NodeOutputType } from '@studnicky/dagonizer';
 import type { SquashageServices } from '../../services/SquashageServices.js';
 import type { SquashageRecordState } from '../../state/SquashageRecordState.js';
 import type { InputSource } from '../../state/schemas/InputSource.js';
+import type { RecordLocator } from '../../state/schemas/RecordLocator.js';
 
 type Output = 'loaded' | 'quarantined';
 
@@ -44,6 +45,20 @@ class JsonReadNodeImpl extends ScalarNode<SquashageRecordState, Output, Squashag
     context: NodeContextType<SquashageServices>,
   ): Promise<NodeOutputType<Output>> {
     const log = context.services.logger.forComponent('json-read');
+
+    // Seed recordPath/recordLine from the scatter's itemKey metadata when the
+    // child state was created by an isolation factory (empty recordPath).
+    // The scatter sets currentLocator on the child state AFTER the factory runs,
+    // so json-read reads it here instead of a separate record-init node.
+    if (state.recordPath.length === 0) {
+      const locator = state.getMetadata<RecordLocator>('currentLocator');
+      if (locator !== undefined) {
+        state.recordPath = locator.recordPath;
+        state.recordLine = locator.recordLine;
+        state.source     = { target: state.source.target, path: locator.recordPath };
+      }
+    }
+
     const recordPath = state.recordPath;
     const recordLine = state.recordLine;
 

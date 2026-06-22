@@ -102,7 +102,7 @@ export class QuarantineWriter {
       const cause = err instanceof Error ? err : undefined;
       throw QuarantineError.create(
         `Failed to write quarantine record to ${filePath}`,
-        { cause, metadata: { bucket: record.bucket, id: record.id, path: filePath } },
+        { ...(cause !== undefined ? { cause } : {}), metadata: { bucket: record.bucket, id: record.id, path: filePath } },
       );
     }
 

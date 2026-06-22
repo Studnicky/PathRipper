@@ -9,11 +9,11 @@ description: Squashage's module map, layered taxonomic model, classifier cascade
 Squashage is a graph reconstitution pipeline built on the native `@studnicky/dagonizer@0.25` engine. A config file is one run. Each run owns two authored DAG documents loaded via `DAGDocument.load` and registered through `dispatcher.registerBundle`: a run-scope DAG and a per-record deep-DAG. The run-scope DAG uses native `scatter { dag }` to fan out one per-record DAG execution per input record, and a native fold node (`squashage:record-fold`) to gather the per-record results. State, services, and a swappable observer flow through the dispatcher.
 
 ```text
-JSON records → walk-input → fan-out (record DAG) → enrich → finalize → catalog
-                              │
-                              └─ json-read → classify (8 parallel + 2 sequential)
-                                          → conflict → squash → output-provenance
-                                          (any failure → record-quarantine → end)
+JSON records → walk-input → index-entities → fan-out (record DAG) → enrich → finalize → catalog
+                                                       │
+                                                       └─ json-read → classify (8 parallel + 2 sequential)
+                                                                   → conflict → squash → output-provenance
+                                                                   (any failure → record-quarantine → end)
 ```
 
 Three artifacts land on disk per run:
@@ -31,10 +31,11 @@ Three artifacts land on disk per run:
 1. Builds the `SquashageServices` bag from the run config and CLI options (logger, AJV, RDF factory + dataset, builder, prefix resolution, IRI namespace, named-graph map, optional ontology, quarantine writer, runStartTime).
 2. Wires a `ProvObserver` (or accepts a swap-in observer) bound to `services.dataset`.
 3. Instantiates `SquashageDagonizer` with the services bag + observer.
-4. Constructs every per-record classifier instance from its config slot; substitutes `NoOpClassifierNode` for every slot that's absent.
-5. Loads the authored run-scope and per-record DAG documents via `DAGDocument.load` and registers their node implementations.
-6. Bakes the run-level `concurrency` into the native `scatter { dag }` fan-out placement at registration time.
-7. Registers both DAG bundles via `dispatcher.registerBundle`.
+4. Calls `PluginLoader.registerPluginsFromEntry(dispatcher, pluginsDir, pluginNamespace)` — the plugin's `register(dispatcher)` wires its own nodes; `PluginLoader` loads and registers the plugin's `*.dag.jsonld` documents.
+5. Imports `indexEntitiesNode` and registers it on the dispatcher bundle alongside all other run-scope nodes.
+6. Loads the authored run-scope DAG document via `DAGDocument.load` and registers its node implementations.
+7. Bakes the run-level `concurrency` into the native `scatter { dag }` fan-out placement at registration time.
+8. Registers both DAG bundles via `dispatcher.registerBundle`.
 
 `run.execute()` returns the dagonizer `Execution<TState>` — both `PromiseLike` (await for the final summary) and `AsyncIterable` (`for await` to observe each node).
 
@@ -63,9 +64,15 @@ src/
     registerRecordNodes.ts     binds per-record node implementations to the dispatcher
     registerRunNodes.ts        binds run-scope node implementations to the dispatcher
   nodes/
-    run/                       walkInput, recordScatter, recordFold, enrichEntityLink, rdfjsFinalize, catalogEmit
+    run/                       walkInput, indexEntities, enrichEntityLink, ontologyEmitNode, rdfjsFinalize, catalogEmit
     record/                    jsonRead, classifyConflict, recordHealthGate, squashNode, outputProvenance, recordQuarantine
-    record/classifiers/        Discriminator (primary), Source, UrlPattern, Structural, Rules, Schema, ShaclShape, PropertyFingerprint, WinknlpEntities, Ontology, TaxonomicNarrowing, NoOp
+    record/classifiers/        Discriminator (primary), Source, UrlPattern, Structural, Rules, Schema, ShaclShape, PropertyFingerprint, WinknlpEntities, Ontology, TaxonomicNarrowing
+  classifiers/                 index.ts — exported generic classifier classes; plugins import and instantiate
+  run/
+    PluginLoader.ts            discovers and loads plugins; calls register(dispatcher) and loads *.dag.jsonld
+  enrichment/
+    EntityIndex.ts               href-tail → canonical IRI pre-scan index
+    HrefReconciler.ts            per-record link-item collapse + dedup
   induction/
     SchemaInducer.ts           accumulates ShapeObservations → draft JSON Schema documents
     RefinementApplier.ts       applies .refine.json DSL (15 ops, deterministic order)
@@ -78,11 +85,13 @@ src/
     predicates/Predicate.ts    compile / evaluate JSON-pointer predicates
     tasks/ShaclShapeClassifier.ts  SHACL machinery, called by the classifier node adapter
   config/                      AJV-validated single-run config + output config
+  config/EnrichmentConfig.ts     href-reconcile entity-link config type + isHrefReconcileConfig guard
   rdf/                         DataFactory, Dataset, GraphBuilder, Namespaces, Parser, Vocab
   shacl/                       ShaclGate (rdf-validate-shacl wrapper)
   output/                      FileOutput, FormatResolver, OutputReport — used by rdfjs-finalize
   quarantine/                  QuarantineWriter
   ontology/                    JsonTologyOntology + adapters
+    coreSchemas.ts             loadCoreSchemaInputs + loadExtractedSchemaInputs (public utility for plugins)
   errors/                      BaseError + every subclass; every throw is one of these
   modules/logger/              Logger.forComponent
   viz/                         NQuadsGraph, ChunkBuilder, CosmosGraphRenderer (used by `squashage-dag viz`)
@@ -180,7 +189,7 @@ The PROV observer uses `Date()` for `prov:startedAtTime` / `prov:endedAtTime` on
 
 ## Layered taxonomic model
 
-Squashage generalizes across targets through a two-layer schema architecture. No domain-tailored classifier code is needed to add a new target — inheritance and classification are fully config-driven.
+Squashage generalizes across targets through a two-layer schema architecture. Inheritance is fully config-driven at the schema level; classifiers are provided by the plugin via `register(dispatcher)` and need no framework config changes when adding a new target.
 
 ### Layer 0 — squashage-core (framework-generic)
 
@@ -330,7 +339,7 @@ flowchart LR
   induce["induce\n(SchemaInducer)"]
   review["author\n.refine.json files"]
   refine["refine\n(RefinementApplier)"]
-  build["build\n(ontologyProjectionNode)"]
+  build["build\n(OntologyProjectionNode)"]
   graph[(RDF graph)]
 
   src --> induce --> review --> refine --> build --> graph
@@ -377,13 +386,13 @@ Warn-loud, write-anyway semantics: when a rule references a property not found i
 
 ### Phase 3 — build
 
-**DAG:** `src/dag/recordDag.ts` (the standard per-record DAG)  
-**Squash node:** `src/nodes/record/ontologyProjection.ts`
+**DAG:** the plugin's `squashage:record` DAG, which overrides the built-in minimal DAG at startup.  
+**Squash node:** `OntologyProjectionNode` — instantiated by the plugin with a `JsonTologyOntology` at construction. The plugin registers it as the `squash` node via `register(dispatcher)`. Plugins instantiate it with their own `JsonTologyOntology` and register it as the `squash` node.
 
-`ontologyProjectionNode` is the generic squash node backed by json-tology. It:
+`OntologyProjectionNode` receives its ontology at construction time via `new OntologyProjectionNode(ontology)`. It:
 
 1. Resolves the classified class name to a registered schema `$id`. When no schema maps the class, projection falls back to the `Generic` class so the record is still projected.
-2. Calls `services.ontology.toQuads(schema.$id, record)` — json-tology projects the record to RDF quads per the schema.
+2. Calls `this.#ontology.toQuads(schema.$id, record)` — json-tology projects the record to RDF quads per the schema.
 3. Rebinds the minted subject to the policy-resolved IRI (`SubjectIriPolicy`).
 4. Rebinds every quad's graph to `services.graphs['default']`.
 5. Calls `TaxonomicInheritanceEnricher.enrich()` to append ancestor `rdf:type` quads.
@@ -496,12 +505,14 @@ AONPRD (Archives of Nethys, Pathfinder 2nd Edition) is the primary production ta
 
 | Metric | Value |
 |---|---|
-| Records | 13,572 |
+| Records | 13,653 |
 | Success rate | 100% |
 | Leaf classes | 18 (17 with core inheritance + `Unknown`) |
-| Success quads | ~578k |
+| Success quads | ~1.74M |
 | Ontology quads (TBox + SHACL) | ~14k |
 | Avg quads per record | ~42 |
+| Link edges resolved | 370,649 |
+| Duplicate quads eliminated | 427,606 |
 
 ### AONPRD leaf class inheritance table
 

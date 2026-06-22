@@ -27,14 +27,14 @@ Under `classification.taxonomicNarrowing`:
 
 | Field | Type | Required | Default | Notes |
 |---|---|---|---|---|
-| `tboxFrom` | string | yes | | Either `"ontology"` (read from `services.ontology.tbox()`) or a filesystem path to a Turtle / N-Quads OWL TBox file (resolved relative to `schemasBase`). |
+| `tboxFrom` | string | yes | | Either `"ontology"` (reads from plugin-provided `services.ontology.tbox()`; disables itself silently when null) or a filesystem path to a Turtle / N-Quads OWL TBox file (resolved relative to `schemasBase`). |
 | `enabled` | boolean | no | `true` | When `false`, the node is a no-op. |
 
 ## TBox sources
 
 | `tboxFrom` value | Source |
 |---|---|
-| `"ontology"` | `services.ontology.tbox()` — requires `targetConfig.ontology.engine === 'json-tology'`. When the ontology is absent, the node disables itself silently. |
+| `"ontology"` | `services.ontology.tbox()` — uses the plugin-provided ontology. When null (no plugin provides one), the node disables itself silently. |
 | any other path | Filesystem file. Format inferred from extension (`.nq` / `.n-quads` → N-Quads; everything else → Turtle). Loaded synchronously at construction. |
 
 ## Closure algorithm

@@ -56,6 +56,9 @@ export const EDGE_STRIDE = 2;
 /** Manifest format identifier written into `manifest.json`. */
 export const MANIFEST_FORMAT = 'squashage-binary-frames-v1';
 
+/** Format identifier for per-concept node data shards (`data/<slug>.json.gz`). */
+export const DATA_FORMAT = 'squashage-node-data-v1';
+
 /**
  * One frame's entry in `manifest.json`.
  *
@@ -76,6 +79,8 @@ export interface BinaryFrameManifestEntryInterface {
   readonly edgeCount: number;
   /** Global index of this frame's first node. */
   readonly nodeBase:  number;
+  /** Relative path to the gzipped data shard for this concept, if present. */
+  readonly dataFile?: string;
 }
 
 /**

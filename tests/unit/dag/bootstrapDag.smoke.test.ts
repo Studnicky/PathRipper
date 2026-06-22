@@ -37,22 +37,6 @@ class SmokeTestConfig {
       output,
       graphs:   { default: 'https://squashage.dev/graph/aonprd/default' },
       ontology: { baseIri: 'https://2e.aonprd.com/' },
-      classification: {
-        conflict:   { onConflict: 'pickPriority', evidence: true },
-        structural: [
-          {
-            className: 'feat',
-            priority:  20,
-            predicate: { path: '/_type', equals: 'feat' },
-            reasons:   ['_type=feat'],
-          },
-        ],
-        urlPattern: {
-          patterns: [
-            { className: 'feat', match: '/Feats\\.aspx', priority: 35 },
-          ],
-        },
-      },
       concurrency: 1,
     };
   }
@@ -64,11 +48,12 @@ test('bootstrapDag smoke — halts at gate when no refinements', async (t) => {
     try {
       const targetConfig = SmokeTestConfig.forSchemasBase(work);
       const run = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
+        target:          'aonprd',
         targetConfig,
-        output:      targetConfig.output,
-        outDir:      work,
-        schemasBase: work,
+        output:          targetConfig.output,
+        outDir:          work,
+        schemasBase:     work,
+        pluginNamespace: 'aonprd',
       });
 
       const result     = await run.executeBootstrap();
@@ -117,11 +102,12 @@ test('bootstrapDag smoke — proceeds past gate with refinements', async (t) => 
     try {
       const targetConfig = SmokeTestConfig.forSchemasBase(work);
       const run = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
+        target:          'aonprd',
         targetConfig,
-        output:      targetConfig.output,
-        outDir:      work,
-        schemasBase: work,
+        output:          targetConfig.output,
+        outDir:          work,
+        schemasBase:     work,
+        pluginNamespace: 'aonprd',
       });
 
       // Phase 1: run induce to discover which classes exist.
@@ -151,11 +137,12 @@ test('bootstrapDag smoke — proceeds past gate with refinements', async (t) => 
 
       // Phase 2: run full bootstrap — should proceed past both gates.
       const run2 = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
+        target:          'aonprd',
         targetConfig,
-        output:      targetConfig.output,
-        outDir:      work,
-        schemasBase: work,
+        output:          targetConfig.output,
+        outDir:          work,
+        schemasBase:     work,
+        pluginNamespace: 'aonprd',
       });
 
       const result     = await run2.executeBootstrap();

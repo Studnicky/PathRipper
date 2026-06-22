@@ -1,12 +1,10 @@
 /**
- * ontologyProjection — generic squash node that calls services.ontology.toQuads()
+ * OntologyProjectionNode — generic squash node that calls ontology.toQuads()
  * against the registered schemas and writes the projected quads into the dataset.
  *
- * This node replaces every per-target plugin's hand-coded squash logic. It
- * requires `services.ontology` to be non-null (i.e. the target must have
- * `ontology.engine: json-tology` configured). Targets that have not opted into
- * the ontology engine will continue to use `defaultSquashNode` with a startup
- * warning.
+ * Plugins construct their own instance by passing a `JsonTologyOntology` at
+ * construction time. The framework registers whichever instance the plugin
+ * provides; targets with no ontology engine use `defaultSquashNode`.
  *
  * Subject rebinding: json-tology mints its own subject IRI during projection.
  * This node detects the minted subject (the subject of the first rdf:type quad
@@ -26,7 +24,10 @@ import type { NodeContextType, NodeOutputType, NodeWarningType } from '@studnick
 import { TaxonomicInheritanceEnricher } from '../../induction/TaxonomicInheritanceEnricher.js';
 import { VocabEnricher }                from '../../induction/VocabEnricher.js';
 import { FormatResolver }               from '../../output/FormatResolver.js';
+import { HrefReconciler }               from '../../enrichment/HrefReconciler.js';
+import { isHrefReconcileConfig }        from '../../config/EnrichmentConfig.js';
 import type { SquashOutput }            from './squashNode.js';
+import type { JsonTologyOntology }      from '../../ontology/JsonTologyOntology.js';
 import type { SquashageServices }       from '../../services/SquashageServices.js';
 import type { SquashageRecordState }    from '../../state/SquashageRecordState.js';
 
@@ -35,21 +36,27 @@ const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
 /**
  * Generic ontology-projection squash node.
  *
- * Calls `services.ontology.toQuads(schema.$id, instance)`, rebinds the
+ * Calls `ontology.toQuads(schema.$id, instance)`, rebinds the
  * minted subject to the policy-resolved IRI, and lands every quad in the
  * target's default named graph.
  *
  * Guard conditions (quarantine with an error code):
  * - `state.classification === null`  → SQUASH_NO_CLASSIFICATION
- * - `services.ontology === null`     → SQUASH_NO_ONTOLOGY
  * - schema not found for className   → SQUASH_NO_SCHEMA_FOR_CLASS
  * - `toQuads()` throws               → SQUASH_PROJECTION_FAILED
  */
-class OntologyProjectionNodeImpl
+export class OntologyProjectionNode
   extends ScalarNode<SquashageRecordState, SquashOutput, SquashageServices> {
 
   public readonly name    = 'squash';
   public readonly outputs = ['squashed', 'quarantined'] as const;
+
+  readonly #ontology: JsonTologyOntology;
+
+  constructor(ontology: JsonTologyOntology) {
+    super();
+    this.#ontology = ontology;
+  }
 
   public override get outputSchema(): Record<SquashOutput, { type: 'object' }> {
     return { squashed: { type: 'object' }, quarantined: { type: 'object' } };
@@ -60,24 +67,13 @@ class OntologyProjectionNodeImpl
     context: NodeContextType<SquashageServices>,
   ): Promise<NodeOutputType<SquashOutput>> {
     const { services } = context;
-    const log = services.logger.forComponent('ontologyProjectionNode');
+    const log = services.logger.forComponent('OntologyProjectionNode');
 
     // ── a. classification guard ───────────────────────────────────────────────
     if (state.classification === null) {
       state.collectError(NodeErrorBuilder.from(
         'SQUASH_NO_CLASSIFICATION',
-        'ontologyProjectionNode invoked but state.classification is null',
-        'squash', false, new Date().toISOString(),
-      ));
-      state.quarantineBucket = 'projection';
-      return NodeOutputBuilder.of('quarantined');
-    }
-
-    // ── b. ontology service guard ─────────────────────────────────────────────
-    if (services.ontology === null) {
-      state.collectError(NodeErrorBuilder.from(
-        'SQUASH_NO_ONTOLOGY',
-        'ontologyProjectionNode requires services.ontology; target has no `ontology.engine: json-tology` configured',
+        'OntologyProjectionNode invoked but state.classification is null',
         'squash', false, new Date().toISOString(),
       ));
       state.quarantineBucket = 'projection';
@@ -86,15 +82,15 @@ class OntologyProjectionNodeImpl
 
     const className = state.classification.type;
 
-    // ── c. schema lookup ──────────────────────────────────────────────────────
+    // ── b. schema lookup ──────────────────────────────────────────────────────
     // Try className first; fall back to 'Generic' with an advisory warning.
-    let schema = services.ontology.schemaForClassName(className);
+    let schema = this.#ontology.schemaForClassName(className);
     if (schema === undefined) {
-      const genericSchema = services.ontology.schemaForClassName('Generic');
+      const genericSchema = this.#ontology.schemaForClassName('Generic');
       if (genericSchema === undefined) {
         state.collectError(NodeErrorBuilder.from(
           'SQUASH_NO_SCHEMA_FOR_CLASS',
-          `ontologyProjectionNode: no schema registered for className "${className}"`,
+          `OntologyProjectionNode: no schema registered for className "${className}"`,
           'squash', false, new Date().toISOString(),
           { context: { className } },
         ));
@@ -103,7 +99,7 @@ class OntologyProjectionNodeImpl
       }
       const fallbackWarning: NodeWarningType = {
         code:      'PROJECTION_GENERIC_FALLBACK',
-        message:   `ontologyProjectionNode: no schema for className "${className}"; using Generic schema for projection`,
+        message:   `OntologyProjectionNode: no schema for className "${className}"; using Generic schema for projection`,
         operation: 'squash',
         timestamp: new Date().toISOString(),
       };
@@ -111,7 +107,7 @@ class OntologyProjectionNodeImpl
       schema = genericSchema;
     }
 
-    // ── d. subject IRI ────────────────────────────────────────────────────────
+    // ── c. subject IRI ────────────────────────────────────────────────────────
     const subjectIri = services.subjectIri.resolve(
       state.input,
       state.recordPath,
@@ -119,7 +115,7 @@ class OntologyProjectionNodeImpl
       className,
     );
 
-    // ── e. advisory schema validation (warnings only — never prevents projection) ──
+    // ── d. advisory schema validation (warnings only — never prevents projection) ──
     // Emit ONE summary warning per record when validation fails, not one per
     // violated constraint.  Per-item warnings accumulate unboundedly on the parent
     // SquashageRunState._warnings (the dagonizer propagates all clone warnings
@@ -127,7 +123,7 @@ class OntologyProjectionNodeImpl
     // The bounded summary is sufficient for diagnostics; the violation count is
     // included in the message so operators can tell how noisy the schema fit is.
     try {
-      const validation = services.ontology.validate(schema.$id, state.input);
+      const validation = this.#ontology.validate(schema.$id, state.input);
       if (!validation.ok) {
         const violationCount = validation.items.length;
         const firstMessage   = validation.items[0]?.message ?? 'unknown constraint';
@@ -143,15 +139,15 @@ class OntologyProjectionNodeImpl
       // Validation is best-effort; a failure here must never prevent projection.
     }
 
-    // ── f. projection ─────────────────────────────────────────────────────────
+    // ── e. projection ─────────────────────────────────────────────────────────
     let rawQuads: ReadonlyArray<Quad>;
     try {
-      rawQuads = await services.ontology.toQuads(schema.$id, state.input);
+      rawQuads = await this.#ontology.toQuads(schema.$id, state.input);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       state.collectError(NodeErrorBuilder.from(
         'SQUASH_PROJECTION_FAILED',
-        `ontologyProjectionNode: toQuads() threw: ${message}`,
+        `OntologyProjectionNode: toQuads() threw: ${message}`,
         'squash', false, new Date().toISOString(),
         { context: { className, schemaId: schema.$id, errorMessage: message } },
       ));
@@ -169,8 +165,8 @@ class OntologyProjectionNodeImpl
     // ── f. subject rebinding ──────────────────────────────────────────────────
     // Detect the json-tology-minted subject: the subject of the first rdf:type
     // quad whose object is the class IRI derived from the classification type.
-    const classIri = OntologyProjectionNodeImpl.classIriFrom(services.ontology.baseIRI(), className);
-    const mintedSubject = OntologyProjectionNodeImpl.detectMintedSubject(rawQuads, classIri);
+    const classIri = OntologyProjectionNode.classIriFrom(this.#ontology.baseIRI(), className);
+    const mintedSubject = OntologyProjectionNode.detectMintedSubject(rawQuads, classIri);
 
     const factory = services.factory;
     // Per-class named graph when configured, else fall back to `default`.
@@ -182,7 +178,7 @@ class OntologyProjectionNodeImpl
 
     // ── g. graph rebinding + subject rebinding ────────────────────────────────
     const rebound: Quad[] = rawQuads.map((quad) => {
-      const subject = OntologyProjectionNodeImpl.shouldRebindSubject(quad.subject, mintedSubject)
+      const subject = OntologyProjectionNode.shouldRebindSubject(quad.subject, mintedSubject)
         ? policySubject
         : (quad.subject as NamedNode | BlankNode);
       return factory.quad(subject, quad.predicate as NamedNode, quad.object, targetGraph);
@@ -195,14 +191,14 @@ class OntologyProjectionNodeImpl
       state.input,
       subjectIri,
       factory,
-      services.ontology.baseIRI(),
+      this.#ontology.baseIRI(),
       targetGraph,
     );
 
     // ── i. taxonomic inheritance enrichment ───────────────────────────────────
     // Materialize ancestor rdf:type triples for consumers that do not run OWL
     // reasoning (SPARQL endpoints, graph stores, visualization layer).
-    const ancestors       = services.ontology.ancestorIris(className);
+    const ancestors       = this.#ontology.ancestorIris(className);
     const withInheritance = TaxonomicInheritanceEnricher.enrich(
       enriched,
       className,
@@ -212,11 +208,29 @@ class OntologyProjectionNodeImpl
       targetGraph,
     );
 
-    const finalQuads: Quad[] = [...withInheritance];
+    // ── j. href-reconcile: rewrite link-item nodes → canonical entity edges ──
+    // Inline resolution using the pre-built EntityIndex. Runs only when the
+    // href-reconcile enrichment is configured and the index is available.
+    const enrichmentBlock = (services.targetConfig as unknown as Record<string, unknown>)['enrichment'];
+    const rawEnrichmentConfig = ((enrichmentBlock ?? {}) as Record<string, unknown>)['entityLink'];
+    const reconcileConfig = isHrefReconcileConfig(rawEnrichmentConfig) ? rawEnrichmentConfig : null;
+    let finalQuads: Quad[];
+    if (reconcileConfig !== null && services.entityIndex !== null) {
+      const linkPredicates = new Set(reconcileConfig.linkPredicates as Iterable<string>);
+      finalQuads = HrefReconciler.reconcile(
+        withInheritance,
+        linkPredicates,
+        reconcileConfig.hrefPredicate,
+        services.entityIndex,
+        services.factory,
+      );
+    } else {
+      finalQuads = [...withInheritance];
+    }
 
     state.squashedQuads = finalQuads;
 
-    // ── j. streaming vs. batched write ───────────────────────────────────────
+    // ── k. streaming vs. batched write ───────────────────────────────────────
     // Attempt to open (or reuse) the per-record streaming writer.  On first
     // call this lazily opens the success-graph file stream.  On subsequent
     // concurrent calls it awaits the same Promise, so the file is opened
@@ -248,9 +262,16 @@ class OntologyProjectionNodeImpl
       ? await openWriter(services.output.path, resolvedFormat)
       : null;
 
+    // ── l. in-pass triple dedup (optional) ───────────────────────────────────
+    // When services.dedupSet is initialised, filter out quads already written
+    // in this run before passing them to the writer or dataset.
+    const quadsToWrite = services.dedupSet !== null
+      ? OntologyProjectionNode.dedupeQuads(finalQuads, services.dedupSet)
+      : finalQuads;
+
     if (writer !== null) {
       // Streaming path: write directly to the open file stream.
-      await writer.write(finalQuads);
+      await writer.write(quadsToWrite);
       // Release large per-record objects from clone state now that serialization is
       // complete.  V8 will not GC these while the clone holds references; clearing
       // both fields makes ~450 Quads (+ their term objects) and the parsed JSON
@@ -261,7 +282,7 @@ class OntologyProjectionNodeImpl
       state.input         = {};
     } else {
       // Batched path (JSON-LD, writer unavailable, or partial test mock): accumulate in dataset.
-      for (const quad of finalQuads) {
+      for (const quad of quadsToWrite) {
         services.dataset.add(quad);
       }
     }
@@ -274,6 +295,25 @@ class OntologyProjectionNodeImpl
     });
 
     return NodeOutputBuilder.of('squashed');
+  }
+
+  /**
+   * Filter `quads` to those not already in `seen`, adding newly-written quads
+   * to `seen`. Uses a `\x1f`-delimited signature of term values as the key.
+   *
+   * Shared across concurrent projections (concurrency > 1 may race; exact
+   * dedup is guaranteed only at concurrency = 1).
+   */
+  static dedupeQuads(quads: ReadonlyArray<Quad>, seen: Set<string>): Quad[] {
+    const out: Quad[] = [];
+    for (const quad of quads) {
+      const sig = `${quad.subject.value}\x1f${quad.predicate.value}\x1f${quad.object.value}\x1f${quad.graph.value}`;
+      if (!seen.has(sig)) {
+        seen.add(sig);
+        out.push(quad);
+      }
+    }
+    return out;
   }
 
   /**
@@ -328,5 +368,3 @@ class OntologyProjectionNodeImpl
     );
   }
 }
-
-export const ontologyProjectionNode: OntologyProjectionNodeImpl = new OntologyProjectionNodeImpl();

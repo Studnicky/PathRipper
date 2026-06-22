@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { SquashageRun } from '../../../src/SquashageRun.js';
-import { SquashageRunState } from '../../../src/state/SquashageRunState.js';
+import type { SquashageRunState } from '../../../src/state/SquashageRunState.js';
 import type { SquashageRunConfigInterface } from '../../../src/config/SquashageConfig.js';
 import type { OutputConfigInterface } from '../../../src/config/OutputConfig.js';
 
@@ -27,22 +27,6 @@ class RunTestConfig {
       output,
       graphs:   { default: 'https://squashage.dev/graph/aonprd/default' },
       ontology: { baseIri: 'https://2e.aonprd.com/' },
-      classification: {
-        conflict:   { onConflict: 'pickPriority', evidence: true },
-        structural: [
-          {
-            className: 'feat',
-            priority:  20,
-            predicate: { path: '/_type', equals: 'feat' },
-            reasons:   ['_type=feat'],
-          },
-        ],
-        urlPattern: {
-          patterns: [
-            { className: 'feat', match: '/Feats\\.aspx', priority: 35 },
-          ],
-        },
-      },
       concurrency: 2,
     };
   }
@@ -56,11 +40,12 @@ test('happy path', async (t) => {
       const runConfig = RunTestConfig.forPath(outputPath);
 
       const run = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
-        targetConfig: runConfig,
-        output:      runConfig.output,
-        outDir:      work,
-        schemasBase: process.cwd(),
+        target:          'aonprd',
+        targetConfig:     runConfig,
+        output:          runConfig.output,
+        outDir:          work,
+        schemasBase:     process.cwd(),
+        pluginNamespace: 'aonprd',
       });
 
       const result   = await run.execute();
@@ -71,7 +56,7 @@ test('happy path', async (t) => {
       assert.equal(runState.quarantinedCount, 0, 'no quarantined records');
       assert.ok(runState.sampleSummaries.length >= 1, 'sample summaries populated');
       assert.equal(runState.sampleSummaries[0]!.outcome, 'squashed');
-      assert.equal(runState.sampleSummaries[0]!.className, 'feat');
+      assert.equal(runState.sampleSummaries[0]!.className, 'Feat');
     } finally {
       await rm(work, { recursive: true, force: true });
     }
@@ -83,11 +68,12 @@ test('happy path', async (t) => {
       const outputPath = join(work, 'aonprd.trig');
       const runConfig = RunTestConfig.forPath(outputPath);
       const run = await SquashageRun.forTargetWithNullObserver({
-        target:      'aonprd',
-        targetConfig: runConfig,
-        output:      runConfig.output,
-        outDir:      work,
-        schemasBase: process.cwd(),
+        target:          'aonprd',
+        targetConfig:     runConfig,
+        output:          runConfig.output,
+        outDir:          work,
+        schemasBase:     process.cwd(),
+        pluginNamespace: 'aonprd',
       });
 
       const seen: string[] = [];

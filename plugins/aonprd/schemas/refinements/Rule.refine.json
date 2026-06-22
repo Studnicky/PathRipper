@@ -1,0 +1,30 @@
+{
+  "$schema": "https://squashage.dev/schemas/refinement.schema.json",
+  "appliesTo": "Rule",
+  "rdfsLabel": "name",
+  "rdfsComment": "body_text",
+  "promoteIri": ["/url"],
+  "openVocabulary": [
+    "name",
+    "body_text",
+    "body_html",
+    "meta_description",
+    "meta_keywords"
+  ],
+  "drop": [
+    "/body_html",
+    "/meta_description",
+    "/meta_keywords"
+  ],
+  "subjectIriPolicy": {
+    "from": "/url",
+    "sanitize": "url-tail",
+    "fallback": "/name"
+  },
+  "provenanceIri": {
+    "predicate": "dct:source",
+    "from": "/url"
+  },
+  "parents": ["ContentEntry", "DocumentSegment"],
+  "parentsBase": "https://noocodec.dev/squashage/core"
+}

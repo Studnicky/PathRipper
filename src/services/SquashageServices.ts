@@ -12,9 +12,7 @@
  * read off the dispatcher.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
-import { dirname, extname, join, resolve as resolvePath } from 'node:path';
+import { extname, join } from 'node:path';
 
 import AjvModule        from 'ajv';
 import addFormatsModule from 'ajv-formats';
@@ -27,8 +25,7 @@ import type { ShapeObservation } from '../induction/ShapeObservation.js';
 import type { SquashageRunConfigInterface } from '../config/SquashageConfig.js';
 import type { OutputConfigInterface } from '../config/OutputConfig.js';
 import { Logger } from '../modules/logger/logger.js';
-import { JsonTologyOntology } from '../ontology/JsonTologyOntology.js';
-import type { JsonTologySchemaInputInterface } from '../ontology/JsonTologyOntology.js';
+import type { JsonTologyOntology } from '../ontology/JsonTologyOntology.js';
 import { QuarantineWriter } from '../quarantine/QuarantineWriter.js';
 import { dataFactory } from '../rdf/DataFactory.js';
 import { Dataset } from '../rdf/Dataset.js';
@@ -41,33 +38,12 @@ import type { InputSource } from '../state/schemas/InputSource.js';
 import { Serializer } from '../rdf/Serializer.js';
 import type { RecordWriterInterface, ProvSinkInterface } from '../rdf/Serializer.js';
 import type { RDFFormat } from '../rdf/Formats.js';
+import type { EntityIndex } from '../enrichment/EntityIndex.js';
 
 const Ajv        = (AjvModule        as unknown as { default?: AjvCtorType }).default        ?? (AjvModule        as unknown as AjvCtorType);
 const addFormats = (addFormatsModule as unknown as { default?: AddFormatsFnInterface }).default ?? (addFormatsModule as unknown as AddFormatsFnInterface);
 
 const log = Logger.forComponent('SquashageServices');
-
-// ---------------------------------------------------------------------------
-// Process-level core schema cache
-// ---------------------------------------------------------------------------
-
-/**
- * Resolved absolute path to the bundled `src/schemas/core/` directory.
- * Computed once from `import.meta.url` so it is correct regardless of the
- * working directory at call time.
- */
-const CORE_SCHEMAS_DIR: string = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  'schemas',
-  'core',
-);
-
-/**
- * Process-level cache for the core schema inputs.  Populated on first call
- * to {@link SquashageServices.#loadCoreSchemas} and reused thereafter.
- */
-let coreSchemaCache: ReadonlyArray<JsonTologySchemaInputInterface> | null = null;
 
 /**
  * Options the dispatcher needs at construction. All required; no defaults
@@ -82,7 +58,7 @@ export interface SquashageServicesOptionsInterface {
   readonly output: OutputConfigInterface;
   /** Output base directory; reports + quarantine artifacts land under it. */
   readonly outDir: string;
-  /** Directory used to resolve relative ontology `schemaPath` entries. */
+  /** Directory used to resolve relative schema path entries. */
   readonly schemasBase: string;
   /** Optional first-record `_source`, used by `PrefixResolver` for URL-host derivation. */
   readonly sampleSource: InputSource | undefined;
@@ -100,6 +76,14 @@ export class SquashageServices {
   readonly prefixes:     PrefixResolutionInterface;
   readonly iri:          NamespaceBuilder;
   readonly graphs:       Readonly<Record<string, NamedNode>>;
+  /**
+   * Plugin-supplied ontology engine. Null when no plugin registers one.
+   *
+   * Framework nodes (`ontology-emit`, `classify:shacl-shape`) guard on null
+   * and skip gracefully. Plugins that need an ontology construct their own
+   * instance (e.g. `new OntologyProjectionNode(ontology)`) rather than
+   * relying on the framework to build it from config.
+   */
   readonly ontology:     JsonTologyOntology | null;
   readonly quarantine:   QuarantineWriter;
   readonly output:       OutputConfigInterface;
@@ -116,16 +100,16 @@ export class SquashageServices {
   /**
    * Mutable streaming writer for per-record ABox quads.
    *
-   * When non-null, `ontologyProjection` writes quads directly to this stream
+   * When non-null, `OntologyProjectionNode` writes quads directly to this stream
    * instead of accumulating them in `services.dataset`, avoiding the V8
    * string-length wall on large datasets (~1.4M+ quads).
    *
-   * Set lazily on first write by `ontologyProjection` via
+   * Set lazily on first write by `OntologyProjectionNode` via
    * `services.openRecordWriter()`; closed by `rdfjs-finalize` after the
    * fan-out drains.
    *
    * Null when the output format requires batch serialization (e.g. JSON-LD)
-   * or when the target has no ontology engine configured.
+   * or when no record writer has been opened yet.
    */
   recordWriter: RecordWriterInterface | null;
   /**
@@ -160,6 +144,27 @@ export class SquashageServices {
    * @internal
    */
   provSinkReady: Promise<ProvSinkInterface> | null;
+  /**
+   * Canonical entity index populated by the `index-entities` pre-scan node
+   * when `enrichment.entityLink.engine === 'href-reconcile'` is configured.
+   *
+   * Null when the href-reconcile enrichment is not configured. Checked by
+   * `OntologyProjectionNode` to inline-resolve link-item nodes at write time.
+   */
+  entityIndex: EntityIndex | null;
+  /**
+   * In-pass triple dedup set. Holds quad signatures (subject+predicate+object+graph)
+   * for quads already written during the current run.
+   *
+   * Null when `dedupeTriples` is not `"inPass"`. Populated by the
+   * `index-entities` node. Quads whose signature is already present are skipped
+   * at write time in `OntologyProjectionNode`.
+   *
+   * At concurrency > 1, concurrent projections may race on this set; duplicates
+   * may slip through. For concurrency=1 (the aonprd production case) dedup is
+   * exact.
+   */
+  dedupSet: Set<string> | null;
 
   /**
    * Resolved paths for schema artefacts produced by the induction pipeline.
@@ -203,6 +208,8 @@ export class SquashageServices {
     recordWriterReady:  Promise<RecordWriterInterface> | null;
     provSink:           ProvSinkInterface | null;
     provSinkReady:      Promise<ProvSinkInterface> | null;
+    entityIndex:        EntityIndex | null;
+    dedupSet:           Set<string> | null;
   }) {
     this.logger       = slots.logger;
     this.ajv          = slots.ajv;
@@ -228,6 +235,8 @@ export class SquashageServices {
     this.recordWriterReady = slots.recordWriterReady;
     this.provSink          = slots.provSink;
     this.provSinkReady     = slots.provSinkReady;
+    this.entityIndex       = slots.entityIndex;
+    this.dedupSet          = slots.dedupSet;
   }
 
   /**
@@ -320,10 +329,12 @@ export class SquashageServices {
   /**
    * Eagerly build the services bag for one run.
    *
-   * Construction order matches the legacy `context:*` hook order:
+   * Construction order:
    * logger → ajv → factory → dataset → builder → prefixes → iri → graphs →
-   * ontology → quarantine. Each step is synchronous except ontology
-   * (filesystem reads for schemas).
+   * quarantine → subjectIri → schemaPaths.
+   *
+   * Ontology construction is no longer performed here — plugins provide their
+   * own ontology instance via their register() call.
    */
   static async forTarget(options: SquashageServicesOptionsInterface): Promise<SquashageServices> {
     const logger  = Logger as unknown as LoggerFactoryInterface;
@@ -338,7 +349,6 @@ export class SquashageServices {
     );
     const iri    = Namespaces.for(SquashageServices.#resolveBaseIri(options.targetConfig));
     const graphs = SquashageServices.#mintGraphs(options.targetConfig, factory);
-    const ontology   = await SquashageServices.#buildOntology(options.targetConfig, options.schemasBase);
     const quarantine = QuarantineWriter.forRun(options.outDir, options.target);
     const subjectIri = SubjectIriPolicy.fromTargetConfig(
       options.targetConfig,
@@ -353,12 +363,11 @@ export class SquashageServices {
     log.debug('forTarget', 'services bag built', {
       target:       options.target,
       prefixSource: prefixes.source,
-      hasOntology:  ontology !== null,
     });
 
     return new SquashageServices({
       logger, ajv, factory, dataset, builder, prefixes, iri, graphs,
-      ontology, quarantine, output: options.output, target: options.target,
+      ontology: null, quarantine, output: options.output, target: options.target,
       outDir: options.outDir, schemasBase: options.schemasBase,
       runStartTime: options.runStartTime, targetConfig: options.targetConfig,
       subjectIri, shapeCache: new Map(),
@@ -368,6 +377,8 @@ export class SquashageServices {
       recordWriterReady: null,
       provSink:          null,
       provSinkReady:     null,
+      entityIndex:       null,
+      dedupSet:          null,
     });
   }
 
@@ -378,8 +389,8 @@ export class SquashageServices {
   }
 
   static #resolveBaseIri(targetConfig: SquashageRunConfigInterface): string {
-    const ontology  = targetConfig.ontology as Readonly<Record<string, unknown>> | undefined;
-    const candidate = ontology?.['baseIri'];
+    const ontologyBlock = targetConfig.ontology as Readonly<Record<string, unknown>> | undefined;
+    const candidate = ontologyBlock?.['baseIri'];
     return typeof candidate === 'string' && candidate.length > 0
       ? candidate
       : 'https://example.org/';
@@ -408,133 +419,5 @@ export class SquashageServices {
       refinements: override?.['refinements'] ?? join(schemasBase, 'schemas', 'refinements'),
       finals:      override?.['finals']      ?? join(schemasBase, 'schemas'),
     };
-  }
-
-  static async #buildOntology(
-    targetConfig: SquashageRunConfigInterface,
-    schemasBase:  string,
-  ): Promise<JsonTologyOntology | null> {
-    const ontologyBlock = targetConfig.ontology as Readonly<Record<string, unknown>> | undefined;
-    if (ontologyBlock === undefined) return null;
-    if (ontologyBlock['engine'] !== 'json-tology') return null;
-
-    const baseIRI    = ontologyBlock['baseIRI'] as string;
-    const rawSchemas = ontologyBlock['schemas'] as ReadonlyArray<{ schemaPath: string }> | undefined;
-    if (rawSchemas === undefined || rawSchemas.length === 0) return null;
-
-    const schemaInputs: JsonTologySchemaInputInterface[] = await Promise.all(
-      rawSchemas.map(async (entry) => {
-        const absPath = resolvePath(schemasBase, entry.schemaPath);
-        const text    = await readFile(absPath, 'utf8');
-        const schema  = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
-        return { schemaPath: entry.schemaPath, schema };
-      }),
-    );
-
-    // Load the bundled core upper-ontology schemas (Layer 0) first so that any
-    // per-target class may use allOf + $ref to extend them in a later phase.
-    const coreInputs = await SquashageServices.#loadCoreSchemas();
-
-    // Auto-discover extracted primitive/object finals alongside the listed schemas.
-    // The finals directory is inferred from the schemasBase (parallel to the listed
-    // schema paths). We scan for schemas/primitives/ and schemas/objects/ under
-    // schemasBase to pick up all $ref targets produced by the induction pipeline.
-    const extractedInputs = await SquashageServices.#loadExtractedSchemas(schemasBase);
-    const allInputs = [...coreInputs, ...schemaInputs, ...extractedInputs];
-
-    return JsonTologyOntology.create({ baseIRI, schemas: allInputs });
-  }
-
-  /**
-   * Loads the bundled core upper-ontology schemas from `src/schemas/core/`.
-   *
-   * Scans the top-level core directory and any recognised subdirectories
-   * (`primitives/`). Primitives are emitted first so that class schemas that
-   * `$ref` them are always registered after their `$id` targets.
-   *
-   * The result is cached in a process-level variable so subsequent runs within
-   * the same process avoid redundant filesystem reads.
-   */
-  static async #loadCoreSchemas(): Promise<ReadonlyArray<JsonTologySchemaInputInterface>> {
-    if (coreSchemaCache !== null) return coreSchemaCache;
-
-    // Check whether the core directory exists at all before proceeding.
-    let topEntries: string[];
-    try {
-      topEntries = await readdir(CORE_SCHEMAS_DIR);
-    } catch {
-      log.warn('#loadCoreSchemas', 'core schemas directory not found; continuing without upper ontology', {
-        dir: CORE_SCHEMAS_DIR,
-      });
-      coreSchemaCache = [];
-      return coreSchemaCache;
-    }
-
-    const inputs: JsonTologySchemaInputInterface[] = [];
-
-    // 1. Load primitives/ first (they are $ref targets for class schemas).
-    const primitivesDir = join(CORE_SCHEMAS_DIR, 'primitives');
-    let primEntries: string[];
-    try {
-      primEntries = await readdir(primitivesDir);
-    } catch {
-      primEntries = [];
-    }
-    for (const filename of primEntries.filter((f) => f.endsWith('.schema.json')).sort()) {
-      const absPath    = join(primitivesDir, filename);
-      const schemaPath = join('schemas', 'core', 'primitives', filename);
-      const text   = await readFile(absPath, 'utf8');
-      const schema = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
-      inputs.push({ schemaPath, schema });
-    }
-
-    // 2. Load top-level class schemas.
-    for (const filename of topEntries.filter((f) => f.endsWith('.schema.json')).sort()) {
-      const absPath    = join(CORE_SCHEMAS_DIR, filename);
-      const schemaPath = join('schemas', 'core', filename);
-      const text   = await readFile(absPath, 'utf8');
-      const schema = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
-      inputs.push({ schemaPath, schema });
-    }
-
-    log.debug('#loadCoreSchemas', 'core schemas loaded', { count: inputs.length });
-    coreSchemaCache = inputs;
-    return coreSchemaCache;
-  }
-
-  /**
-   * Scan `schemasBase/schemas/primitives/` and `schemasBase/schemas/objects/`
-   * for `*.schema.json` files and return them as schema inputs.
-   * Returns an empty array when the directories are absent.
-   */
-  static async #loadExtractedSchemas(
-    schemasBase: string,
-  ): Promise<JsonTologySchemaInputInterface[]> {
-    const subdirs = ['schemas/primitives', 'schemas/objects'];
-    const inputs: JsonTologySchemaInputInterface[] = [];
-
-    for (const sub of subdirs) {
-      const dir = join(schemasBase, sub);
-      let entries: string[];
-      try {
-        entries = await readdir(dir);
-      } catch {
-        continue;
-      }
-      for (const filename of entries.filter((f) => f.endsWith('.schema.json')).sort()) {
-        const absPath   = join(dir, filename);
-        const schemaPath = join(sub, filename);
-        try {
-          const text   = await readFile(absPath, 'utf8');
-          const schema = JSON.parse(text) as Record<string, unknown> & { readonly '$id': string };
-          inputs.push({ schemaPath, schema });
-        } catch {
-          // Skip unreadable or malformed files; the build step will surface errors
-          // at JsonTologyOntology.create time if a $ref target is missing.
-        }
-      }
-    }
-
-    return inputs;
   }
 }

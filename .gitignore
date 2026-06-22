@@ -85,6 +85,9 @@ dist/
 # Example output files are committed as documentation of expected output shape
 !examples/**/output/
 !examples/**/output/**
+# Demo data shards committed alongside frames + manifest for the live browser demo
+!docs/public/examples/**/data/
+!docs/public/examples/**/data/**
 
 # Compiled plugin outputs (built from plugins/**/*.ts via tsconfig.plugins.json)
 plugins/**/*.js
@@ -112,10 +115,8 @@ squashage.config*.json
 .orchestration/
 .env
 
-# Target-specific plugin source — shipped as examples in v1, not the beta.
-# Anchored to repo root so first-party silo plugins under
-# `src/classification/plugins/` (and their tests) stay tracked.
-/plugins/
+# Plugin compiled outputs are gitignored; source .ts and .dag.jsonld files are tracked.
+# (plugins/**/*.js and plugins/**/*.d.ts rules above already cover compiled outputs)
 
 # Demo build artifacts (graphs/ subdirectory from viz:demo script)
 docs/examples/aonprd/graphs/

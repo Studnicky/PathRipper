@@ -1,0 +1,182 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "name": {
+      "@id": "https://noocodex.dev/ontology/dag/name"
+    },
+    "version": {
+      "@id": "https://noocodex.dev/ontology/dag/version"
+    },
+    "entrypoint": {
+      "@id": "https://noocodex.dev/ontology/dag/entrypoint"
+    },
+    "nodes": {
+      "@id": "https://noocodex.dev/ontology/dag/nodes",
+      "@container": "@set"
+    },
+    "outputs": {
+      "@id": "https://noocodex.dev/ontology/dag/outputs"
+    },
+    "node": {
+      "@id": "https://noocodex.dev/ontology/dag/node"
+    },
+    "dag": {
+      "@id": "https://noocodex.dev/ontology/dag/dag"
+    },
+    "body": {
+      "@id": "https://noocodex.dev/ontology/dag/body"
+    },
+    "source": {
+      "@id": "https://noocodex.dev/ontology/dag/source"
+    },
+    "itemKey": {
+      "@id": "https://noocodex.dev/ontology/dag/itemKey"
+    },
+    "concurrency": {
+      "@id": "https://noocodex.dev/ontology/dag/concurrency"
+    },
+    "gather": {
+      "@id": "https://noocodex.dev/ontology/dag/gather"
+    },
+    "reducer": {
+      "@id": "https://noocodex.dev/ontology/dag/reducer"
+    },
+    "outcome": {
+      "@id": "https://noocodex.dev/ontology/dag/outcome"
+    },
+    "phase": {
+      "@id": "https://noocodex.dev/ontology/dag/phase"
+    },
+    "stateMapping": {
+      "@id": "https://noocodex.dev/ontology/dag/stateMapping"
+    },
+    "container": {
+      "@id": "https://noocodex.dev/ontology/dag/container"
+    },
+    "DAG": {
+      "@id": "https://noocodex.dev/ontology/dag/DAG"
+    },
+    "Placement": {
+      "@id": "https://noocodex.dev/ontology/dag/Placement"
+    },
+    "SingleNode": {
+      "@id": "https://noocodex.dev/ontology/dag/SingleNode"
+    },
+    "ScatterNode": {
+      "@id": "https://noocodex.dev/ontology/dag/ScatterNode"
+    },
+    "EmbeddedDAGNode": {
+      "@id": "https://noocodex.dev/ontology/dag/EmbeddedDAGNode"
+    },
+    "TerminalNode": {
+      "@id": "https://noocodex.dev/ontology/dag/TerminalNode"
+    },
+    "PhaseNode": {
+      "@id": "https://noocodex.dev/ontology/dag/PhaseNode"
+    }
+  },
+  "@id": "urn:noocodex:dag:squashage:record-induce",
+  "@type": "DAG",
+  "name": "squashage:record-induce",
+  "version": "1.0",
+  "entrypoint": "json-read",
+  "nodes": [
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/json-read",
+      "@type": "SingleNode",
+      "name": "json-read",
+      "node": "json-read",
+      "outputs": {
+        "loaded": "classify:discriminator",
+        "quarantined": "record-quarantine"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/classify:discriminator",
+      "@type": "SingleNode",
+      "name": "classify:discriminator",
+      "node": "classify:discriminator",
+      "outputs": {
+        "proposed": "classify:source",
+        "no-match": "classify:source"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/classify:source",
+      "@type": "SingleNode",
+      "name": "classify:source",
+      "node": "classify:source",
+      "outputs": {
+        "proposed": "classify:url-pattern",
+        "no-match": "classify:url-pattern"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/classify:url-pattern",
+      "@type": "SingleNode",
+      "name": "classify:url-pattern",
+      "node": "classify:url-pattern",
+      "outputs": {
+        "proposed": "classify:structural",
+        "no-match": "classify:structural"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/classify:structural",
+      "@type": "SingleNode",
+      "name": "classify:structural",
+      "node": "classify:structural",
+      "outputs": {
+        "proposed": "record-health-gate",
+        "no-match": "record-health-gate"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/record-health-gate",
+      "@type": "SingleNode",
+      "name": "record-health-gate",
+      "node": "record-health-gate",
+      "outputs": {
+        "has-proposals": "classify-conflict",
+        "generic-fallback": "shape-observe",
+        "errors": "record-quarantine"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/classify-conflict",
+      "@type": "SingleNode",
+      "name": "classify-conflict",
+      "node": "classify-conflict",
+      "outputs": {
+        "resolved": "shape-observe",
+        "tie": "record-quarantine",
+        "unknown": "record-quarantine"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/shape-observe",
+      "@type": "SingleNode",
+      "name": "shape-observe",
+      "node": "shape-observe",
+      "outputs": {
+        "observed": "end",
+        "skipped": "end"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/record-quarantine",
+      "@type": "SingleNode",
+      "name": "record-quarantine",
+      "node": "record-quarantine",
+      "outputs": {
+        "recorded": "end"
+      }
+    },
+    {
+      "@id": "urn:noocodex:dag:squashage:record-induce/node/end",
+      "@type": "TerminalNode",
+      "name": "end",
+      "outcome": "completed"
+    }
+  ]
+}

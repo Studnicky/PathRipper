@@ -1,0 +1,510 @@
+{
+  "$id": "https://2e.aonprd.com/Monster",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "$ref": "https://noocodec.dev/squashage/core/ContentEntry.schema.json"
+    }
+  ],
+  "properties": {
+    "_type": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterType.draft.json"
+    },
+    "abilities": {
+      "properties": {
+        "cha": {
+          "maximum": 12,
+          "minimum": -5,
+          "type": "integer"
+        },
+        "con": {
+          "maximum": 12,
+          "minimum": -2,
+          "type": "integer"
+        },
+        "dex": {
+          "maximum": 12,
+          "minimum": -5,
+          "type": "integer"
+        },
+        "int": {
+          "maximum": 11,
+          "minimum": -5,
+          "type": "integer"
+        },
+        "str": {
+          "maximum": 12,
+          "minimum": -5,
+          "type": "integer"
+        },
+        "wis": {
+          "maximum": 12,
+          "minimum": -2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "ac": {
+      "properties": {
+        "conditional": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "saves_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "maximum": 54,
+          "minimum": 7,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "alignment": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterAlignment.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "alt_edition_url": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-squashage-open-vocab": true
+    },
+    "body_text": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "creature_art": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-squashage-open-vocab": true
+    },
+    "defensive_abilities": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterDefensiveAbilitie.draft.json"
+      },
+      "type": "array"
+    },
+    "family_links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterFamilyLink.draft.json"
+      },
+      "type": "array"
+    },
+    "flavor_text": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-squashage-open-vocab": true
+    },
+    "hardness": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterHardness.draft.json"
+    },
+    "hp": {
+      "properties": {
+        "special": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "maximum": 600,
+          "minimum": 4,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "immunities": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "is_legacy": {
+      "type": "boolean"
+    },
+    "items": {
+      "items": {
+        "type": "string",
+        "x-squashage-open-vocab": true
+      },
+      "type": "array"
+    },
+    "languages": {
+      "properties": {
+        "languages": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "raw": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "x-squashage-open-vocab": true
+        },
+        "special": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "level": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterLevel.draft.json"
+    },
+    "links": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterLink.draft.json"
+      },
+      "type": "array"
+    },
+    "monster_id": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterMonsterId.draft.json"
+    },
+    "name": {
+      "type": "string",
+      "x-squashage-open-vocab": true
+    },
+    "offensive_abilities": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterOffensiveAbilitie.draft.json"
+      },
+      "type": "array"
+    },
+    "perception": {
+      "properties": {
+        "modifier": {
+          "maximum": 48,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "raw": {
+          "type": "string",
+          "x-squashage-open-vocab": true
+        },
+        "senses": {
+          "items": {
+            "type": "string",
+            "x-squashage-open-vocab": true
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "pfs": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentPfs.draft.json",
+      "x-squashage-open-vocab": true
+    },
+    "rarity": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/EquipmentRarity.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "Rarity"
+    },
+    "recall_knowledge": {
+      "properties": {
+        "dc": {
+          "maximum": 53,
+          "minimum": 13,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "lores": {
+          "items": {
+            "properties": {
+              "skill": {
+                "enum": [
+                  "Arcana",
+                  "Arcana, Crafting",
+                  "Arcana, Nature",
+                  "Nature",
+                  "Occultism",
+                  "Occultism, Occultism",
+                  "Religion",
+                  "Society"
+                ],
+                "type": "string",
+                "x-squashage-closed-enum": true
+              },
+              "trait": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "raw": {
+          "type": "string",
+          "x-squashage-open-vocab": true
+        }
+      },
+      "type": "object"
+    },
+    "resistances": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterResistance.draft.json"
+      },
+      "type": "array"
+    },
+    "saves": {
+      "properties": {
+        "fort": {
+          "maximum": 47,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "ref": {
+          "maximum": 43,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "will": {
+          "maximum": 48,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "size": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/MonsterSize.draft.json",
+      "x-squashage-closed-enum": true,
+      "x-squashage-range": "CreatureSize"
+    },
+    "skills": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterSkill.draft.json"
+      },
+      "type": "array"
+    },
+    "source": {
+      "properties": {
+        "book": {
+          "type": "string"
+        },
+        "page": {
+          "maximum": 952,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "source_id": {
+          "maximum": 319,
+          "minimum": 2,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "sources": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterSource.draft.json"
+      },
+      "type": "array"
+    },
+    "speed": {
+      "properties": {
+        "burrow": {
+          "maximum": 80,
+          "minimum": 5,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "climb": {
+          "maximum": 60,
+          "minimum": 5,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "fly": {
+          "maximum": 250,
+          "minimum": 10,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "special": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "swim": {
+          "maximum": 180,
+          "minimum": 10,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "walk": {
+          "maximum": 100,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "spell_lists": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterSpellList.draft.json"
+      },
+      "type": "array"
+    },
+    "strikes": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterStrike.draft.json"
+      },
+      "type": "array"
+    },
+    "top_abilities": {
+      "items": {
+        "type": "null"
+      },
+      "type": "array"
+    },
+    "traits": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "url": {
+      "$ref": "https://2e.aonprd.com/schemas/inferred/primitives/IriString.draft.json",
+      "format": "iri",
+      "x-squashage-iri-promotion": true
+    },
+    "variants": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterVariant.draft.json"
+      },
+      "type": "array"
+    },
+    "weaknesses": {
+      "items": {
+        "$ref": "https://2e.aonprd.com/schemas/inferred/objects/MonsterWeaknesse.draft.json"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "_type",
+    "abilities",
+    "ac",
+    "alignment",
+    "alt_edition_url",
+    "body_text",
+    "creature_art",
+    "defensive_abilities",
+    "family_links",
+    "flavor_text",
+    "hardness",
+    "hp",
+    "immunities",
+    "is_legacy",
+    "items",
+    "languages",
+    "level",
+    "links",
+    "monster_id",
+    "name",
+    "offensive_abilities",
+    "perception",
+    "pfs",
+    "rarity",
+    "recall_knowledge",
+    "resistances",
+    "saves",
+    "size",
+    "skills",
+    "source",
+    "sources",
+    "speed",
+    "spell_lists",
+    "strikes",
+    "top_abilities",
+    "traits",
+    "url",
+    "variants",
+    "weaknesses"
+  ],
+  "title": "Monster",
+  "type": "object",
+  "x-squashage-array-enum-iri": {
+    "traits": "Trait"
+  },
+  "x-squashage-class": "https://2e.aonprd.com/Monster",
+  "x-squashage-provenance": {
+    "from": "/url",
+    "predicate": "dct:source"
+  },
+  "x-squashage-rdfs-label": "/name",
+  "x-squashage-skolem-subject": {
+    "ac": {
+      "fragment": "stat-ac",
+      "type": "StatBlock"
+    },
+    "hp": {
+      "fragment": "stat-hp",
+      "properties": {
+        "statValue": "xsd:integer"
+      },
+      "type": "StatBlock"
+    }
+  },
+  "x-squashage-subject-iri": {
+    "fallback": "/name",
+    "from": "/url",
+    "sanitize": "url-tail"
+  }
+}

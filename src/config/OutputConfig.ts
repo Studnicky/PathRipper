@@ -30,7 +30,7 @@ export const OUTPUT_SCHEMA = {
       enum: ['turtle', 'trig', 'ntriples', 'nquads', 'jsonld'] as const,
       description: 'RDF/XML and N3 output are deferred to v1.x — the AJV schema rejects them in v0.x.',
     },
-    mode:        { type: 'string', enum: ['dataset', 'stream'] as const, default: 'dataset' },
+    mode:        { type: 'string', enum: ['dataset', 'stream'] as const, default: 'stream' },
     prefixes:    {
       type: 'object',
       additionalProperties: { type: 'string', format: 'uri' },
@@ -58,7 +58,7 @@ export const OUTPUT_SCHEMA = {
       type: 'string',
       enum: ['atomic', 'stream'] as const,
       default: 'atomic',
-      description: 'Output write strategy. "atomic" (default) collects all quads in memory and writes a single file atomically. "stream" opens a file handle immediately and writes each quad as it arrives, eliminating OOM risk on large datasets.',
+      description: '"stream" (default) streams quads to disk as they arrive, eliminating OOM risk on large datasets. Use "dataset" when JSON-LD format is required (needs full quad set for context generation).',
     },
     dropInMemory: {
       type: 'boolean',

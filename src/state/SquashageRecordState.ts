@@ -78,6 +78,22 @@ export class SquashageRecordState extends NodeStateBase {
     };
   }
 
+  /**
+   * Rehydrate a `SquashageRecordState` from a JSON snapshot produced by
+   * `NodeStateBase.snapshot()`. Constructs a blank instance with sentinel
+   * values, then delegates to `applySnapshot` (which calls `restoreData`).
+   *
+   * Named `fromSnapshot` rather than `restore` to avoid a static signature
+   * conflict with the generic `NodeStateBase.restore<T>(this: new()=>T, …)`.
+   * The worker registry passes this via an adapter object literal:
+   * `{ restore: (snap) => SquashageRecordState.fromSnapshot(snap) }`.
+   */
+  static fromSnapshot(snapshot: JsonObjectType): SquashageRecordState {
+    const state = new SquashageRecordState({ target: '', path: '' }, '', 0);
+    state.applySnapshot(snapshot);
+    return state;
+  }
+
   protected override restoreData(snap: JsonObjectType): void {
     const source = snap['source'];
     if (isPlainObject(source)) this.source = source as unknown as InputSource;
