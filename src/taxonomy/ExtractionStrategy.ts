@@ -3,17 +3,17 @@
 // Plugin-agnostic. Defines the shapes the Layer-1 capabilities produce plus
 // the strategy interfaces a plugin supplies to teach `extractCommon` how to
 // parse its source markup. A strategy implementation imports only from
-// `cheerio` / `domhandler` and this file — never from `plugins/aonprd/`.
+// `cheerio` / `domhandler` and this file — never from a plugin-specific path.
 //
 // H15: `SourceRefStrategy.extractSources` removes the hardcoded
-// `<b>Source</b>` + `Sources.aspx?ID=` AON regex from the framework.
+// `<b>Source</b>` + `Sources.aspx?ID=` pattern from the framework.
 // H16: `SectionWalkerStrategy.harvestSections` removes the hardcoded
-// `h2.title, h3.title` AON heading selector from the framework.
+// `h2.title, h3.title` heading selector from the framework.
 //
-// AON-specific selectors / regexes live in
-// `plugins/aonprd/strategies/aon.ts`. A future plugin (bulbapedia, torreya)
-// supplies its own implementation of `CommonStrategy` and reuses the same
-// Layer-1 capability binary.
+// Plugin-specific selectors / regexes live in the plugin's own strategy
+// implementation. A future plugin (bulbapedia, torreya) supplies its own
+// implementation of `CommonStrategy` and reuses the same Layer-1 capability
+// binary.
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 
@@ -86,8 +86,8 @@ export interface SectionWalkerStrategy {
  *
  * The current strategy surface covers source-citation extraction and
  * section-walker extraction. Additional Layer-1 extractors (title, traits,
- * fields, links, page-type detection) remain AON-shaped; a second source
- * plugin surfacing concrete needs can widen this interface.
+ * fields, links, page-type detection) remain source-shaped; a second plugin
+ * surfacing concrete needs can widen this interface.
  */
 export interface CommonStrategy {
   readonly sourceRef:     SourceRefStrategy;

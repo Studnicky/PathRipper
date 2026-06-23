@@ -8,6 +8,9 @@ import { CrawlFetcher }        from './CrawlFetcher.js';
 import type { ScrapeState }    from '../../state/ScrapeState.js';
 import type { RipperServices } from '../../services/RipperServices.js';
 
+const HTTP_CLIENT_ERROR_MIN = 400;
+const HTTP_SERVER_ERROR_MIN = 500;
+
 /**
  * Fetches every URL in `state.crawl.frontier` and extracts outbound links.
  *
@@ -110,24 +113,30 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
     const discoveredSet = new Set<string>(state.crawl.discovered);
     const maxPages      = services.crawler?.maxPages;
 
+    // Pre-filter: drop already-visited URLs and early-exit on budget
+    const candidateUrls = state.crawl.frontier.filter((url: string): boolean => {
+      if (visitedSet.has(url)) return false;
+      if (maxPages !== undefined && discoveredSet.size >= maxPages) return false;
+      return true;
+    });
+
+    // Fetch all candidate URLs concurrently; maxConcurrent is enforced by the
+    // rate limiter (Bottleneck) that was built with crawler.concurrency in runDag.
+    const settled = await Promise.allSettled<{ url: string; html: string }>(
+      candidateUrls.map((url: string): Promise<{ url: string; html: string }> =>
+        CrawlFetcher.fetch(url, headers, cache, limiter, policy).then((html: string): { url: string; html: string } => ({ url, html })),
+      ),
+    );
+
     let transientErrors = 0;
     let permanentErrors = 0;
     let anyLinksFound   = false;
 
-    for (const url of state.crawl.frontier) {
-      // Budget check
-      if (maxPages !== undefined && discoveredSet.size >= maxPages) break;
-
-      // Skip already-visited URLs
-      if (visitedSet.has(url)) continue;
-
-      let html: string;
-      try {
-        html = await CrawlFetcher.fetch(url, headers, cache, limiter, policy);
-      } catch (err) {
-        const status = CrawlFetcher.extractStatus(err);
-        log.warn('FetchAndExtractLinksNode', `Fetch failed for ${url}`, { status });
-        if (status !== null && status >= 400 && status < 500) {
+    for (const result of settled) {
+      if (result.status === 'rejected') {
+        const status = CrawlFetcher.extractStatus(result.reason);
+        log.warn('FetchAndExtractLinksNode', 'Fetch failed', { status });
+        if (status !== null && status >= HTTP_CLIENT_ERROR_MIN && status < HTTP_SERVER_ERROR_MIN) {
           permanentErrors++;
         } else {
           transientErrors++;
@@ -135,11 +144,12 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
         continue;
       }
 
+      const { url, html } = result.value;
       visitedSet.add(url);
 
       const allLinks = extractLinks(html, url)
-        .filter((link) => domainRe.test(link))
-        .filter((link) => delimiterRe.test(link));
+        .filter((link: string): boolean => domainRe.test(link))
+        .filter((link: string): boolean => delimiterRe.test(link));
 
       for (const link of allLinks) {
         if (maxPages !== undefined && discoveredSet.size >= maxPages) break;
@@ -173,6 +183,24 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
   }
 }
 
+/**
+ * Built-in node — fetches all URLs in `state.crawl.frontier` and extracts outbound links.
+ *
+ * @remarks
+ * Registered as `crawl:fetch-and-extract`. Processes the frontier batch with `Promise.allSettled`,
+ * honouring `services.crawlLimiter` for concurrency and rate-limiting.
+ *
+ * @example
+ * ```json
+ * { "@type": "SingleNode", "name": "crawl:fetch-and-extract", "node": "crawl:fetch-and-extract" }
+ * ```
+ *
+ * @see {@link CrawlFetcher}
+ * @category Nodes
+ * @since 4.1.0
+ * @group Crawl
+ * @defaultValue Singleton instance created at module load time.
+ */
 export const FetchAndExtractLinksNode = new FetchAndExtractLinksNodeImpl();
 
 // ── Private helpers ────────────────────────────────────────────────────────────
@@ -182,7 +210,7 @@ const extractLinks = (html: string, baseUrl: string): string[] => {
   const links: string[] = [];
   root('a[href]').each((_index: number, element: Element): void => {
     const href = root(element).attr('href');
-    if (href === undefined) return;
+    if (href === undefined || href.startsWith('#')) return;
     try {
       links.push(new URL(href, baseUrl).href);
     } catch {

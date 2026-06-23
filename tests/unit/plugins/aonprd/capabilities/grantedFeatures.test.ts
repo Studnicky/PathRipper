@@ -2,7 +2,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseGrantedFeatures } from '../../../../../plugins/aonprd/capabilities/grantedFeatures.js';
-import type { Section } from '../../../../../plugins/aonprd/capabilities/strategy.js';
+import type { Section } from '../../../../../src/taxonomy/ExtractionStrategy.js';
 
 describe('parseGrantedFeatures', () => {
   it('extracts h2 sections as granted features', () => {

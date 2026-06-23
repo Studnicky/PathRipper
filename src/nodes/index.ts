@@ -15,3 +15,4 @@ export { CrawlExhaustedNode }         from './crawl/CrawlExhaustedNode.js';
 export { ReconcileIdentityNode }      from './ReconcileIdentityNode.js';
 export { ReportCrawlHealthNode }      from './ReportCrawlHealthNode.js';
 export { ResolveLinkNode }            from './ResolveLinkNode.js';
+export { MarkdownWriteNode }          from './MarkdownWriteNode.js';

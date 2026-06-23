@@ -1,5 +1,6 @@
-// Replaces PathRipper's JSDOM fetchPage with cheerio — lighter, no JS execution.
-// For JS-rendered pages, swap the fetch() call for a headless browser driver.
+// Default fetch path uses cheerio — lightweight, no JS execution.
+// Set useJsdom: true in config to run fetched HTML through JSDOM before cheerio
+// parsing, enabling synchronous script execution and DOM manipulation.
 
 import { load } from 'cheerio';
 import { RateLimiter } from '../modules/http/rateLimiter.js';
@@ -13,7 +14,10 @@ import type { HtmlScraperConfigType, ScrapedPageType } from '../types/HtmlScrape
 
 export type { HtmlScraperConfigType, ScrapedPageType };
 
-const DEFAULT_RATE_LIMIT_MS = 250;
+const DEFAULT_RATE_LIMIT_MS          = 250;
+const JSDOM_LOAD_TIMEOUT_MINIMUM_MS  = 10_000;
+const JSDOM_LOAD_TIMEOUT_FALLBACK_MS = 30_000;
+const HTTP_STATUS_OK                 = 200;
 
 /**
  * Fetches and parses HTML pages using cheerio with rate limiting and retry support.
@@ -41,6 +45,8 @@ export class HtmlScraper {
   readonly #log: Logger;
   /** Optional shared content store; null when not provided in config. */
   readonly #cache: ScraperCache | null;
+  readonly #useJsdom: boolean;
+  readonly #jsdomLoadTimeoutMs: number;
 
   /**
    * @param config - Scraper configuration including base URL, rate limit, and headers.
@@ -49,13 +55,16 @@ export class HtmlScraper {
     this.#base    = config.baseUrl;
     this.#headers = config.headers ?? {};
     this.#limiter = RateLimiter.create({ minTimeMs: config.rateLimitMs ?? DEFAULT_RATE_LIMIT_MS, jitterMs: config.jitterMs ?? 0 });
-    this.#policy  = HttpRetryPolicy.create({
-      maxAttempts: config.maxRetries       ?? config.retry?.maxAttempts,
-      baseDelayMs: config.retryBaseDelayMs ?? config.retry?.baseDelayMs,
-      maxDelayMs:  config.retryMaxDelayMs  ?? config.retry?.maxDelayMs,
-    });
+    this.#policy  = HtmlScraper.#buildRetryPolicy(config);
     this.#log     = Logger.forComponent('HtmlScraper');
     this.#cache   = config.cache ?? null;
+    this.#useJsdom = config.useJsdom ?? false;
+    // Ceiling for the JSDOM load event wait: honour explicit config, then scale
+    // to the site's retry tolerance (never less than the minimum). This ensures
+    // a site with retryMaxDelayMs: 60_000 gets a proportionate ceiling rather
+    // than a hardcoded constant that fires before natural load completes.
+    this.#jsdomLoadTimeoutMs = config.jsdomLoadTimeoutMs
+      ?? Math.max(JSDOM_LOAD_TIMEOUT_MINIMUM_MS, config.retryMaxDelayMs ?? JSDOM_LOAD_TIMEOUT_FALLBACK_MS);
   }
 
   /**
@@ -115,15 +124,69 @@ export class HtmlScraper {
     );
 
     if (cache !== null) {
-      await cache.write(cacheKey, html, { url, method: 'GET', fetchedAt: new Date().toISOString(), status: 200 });
+      await cache.write(cacheKey, html, { url, method: 'GET', fetchedAt: new Date().toISOString(), status: HTTP_STATUS_OK });
     }
 
-    return { url, $: load(html), html };
+    return this.#parseHtml(html, url);
   }
 
   /** Returns true when the cache config is read-only (no writes will reach disk). */
   private static isReadOnly(cache: ScraperCache): boolean {
     return cache.getMode() === 'read-only';
+  }
+
+  async #parseHtml(html: string, url: string): Promise<ScrapedPageType> {
+    if (!this.#useJsdom) {
+      return { url, $: load(html), html };
+    }
+    const processedHtml = await this.#waitForJsdom(html, url);
+    return { url, $: load(processedHtml), html: processedHtml };
+  }
+
+  async #waitForJsdom(html: string, url: string): Promise<string> {
+    const { JSDOM, VirtualConsole } = await import('jsdom');
+    // Omit `resources` so JSDOM loads no subresources (its default). External
+    // scripts (analytics, tracking, SPA bundles) reliably fail under JSDOM due to
+    // missing browser APIs and cause process-level unhandled rejections that
+    // surface in test runners. The practical JSDOM use case — inline scripts that
+    // manipulate the DOM before content is accessible — runs under
+    // `runScripts: 'dangerously'` without any external resource loading.
+    //
+    // A bare VirtualConsole (no listeners) swallows the page's own console output
+    // and, critically, the `jsdomError` events thrown by inline scripts that
+    // reference unloaded globals (e.g. `$`/jQuery on Roll20). We serialize the DOM
+    // and discard the page's console entirely; these errors are expected and must
+    // not pollute the host process output.
+    const virtualConsole = new VirtualConsole();
+    const dom = new JSDOM(html, { url, runScripts: 'dangerously', virtualConsole });
+    dom.window.onerror = (): boolean => true;
+    // Single promise that resolves on either the 'load' event or the ceiling timeout,
+    // whichever fires first. Uses an internal `fired` guard so neither branch can
+    // call `resolve` twice if both events coincidentally fire in the same tick.
+    await new Promise<void>((resolve: () => void): void => {
+      let fired = false;
+      const timer = setTimeout((): void => settle(), this.#jsdomLoadTimeoutMs);
+      function settle(): void {
+        if (fired) return;
+        fired = true;
+        clearTimeout(timer);
+        resolve();
+      }
+      dom.window.addEventListener('load', settle);
+    });
+    // Capture the DOM before closing. window.close() aborts all pending resource
+    // loads and stops script execution, preventing third-party analytics scripts
+    // (posthog, clarity.ms, etc.) from propagating errors after we're done.
+    const result = dom.serialize();
+    dom.window.close();
+    return result;
+  }
+
+  static #buildRetryPolicy(config: HtmlScraperConfigType): HttpRetryPolicy {
+    const maxAttempts = config.maxRetries       ?? config.retry?.maxAttempts;
+    const baseDelayMs = config.retryBaseDelayMs ?? config.retry?.baseDelayMs;
+    const maxDelayMs  = config.retryMaxDelayMs  ?? config.retry?.maxDelayMs;
+    return HttpRetryPolicy.create({ maxAttempts, baseDelayMs, maxDelayMs });
   }
 
   /**

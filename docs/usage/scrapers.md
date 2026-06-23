@@ -76,7 +76,31 @@ import * as cheerio from 'cheerio';
 const $ = cheerio.load(state.input['html'] as string);
 ```
 
-For JS-rendered pages (single-page apps, lazy-loaded content): fetch via a headless driver (Playwright, Puppeteer), get the rendered HTML string, and feed it to `cheerio.load()`. `HtmlScraper` handles the static-page case; bring your own driver for the dynamic case.
+### JSDOM mode
+
+For pages that require script execution (single-page apps, lazy-loaded content, synchronous DOM manipulation that happens before content is accessible), enable JSDOM mode:
+
+```json
+"useJsdom": true
+```
+
+When `useJsdom` is enabled, each fetched HTML body is passed through [JSDOM](https://github.com/jsdom/jsdom) with `runScripts: 'dangerously'` and `resources: 'usable'` before Cheerio loads it. JSDOM fires the `window.load` event once external resources settle, then `fetchPage` serializes the final DOM and returns it.
+
+The wait is a `Promise.race` between the `load` event and a ceiling timeout — so a page that loads in 3 s resolves at 3 s regardless of the ceiling. The ceiling only fires for scripts that hang and never dispatch `load`.
+
+**Ceiling timeout** defaults to `max(10 000, retryMaxDelayMs ?? 30 000)` — it scales with the site's configured retry tolerance. Override explicitly when needed:
+
+```json
+"useJsdom":            true,
+"jsdomLoadTimeoutMs":  15000
+```
+
+| Config field | Type | Default | Description |
+|---|---|---|---|
+| `useJsdom` | boolean | `false` | Pass fetched HTML through JSDOM before Cheerio. |
+| `jsdomLoadTimeoutMs` | integer ≥ 1000 | `max(10000, retryMaxDelayMs ?? 30000)` | Ceiling for the JSDOM `load` event wait. |
+
+JSDOM executes scripts in-process. Do not enable `useJsdom` against untrusted or adversarial pages.
 
 ### fetchText
 

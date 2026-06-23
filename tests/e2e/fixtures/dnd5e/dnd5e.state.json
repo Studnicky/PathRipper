@@ -1,0 +1,15 @@
+{
+  "baseUrl":          "https://roll20.net",
+  "rateLimitMs":      500,
+  "jitterMs":         100,
+  "maxRetries":       2,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs":  10000,
+  "headers":          { "User-Agent": "ripperoni-e2e/1.0 (+https://github.com/Studnicky/Ripperoni)" },
+  "output":           { "basePath": "./output/dnd5e", "pretty": true, "splitByTaskName": false },
+  "urls": [
+    "https://roll20.net/compendium/dnd5e/Fireball",
+    "https://roll20.net/compendium/dnd5e/Magic%20Missile",
+    "https://roll20.net/compendium/dnd5e/Sleep"
+  ]
+}

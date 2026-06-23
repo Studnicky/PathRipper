@@ -233,13 +233,23 @@ describe('mysite:parse', () => {
 
 No network, no file system — just the extraction logic running through its node DAG.
 
+## Concept taxonomy compiler
+
+Plugins that dispatch per-concept use the shared taxonomy compiler in `src/taxonomy/`. Call `Taxonomy.compile(concepts, options)` where `options: { namespace, pathExtractor }` — it returns per-concept capability chains, a `routeUrl` classifier, `chainFor`, `allNodes`, and `buildDAG`. The router nodes (`makeTaxonomyRouter`, `makeConceptDispatch`) live in `TaxonomyRouterNodes.ts`; extraction strategy interfaces (`CommonStrategy`, `SourceRef`, `LinkRef`, `Section`) in `ExtractionStrategy.ts`. Node names are namespaced: `<namespace>:taxonomy-route`, `<namespace>:concept-dispatch`, etc.
+
+`aonprd` and `dnd5e` are the two current implementations. AONPRD classifies by URL (`.aspx` path segments encode the concept type). D&D 5e classifies by page content (dandwiki URLs carry no type signal). Both compile from the same module; neither duplicates the other's taxonomy infrastructure.
+
 ## AONPRD plugin (built-in example)
 
-The `plugins/aonprd/` directory ships a full-featured example plugin that parses Archives of Nethys (2e.aonprd.com) HTML. It demonstrates URL-based concept dispatch via a taxonomy, shared extraction helpers, per-concept structured output, and fixture-based unit tests. It is the reference implementation for a production-grade plugin.
+The `plugins/aonprd/` directory ships a full-featured example plugin that parses Archives of Nethys (2e.aonprd.com) HTML. It demonstrates URL-based concept dispatch via the taxonomy compiler, shared extraction helpers, per-concept structured output, and fixture-based unit tests. It is the reference implementation for a production-grade plugin.
 
 The entry point `plugins/aonprd/index.ts` exports `register(dispatcher)`, which iterates all taxonomy-compiled nodes via `TAXONOMY.allNodes()` and registers them. The `aonprd:parse` DAG is loaded from `plugins/aonprd/parse.dag.jsonld` by the runner.
 
 See [Architecture](/architecture) for the DAG topology and `plugins/aonprd/index.ts` for the reference implementation.
+
+## D&D 5e plugin
+
+`plugins/dnd5e/` parses dandwiki.com 5e SRD pages into typed JSON using the same shared taxonomy compiler with content-based classification. See the [D&D 5e Scraper DAG](/dnd5e-scraper-dag) for the full walkthrough, typed `SpellOutput` shape, and direct-call API.
 
 ## Related
 

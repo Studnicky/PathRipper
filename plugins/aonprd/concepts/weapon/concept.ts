@@ -10,7 +10,7 @@ import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState } from '../../../../src/state/ScrapeState.js';
-import type { ConceptDecl } from '../../taxonomy.js';
+import type { ConceptDecl } from '../../../../src/taxonomy/Taxonomy.js';
 import type { CommonExtraction } from '../../common.js';
 import { CAPABILITY_OUTPUTS } from '../../common.js';
 import type { WeaponOutput } from './types.js';

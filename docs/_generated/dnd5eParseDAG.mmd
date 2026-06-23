@@ -1,0 +1,16 @@
+flowchart TB
+  %% dnd5e:parse (v1.0)
+  dnd5e_taxonomy-route
+  dnd5e_taxonomy-route[dnd5e:taxonomy-route]
+  dnd5e_taxonomy-route -->|spell| dnd5e_load-and-common
+  dnd5e_taxonomy-route -->|generic| dnd5e_load-and-common
+  dnd5e_taxonomy-route -->|unknown| dnd5e_unknown-end
+  dnd5e_load-and-common[dnd5e:load-and-common]
+  dnd5e_load-and-common -->|success| dnd5e_finalize-spell
+  dnd5e_load-and-common -->|error| dnd5e_finalize-spell
+  dnd5e_finalize-spell[dnd5e:finalize-spell]
+  dnd5e_finalize-spell -->|success| dnd5e_completed
+  dnd5e_finalize-generic[dnd5e:finalize-generic]
+  dnd5e_finalize-generic -->|success| dnd5e_completed
+  dnd5e_unknown-end(((dnd5e:unknown-end)))
+  dnd5e_completed(((dnd5e:completed)))

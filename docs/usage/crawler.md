@@ -59,6 +59,7 @@ Fields are strings (regex patterns) or integers. Pass raw pattern strings — Ri
 | `rateLimitMs` | `integer` | No | Minimum delay between crawler requests. Independent of the parent `rateLimitMs`. |
 | `jitterMs` | `integer` | No | Maximum random additional delay added on top of `rateLimitMs`. |
 | `maxPages` | `integer` | No | Hard ceiling on collected results. Omit for an unbounded crawl — runs until the frontier empties. |
+| `concurrency` | `integer` 1–32 | No | Maximum number of frontier URLs fetched concurrently within a single BFS depth level. The rate limiter still applies between individual requests. Defaults to `1` (sequential). |
 
 The crawl terminates when the frontier empties, `maxPages` is reached, or all reachable links under `domain`/`delimiter` have been visited.
 

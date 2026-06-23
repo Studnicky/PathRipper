@@ -9,7 +9,7 @@
 // A non-AON plugin (bulbapedia, torreya, the `_test_secondary` stub) supplies
 // its own `CommonStrategy` against the same interface.
 import { extractSources as aonExtractSources, harvestSections as aonHarvestSections } from '../common.js';
-import type { CommonStrategy } from '../capabilities/strategy.js';
+import type { CommonStrategy } from '../../../src/taxonomy/ExtractionStrategy.js';
 
 /**
  * AON Layer-1 strategy.

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Shared taxonomy compiler (`src/taxonomy/`)** — the concept-taxonomy compiler, routing-node factories, and extraction-strategy interfaces are promoted to plugin-agnostic infrastructure, parameterized by `{ namespace, pathExtractor }`. `Taxonomy.compile(concepts, options)` builds the per-concept capability chains and the parse DAG for any plugin; `makeTaxonomyRouter`/`makeConceptDispatch`/`conceptIdKey` namespace the routing nodes. The `aonprd` plugin is migrated onto it in place (node names unchanged), so a second source plugin reuses one compiler with no duplication.
+- **`plugins/dnd5e/` structured-parse plugin (dandwiki 5e SRD)** — a second source plugin on the shared taxonomy that emits typed JSON comparable to `aonprd`. Parses MediaWiki SRD pages, classifying each page by content (dandwiki URLs do not encode concept type) into a typed `spell` concept (`level`, `school`, `casting_time`, `range`, `components`, `duration`, `higher_levels`, `description_text`, `source`, `links`) or a `generic` fallback. Direct-call API `parseDnd5eHtml(html, url)`; the `dnd5e:parse` DAG is built from the taxonomy.
+
+### Fixed
+
+- **JSDOM scraper mode** — `HtmlScraper` JSDOM path passed the invalid `resources: 'none'` option (JSDOM accepts only `undefined`, `"usable"`, or a `ResourceLoader`), throwing on every `useJsdom: true` fetch. The option is omitted so the default (no subresource loading) applies; the load-event ceiling timer is now cleared on settle (was holding the event loop open for the full timeout); and a bare `VirtualConsole` suppresses page-script errors from unloaded globals (e.g. jQuery) instead of forwarding them to the host process.
+
 ## [3.2.1] - 2026-06-21
 
 ### Added

@@ -44,6 +44,16 @@ export type HtmlScraperConfigType = {
   readonly headers?: Readonly<Record<string, string>> | undefined;
   /** Optional shared content store; when set, fetchPage consults the cache before consuming the rate limiter. */
   readonly cache?: ScraperCache | undefined;
+  /** When true, fetched HTML is processed through JSDOM before cheerio parsing. Enables synchronous script execution and DOM manipulation. Defaults to false. */
+  readonly useJsdom?: boolean | undefined;
+  /**
+   * When `useJsdom` is true, ceiling in milliseconds for the JSDOM `load` event
+   * wait. Defaults to `max(10_000, retryMaxDelayMs ?? 30_000)` so the fallback
+   * scales with the site's retry tolerance. `Promise.race` resolves immediately
+   * when `load` fires — a page that loads in 3s proceeds at 3s regardless of
+   * this ceiling. Only raised for scripts that never fire `load` at all.
+   */
+  readonly jsdomLoadTimeoutMs?: number | undefined;
 };
 
 /**

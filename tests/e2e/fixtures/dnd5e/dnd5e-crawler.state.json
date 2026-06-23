@@ -1,0 +1,20 @@
+{
+  "baseUrl":          "https://www.dandwiki.com",
+  "rateLimitMs":      1000,
+  "jitterMs":         200,
+  "maxRetries":       2,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs":  10000,
+  "headers":          { "User-Agent": "ripperoni-e2e/1.0 (+https://github.com/Studnicky/Ripperoni)" },
+  "output":           { "basePath": "./output/dnd5e-crawl", "pretty": true, "splitByTaskName": false },
+  "crawler": {
+    "startUrls":  ["https://www.dandwiki.com/wiki/5e_SRD:Spells"],
+    "domain":     "dandwiki\\.com",
+    "target":     "/wiki/5e_SRD:[A-Z]",
+    "delimiter":  "/wiki/5e_SRD",
+    "rateLimitMs": 1000,
+    "jitterMs":    200,
+    "maxPages":    12,
+    "concurrency": 3
+  }
+}

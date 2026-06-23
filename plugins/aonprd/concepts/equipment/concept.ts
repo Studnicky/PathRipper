@@ -3,7 +3,7 @@
  *
  * Exports: equipmentConcept.
  */
-import type { ConceptDecl } from '../../taxonomy.js';
+import type { ConceptDecl } from '../../../../src/taxonomy/Taxonomy.js';
 import type { EquipmentOutput } from './types.js';
 import {
   equipmentBaseNode,

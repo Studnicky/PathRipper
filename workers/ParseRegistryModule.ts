@@ -27,7 +27,8 @@ import { DAGDocument, Dagonizer }   from '@studnicky/dagonizer';
 import type { RegistryModuleInterface, RegistryBundleInterface } from '@studnicky/dagonizer/contracts';
 import type { JsonObjectType }      from '@studnicky/dagonizer/entities';
 
-import { HtmlScraper }      from '../src/scrapers/HtmlScraper.js';
+import { HtmlScraper }       from '../src/scrapers/HtmlScraper.js';
+import { MediaWikiScraper } from '../src/scrapers/MediaWikiScraper.js';
 import { ScraperCache }     from '../src/modules/cache/ScraperCache.js';
 import { Logger }           from '../src/modules/logger/logger.js';
 import { ScrapeState }      from '../src/state/ScrapeState.js';
@@ -52,6 +53,7 @@ import {
   CrawlExhaustedNode,
   RouteFailureNode,
   ResolveLinkNode,
+  MarkdownWriteNode,
 } from '../src/nodes/index.js';
 
 import { TAXONOMY }       from '../plugins/aonprd/taxonomy/aonprd.js';
@@ -108,6 +110,18 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
           rateLimitMs: cfg.rateLimitMs,
           jitterMs:    cfg.jitterMs,
           headers:     cfg.headers,
+          useJsdom:           cfg.useJsdom,
+          jsdomLoadTimeoutMs: cfg.jsdomLoadTimeoutMs,
+          ...(cache !== null ? { cache } : {}),
+        })
+      : undefined;
+
+    // ── Rebuild MediaWiki scraper ─────────────────────────────────────────────
+    const wikiScraper = cfg.apiUrl != null
+      ? await MediaWikiScraper.create({
+          apiUrl:      cfg.apiUrl,
+          rateLimitMs: cfg.apiRateLimitMs,
+          jitterMs:    cfg.apiJitterMs,
           ...(cache !== null ? { cache } : {}),
         })
       : undefined;
@@ -124,7 +138,8 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
     const services: RipperServices = {
       log,
       cache,
-      ...(htmlScraper !== undefined ? { htmlScraper } : {}),
+      ...(htmlScraper  !== undefined ? { htmlScraper }  : {}),
+      ...(wikiScraper  !== undefined ? { wikiScraper }  : {}),
       target:           { id: cfg.targetId },
       outDir:           cfg.outDir,
       pluginTaskName:   cfg.pluginTaskName,
@@ -153,6 +168,7 @@ class ParseRegistryModule implements RegistryModuleInterface<RipperServices> {
       CrawlExhaustedNode,
       RouteFailureNode,
       ResolveLinkNode,
+      MarkdownWriteNode,
       ...TAXONOMY.allNodes(),
     ];
 

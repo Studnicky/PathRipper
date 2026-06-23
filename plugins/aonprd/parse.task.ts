@@ -12,7 +12,7 @@ import { TAXONOMY } from './taxonomy/aonprd.js';
 import type { AONPRD_TAXONOMY } from './taxonomy/aonprd.js';
 import { aonprdParseDAG } from './parse.dag.js';
 import { parseAonHtmlTaxonomic } from './parse.taxonomic.js';
-import type { ConceptOutputUnion } from './taxonomy.js';
+import type { ConceptOutputUnion } from '../../src/taxonomy/Taxonomy.js';
 
 // ── Type exports ───────────────────────────────────────────────────────────────
 
