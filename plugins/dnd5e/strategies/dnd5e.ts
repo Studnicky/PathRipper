@@ -6,7 +6,7 @@
 // `extractSections(root)` to the framework's `($, target)` signature.
 import type { CheerioAPI } from 'cheerio';
 
-import type { CommonStrategy, CheerioTarget, Section, SourceRef } from '../../../src/taxonomy/ExtractionStrategy.js';
+import type { CommonStrategy, CheerioTarget, Section, SourceRef } from '../../../src/types/ExtractionStrategy.js';
 import { extractSections } from '../common.js';
 
 export const dnd5eStrategy: CommonStrategy = {

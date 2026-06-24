@@ -6,11 +6,11 @@
 // The pipeline switch in parse.dag.ts / parse.task.ts is NOT touched here;
 // this module is an orphan library until the taxonomy router wires it in.
 import { DAGBuilder } from '@studnicky/dagonizer';
-import type { NodeInterface, DAGType } from '@studnicky/dagonizer';
+import type { DAGType } from '@studnicky/dagonizer';
 
-import type { ScrapeState }    from '../state/ScrapeState.js';
 import { makeTaxonomyRouter, makeConceptDispatch }  from './TaxonomyRouterNodes.js';
-import type { TaxonomyCompileOptions }              from './TaxonomyCompileOptions.js';
+
+import type { CapabilityNode, ConceptDecl, TaxonomyCompileOptions } from '../types/Taxonomy.js';
 
 // ─── Internal annotation type ─────────────────────────────────────────────────
 // Internal routing table consumed by buildDAG() to drive DAGBuilder placement
@@ -23,101 +23,6 @@ type TerminalEntry =
 type AnnotationsType = {
   terminals: Record<string, readonly TerminalEntry[]>;
 };
-
-// ─── Public types ─────────────────────────────────────────────────────────────
-
-/**
- * Capability nodes come in three output shapes:
- *  - `'success'` only — terminal nodes (`flow:terminate`, `<ns>:make-unknown`)
- *    and finalize nodes (pure assemblers).
- *  - `'success' | 'error'` — extract nodes that can soft-fail when their
- *    `hardRequired` metadata is absent.
- *  - widened `string` — taxonomy router + concept-dispatch nodes whose
- *    outputs are computed from the concept list at compile time.
- *
- * Narrowing the union (vs widening every node to `string`) keeps typos in
- * `'success'`/`'error'` from compiling silently.
- */
-type CapabilitySuccessOnlyNode  = NodeInterface<ScrapeState, 'success', unknown>;
-type CapabilitySuccessErrorNode = NodeInterface<ScrapeState, 'success' | 'error', unknown>;
-type CapabilityRouterNode       = NodeInterface<ScrapeState, string, unknown>;
-export type CapabilityNode = CapabilitySuccessOnlyNode | CapabilitySuccessErrorNode | CapabilityRouterNode;
-
-// A capability chain is a plain array of nodes. Wiring is enforced at DAG-construction
-// time by DAGBuilder — a DAGError is thrown at registration when routing is misaligned
-// or a node references an undeclared port.
-
-/**
- * Declarative concept node in the taxonomy.
- *
- * `TOutput` is the type of the assembled output this concept produces. It is
- * a phantom type parameter — never materialised at runtime — that lets
- * downstream tooling (the `outputType` marker, the derived
- * `ConceptOutputUnion` below) recover each concept's static output shape from
- * the declaration tuple.
- *
- * Concepts opt in by parameterising the declaration:
- *
- * ```ts
- * export const languageConcept: ConceptDecl<LanguageOutput> = { ... };
- * ```
- *
- * Leaving the parameter at its default (`never`) means the concept contributes
- * nothing to the derived `ConceptOutputUnion` — appropriate for interior
- * concepts (e.g. `thing`, `entity`) that exist only to share capability
- * chains. The `setConceptOutput` helper in `concepts/_helpers.ts` carries
- * the compile-time `satisfies` check that prevents misspelled keys in
- * finalize nodes.
- *
- * This interface lives in plugin-agnostic infrastructure: a future
- * plugin can supply its own `ConceptDecl<XxxOutput>` declarations with no
- * changes to this module.
- */
-export interface ConceptDecl<TOutput = never> {
-  /** Concept name — used as the router-output name. Must be unique. */
-  readonly id: string;
-  /** Parent concept ID. Null only for the root. Every non-null parent must exist in the same array. */
-  readonly parent: string | null;
-  /** URL paths (case-insensitive match via the plugin's pathExtractor) that route directly to this concept. Leaf concepts only — interior concepts have no urlPaths. Same path on multiple concepts is an error. */
-  readonly urlPaths?: readonly string[];
-  /** Capability nodes added by this concept. Inherited downward by descendant concepts. May be empty. */
-  readonly capabilities: readonly CapabilityNode[];
-  /**
-   * Phantom marker that anchors `TOutput` in the declared object so it can be
-   * recovered with `ConceptOutputFor<typeof xxxConcept>`. Never set at runtime;
-   * type-only.
-   */
-  readonly outputType?: TOutput;
-}
-
-/**
- * Recover the output type for a single `ConceptDecl<TOutput>` value.
- *
- * @example
- * ```ts
- * type L = ConceptOutputFor<typeof languageConcept>; // LanguageOutput
- * ```
- */
-export type ConceptOutputFor<TDecl extends ConceptDecl<unknown>> =
-  TDecl extends ConceptDecl<infer TOutput> ? TOutput : never;
-
-/**
- * Union of every concept's output type in a taxonomy declaration tuple.
- *
- * Used by plugins to derive the top-level output union from
- * `typeof <PLUGIN>_TAXONOMY` without hand-listing each `*Output` import:
- *
- * ```ts
- * export type AonOutput = ConceptOutputUnion<typeof AONPRD_TAXONOMY>;
- * ```
- *
- * Concepts not yet migrated (whose `TOutput` is the default
- * `Record<string, unknown>`) contribute that loose shape to the union. Once a
- * concept declares `ConceptDecl<MyOutput>` the union narrows to the concrete
- * shape.
- */
-export type ConceptOutputUnion<TArray extends readonly ConceptDecl<unknown>[]> =
-  TArray[number] extends ConceptDecl<infer TOutput> ? TOutput : never;
 
 // ─── TaxonomyError ────────────────────────────────────────────────────────────
 

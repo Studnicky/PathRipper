@@ -11,7 +11,7 @@
  */
 import type { CheerioAPI } from 'cheerio';
 
-import type { ConceptDecl } from '../../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../../src/types/Taxonomy.js';
 import type { CommonExtraction, CheerioNode } from '../../common.js';
 
 import type { SpellOutput } from './types.js';

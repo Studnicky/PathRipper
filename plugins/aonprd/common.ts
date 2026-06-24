@@ -6,13 +6,13 @@
 import { load, type CheerioAPI, type Cheerio } from 'cheerio';
 import type { AnyNode, Element } from 'domhandler';
 
-import type { CommonStrategy, SourceRef, LinkRef, Section } from '../../src/taxonomy/ExtractionStrategy.js';
+import type { CommonStrategy, SourceRef, LinkRef, Section } from '../../src/types/ExtractionStrategy.js';
 
 // Re-export the canonical Layer-1 shapes so existing imports from `common.ts`
 // continue to resolve. Per λ rules these are the SAME identifiers — no local
-// aliasing. The source-of-truth lives in `src/taxonomy/ExtractionStrategy.ts`
+// aliasing. The source-of-truth lives in `src/types/ExtractionStrategy.ts`
 // (plugin-agnostic) and a plugin's strategy implementation produces them.
-export type { SourceRef, LinkRef, Section } from '../../src/taxonomy/ExtractionStrategy.js';
+export type { SourceRef, LinkRef, Section } from '../../src/types/ExtractionStrategy.js';
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 

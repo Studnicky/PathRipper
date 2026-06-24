@@ -1,7 +1,7 @@
 // dnd5e parse task — public parse function + dispatcher registration.
 import type { RipperDagonizer }  from '../../src/dispatcher/RipperDagonizer.js';
 import type { ScrapeState }      from '../../src/state/ScrapeState.js';
-import type { ConceptOutputUnion } from '../../src/taxonomy/Taxonomy.js';
+import type { ConceptOutputUnion } from '../../src/types/Taxonomy.js';
 import { TAXONOMY }              from './taxonomy/dnd5e.js';
 import type { DND5E_TAXONOMY }   from './taxonomy/dnd5e.js';
 import { dnd5eParseDAG }         from './parse.dag.js';

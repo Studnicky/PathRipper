@@ -20,7 +20,7 @@ import type {
   SourceRef,
   LinkRef,
   CheerioTarget,
-} from '../../../src/taxonomy/ExtractionStrategy.js';
+} from '../../../src/types/ExtractionStrategy.js';
 
 /**
  * Strip HTML tags and collapse whitespace. Mirrored from `common.ts:htmlToText`

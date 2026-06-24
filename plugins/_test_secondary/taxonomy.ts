@@ -16,7 +16,7 @@ import { sectionWalkerNode }  from '../aonprd/capabilities/sectionWalker.js';
 import { sourceRefNode }      from '../aonprd/capabilities/sourceRef.js';
 import { metaTagsNode }       from '../aonprd/capabilities/metaTags.js';
 import { Taxonomy }           from '../../src/taxonomy/Taxonomy.js';
-import type { ConceptDecl }   from '../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl }   from '../../src/types/Taxonomy.js';
 
 import { secondaryStrategy } from './strategies/secondary.js';
 import { sampleConcept }     from './concepts/sample.js';

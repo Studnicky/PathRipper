@@ -11,7 +11,7 @@ import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnic
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { ConceptDecl } from '../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import { parseGrantedFeatures } from '../capabilities/grantedFeatures.js';
 import {

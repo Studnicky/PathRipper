@@ -13,7 +13,7 @@ import { load } from 'cheerio';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { AnyNode } from 'domhandler';
 
-import type { LinkRef, Section } from '../../src/taxonomy/ExtractionStrategy.js';
+import type { LinkRef, Section } from '../../src/types/ExtractionStrategy.js';
 import type { SpellTable } from './SpellTable.js';
 
 /** Common per-page projection shared by every dnd5e concept. */

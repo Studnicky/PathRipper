@@ -1,9 +1,7 @@
-import { load } from 'cheerio';
-import type { Element } from 'domhandler';
-
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
+import { extractLinks, classifyLinks } from '../../crawlers/CrawlLinks.js';
 import { CrawlFetcher }        from './CrawlFetcher.js';
 import type { ScrapeState }    from '../../state/ScrapeState.js';
 import type { RipperServices } from '../../services/RipperServices.js';
@@ -147,22 +145,28 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
       const { url, html } = result.value;
       visitedSet.add(url);
 
-      const allLinks = extractLinks(html, url)
-        .filter((link: string): boolean => domainRe.test(link))
-        .filter((link: string): boolean => delimiterRe.test(link));
+      const { targets, traversables } = classifyLinks(
+        extractLinks(html, url),
+        domainRe,
+        delimiterRe,
+        targetRe,
+      );
 
-      for (const link of allLinks) {
+      for (const link of targets) {
         if (maxPages !== undefined && discoveredSet.size >= maxPages) break;
+        if (!discoveredSet.has(link)) {
+          discoveredSet.add(link);
+          state.crawl.discoveredRaw.push(link);
+          anyLinksFound = true;
+        }
+      }
 
-        if (targetRe.test(link)) {
-          if (!discoveredSet.has(link)) {
-            discoveredSet.add(link);
-            state.crawl.discoveredRaw.push(link);
+      if (maxPages === undefined || discoveredSet.size < maxPages) {
+        for (const link of traversables) {
+          if (!visitedSet.has(link)) {
+            state.crawl.nextFrontierRaw.push(link);
             anyLinksFound = true;
           }
-        } else if (!visitedSet.has(link)) {
-          state.crawl.nextFrontierRaw.push(link);
-          anyLinksFound = true;
         }
       }
     }
@@ -203,19 +207,3 @@ class FetchAndExtractLinksNodeImpl extends ScalarNode<
  */
 export const FetchAndExtractLinksNode = new FetchAndExtractLinksNodeImpl();
 
-// ── Private helpers ────────────────────────────────────────────────────────────
-
-const extractLinks = (html: string, baseUrl: string): string[] => {
-  const root = load(html);
-  const links: string[] = [];
-  root('a[href]').each((_index: number, element: Element): void => {
-    const href = root(element).attr('href');
-    if (href === undefined || href.startsWith('#')) return;
-    try {
-      links.push(new URL(href, baseUrl).href);
-    } catch {
-      // relative or invalid — skip
-    }
-  });
-  return links;
-};

@@ -10,8 +10,8 @@ import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnic
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
 import type { CommonExtraction } from '../../aonprd/common.js';
-import type { Section, SourceRef } from '../../../src/taxonomy/ExtractionStrategy.js';
-import type { ConceptDecl } from '../../../src/taxonomy/Taxonomy.js';
+import type { Section, SourceRef } from '../../../src/types/ExtractionStrategy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 
 /** Output shape for the secondary plugin's sample concept. */
 export interface SampleOutput {

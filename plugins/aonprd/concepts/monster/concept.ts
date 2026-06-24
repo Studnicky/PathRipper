@@ -6,7 +6,7 @@
  * building up state.output incrementally. The finalize node recomputes the full
  * output from scratch so raw_fields can see the complete picture of claimed labels.
  */
-import type { ConceptDecl } from '../../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../../src/types/Taxonomy.js';
 import type { MonsterOutput } from './types.js';
 import { monsterBaseNode } from './base.js';
 import { monsterDefensesNode } from './defenses.js';

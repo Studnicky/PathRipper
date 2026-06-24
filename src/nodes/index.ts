@@ -12,6 +12,7 @@ export { InitFrontierNode }           from './crawl/InitFrontierNode.js';
 export { FetchAndExtractLinksNode }   from './crawl/FetchAndExtractLinksNode.js';
 export { DedupeAndEnqueueNode }       from './crawl/DedupeAndEnqueueNode.js';
 export { CrawlExhaustedNode }         from './crawl/CrawlExhaustedNode.js';
+export { StreamFrontierNode }         from './crawl/StreamFrontierNode.js';
 export { ReconcileIdentityNode }      from './ReconcileIdentityNode.js';
 export { ReportCrawlHealthNode }      from './ReportCrawlHealthNode.js';
 export { ResolveLinkNode }            from './ResolveLinkNode.js';

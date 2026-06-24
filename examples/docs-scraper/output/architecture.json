@@ -5,35 +5,35 @@
       "component": "pipeline",
       "title": "DAG dispatch ​",
       "description": "Directed acyclic graph orchestration powered by @studnicky/dagonizer — every node declares named output ports, scatter handles concurrency, and state flows checkpoint-ready through the run.",
-      "url": "http://127.0.0.1:57525/architecture.html"
+      "url": "http://127.0.0.1:65119/architecture.html"
     },
     {
       "_type": "docs_section",
       "component": "http-layer",
       "title": "HTTP machinery ​",
       "description": "Three composable classes — RateLimiter, HttpRetryPolicy, and ErrorClassifier — form the HTTP stack, each injected independently.",
-      "url": "http://127.0.0.1:57525/architecture.html"
+      "url": "http://127.0.0.1:65119/architecture.html"
     },
     {
       "_type": "docs_section",
       "component": "scrapers",
       "title": "Scrapers ​",
       "description": "Pure data accessors for HTML (via cheerio) and MediaWiki (via native fetch) that return typed results without coupling to the DAG graph.",
-      "url": "http://127.0.0.1:57525/architecture.html"
+      "url": "http://127.0.0.1:65119/architecture.html"
     },
     {
       "_type": "docs_section",
       "component": "crawler",
       "title": "Link crawler ​",
       "description": "Recursive link crawler controlled by three regexes (domain, delimiter, target) that bound traversal and collect matching URLs.",
-      "url": "http://127.0.0.1:57525/architecture.html"
+      "url": "http://127.0.0.1:65119/architecture.html"
     },
     {
       "_type": "docs_section",
       "component": "source-map",
       "title": "Source map ​",
       "description": "Complete index of every source module, its primary exports, and its role in the scrape run.",
-      "url": "http://127.0.0.1:57525/architecture.html"
+      "url": "http://127.0.0.1:65119/architecture.html"
     }
   ]
 }

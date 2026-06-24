@@ -9,8 +9,8 @@ import type { NodeContextType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
 import { Taxonomy, TaxonomyError } from '../../../../src/taxonomy/Taxonomy.js';
-import type { ConceptDecl, CapabilityNode } from '../../../../src/taxonomy/Taxonomy.js';
-import type { TaxonomyCompileOptions } from '../../../../src/taxonomy/TaxonomyCompileOptions.js';
+import type { ConceptDecl, CapabilityNode } from '../../../../src/types/Taxonomy.js';
+import type { TaxonomyCompileOptions } from '../../../../src/types/Taxonomy.js';
 
 // ─── Test options helper ──────────────────────────────────────────────────────
 // All tests use namespace='aonprd' so node name assertions remain byte-identical.

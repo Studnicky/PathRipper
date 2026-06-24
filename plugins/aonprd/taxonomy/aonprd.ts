@@ -74,7 +74,7 @@ import { genericConcept }      from '../concepts/generic/index.js';
 
 import { Taxonomy }             from '../../../src/taxonomy/Taxonomy.js';
 import { extractAonPath }       from '../common.js';
-import type { ConceptDecl }     from '../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl }     from '../../../src/types/Taxonomy.js';
 
 // ─── Taxonomy declaration ─────────────────────────────────────────────────────
 

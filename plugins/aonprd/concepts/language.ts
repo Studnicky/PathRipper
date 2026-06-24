@@ -30,7 +30,7 @@ import {
   extractPfsNote,
 } from '../common.js';
 import type { AonprdMetaTags } from '../capabilities/metaTags.js';
-import type { ConceptDecl } from '../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 
 import { setConceptOutput } from './_helpers.js';
 // ─── Speaker types ─────────────────────────────────────────────────────────────

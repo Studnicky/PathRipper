@@ -1,5 +1,5 @@
 // Animal-companion concept declaration.
-import type { ConceptDecl } from '../../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../../src/types/Taxonomy.js';
 import type { AnimalCompanionOutput } from './types.js';
 import {
   animalCompanionBaseNode,

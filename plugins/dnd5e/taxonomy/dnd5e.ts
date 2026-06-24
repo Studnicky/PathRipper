@@ -6,7 +6,7 @@
 // `parse.taxonomic.ts`. The compiled taxonomy still provides the node set and
 // the DAG topology.
 import { Taxonomy } from '../../../src/taxonomy/Taxonomy.js';
-import type { ConceptDecl, ConceptOutputUnion } from '../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl, ConceptOutputUnion } from '../../../src/types/Taxonomy.js';
 import { thingConcept, entityConcept } from '../concepts/_interior.js';
 import { spellConcept } from '../concepts/spell.js';
 import { genericConcept } from '../concepts/generic.js';

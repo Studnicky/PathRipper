@@ -32,6 +32,7 @@ import {
   FetchAndExtractLinksNode,
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
+  StreamFrontierNode,
   RouteFailureNode,
   ReconcileIdentityNode,
   ReportCrawlHealthNode,
@@ -92,6 +93,7 @@ export class PluginLoader {
     dispatcher.registerNode(FetchAndExtractLinksNode);
     dispatcher.registerNode(DedupeAndEnqueueNode);
     dispatcher.registerNode(CrawlExhaustedNode);
+    dispatcher.registerNode(StreamFrontierNode);
     // Markdown output
     dispatcher.registerNode(MarkdownWriteNode);
     // Resilience nodes

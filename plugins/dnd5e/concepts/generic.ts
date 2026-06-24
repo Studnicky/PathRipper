@@ -5,8 +5,8 @@
 import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
-import type { Section, LinkRef } from '../../../src/taxonomy/ExtractionStrategy.js';
-import type { ConceptDecl } from '../../../src/taxonomy/Taxonomy.js';
+import type { Section, LinkRef } from '../../../src/types/ExtractionStrategy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 import type { ScrapeState } from '../../../src/state/ScrapeState.js';
 import type { Dnd5eCommon } from '../common.js';
 import { setConceptOutput } from './_helpers.js';

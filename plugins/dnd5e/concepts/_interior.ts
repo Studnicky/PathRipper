@@ -5,7 +5,7 @@
 // beyond load-and-common for dnd5e. Leaf concepts (spell, generic) inherit from
 // `entity`.
 import { loadAndCommonNode } from '../nodes/loadAndCommon.js';
-import type { ConceptDecl } from '../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 
 export const thingConcept: ConceptDecl = {
   id:           'thing',

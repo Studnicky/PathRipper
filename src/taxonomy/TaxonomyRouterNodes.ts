@@ -12,7 +12,7 @@ import { ScalarNode, NodeOutputBuilder } from '@studnicky/dagonizer';
 import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../state/ScrapeState.js';
-import type { CapabilityNode } from './Taxonomy.js';
+import type { CapabilityNode } from '../types/Taxonomy.js';
 
 /**
  * Returns the metadata key used to carry the routed concept ID across the
