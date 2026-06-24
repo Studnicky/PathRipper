@@ -9,7 +9,7 @@
  * Mythic rituals share the same structure; `mythicrituals` is included in
  * urlPaths so they route here.
  */
-import type { ConceptDecl } from '../../taxonomy.js';
+import type { ConceptDecl } from '../../../../src/types/Taxonomy.js';
 import { ritualBaseNode } from './base.js';
 import { ritualCastNode, ritualOutcomesNode, ritualAfflictionNode, ritualHeightenedNode, ritualMetaNode } from './slices.js';
 import { finalizeRitualNode } from './finalize.js';

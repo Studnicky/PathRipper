@@ -18,7 +18,7 @@ import type { ConditionOutput } from '../../../plugins/aonprd/concepts/condition
 import type { BackgroundOutput } from '../../../plugins/aonprd/concepts/background.js';
 import type { WeaponOutput } from '../../../plugins/aonprd/concepts/weapon.js';
 import type { ActionOutput } from '../../../plugins/aonprd/concepts/action.js';
-import type { LinkRef } from '../../../plugins/aonprd/capabilities/strategy.js';
+import type { LinkRef } from '../../../src/types/ExtractionStrategy.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

@@ -13,7 +13,7 @@ import type { CheerioAPI } from 'cheerio';
 import type { Element } from 'domhandler';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 import { setConceptOutput } from './_helpers.js';
 import {
   CAPABILITY_OUTPUTS,

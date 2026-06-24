@@ -8,8 +8,19 @@ import { RoutedBatchBuilder, Timeout } from '@studnicky/dagonizer';
 import type { NodeContextType, SchemaObjectType } from '@studnicky/dagonizer';
 
 import type { ScrapeState }    from '../../../../src/state/ScrapeState.js';
-import { Taxonomy, TaxonomyError } from '../../../../plugins/aonprd/taxonomy.js';
-import type { ConceptDecl, CapabilityNode } from '../../../../plugins/aonprd/taxonomy.js';
+import { Taxonomy, TaxonomyError } from '../../../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl, CapabilityNode } from '../../../../src/types/Taxonomy.js';
+import type { TaxonomyCompileOptions } from '../../../../src/types/Taxonomy.js';
+
+// ─── Test options helper ──────────────────────────────────────────────────────
+// All tests use namespace='aonprd' so node name assertions remain byte-identical.
+const aonprdOpts: TaxonomyCompileOptions = {
+  namespace: 'aonprd',
+  pathExtractor: (url: string): string | null => {
+    const m = /\/([A-Za-z]+)\.aspx/i.exec(url);
+    return m !== null ? m[1]!.toLowerCase() : null;
+  },
+};
 
 // ─── Stub capability nodes for tests ─────────────────────────────────────────
 // Each stub has a distinct name and outputs: ['success', 'error'] — the minimum
@@ -40,11 +51,11 @@ const spellCastNode    = makeStubCap('extract:spell-cast-stub');
 
 describe('Taxonomy — empty taxonomy', () => {
   it('compiles without throwing', () => {
-    assert.doesNotThrow(() => Taxonomy.compile([]));
+    assert.doesNotThrow(() => Taxonomy.compile([], aonprdOpts));
   });
 
   it('buildDAG succeeds on empty taxonomy (primary acceptance)', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     assert.doesNotThrow(() => {
       const dag = taxonomy.buildDAG('test-empty', '0.1');
       assert.equal(typeof dag, 'object', 'buildDAG should return an object');
@@ -54,29 +65,29 @@ describe('Taxonomy — empty taxonomy', () => {
   });
 
   it('routeUrl always returns null for empty taxonomy', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), null);
     assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=99'), null);
     assert.equal(taxonomy.routeUrl('https://example.com/no-aspx'), null);
   });
 
   it('chainFor returns empty array for unknown concept', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     assert.deepEqual(taxonomy.chainFor('anything'), []);
   });
 
   it('conceptIds returns empty array', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     assert.deepEqual(taxonomy.conceptIds(), []);
   });
 
   it('leafConceptIds returns empty array', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     assert.deepEqual(taxonomy.leafConceptIds(), []);
   });
 
   it('allNodes contains router and concept-dispatch only for empty taxonomy', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     const names = taxonomy.allNodes().map((node) => node.name);
     assert.ok(names.includes('aonprd:taxonomy-route'),   'must include router');
     assert.ok(names.includes('aonprd:concept-dispatch'), 'must include concept-dispatch');
@@ -88,7 +99,7 @@ describe('Taxonomy — empty taxonomy', () => {
 
 describe('Taxonomy — router node behaviour (empty taxonomy)', () => {
   it('router node returns unknown for any URL', async () => {
-    const taxonomy      = Taxonomy.compile([]);
+    const taxonomy      = Taxonomy.compile([], aonprdOpts);
     const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined, 'router node must exist');
 
@@ -118,21 +129,21 @@ describe('Taxonomy — single-concept taxonomy', () => {
   ];
 
   it('compiles without throwing', () => {
-    assert.doesNotThrow(() => Taxonomy.compile(concepts));
+    assert.doesNotThrow(() => Taxonomy.compile(concepts, aonprdOpts));
   });
 
   it('routeUrl returns concept id for matching URL', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Spells.aspx?ID=1'), 'spell');
   });
 
   it('routeUrl returns null for non-matching URL', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.equal(taxonomy.routeUrl('https://2e.aonprd.com/Monsters.aspx?ID=1'), null);
   });
 
   it('chainFor returns the root capabilities', () => {
-    const taxonomy     = Taxonomy.compile(concepts);
+    const taxonomy     = Taxonomy.compile(concepts, aonprdOpts);
     const chain = taxonomy.chainFor('spell');
     assert.equal(chain.length, 1);
     assert.equal(chain[0]?.name, 'extract:spell-cast-stub');
@@ -141,7 +152,7 @@ describe('Taxonomy — single-concept taxonomy', () => {
   it('buildDAG succeeds for single-concept taxonomy', () => {
     // Single-concept topology: router → spell capability → terminal.
     // No concept-dispatch node is created (only one leaf).
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.doesNotThrow(() => {
       const dag = taxonomy.buildDAG('test-single', '0.1');
       assert.equal(dag.name, 'test-single');
@@ -149,12 +160,12 @@ describe('Taxonomy — single-concept taxonomy', () => {
   });
 
   it('conceptIds includes the concept', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.deepEqual(taxonomy.conceptIds(), ['spell']);
   });
 
   it('leafConceptIds includes the concept', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.deepEqual(taxonomy.leafConceptIds(), ['spell']);
   });
 });
@@ -183,11 +194,11 @@ describe('Taxonomy — three-level inheritance chain', () => {
   ];
 
   it('compiles without throwing', () => {
-    assert.doesNotThrow(() => Taxonomy.compile(concepts));
+    assert.doesNotThrow(() => Taxonomy.compile(concepts, aonprdOpts));
   });
 
   it('chainFor("weapon") returns capabilities in root-first order', () => {
-    const taxonomy     = Taxonomy.compile(concepts);
+    const taxonomy     = Taxonomy.compile(concepts, aonprdOpts);
     const chain = taxonomy.chainFor('weapon');
     const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
@@ -199,7 +210,7 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('chainFor("item") returns root + item capabilities only', () => {
-    const taxonomy     = Taxonomy.compile(concepts);
+    const taxonomy     = Taxonomy.compile(concepts, aonprdOpts);
     const chain = taxonomy.chainFor('item');
     const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
@@ -210,7 +221,7 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('chainFor("thing") returns only root capabilities', () => {
-    const taxonomy     = Taxonomy.compile(concepts);
+    const taxonomy     = Taxonomy.compile(concepts, aonprdOpts);
     const chain = taxonomy.chainFor('thing');
     const names = chain.map((node) => node.name);
     assert.deepEqual(names, [
@@ -220,12 +231,12 @@ describe('Taxonomy — three-level inheritance chain', () => {
   });
 
   it('leafConceptIds contains only weapon (the only concept with urlPaths)', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.deepEqual(taxonomy.leafConceptIds(), ['weapon']);
   });
 
   it('conceptIds contains all three concepts', () => {
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     assert.ok(taxonomy.conceptIds().includes('thing'));
     assert.ok(taxonomy.conceptIds().includes('item'));
     assert.ok(taxonomy.conceptIds().includes('weapon'));
@@ -241,7 +252,7 @@ describe('Taxonomy — validation', () => {
       { id: 'spell', parent: 'spell', capabilities: [] },
     ];
     assert.throws(
-      () => Taxonomy.compile(concepts),
+      () => Taxonomy.compile(concepts, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'duplicate-id',
     );
   });
@@ -254,7 +265,7 @@ describe('Taxonomy — validation', () => {
       { id: 'child', parent: 'nonexistent', capabilities: [] },
     ];
     assert.throws(
-      () => Taxonomy.compile(concepts2),
+      () => Taxonomy.compile(concepts2, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'orphan-parent',
     );
   });
@@ -269,7 +280,7 @@ describe('Taxonomy — validation', () => {
       { id: 'b',    parent: 'a',   capabilities: [] },
     ];
     assert.throws(
-      () => Taxonomy.compile(concepts),
+      () => Taxonomy.compile(concepts, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'cycle',
     );
   });
@@ -280,7 +291,7 @@ describe('Taxonomy — validation', () => {
       { id: 'root2', parent: null, capabilities: [] },
     ];
     assert.throws(
-      () => Taxonomy.compile(concepts),
+      () => Taxonomy.compile(concepts, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'multiple-roots',
     );
   });
@@ -292,7 +303,7 @@ describe('Taxonomy — validation', () => {
     ];
     // 'thing' has a child, so it is interior — urlPaths on it should throw
     assert.throws(
-      () => Taxonomy.compile(concepts),
+      () => Taxonomy.compile(concepts, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'urlpath-on-interior',
     );
   });
@@ -304,7 +315,7 @@ describe('Taxonomy — validation', () => {
       { id: 'ritual', parent: 'thing', urlPaths: ['spells'], capabilities: [] },
     ];
     assert.throws(
-      () => Taxonomy.compile(concepts),
+      () => Taxonomy.compile(concepts, aonprdOpts),
       (err) => err instanceof TaxonomyError && err.code === 'duplicate-url-path',
     );
   });
@@ -314,7 +325,7 @@ describe('Taxonomy — validation', () => {
 
 describe('Taxonomy — router node is a valid NodeInterface', () => {
   it('router has correct name', () => {
-    const taxonomy      = Taxonomy.compile([]);
+    const taxonomy      = Taxonomy.compile([], aonprdOpts);
     const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
     assert.equal(router.name, 'aonprd:taxonomy-route');
@@ -326,7 +337,7 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'weapon', parent: 'thing', urlPaths: ['weapons'], capabilities: [] },
       { id: 'spell',  parent: 'thing', urlPaths: ['spells'],  capabilities: [] },
     ];
-    const taxonomy      = Taxonomy.compile(concepts);
+    const taxonomy      = Taxonomy.compile(concepts, aonprdOpts);
     const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
     const outputs = [...router.outputs].sort();
@@ -340,7 +351,7 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'thing', parent: null,    capabilities: [] },
       { id: 'spell', parent: 'thing', urlPaths: ['spells'], capabilities: [] },
     ];
-    const taxonomy      = Taxonomy.compile(concepts);
+    const taxonomy      = Taxonomy.compile(concepts, aonprdOpts);
     const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
 
@@ -361,7 +372,7 @@ describe('Taxonomy — router node is a valid NodeInterface', () => {
       { id: 'thing', parent: null,    capabilities: [] },
       { id: 'spell', parent: 'thing', urlPaths: ['spells'], capabilities: [] },
     ];
-    const taxonomy      = Taxonomy.compile(concepts);
+    const taxonomy      = Taxonomy.compile(concepts, aonprdOpts);
     const router = taxonomy.allNodes().find((node) => node.name === 'aonprd:taxonomy-route');
     assert.ok(router !== undefined);
 
@@ -387,7 +398,7 @@ describe('Taxonomy — buildDAG shape', () => {
       { id: 'weapon', parent: 'thing', urlPaths: ['weapons'], capabilities: [] },
       { id: 'spell',  parent: 'thing', urlPaths: ['spells'],  capabilities: [] },
     ];
-    const taxonomy = Taxonomy.compile(concepts);
+    const taxonomy = Taxonomy.compile(concepts, aonprdOpts);
     const dag      = taxonomy.buildDAG('test-dag', '0.1');
     assert.equal(dag.name, 'test-dag');
     assert.ok(dag.nodes.length > 0, 'DAG must have at least one node placement');
@@ -399,7 +410,7 @@ describe('Taxonomy — buildDAG shape', () => {
   });
 
   it('buildDAG routes unknown to an emit terminal (not aonprd:make-unknown)', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     const dag      = taxonomy.buildDAG('test-empty-dag', '0.1');
     assert.equal(dag.name, 'test-empty-dag');
     // Verify aonprd:make-unknown is NOT a regular node placement in the DAG
@@ -411,7 +422,7 @@ describe('Taxonomy — buildDAG shape', () => {
   });
 
   it('buildDAG does not reference flow:terminate (retired node)', () => {
-    const taxonomy = Taxonomy.compile([]);
+    const taxonomy = Taxonomy.compile([], aonprdOpts);
     const dag      = taxonomy.buildDAG('test-retire-dag', '0.1');
     // flow:terminate is retired — no placement in the DAG by that name
     const terminatePlacement = dag.nodes.find(

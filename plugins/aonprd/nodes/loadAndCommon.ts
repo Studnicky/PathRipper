@@ -13,7 +13,7 @@ import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnic
 import type { ScrapeState }  from '../../../src/state/ScrapeState.js';
 import {
   CAPABILITY_OUTPUTS, loadHtml, extractCommon, findContentSpan, detectPageType } from '../common.js';
-import type { CommonStrategy } from '../capabilities/strategy.js';
+import type { CommonStrategy } from '../../../src/types/ExtractionStrategy.js';
 import { aonStrategy } from '../strategies/aon.js';
 
 export type LoadAndCommonOutput = 'success' | 'error';

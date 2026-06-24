@@ -6,10 +6,11 @@
 // The pipeline switch in parse.dag.ts / parse.task.ts is NOT touched here;
 // this module is an orphan library until the taxonomy router wires it in.
 import { DAGBuilder } from '@studnicky/dagonizer';
-import type { NodeInterface, DAGType } from '@studnicky/dagonizer';
+import type { DAGType } from '@studnicky/dagonizer';
 
-import type { ScrapeState }    from '../../src/state/ScrapeState.js';
-import { makeTaxonomyRouter, makeConceptDispatch }  from './nodes/taxonomyRouter.js';
+import { makeTaxonomyRouter, makeConceptDispatch }  from './TaxonomyRouterNodes.js';
+
+import type { CapabilityNode, ConceptDecl, TaxonomyCompileOptions } from '../types/Taxonomy.js';
 
 // ─── Internal annotation type ─────────────────────────────────────────────────
 // Internal routing table consumed by buildDAG() to drive DAGBuilder placement
@@ -23,102 +24,6 @@ type AnnotationsType = {
   terminals: Record<string, readonly TerminalEntry[]>;
 };
 
-// ─── Public types ─────────────────────────────────────────────────────────────
-
-/**
- * Capability nodes come in three output shapes:
- *  - `'success'` only — terminal nodes (`flow:terminate`, `aonprd:make-unknown`)
- *    and finalize nodes (pure assemblers).
- *  - `'success' | 'error'` — extract nodes that can soft-fail when their
- *    `hardRequired` metadata is absent.
- *  - widened `string` — taxonomy router + concept-dispatch nodes whose
- *    outputs are computed from the concept list at compile time.
- *
- * Narrowing the union (vs widening every node to `string`) keeps typos in
- * `'success'`/`'error'` from compiling silently.
- */
-type CapabilitySuccessOnlyNode  = NodeInterface<ScrapeState, 'success', unknown>;
-type CapabilitySuccessErrorNode = NodeInterface<ScrapeState, 'success' | 'error', unknown>;
-type CapabilityRouterNode       = NodeInterface<ScrapeState, string, unknown>;
-export type CapabilityNode = CapabilitySuccessOnlyNode | CapabilitySuccessErrorNode | CapabilityRouterNode;
-
-// A capability chain is a plain array of nodes. Wiring is enforced at DAG-construction
-// time by DAGBuilder — a DAGError is thrown at registration when routing is misaligned
-// or a node references an undeclared port.
-
-/**
- * Declarative concept node in the taxonomy.
- *
- * `TOutput` is the type of the assembled output this concept produces. It is
- * a phantom type parameter — never materialised at runtime — that lets
- * downstream tooling (the `outputType` marker, the derived
- * `ConceptOutputUnion` below) recover each concept's static output shape from
- * the declaration tuple.
- *
- * Concepts opt in by parameterising the declaration:
- *
- * ```ts
- * export const languageConcept: ConceptDecl<LanguageOutput> = { ... };
- * ```
- *
- * Leaving the parameter at its default (`never`) means the concept contributes
- * nothing to the derived `ConceptOutputUnion` — appropriate for interior
- * concepts (e.g. `thing`, `entity`) that exist only to share capability
- * chains. The `setConceptOutput` helper in `concepts/_helpers.ts` carries
- * the compile-time `satisfies` check that prevents misspelled keys in
- * finalize nodes.
- *
- * This interface lives in plugin-agnostic infrastructure: a future
- * bulbapedia/torreya plugin can supply its own `ConceptDecl<BulbaXxxOutput>`
- * declarations with no changes to this module.
- */
-export interface ConceptDecl<TOutput = never> {
-  /** Concept name — used as the router-output name. Must be unique. */
-  readonly id: string;
-  /** Parent concept ID. Null only for the root. Every non-null parent must exist in the same array. */
-  readonly parent: string | null;
-  /** URL paths (case-insensitive match against AON's `/Path.aspx`) that route directly to this concept. Leaf concepts only — interior concepts have no urlPaths. Same path on multiple concepts is an error. */
-  readonly urlPaths?: readonly string[];
-  /** Capability nodes added by this concept. Inherited downward by descendant concepts. May be empty. */
-  readonly capabilities: readonly CapabilityNode[];
-  /**
-   * Phantom marker that anchors `TOutput` in the declared object so it can be
-   * recovered with `ConceptOutputFor<typeof xxxConcept>`. Never set at runtime;
-   * type-only.
-   */
-  readonly outputType?: TOutput;
-}
-
-/**
- * Recover the output type for a single `ConceptDecl<TOutput>` value.
- *
- * @example
- * ```ts
- * type L = ConceptOutputFor<typeof languageConcept>; // LanguageOutput
- * ```
- */
-export type ConceptOutputFor<TDecl extends ConceptDecl<unknown>> =
-  TDecl extends ConceptDecl<infer TOutput> ? TOutput : never;
-
-/**
- * Union of every concept's output type in a taxonomy declaration tuple
- *.
- *
- * Used by plugins to derive the top-level output union from
- * `typeof <PLUGIN>_TAXONOMY` without hand-listing each `*Output` import:
- *
- * ```ts
- * export type AonOutput = ConceptOutputUnion<typeof AONPRD_TAXONOMY>;
- * ```
- *
- * Concepts not yet migrated (whose `TOutput` is the default
- * `Record<string, unknown>`) contribute that loose shape to the union. Once a
- * concept declares `ConceptDecl<MyOutput>` the union narrows to the concrete
- * shape.
- */
-export type ConceptOutputUnion<TArray extends readonly ConceptDecl<unknown>[]> =
-  TArray[number] extends ConceptDecl<infer TOutput> ? TOutput : never;
-
 // ─── TaxonomyError ────────────────────────────────────────────────────────────
 
 export class TaxonomyError extends Error {
@@ -131,20 +36,9 @@ export class TaxonomyError extends Error {
   }
 }
 
-// ─── URL path extraction ──────────────────────────────────────────────────────
-
-/** Extract the lowercase AON path segment from any URL. Returns null on no match. */
-function extractAonPath(url: string): string | null {
-  const match = /\/([A-Za-z]+)\.aspx/i.exec(url);
-  return match !== null ? match[1]!.toLowerCase() : null;
-}
-
 // ─── Validation helpers ───────────────────────────────────────────────────────
 
 function validateConcepts(concepts: readonly ConceptDecl<unknown>[]): void {
-  // (Contract-shape validation removed in dagonizer 0.24: NodeInterface no longer
-  // carries a `contract` field — DAGBuilder's exhaustive routing replaces it.)
-
   // Count roots
   const roots = concepts.filter((concept) => concept.parent === null);
   if (roots.length === 0) {
@@ -246,6 +140,7 @@ export class Taxonomy {
   readonly #allNodesList:       readonly CapabilityNode[];
   readonly #annotations:        AnnotationsType;
   readonly #fallbackConceptId:  string | null;
+  readonly #pathExtractor:      (url: string) => string | null;
 
   private constructor(
     router:             CapabilityNode,
@@ -256,6 +151,7 @@ export class Taxonomy {
     allNodesList:       readonly CapabilityNode[],
     annotations:        AnnotationsType,
     fallbackConceptId:  string | null,
+    pathExtractor:      (url: string) => string | null,
   ) {
     this.#router             = router;
     this.#conceptIds         = conceptIds;
@@ -265,13 +161,14 @@ export class Taxonomy {
     this.#allNodesList       = allNodesList;
     this.#annotations        = annotations;
     this.#fallbackConceptId  = fallbackConceptId;
+    this.#pathExtractor      = pathExtractor;
   }
 
   /** Validate concepts and build the compiled taxonomy. Throws TaxonomyError on invalid input. */
-  static compile(concepts: readonly ConceptDecl<unknown>[]): Taxonomy {
+  static compile(concepts: readonly ConceptDecl<unknown>[], options: TaxonomyCompileOptions): Taxonomy {
     // Empty taxonomy is a special case: skip most validation
     if (concepts.length === 0) {
-      return Taxonomy.#buildEmpty();
+      return Taxonomy.#buildEmpty(options.namespace, options.pathExtractor);
     }
 
     validateConcepts(concepts);
@@ -342,14 +239,16 @@ export class Taxonomy {
       chainMap.set(concept.id, chain);
     }
 
+    const { namespace, pathExtractor } = options;
+
     // Router function
     function routeUrl(url: string): string | null {
-      const path = extractAonPath(url);
+      const path = pathExtractor(url);
       if (path === null) return null;
       return urlMap.get(path) ?? null;
     }
 
-    const router = makeTaxonomyRouter(routeUrl, leafIds, fallbackConceptId);
+    const router = makeTaxonomyRouter(routeUrl, leafIds, namespace, fallbackConceptId);
 
     // Deduplicate all capability nodes by name across all chains
     const allCapsByName = new Map<string, CapabilityNode>();
@@ -368,16 +267,16 @@ export class Taxonomy {
     const { branchPoints, capSuccessNext } = Taxonomy.#computeRouting(leafIds, chainMap);
 
     // Materialize a concept-dispatch node per branch point. Each instance
-    // reads `aonprdConceptId` from state and emits the routed concept ID as
-    // its outcome; downstream targets differ per branch point.
+    // reads `${namespace}ConceptId` from state and emits the routed concept ID
+    // as its outcome; downstream targets differ per branch point.
     const branchDispatchNames = new Map<string, string>();
     const branchDispatchNodes: CapabilityNode[] = [];
     for (const branchPointKey of branchPoints.keys()) {
       const name = branchPointKey === '__entry__'
-        ? 'aonprd:concept-dispatch'
-        : `aonprd:concept-dispatch-after:${branchPointKey}`;
+        ? `${namespace}:concept-dispatch`
+        : `${namespace}:concept-dispatch-after:${branchPointKey}`;
       branchDispatchNames.set(branchPointKey, name);
-      branchDispatchNodes.push(makeConceptDispatch(leafIds, name));
+      branchDispatchNodes.push(makeConceptDispatch(leafIds, name, namespace));
     }
 
     const allNodesList: CapabilityNode[] = [
@@ -395,28 +294,39 @@ export class Taxonomy {
       branchDispatchNames,
       capSuccessNext,
       fallbackConceptId,
+      namespace,
     );
 
     const conceptIds = concepts.map((concept) => concept.id);
 
-    return new Taxonomy(router, conceptIds, leafIds, chainMap, urlMap, allNodesList, annotations, fallbackConceptId);
+    return new Taxonomy(
+      router,
+      conceptIds,
+      leafIds,
+      chainMap,
+      urlMap,
+      allNodesList,
+      annotations,
+      fallbackConceptId,
+      pathExtractor,
+    );
   }
 
-  static #buildEmpty(): Taxonomy {
-    const router          = makeTaxonomyRouter(() => null, []);
-    const conceptDispatch = makeConceptDispatch([]);
+  static #buildEmpty(namespace: string, pathExtractor: (url: string) => string | null): Taxonomy {
+    const router          = makeTaxonomyRouter(() => null, [], namespace);
+    const conceptDispatch = makeConceptDispatch([], `${namespace}:concept-dispatch`, namespace);
 
     const allNodesList: CapabilityNode[] = [
       router,
       conceptDispatch,
     ];
 
-    const AONPRD_UNKNOWN_TERMINAL = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
+    const unknownTerminal   = { name: `${namespace}:unknown-end`, outcome: 'completed' } as const;
 
     const annotations: AnnotationsType = {
       terminals: {
-        'aonprd:taxonomy-route':   [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
-        'aonprd:concept-dispatch': [{ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL }],
+        [`${namespace}:taxonomy-route`]:   [{ outcome: 'unknown', emit: unknownTerminal }],
+        [`${namespace}:concept-dispatch`]: [{ outcome: 'unknown', emit: unknownTerminal }],
       },
     };
 
@@ -429,6 +339,7 @@ export class Taxonomy {
       allNodesList,
       annotations,
       null,
+      pathExtractor,
     );
   }
 
@@ -466,8 +377,6 @@ export class Taxonomy {
         perPositionNext.set(position, posMap);
       }
       // For a given concept at a position, the next must be deterministic.
-      // (A concept's chain is a fixed sequence — no two appearances of the
-      // same cap in one chain should have different successors. Caller honors.)
       if (!posMap.has(conceptId)) posMap.set(conceptId, nextTarget);
     }
 
@@ -515,9 +424,9 @@ export class Taxonomy {
    * Build the AnnotationsType routing table from the concept trie.
    *
    * Topology (open-world):
-   * 1. `aonprd:taxonomy-route` (URL router) is the DAG entrypoint. Per leaf
+   * 1. `${namespace}:taxonomy-route` (URL router) is the DAG entrypoint. Per leaf
    *    concept it routes to that concept's first cap (from `entryTargets`).
-   *    Unknown URLs go to `aonprd:make-unknown`.
+   *    Unknown URLs go to `${namespace}:unknown-end`.
    * 2. Each cap routes BOTH its `success` and `error` outcomes to the same
    *    downstream target:
    *    - A uniform single target (read from `capSuccessNext`), or
@@ -526,32 +435,33 @@ export class Taxonomy {
    *    Open-world: a capability emitting `'error'` means its hardRequired
    *    metadata was absent or its slice failed; downstream caps handle
    *    absence themselves. The chain proceeds.
-   * 3. Each concept-dispatch node routes per `aonprdConceptId` to the next
+   * 3. Each concept-dispatch node routes per `${namespace}ConceptId` to the next
    *    cap for that concept (from `branchPoints`).
    * 4. Tail caps route to `flow:terminate`.
    */
   static #buildAnnotations(
-    leafIds:            readonly string[],
-    chainMap:           ReadonlyMap<string, readonly CapabilityNode[]>,
-    allCapsByName:      ReadonlyMap<string, CapabilityNode>,
-    branchPoints:       ReadonlyMap<string, ReadonlyMap<string, string>>,
+    leafIds:             readonly string[],
+    chainMap:            ReadonlyMap<string, readonly CapabilityNode[]>,
+    allCapsByName:       ReadonlyMap<string, CapabilityNode>,
+    branchPoints:        ReadonlyMap<string, ReadonlyMap<string, string>>,
     branchDispatchNames: ReadonlyMap<string, string>,
-    capSuccessNext:     ReadonlyMap<string, string>,
-    fallbackConceptId:  string | null,
+    capSuccessNext:      ReadonlyMap<string, string>,
+    fallbackConceptId:   string | null,
+    namespace:           string,
   ): AnnotationsType {
-    const AONPRD_UNKNOWN_TERMINAL   = { name: 'aonprd:unknown-end', outcome: 'completed' } as const;
-    const AONPRD_COMPLETED_TERMINAL = { name: 'aonprd:completed',   outcome: 'completed' } as const;
+    const unknownTerminal    = { name: `${namespace}:unknown-end`, outcome: 'completed' } as const;
+    const completedTerminal  = { name: `${namespace}:completed`,   outcome: 'completed' } as const;
 
     // ── URL router terminals ──────────────────────────────────────────────────
     // Per concept, route to the FIRST cap in that concept's chain (or
-    // the unknown emit terminal for an empty chain).
+    // the completed emit terminal for an empty chain).
     const routerTerminals: TerminalEntry[] = leafIds.map((leafId) => {
       const chain = chainMap.get(leafId) ?? [];
       const first = chain[0]?.name ?? null;
       if (first !== null) {
         return { outcome: leafId, target: first };
       }
-      return { outcome: leafId, emit: AONPRD_COMPLETED_TERMINAL };
+      return { outcome: leafId, emit: completedTerminal };
     });
     // if a fallback concept is configured (e.g. `generic`), wire
     // the fallback outcome to its first cap. The router emits the fallback
@@ -562,10 +472,10 @@ export class Taxonomy {
       if (first !== null) {
         routerTerminals.push({ outcome: fallbackConceptId, target: first });
       } else {
-        routerTerminals.push({ outcome: fallbackConceptId, emit: AONPRD_COMPLETED_TERMINAL });
+        routerTerminals.push({ outcome: fallbackConceptId, emit: completedTerminal });
       }
     }
-    routerTerminals.push({ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL });
+    routerTerminals.push({ outcome: 'unknown', emit: unknownTerminal });
 
     // ── Capability terminals ──────────────────────────────────────────────────
     const capabilityTerminals: Record<string, readonly TerminalEntry[]> = {};
@@ -589,7 +499,7 @@ export class Taxonomy {
         }
         // No uniform successor or the uniform successor is the retired flow:terminate
         // placeholder — emit a synthetic TerminalNode to end the flow as completed.
-        return { outcome, emit: AONPRD_COMPLETED_TERMINAL };
+        return { outcome, emit: completedTerminal };
       }
 
       // Open-world routing: BOTH `'success'` and `'error'` route to the same
@@ -624,25 +534,25 @@ export class Taxonomy {
         } else {
           // No further cap for this concept at this branch, or target is the
           // retired flow:terminate placeholder — emit a completed terminal.
-          terminals.push({ outcome: leafId, emit: AONPRD_COMPLETED_TERMINAL });
+          terminals.push({ outcome: leafId, emit: completedTerminal });
         }
       }
-      terminals.push({ outcome: 'unknown', emit: AONPRD_UNKNOWN_TERMINAL });
+      terminals.push({ outcome: 'unknown', emit: unknownTerminal });
       dispatchTerminals[dispatchName] = terminals;
     }
 
     return {
       terminals: {
-        'aonprd:taxonomy-route': routerTerminals,
+        [`${namespace}:taxonomy-route`]: routerTerminals,
         ...capabilityTerminals,
         ...dispatchTerminals,
       },
     };
   }
 
-  /** URL → concept ID (a leaf concept whose urlPaths includes the URL's AON path). Null when no match. */
+  /** Looks up the URL path token and returns the matching leaf concept ID. Null when no match. */
   routeUrl(url: string): string | null {
-    const path = extractAonPath(url);
+    const path = this.#pathExtractor(url);
     if (path === null) return null;
     return this.#urlMap.get(path) ?? null;
   }
@@ -727,7 +637,7 @@ export class Taxonomy {
 
   /**
    * The fallback concept id (one with `urlPaths: []`), or null if none is
-   * declared. The URL router emits this outcome when a URL doesn't match any
+   * declared. The URL router emits this outcome when a URL does not match any
    * leaf; direct-call entry points use it the same way.
    */
   fallbackConceptId(): string | null {

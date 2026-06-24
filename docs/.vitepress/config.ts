@@ -81,6 +81,7 @@ const sidebar = [
       { 'link': '/usage/cache',         'text': 'Cache'         },
       { 'link': '/usage/plugins',       'text': 'Plugins'       },
       { 'link': '/usage/resilience',    'text': 'Resilience & crawl-health' },
+      { 'link': '/usage/markdown',      'text': 'Markdown output'           },
     ],
   },
   {
@@ -89,6 +90,7 @@ const sidebar = [
       { 'link': '/architecture',       'text': 'Architecture'       },
       { 'link': '/diagrams',           'text': 'DAG Diagrams'       },
       { 'link': '/aonprd-scraper-dag', 'text': 'AONPRD Scraper DAG' },
+      { 'link': '/dnd5e-scraper-dag',  'text': 'D&D 5e Scraper DAG' },
       { 'link': '/roadmap',            'text': 'Roadmap'            },
     ],
   },

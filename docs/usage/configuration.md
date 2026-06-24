@@ -31,6 +31,8 @@ Schema source of truth: `src/schemas/RunStateSchema.ts`.
 | `cache` | CacheConfig | no | Cache settings. Defaults to `read-write` at `output/.cache/<taskName>`. |
 | `crawler` | CrawlerConfig | no | Link-crawler config for the `crawl:discover` DAG. |
 | `urls` | string[] | no | Explicit URL or title list. When present and no `crawl:discover` node is needed, the scatter reads directly from this. |
+| `useJsdom` | boolean | no | Pass fetched HTML through JSDOM before parsing. Enables synchronous script execution. |
+| `jsdomLoadTimeoutMs` | integer ≥ 1000 | no | Ceiling for the JSDOM `load` event wait. Defaults to `max(10000, retryMaxDelayMs ?? 30000)`. |
 | `parallelWorkers` | boolean | no | Route scatter items to a `WorkerThreadContainer` pool. Requires `npm run build:workers`. |
 | `includeRawContent` | boolean | no | Include `_raw` field in output records. Default `true`. |
 | `outputSchema` | string | no | Path to a JSON Schema file for output record validation. |
@@ -66,6 +68,19 @@ Configures the `crawl:discover` embedded DAG. All regex fields are strings compi
 | `rateLimitMs` | integer ≥ 0 | no | Gap between crawler requests, independent of the target rate limit. |
 | `jitterMs` | integer ≥ 0 | no | Random jitter added on top of crawler `rateLimitMs`. |
 | `maxPages` | integer ≥ 1 | no | Hard ceiling on collected target URLs. Omit for an unbounded crawl. |
+| `concurrency` | integer 1–32 | no | Frontier URLs fetched concurrently per BFS depth level. Defaults to `1`. |
+
+### `reservoir`
+
+Controls reservoir scatter on the orchestration's `ScatterNode` for very large URL lists. When enabled, the engine processes `capacity` items concurrently instead of loading the full list into memory at once.
+
+| Key | Type | Required | Notes |
+|-----|------|----------|-------|
+| `keyField` | string | yes | State field name used as the reservoir slot key. Must match `itemKey` on the scatter node (typically `currentItem`). |
+| `capacity` | integer 1–1000 | yes | Maximum concurrent scatter slots. The engine pulls items in batches of this size, releasing a slot only on item completion. |
+| `idleMs` | integer ≥ 1000 | no | Milliseconds after which an idle, source-exhausted reservoir is considered complete. Default `30000`. |
+
+Activate reservoir scatter by adding the matching `reservoir` block to the `ScatterNode` in the `.dag.jsonld` file — the `state.json` entry documents intent and is reflected in the example DAG.
 
 ## Full example
 

@@ -53,6 +53,18 @@
     "container": {
       "@id": "https://noocodex.dev/ontology/dag/container"
     },
+    "reservoir": {
+      "@id": "https://noocodex.dev/ontology/dag/reservoir"
+    },
+    "keyField": {
+      "@id": "https://noocodex.dev/ontology/dag/keyField"
+    },
+    "capacity": {
+      "@id": "https://noocodex.dev/ontology/dag/capacity"
+    },
+    "idleMs": {
+      "@id": "https://noocodex.dev/ontology/dag/idleMs"
+    },
     "DAG": {
       "@id": "https://noocodex.dev/ontology/dag/DAG"
     },
@@ -90,6 +102,11 @@
         "dag": "<plugin>:page"
       },
       "itemKey": "currentItem",
+      "reservoir": {
+        "keyField": "currentItem",
+        "capacity": 50,
+        "idleMs": 30000
+      },
       "gather": {
         "strategy": "partition",
         "partitions": {

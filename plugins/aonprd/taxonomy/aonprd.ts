@@ -72,8 +72,9 @@ import { kmWarTacticConcept }  from '../concepts/km-war-tactic.js';
 import { kmWarArmyConcept }    from '../concepts/km-war-army.js';
 import { genericConcept }      from '../concepts/generic/index.js';
 
-import { Taxonomy }             from '../taxonomy.js';
-import type { ConceptDecl }     from '../taxonomy.js';
+import { Taxonomy }             from '../../../src/taxonomy/Taxonomy.js';
+import { extractAonPath }       from '../common.js';
+import type { ConceptDecl }     from '../../../src/types/Taxonomy.js';
 
 // ─── Taxonomy declaration ─────────────────────────────────────────────────────
 
@@ -195,4 +196,4 @@ export const AONPRD_TAXONOMY = [
  * Compiled AONPRD taxonomy — pre-validated at module load time.
  * Provides `routeUrl`, `chainFor`, `allNodes`, and `annotations`.
  */
-export const TAXONOMY = Taxonomy.compile(AONPRD_TAXONOMY);
+export const TAXONOMY = Taxonomy.compile(AONPRD_TAXONOMY, { namespace: 'aonprd', pathExtractor: extractAonPath });

@@ -1,6 +1,6 @@
 {
   "name": "@studnicky/ripperoni",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "Web ingestion engine; slices wikis, sites, and URL lists into JSON records, one page at a time. Pairs with Squashage for RDF graph reconstitution.",
   "type": "module",
   "private": false,
@@ -70,11 +70,13 @@
     "cheerio": "^1.0.0",
     "commander": "^15.0.0",
     "domhandler": "^6.0.1",
+    "jsdom": "^29.1.1",
     "json-schema-to-ts": "^3.1.1",
     "wtf_wikipedia": "^10.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^26.0.0",
     "cytoscape": "^3.34.0",
     "eslint": "^10.3.0",

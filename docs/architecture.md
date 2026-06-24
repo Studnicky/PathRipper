@@ -97,8 +97,12 @@ Every plugin ships its DAGs as committed `.dag.jsonld` files in its directory. T
 
 The AONPRD plugin is **taxonomy-routed**. Its entrypoint `aonprd:taxonomy-route` classifies each page from its URL and dispatches to that concept's inherited capability chain (spell, monster, feat, weapon, …); unrecognised pages route to `aonprd:make-unknown`. The DAG is built from the concept taxonomy by `TAXONOMY.buildDAG()`. See the [AONPRD Scraper DAG](/aonprd-scraper-dag) walkthrough for full composition.
 
+#### Plugin DAG: dnd5e:parse
+
+The D&D 5e plugin is **taxonomy-routed via content classification**. Because dandwiki URLs do not encode the concept type, `dnd5e:taxonomy-route` classifies each page by content (spell stat block, breadcrumb category, italic type line) and dispatches to the matching concept's capability chain; unrecognised pages route to `dnd5e:unknown-end`. The DAG is built from the shared taxonomy compiler (`src/taxonomy/Taxonomy.compile`) with `namespace: 'dnd5e'`. See the [D&D 5e Scraper DAG](/dnd5e-scraper-dag) page for the typed `SpellOutput` shape and direct-call API.
+
 ```mermaid
-<!--@include: ./_generated/aonprdParseDAG.mmd -->
+<!--@include: ./_generated/dnd5eParseDAG.mmd -->
 ```
 
 #### Plugin DAG: docs-scraper
@@ -357,6 +361,17 @@ Visited URLs are tracked in a `Set`. Results are deduplicated and sorted with a 
 |------|---------|------|
 | `src/modules/logger/logger.ts` | `Logger` | Component-scoped structured logger |
 | `src/modules/cache/ScraperCache.ts` | `ScraperCache` | Per-target HTML cache; miss triggers HTTP fetch |
+
+### Taxonomy compiler (`src/taxonomy/`)
+
+Plugin-agnostic shared infrastructure for concept-taxonomy-routed plugins. Any plugin that dispatches per concept compiles against this module.
+
+| File | Exports | Role |
+|------|---------|------|
+| `src/taxonomy/Taxonomy.ts` | `Taxonomy` | `Taxonomy.compile(concepts, options)` — produces capability chains, `routeUrl`, `chainFor`, `allNodes`, `buildDAG` |
+| `src/taxonomy/TaxonomyRouterNodes.ts` | `makeTaxonomyRouter`, `makeConceptDispatch`, `conceptIdKey` | Namespaced router node factories (`<namespace>:taxonomy-route`, `<namespace>:concept-dispatch`) |
+| `src/taxonomy/ExtractionStrategy.ts` | `CommonStrategy`, `SourceRef`, `LinkRef`, `Section` | Extraction strategy interfaces shared across concept implementations |
+| `src/taxonomy/TaxonomyCompileOptions.ts` | `TaxonomyCompileOptions` | `{ namespace, pathExtractor }` options type for `Taxonomy.compile` |
 
 ### Scrapers
 
