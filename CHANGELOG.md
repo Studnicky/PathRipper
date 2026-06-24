@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.3] - 2026-06-23
+
 ### Security
 
 - **CodeQL `js/redos` (×3)** — the Title-Case name heuristic regexes in `plugins/aonprd/concepts/{archetype,feat,subclass-feature/helpers}.ts` had a word class (`[A-Za-z'.-]`) overlapping the separator class (`[ '-]`), enabling exponential backtracking. Word atoms are now `[A-Za-z.]` (the `'`/`-` separators no longer double as word characters), eliminating the ambiguity.
