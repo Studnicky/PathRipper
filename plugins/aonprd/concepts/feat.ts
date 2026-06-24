@@ -397,7 +397,9 @@ function isFlavorNpcName(name: string): boolean {
   const trimmed = name.trim();
   if (trimmed.length === 0) return false;
   // Multi-word Title-Case (e.g. "Arba Dwindletree", "Queen Galfrey", "Dr. Ashley Arrowbaud").
-  if (/^[A-Z][A-Za-z'.-]*(?:[ '-][A-Z][A-Za-z'.-]*)+$/.test(trimmed)) return true;
+  // Word atoms use [A-Za-z.] (no ' or -) so they are unambiguous against the
+  // [ '-] separator class, eliminating catastrophic backtracking (ReDoS).
+  if (/^[A-Z][A-Za-z.]*(?:[ '-][A-Z][A-Za-z.]*)+$/.test(trimmed)) return true;
   // Single-word Title-Case "stage name" (e.g. "Moloch", "Thais", "Jinx").
   if (/^[A-Z][a-z]{2,}$/.test(trimmed)) return true;
   return false;

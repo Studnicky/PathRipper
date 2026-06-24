@@ -476,12 +476,24 @@ export function extractSources(span: CheerioNode): SourceRef[] {
  * the legacy no-space behavior so proper-name italics don't gain artifacts.
  */
 export function htmlToText(html: string): string {
-  return html
+  // Expand <br> to space and insert space between adjacent closing/opening tags
+  // (e.g. <a>Foo</a><a>Bar</a> → "Foo Bar").
+  let s = html
     .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<\/[a-z][a-z0-9]*\s*>(?=<[a-z])/gi, ' ')
-    .replace(/<[^>]+>/g, '')
+    .replace(/<\/[a-z][a-z0-9]*\s*>(?=<[a-z])/gi, ' ');
+
+  // Strip tags to fixpoint so nested/malformed tags cannot survive a single pass
+  // (CWE-116 / js/incomplete-multi-character-sanitization).
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]+>/g, '');
+  } while (s !== prev);
+
+  // Decode named entities. &amp; is decoded LAST so that &amp;lt; in source
+  // never double-unescapes to < (js/double-escaping).
+  return s
     .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&#x27;|&apos;/g, "'")
@@ -490,6 +502,7 @@ export function htmlToText(html: string): string {
     .replace(/&ndash;/g, '–')
     .replace(/&bull;/g, '•')
     .replace(/&times;/g, '×')
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
 }

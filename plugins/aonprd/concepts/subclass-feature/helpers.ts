@@ -203,7 +203,9 @@ export function isFlavorBoldLabel(name: string): boolean {
   // Adventure-product ID code (e.g. "SC- 04910") — alphabetic prefix + digits.
   if (/^[A-Z]{1,4}[-\s]\s*\d+$/.test(core)) return true;
   // Multi-word Title-Case with optional lowercase connector words.
-  if (/^[A-Z][A-Za-z'.-]*(?:[ '-](?:[a-z]{1,4}|[A-Z][A-Za-z'.-]*))+$/.test(core)) return true;
+  // Word atoms use [A-Za-z.] (no ' or -) so they are unambiguous against the
+  // [ '-] separator class, eliminating catastrophic backtracking (ReDoS).
+  if (/^[A-Z][A-Za-z.]*(?:[ '-](?:[a-z]{1,4}|[A-Z][A-Za-z.]*))+$/.test(core)) return true;
   // Single-word Title-Case proper name (3+ chars: Hew, Gal, Roc, Moloch).
   if (/^[A-Z][a-z]{2,}$/.test(core)) return true;
   return false;
