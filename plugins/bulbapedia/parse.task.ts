@@ -51,8 +51,13 @@ const warnedUnknownKeys = new Set<string>();
 function stripWikiMarkup(raw: string): string {
   // Keep only first <br> segment (first variant when multiple exist)
   let str = raw.split(/<br\s*\/?>/i)[0] ?? raw;
-  // Drop HTML comments
-  str = str.replace(/<!--[\s\S]*?-->/g, '');
+  // Drop HTML comments to fixpoint so nested/partial <!-- cannot survive a
+  // single pass (CWE-116 / js/incomplete-multi-character-sanitization).
+  let prev: string;
+  do {
+    prev = str;
+    str = str.replace(/<!--[\s\S]*?-->/g, '');
+  } while (str !== prev);
   // Resolve {{tt|display|tooltip}} → display
   str = str.replace(/\{\{tt\|([^|}\n]+)\|[^}]*\}\}/gi, '$1');
   // Drop remaining {{ ... }} templates

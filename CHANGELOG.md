@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **CodeQL `js/redos` (×3)** — the Title-Case name heuristic regexes in `plugins/aonprd/concepts/{archetype,feat,subclass-feature/helpers}.ts` had a word class (`[A-Za-z'.-]`) overlapping the separator class (`[ '-]`), enabling exponential backtracking. Word atoms are now `[A-Za-z.]` (the `'`/`-` separators no longer double as word characters), eliminating the ambiguity.
+- **CodeQL `js/double-escaping` + `js/incomplete-multi-character-sanitization`** — `aonprd/common.ts` `htmlToText` (and the mirrored `_test_secondary` / `bulbapedia` strippers) now decode `&amp;` last (so `&amp;lt;` no longer double-unescapes) and strip tags/comments to a fixpoint (so nested/partial `<script`/`<!--` cannot survive). Output is unchanged for well-formed input.
+
 ## [3.2.2] - 2026-06-23
 
 ### Added
