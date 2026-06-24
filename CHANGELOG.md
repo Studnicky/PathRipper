@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.2] - 2026-06-23
+
 ### Added
 
 - **Shared taxonomy compiler (`src/taxonomy/`)** — the concept-taxonomy compiler, routing-node factories, and extraction-strategy interfaces are promoted to plugin-agnostic infrastructure, parameterized by `{ namespace, pathExtractor }`. `Taxonomy.compile(concepts, options)` builds the per-concept capability chains and the parse DAG for any plugin; `makeTaxonomyRouter`/`makeConceptDispatch`/`conceptIdKey` namespace the routing nodes. The `aonprd` plugin is migrated onto it in place (node names unchanged), so a second source plugin reuses one compiler with no duplication.
