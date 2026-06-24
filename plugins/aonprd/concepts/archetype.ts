@@ -370,7 +370,9 @@ function isFlavorBoldLabel(name: string): boolean {
   const core = trimmed.replace(/\s*\([^)]*\)\s*$/, '').trim();
   if (core.length < 3) return false;
   // Multi-word Title-Case (allows lowercase connectors).
-  if (/^[A-Z][A-Za-z'.-]*(?:[ '-](?:[a-z]{1,4}|[A-Z][A-Za-z'.-]*))+$/.test(core)) return true;
+  // Word atoms use [A-Za-z.] (no ' or -) so they are unambiguous against the
+  // [ '-] separator class, eliminating catastrophic backtracking (ReDoS).
+  if (/^[A-Z][A-Za-z.]*(?:[ '-](?:[a-z]{1,4}|[A-Z][A-Za-z.]*))+$/.test(core)) return true;
   // Single-word Title-Case proper name (3+ chars).
   if (/^[A-Z][a-z]{2,}$/.test(core)) return true;
   // Lowercase emphasis word inside flavor prose.

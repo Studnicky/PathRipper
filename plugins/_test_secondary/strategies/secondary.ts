@@ -27,9 +27,18 @@ import type {
  * but kept local so this strategy has zero imports from AON-specific modules.
  */
 function htmlToTextLocal(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
+  let s = html.replace(/<br\s*\/?>/gi, ' ');
+
+  // Strip tags to fixpoint so nested/malformed tags cannot survive a single pass
+  // (CWE-116 / js/incomplete-multi-character-sanitization).
+  let prev: string;
+  do {
+    prev = s;
+    s = s.replace(/<[^>]+>/g, '');
+  } while (s !== prev);
+
+  // Decode &amp; last so &amp;nbsp; etc. never double-unescape.
+  return s
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g,  '&')
     .replace(/\s+/g,    ' ')
