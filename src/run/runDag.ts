@@ -147,6 +147,8 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
         rateLimitMs: state.rateLimitMs,
         jitterMs:    state.jitterMs,
         headers:     state.headers as Record<string, string> | undefined,
+        useJsdom:           state.useJsdom,
+        jsdomLoadTimeoutMs: state.jsdomLoadTimeoutMs,
         ...(cache !== null ? { cache } : {}),
       })
     : undefined;
@@ -164,8 +166,9 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
   // ── Build crawl HTTP primitives when crawler config is present ────────────
   const crawlLimiter = state.crawler !== undefined
     ? RateLimiter.create({
-        minTimeMs: state.crawler.rateLimitMs ?? 100,
-        jitterMs:  state.crawler.jitterMs    ?? 0,
+        minTimeMs:     state.crawler.rateLimitMs  ?? 100,
+        jitterMs:      state.crawler.jitterMs     ?? 0,
+        maxConcurrent: state.crawler.concurrency  ?? 1,
       })
     : undefined;
   const crawlPolicy = state.crawler !== undefined
@@ -203,8 +206,13 @@ export async function runDag(opts: RunDagOptionsType): Promise<void> {
       baseUrl:           state.baseUrl,
       rateLimitMs:       state.rateLimitMs,
       jitterMs:          state.jitterMs,
+      apiUrl:            state.apiUrl,
+      apiRateLimitMs:    state.rateLimitMs,
+      apiJitterMs:       state.jitterMs,
       headers:           state.headers as Record<string, string> | undefined,
-      includeRawContent: state.includeRawContent,
+      useJsdom:           state.useJsdom,
+      jsdomLoadTimeoutMs: state.jsdomLoadTimeoutMs,
+      includeRawContent:  state.includeRawContent,
       outputSchema:      state.outputSchema,
       onSchemaError:     state.onSchemaError as WorkerServicesConfigType['onSchemaError'],
       cache:             state.cache != null

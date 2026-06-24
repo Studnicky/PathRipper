@@ -69,3 +69,13 @@ taxonomy (191 placements). Large by design; zoom or pan to explore.
 ```mermaid
 <!--@include: ./_generated/aonprdParseDAG.mmd -->
 ```
+
+## D&D 5e parse taxonomy — `dnd5e:parse`
+
+The D&D 5e parse DAG compiled from the shared taxonomy compiler (`src/taxonomy/`).
+Content-classified: `dnd5e:taxonomy-route` inspects the page body to dispatch to
+the matching concept chain; unrecognised pages route to `dnd5e:unknown-end`.
+
+```mermaid
+<!--@include: ./_generated/dnd5eParseDAG.mmd -->
+```

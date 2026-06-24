@@ -120,6 +120,15 @@ export class ScrapeState extends NodeStateBase {
   };
 
   /**
+   * Transient streaming crawl frontier. Set by `crawl:stream` (`StreamFrontierNode`)
+   * and consumed by a `ScatterNode` with `source: "urlStream"` and a `reservoir` block.
+   *
+   * Non-serialisable — intentionally excluded from `snapshotData` / `restoreData`.
+   * Coordinator-side only; not valid across worker handoffs or checkpoints.
+   */
+  urlStream: AsyncIterable<string> | undefined = undefined;
+
+  /**
    * Source array for MediaWiki fan-out.
    * Each item is a page title to fetch + process in the per-title sub-flow.
    */

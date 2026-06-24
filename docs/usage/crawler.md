@@ -59,6 +59,7 @@ Fields are strings (regex patterns) or integers. Pass raw pattern strings — Ri
 | `rateLimitMs` | `integer` | No | Minimum delay between crawler requests. Independent of the parent `rateLimitMs`. |
 | `jitterMs` | `integer` | No | Maximum random additional delay added on top of `rateLimitMs`. |
 | `maxPages` | `integer` | No | Hard ceiling on collected results. Omit for an unbounded crawl — runs until the frontier empties. |
+| `concurrency` | `integer` 1–32 | No | Maximum number of frontier URLs fetched concurrently within a single BFS depth level. The rate limiter still applies between individual requests. Defaults to `1` (sequential). |
 
 The crawl terminates when the frontier empties, `maxPages` is reached, or all reachable links under `domain`/`delimiter` have been visited.
 
@@ -122,6 +123,36 @@ Index pages are visited but not included in the result set.
 ```
 
 Hard ceiling on collected results. The crawl stops as soon as this many target URLs match, even if frontier URLs remain. Leave `maxPages` off and it runs long and hard until the frontier is picked clean.
+
+## Streaming the frontier (`crawl:stream`)
+
+The `crawl:discover` DAG above materializes the **whole** frontier into `state.urls` before the scatter runs — every discovered URL is held in memory at once, and page processing cannot begin until discovery finishes. For very large crawls, the `crawl:stream` node is a streaming alternative: discovery and page processing **overlap**, and the frontier is never collected into an array.
+
+`crawl:stream` assigns an `AsyncIterable<string>` of discovered target URLs to `state.urlStream`; a `ScatterNode` whose `source` is `"urlStream"` consumes it lazily. The engine's scatter accepts an `AsyncIterable` source natively and, with a `reservoir` block, pulls the next URL only as a worker slot frees — so the crawl runs as fast as (and no faster than) the scatter drains it. Memory is bounded by the reservoir capacity plus the irreducible visited/discovered sets, regardless of how many pages the crawl ultimately finds.
+
+```json
+{
+  "@type": "DAG",
+  "name":  "site:crawl-stream",
+  "entrypoint": "stream",
+  "nodes": [
+    { "@type": "SingleNode", "name": "stream", "node": "crawl:stream",
+      "outputs": { "ready": "scrape", "empty": "done" } },
+    {
+      "@type":   "ScatterNode",
+      "name":    "scrape",
+      "source":  "urlStream",
+      "body":    { "dag": "site:page" },
+      "itemKey": "currentUrl",
+      "reservoir": { "keyField": "currentUrl", "capacity": 50, "idleMs": 30000 },
+      "gather":  { "strategy": "partition", "partitions": { "success": "succeeded", "error": "failed" } },
+      "outputs": { "all-success": "done", "partial": "done", "all-error": "done", "empty": "done" }
+    }
+  ]
+}
+```
+
+The `crawler` block is configured exactly as above — `crawl:stream` reads the same `startUrls` / `domain` / `delimiter` / `target` / `maxPages` and drives the same breadth-first traversal, reusing the same fetch and link-classification primitives as `crawl:discover`. The two are interchangeable: pick `crawl:discover` for a bounded, fully-materialized, resumable URL set; pick `crawl:stream` to overlap discovery with processing and keep memory flat on very large sites. `crawl:stream`'s `AsyncIterable` source is coordinator-side and transient — it is not checkpointed.
 
 ## Deduplication and sorting
 

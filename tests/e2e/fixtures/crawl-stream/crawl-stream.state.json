@@ -1,0 +1,18 @@
+{
+  "baseUrl":     "https://example.com",
+  "rateLimitMs": 0,
+  "jitterMs":    0,
+  "output": {
+    "basePath":       "./output/crawl-stream-e2e",
+    "splitByTaskName": false
+  },
+  "crawler": {
+    "startUrls":  ["https://example.com/index"],
+    "domain":     "example\\.com",
+    "target":     "\\?id=",
+    "delimiter":  "category",
+    "rateLimitMs": 0,
+    "jitterMs":    0,
+    "maxPages":   3
+  }
+}

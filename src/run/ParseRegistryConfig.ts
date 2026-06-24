@@ -51,7 +51,12 @@ export type WorkerServicesConfigType = {
   readonly baseUrl:             string | undefined;
   readonly rateLimitMs:         number | undefined;
   readonly jitterMs:            number | undefined;
+  readonly apiUrl:              string | undefined;
+  readonly apiRateLimitMs:      number | undefined;
+  readonly apiJitterMs:         number | undefined;
   readonly headers:             Record<string, string> | undefined;
+  readonly useJsdom:            boolean | undefined;
+  readonly jsdomLoadTimeoutMs:  number | undefined;
   readonly includeRawContent:   boolean | undefined;
   readonly outputSchema:        string | undefined;
   readonly onSchemaError:       'halt' | 'skip' | 'warn' | undefined;

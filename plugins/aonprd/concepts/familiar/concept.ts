@@ -1,5 +1,5 @@
 // Familiar concept declaration.
-import type { ConceptDecl } from '../../taxonomy.js';
+import type { ConceptDecl } from '../../../../src/types/Taxonomy.js';
 import type { FamiliarOutput } from './types.js';
 import {
   familiarBaseNode,

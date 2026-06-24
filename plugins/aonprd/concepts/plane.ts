@@ -8,7 +8,7 @@ import type { NodeContextType, NodeOutputType, SchemaObjectType } from '@studnic
 import type { CheerioAPI } from 'cheerio';
 
 import type { ScrapeState }    from '../../../src/state/ScrapeState.js';
-import type { ConceptDecl } from '../taxonomy.js';
+import type { ConceptDecl } from '../../../src/types/Taxonomy.js';
 import {
   CAPABILITY_OUTPUTS,
   type CommonExtraction,

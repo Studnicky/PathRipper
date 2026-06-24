@@ -15,8 +15,8 @@ import { labelPairBlockNode } from '../aonprd/capabilities/labelPairBlock.js';
 import { sectionWalkerNode }  from '../aonprd/capabilities/sectionWalker.js';
 import { sourceRefNode }      from '../aonprd/capabilities/sourceRef.js';
 import { metaTagsNode }       from '../aonprd/capabilities/metaTags.js';
-import { Taxonomy }           from '../aonprd/taxonomy.js';
-import type { ConceptDecl }   from '../aonprd/taxonomy.js';
+import { Taxonomy }           from '../../src/taxonomy/Taxonomy.js';
+import type { ConceptDecl }   from '../../src/types/Taxonomy.js';
 
 import { secondaryStrategy } from './strategies/secondary.js';
 import { sampleConcept }     from './concepts/sample.js';
@@ -46,5 +46,10 @@ export const SECONDARY_TAXONOMY = [
   sampleConcept,
 ] as const satisfies readonly ConceptDecl<unknown>[];
 
+function extractSecondaryPath(url: string): string | null {
+  const match = /\/([A-Za-z]+)\.aspx/i.exec(url);
+  return match !== null ? match[1]!.toLowerCase() : null;
+}
+
 /** Compiled secondary taxonomy — provides `routeUrl`, `chainFor`, `allNodes`. */
-export const TAXONOMY = Taxonomy.compile(SECONDARY_TAXONOMY);
+export const TAXONOMY = Taxonomy.compile(SECONDARY_TAXONOMY, { namespace: 'secondary', pathExtractor: extractSecondaryPath });

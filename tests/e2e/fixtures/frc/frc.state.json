@@ -1,0 +1,9 @@
+{
+  "apiUrl":           "https://forgottenrealms.fandom.com/api.php",
+  "rateLimitMs":      500,
+  "jitterMs":         100,
+  "maxRetries":       2,
+  "retryBaseDelayMs": 500,
+  "retryMaxDelayMs":  10000,
+  "output":           { "basePath": "./output/frc" }
+}

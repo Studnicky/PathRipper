@@ -9,7 +9,7 @@
 // Run via: `npm run typecheck:tests`.
 import { ScrapeState } from '../../src/state/ScrapeState.js';
 import { setConceptOutput } from '../../plugins/aonprd/concepts/_helpers.js';
-import type { ConceptDecl, ConceptOutputUnion, ConceptOutputFor } from '../../plugins/aonprd/taxonomy.js';
+import type { ConceptDecl, ConceptOutputUnion, ConceptOutputFor } from '../../src/types/Taxonomy.js';
 
 // ─── Stub output types ──────────────────────────────────────────────────────
 

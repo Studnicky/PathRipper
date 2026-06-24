@@ -32,10 +32,12 @@ import {
   FetchAndExtractLinksNode,
   DedupeAndEnqueueNode,
   CrawlExhaustedNode,
+  StreamFrontierNode,
   RouteFailureNode,
   ReconcileIdentityNode,
   ReportCrawlHealthNode,
   ResolveLinkNode,
+  MarkdownWriteNode,
 } from '../nodes/index.js';
 
 // ── Builtin crawl DAG ──────────────────────────────────────────────────────────
@@ -65,7 +67,7 @@ export class PluginLoader {
    * `PluginLoader.registerBuiltinNodes`.
    */
   static readonly BUILTIN_PREFIXES: ReadonlyArray<string> = [
-    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:', 'reconcile:', 'report:', 'resolve:',
+    'html:', 'wiki:', 'json:', 'jsonl:', 'validate:', 'crawl:', 'route:', 'reconcile:', 'report:', 'resolve:', 'markdown:',
   ];
 
   /**
@@ -91,6 +93,9 @@ export class PluginLoader {
     dispatcher.registerNode(FetchAndExtractLinksNode);
     dispatcher.registerNode(DedupeAndEnqueueNode);
     dispatcher.registerNode(CrawlExhaustedNode);
+    dispatcher.registerNode(StreamFrontierNode);
+    // Markdown output
+    dispatcher.registerNode(MarkdownWriteNode);
     // Resilience nodes
     dispatcher.registerNode(RouteFailureNode);
     dispatcher.registerNode(ResolveLinkNode);

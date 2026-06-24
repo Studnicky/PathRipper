@@ -1,0 +1,45 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "name":       { "@id": "https://noocodex.dev/ontology/dag/name" },
+    "version":    { "@id": "https://noocodex.dev/ontology/dag/version" },
+    "entrypoint": { "@id": "https://noocodex.dev/ontology/dag/entrypoint" },
+    "nodes":      { "@id": "https://noocodex.dev/ontology/dag/nodes", "@container": "@set" },
+    "outputs":    { "@id": "https://noocodex.dev/ontology/dag/outputs" },
+    "node":       { "@id": "https://noocodex.dev/ontology/dag/node" },
+    "outcome":    { "@id": "https://noocodex.dev/ontology/dag/outcome" },
+    "DAG":        { "@id": "https://noocodex.dev/ontology/dag/DAG" },
+    "SingleNode": { "@id": "https://noocodex.dev/ontology/dag/SingleNode" },
+    "TerminalNode": { "@id": "https://noocodex.dev/ontology/dag/TerminalNode" }
+  },
+  "@id":        "urn:noocodex:dag:crawl-stream:page",
+  "@type":      "DAG",
+  "name":       "crawl-stream:page",
+  "version":    "1.0",
+  "entrypoint": "fetch",
+  "nodes": [
+    {
+      "@id":   "urn:noocodex:dag:crawl-stream:page/node/fetch",
+      "@type": "SingleNode",
+      "name":  "fetch",
+      "node":  "html:fetch",
+      "outputs": {
+        "success": "crawl-stream:page:completed",
+        "cached":  "crawl-stream:page:completed",
+        "error":   "crawl-stream:page:failed"
+      }
+    },
+    {
+      "@id":     "urn:noocodex:dag:crawl-stream:page/node/crawl-stream:page:completed",
+      "@type":   "TerminalNode",
+      "name":    "crawl-stream:page:completed",
+      "outcome": "completed"
+    },
+    {
+      "@id":     "urn:noocodex:dag:crawl-stream:page/node/crawl-stream:page:failed",
+      "@type":   "TerminalNode",
+      "name":    "crawl-stream:page:failed",
+      "outcome": "failed"
+    }
+  ]
+}

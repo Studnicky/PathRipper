@@ -1,0 +1,76 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "name":         { "@id": "https://noocodex.dev/ontology/dag/name" },
+    "version":      { "@id": "https://noocodex.dev/ontology/dag/version" },
+    "entrypoint":   { "@id": "https://noocodex.dev/ontology/dag/entrypoint" },
+    "nodes":        { "@id": "https://noocodex.dev/ontology/dag/nodes", "@container": "@set" },
+    "outputs":      { "@id": "https://noocodex.dev/ontology/dag/outputs" },
+    "node":         { "@id": "https://noocodex.dev/ontology/dag/node" },
+    "dag":          { "@id": "https://noocodex.dev/ontology/dag/dag" },
+    "body":         { "@id": "https://noocodex.dev/ontology/dag/body" },
+    "source":       { "@id": "https://noocodex.dev/ontology/dag/source" },
+    "itemKey":      { "@id": "https://noocodex.dev/ontology/dag/itemKey" },
+    "concurrency":  { "@id": "https://noocodex.dev/ontology/dag/concurrency" },
+    "gather":       { "@id": "https://noocodex.dev/ontology/dag/gather" },
+    "reducer":      { "@id": "https://noocodex.dev/ontology/dag/reducer" },
+    "outcome":      { "@id": "https://noocodex.dev/ontology/dag/outcome" },
+    "stateMapping": { "@id": "https://noocodex.dev/ontology/dag/stateMapping" },
+    "reservoir":    { "@id": "https://noocodex.dev/ontology/dag/reservoir" },
+    "keyField":     { "@id": "https://noocodex.dev/ontology/dag/keyField" },
+    "capacity":     { "@id": "https://noocodex.dev/ontology/dag/capacity" },
+    "idleMs":       { "@id": "https://noocodex.dev/ontology/dag/idleMs" },
+    "DAG":          { "@id": "https://noocodex.dev/ontology/dag/DAG" },
+    "Placement":    { "@id": "https://noocodex.dev/ontology/dag/Placement" },
+    "SingleNode":   { "@id": "https://noocodex.dev/ontology/dag/SingleNode" },
+    "ScatterNode":  { "@id": "https://noocodex.dev/ontology/dag/ScatterNode" },
+    "TerminalNode": { "@id": "https://noocodex.dev/ontology/dag/TerminalNode" }
+  },
+  "@id":        "urn:noocodex:dag:crawl-stream-e2e",
+  "@type":      "DAG",
+  "name":       "crawl-stream-e2e",
+  "version":    "1.0",
+  "entrypoint": "seed",
+  "nodes": [
+    {
+      "@id":   "urn:noocodex:dag:crawl-stream-e2e/node/seed",
+      "@type": "SingleNode",
+      "name":  "seed",
+      "node":  "crawl:stream",
+      "outputs": {
+        "ready": "scrape",
+        "empty": "done"
+      }
+    },
+    {
+      "@id":    "urn:noocodex:dag:crawl-stream-e2e/node/scrape",
+      "@type":  "ScatterNode",
+      "name":   "scrape",
+      "source": "urlStream",
+      "body":   { "dag": "crawl-stream:page" },
+      "itemKey": "currentUrl",
+      "reservoir": {
+        "keyField": "currentUrl",
+        "capacity": 3,
+        "idleMs":   5000
+      },
+      "gather": {
+        "strategy":   "partition",
+        "partitions": { "completed": "succeeded", "failed": "failed" }
+      },
+      "reducer": "aggregate",
+      "outputs": {
+        "all-success": "done",
+        "partial":     "done",
+        "all-error":   "done",
+        "empty":       "done"
+      }
+    },
+    {
+      "@id":     "urn:noocodex:dag:crawl-stream-e2e/node/done",
+      "@type":   "TerminalNode",
+      "name":    "done",
+      "outcome": "completed"
+    }
+  ]
+}

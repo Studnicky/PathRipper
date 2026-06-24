@@ -6,7 +6,7 @@
 // No NodeInterface (pure helper). Consumers call this directly to filter sections
 // and project them into feature entries.
 
-import type { Section } from './strategy.js';
+import type { Section } from '../../../src/types/ExtractionStrategy.js';
 
 /** A granted feature with name and description. */
 export interface GrantedFeature {

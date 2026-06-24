@@ -68,6 +68,7 @@ These nodes are always registered by `PluginLoader.registerBuiltinNodes` — ref
 | `html:write-raw` | `success` | Writes raw HTML to `<outDir>/<taskName>/raw/<slug>.html`. |
 | `wiki:write-raw` | `success` | Writes raw wikitext to `<outDir>/<taskName>/raw/<slug>.txt`. |
 | `json:write` | `success \| skipped` | Writes `state.output` as JSON. `skipped` when `state.output` is null. |
+| `markdown:write` | `success \| skipped` | Converts `state.page.html` to GFM Markdown via `MarkdownConverter` and writes `<slug>.md`. `skipped` when `state.page.html` is absent. See [Markdown output](/usage/markdown). |
 | `jsonl:append` | `success \| skipped` | Appends `state.output` to a JSONL file. `skipped` when `state.output` is null. |
 | `validate:schema` | `valid \| invalid` | Validates `state.output` against a JSON schema. |
 | `crawl:init-frontier` | `ready \| empty` | Initializes the crawl frontier from the `crawler.startUrls` in state. |
@@ -96,6 +97,34 @@ Embed it in any orchestration via `EmbeddedDAGNode`:
 ```
 
 The `stateMapping.output` block seeds `state.urls` from `crawl.discovered` after the crawl completes. Configure the crawl behaviour via the `crawler` block in `state.json`. See [Crawler](/usage/crawler).
+
+## Reservoir scatter
+
+For very large URL lists, reservoir scatter bounds memory use by processing a fixed number of items concurrently rather than fanning out the full list at once. The engine pulls items from the scatter source in batches of `capacity`, releasing a slot only when an item completes.
+
+Add a `reservoir` block to the `ScatterNode` in the `.dag.jsonld`:
+
+```json
+{
+  "@type":     "ScatterNode",
+  "name":      "scrape",
+  "source":    "urls",
+  "body":      { "dag": "myplugin:page" },
+  "container": "worker",
+  "itemKey":   "currentItem",
+  "reservoir": {
+    "keyField": "currentItem",
+    "capacity": 50,
+    "idleMs":   30000
+  },
+  "gather":  { "strategy": "partition", "partitions": { "success": "succeeded", "error": "failed" } },
+  "outputs": { "all-success": "done", "partial": "done", "all-error": "done", "empty": "done" }
+}
+```
+
+`keyField` must match `itemKey`. `capacity` is the concurrency window. `idleMs` (default `30000`) is how long the engine waits with an idle, source-exhausted reservoir before marking it complete.
+
+The reservoir is engine-native — no Ripperoni code is involved. Document the intended capacity in the matching `reservoir` block in `state.json` for discoverability.
 
 ## Parallel parse
 
